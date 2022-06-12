@@ -1,0 +1,154 @@
+@inject IGlobalService globalService
+@inject IExpenseLineService expenseLineService
+@inject  IJSRuntime jsRuntime
+
+<MudDialog Class='customdialog'>
+    <TitleContent>
+        <div class='d-flex align-center'>
+            <MudIcon Icon='@iconString' Class='mr-3 mb-n1'/>
+            <MudText Typo='Typo.h6'>@dialogTitle</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div class='customdialog__content-container'>
+            @if (lookUpType == Enums.LookUpType.Employee)
+            {
+                <BlazoredTypeahead SearchMethod='LoadEmployee'
+                @bind-Value='selectedEmployee' Debounce='500' placeholder='@searchPlaceholderText'>
+                <SelectedTemplate>
+                    <div class='ddavatar'>
+                        @if(context.Picture != null)
+                        {
+                            <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@context.Picture)}")' Size='Size.Small'/>
+                        }
+                        @context.EmployeeName | @context.Designation
+                    </div>
+                </SelectedTemplate>
+                <ResultTemplate>
+                    <div class='ddavatar'>
+                        <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@context.Picture)}")' Size='Size.Small'/>
+                        @context.EmployeeName | @context.Designation
+                    </div>
+                </ResultTemplate>
+                </BlazoredTypeahead>
+            }
+            @if (lookUpType == Enums.LookUpType.Project)
+            {
+                <BlazoredTypeahead SearchMethod=LoadProject 
+                @bind-Value='selectedPayee' Debounce="500" placeholder='Project / Charge to' >
+                <SelectedTemplate>
+                    @context.ProjectName | @context.Location
+                </SelectedTemplate>
+                <ResultTemplate>
+                    @context.ProjectName | @context.Location
+                </ResultTemplate>
+                </BlazoredTypeahead> 
+            }
+            @if (lookUpType == Enums.LookUpType.ExpLine)
+            {
+             
+            <BlazoredTypeahead SearchMethod=LoadExpense 
+            @bind-Value='selectedExpense' Debounce="500" placeholder='Expense' >
+              <SelectedTemplate>
+                  @context.ExpenseName
+              </SelectedTemplate>
+              <ResultTemplate>
+                  @context.ExpenseName
+            </ResultTemplate>
+            </BlazoredTypeahead> 
+            }
+            @if (lookUpType == Enums.LookUpType.Division)
+            {
+              <BlazoredTypeahead SearchMethod=SearchDivision 
+              @bind-Value='selectedDivision' Debounce="500" placeholder='Division' >
+              <SelectedTemplate>
+                  @context.divisionName
+              </SelectedTemplate>
+              <ResultTemplate>
+                  @context.divisionName
+            </ResultTemplate>
+            </BlazoredTypeahead> 
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
+        <MudButton OnClick="Submit" Variant='Variant.Filled' Color="@color">@buttonText</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public Enums.LookUpType lookUpType { get; set; }
+    [Parameter] public string dialogTitle { get; set; } = string.Empty;
+    [Parameter] public string contentText { get; set; } = string.Empty;
+    [Parameter] public string buttonText { get; set; } = string.Empty;
+    [Parameter] public string searchPlaceholderText { get; set; } = string.Empty;
+    [Parameter] public Color color { get; set; }
+    private UserAccount selectedEmployee = new UserAccount();
+    private Project selectedPayee = new Project();
+    private ExpenseLineModel selectedExpense = new ExpenseLineModel();
+    private DivisionModel selectedDivision = new DivisionModel();
+    private string iconString = "Icons.Filled.PersonSearch";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (lookUpType == Enums.LookUpType.Employee)
+            iconString = Icons.Filled.PersonSearch;
+        if (lookUpType == Enums.LookUpType.Project)
+            iconString = Icons.Filled.Groups;
+        await Task.Delay(1);
+    }
+
+    private void Submit() 
+    {
+        if (lookUpType == Enums.LookUpType.Employee)
+            MudDialog.Close(DialogResult.Ok(selectedEmployee));
+        if (lookUpType == Enums.LookUpType.Project)
+            MudDialog.Close(DialogResult.Ok(selectedPayee));
+        if(lookUpType == Enums.LookUpType.ExpLine)
+            MudDialog.Close(DialogResult.Ok(selectedExpense));
+        if(lookUpType == Enums.LookUpType.Division)
+            MudDialog.Close(DialogResult.Ok(selectedDivision));
+
+    }
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private async Task<IEnumerable<UserAccount>> LoadEmployee(string employeeName)
+    {
+        var filterParameter = new FilterParameter()
+        {
+            IsName = true,
+            Name = employeeName,
+            IsLookUp = true
+        };
+        var employee = await globalService.LoadAllEmployee(filterParameter, GlobalClass.token);
+        return employee;
+    }
+
+    private async Task<IEnumerable<Project>> LoadProject(string projectName)
+    {
+      var filterParameter = new FilterParameter()
+      {
+        IsProject = true,
+        ProjectName = projectName,
+        IsId = false
+      };
+      var projects = await globalService.LoadPayees(filterParameter,GlobalClass.token);
+      return projects;
+    }
+    private async Task<IEnumerable<ExpenseLineModel>> LoadExpense(string expenseLine)
+    {
+      var charging = await expenseLineService.LoadExpenseLine(GlobalClass.token);
+      return charging.Where(x=>x.ExpenseName.Contains(expenseLine, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+    private async Task<IEnumerable<DivisionModel>> SearchDivision(string searchText)
+    {
+      var division = GlobalClassList.divisionList;
+      return await Task.FromResult(division.Where(x=>x.shortcutName.Contains(searchText, StringComparison.InvariantCultureIgnoreCase)).ToList());
+    }
+}

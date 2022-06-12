@@ -1,0 +1,58 @@
+@inject IGlobalService globalService
+
+<MudDialog Class='customdialog'>
+    <TitleContent>
+        <div class='d-flex align-center'>
+            <MudIcon Icon="@Icons.Filled.Search" Class="mr-3 mb-n1"/>
+            <MudText Typo='Typo.h6'>@dialogTitle</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div Class='customdialog__content-container'>
+            <BlazoredTypeahead SearchMethod=LoadProject 
+            @bind-Value='payee' Debounce="500" placeholder='Project / Charge' >
+              <SelectedTemplate>
+              @context.ProjectName | @context.Location
+              </SelectedTemplate>
+              <ResultTemplate>
+              @context.ProjectName | @context.Location
+            </ResultTemplate>
+            </BlazoredTypeahead> 
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
+        <MudButton OnClick="Submit" Variant='Variant.Filled' Color="@color">@buttonText</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public string dialogTitle { get; set; } = string.Empty;
+    [Parameter] public string contentText { get; set; } = string.Empty;
+    [Parameter] public string buttonText { get; set; } = string.Empty;
+    [Parameter] public Color color { get; set; }
+    Project payee = new Project();
+
+    private void Submit() 
+    {
+        MudDialog.Close(DialogResult.Ok(payee));
+    }
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private async Task<IEnumerable<Project>> LoadProject(string projectName)
+    {
+      var filterParameter = new FilterParameter()
+      {
+        IsProject = true,
+        ProjectName = projectName,
+        IsId = false
+      };
+      var projects = await globalService.LoadPayees(filterParameter,GlobalClass.token);
+      return projects;
+    }
+}
+

@@ -1,0 +1,101 @@
+@inject IBankService bankService
+
+<MudDialog Class="customdialog">
+  <TitleContent>
+    <div class='d-flex align-center'>
+      @if (GlobalClass.bank.Id != 0)
+      {
+        <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3 mb-n1" />
+      }
+      else
+      {
+        <MudIcon Icon="@Icons.Filled.Add" Class="mr-3 mb-n1" />
+      }
+      <MudText Typo='Typo.h6'>@dialogTitle</MudText>
+    </div>
+  </TitleContent>
+  <DialogContent>
+    <div class='customdialog__content-container'>
+      <MudGrid Spacing='1'>
+        <MudItem xs='6'>
+          <MudTextField @bind-Value='@GlobalClass.bank.BankName' Adornment='Adornment.Start'
+            AdornmentIcon='@Icons.Filled.AccountBalance' Label='Bank Name' />
+        </MudItem>
+        <MudItem xs='4'>
+          <MudTextField @bind-Value='@GlobalClass.bank.ShortcutName' Adornment='Adornment.Start'
+            AdornmentIcon='@Icons.Filled.ShortText' Label="Short Name" />
+        </MudItem>
+        <MudItem xs='2'>
+          <MudCheckBox @bind-Checked='@GlobalClass.bank.IsActive' Label='Active' />
+        </MudItem>
+        <MudItem xs='6'>
+          <MudTextField @bind-Value='@GlobalClass.bank.BankBranch' Adornment='Adornment.Start'
+            AdornmentIcon='@Icons.Filled.LocationCity' Label="Branch" />
+        </MudItem>
+        <MudItem xs='6'>
+          <MudTextField @bind-Value='@GlobalClass.bank.AccountNo' Mask="@(new PatternMask("0000 0000 0000 0000"))"
+            Adornment='Adornment.Start' AdornmentIcon='@Icons.Filled.Numbers' Label="Account No." />
+        </MudItem>
+        <MudItem xs='8'>
+          <MudTextField @bind-Value='@GlobalClass.bank.ContactPerson' Adornment='Adornment.Start'
+            AdornmentIcon='@Icons.Filled.Person' Label="Contact Person" />
+        </MudItem>
+        <MudItem xs='4'>
+          <MudTextField @bind-Value='@GlobalClass.bank.ContactNo' Adornment='Adornment.Start'
+            AdornmentIcon='@Icons.Filled.ContactPhone' Label="Contact No." />
+        </MudItem>
+        <MudItem xs='4'>
+          <MudSelect @bind-Value='@GlobalClass.bank.CurrencyId' Label="Currency">
+            @foreach (Enums.BankCurrency currency in Enum.GetValues(typeof(Enums.BankCurrency)))
+            {
+              <MudSelectItem Value="currency">@Extensions.GetEnumDescription(currency)</MudSelectItem>
+            }
+          </MudSelect>
+        </MudItem>
+        <MudItem xs="8">
+          <MudNumericField @bind-Value='@GlobalClass.bank.BeginningBalance' Label="Beginning Balance" Format='N2' />
+        </MudItem>
+        <MudItem xs="12">
+          <MudTextField @bind-Value='@GlobalClass.bank.Remarks' Variant='Variant.Filled' Label="Remarks" Lines='2' />
+        </MudItem>
+      </MudGrid>
+    </div>
+  </DialogContent>
+    <DialogActions>
+      <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
+      <MudButton OnClick="Submit" Variant='Variant.Filled' Color="@color">@buttonText</MudButton>
+  </DialogActions>
+</MudDialog>
+
+@code {
+  [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+  [Parameter] public Color color { get; set; }
+  [Parameter] public string dialogTitle { get; set; } = string.Empty;
+  [Parameter] public string buttonText { get; set; } = string.Empty;
+  protected override async Task OnInitializedAsync()
+  {
+    if (GlobalClass.bank.Id == 0)
+      GlobalClass.bank.IsActive = true;
+    await Task.Delay(1);
+  }
+
+  void Cancel()
+  {
+    MudDialog.Cancel();
+  }
+
+  private async Task Submit()
+  {
+    if (GlobalClass.bank.Id != 0)
+    {
+      await bankService.UpdateBank(GlobalClass.bank, GlobalClass.token);
+      MudDialog.Close(DialogResult.Ok(1));
+    }
+    else
+    {
+      GlobalClass.bank = await bankService.AddBank(GlobalClass.bank, GlobalClass.token);
+      GlobalClassList.banks.Add(GlobalClass.bank);
+      MudDialog.Close(DialogResult.Ok(0));
+    } 
+  }
+}

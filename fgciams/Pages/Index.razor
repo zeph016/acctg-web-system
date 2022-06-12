@@ -1,0 +1,21 @@
+﻿@page "/"
+
+@inject IUserAccountService userAccountService
+@inject IJSRuntime jsRuntimeService
+@inject Blazored.LocalStorage.ILocalStorageService localStorageService
+@inject NavigationManager navigationManager
+
+@* <PageTitle>Index</PageTitle> *@
+
+@* <h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<SurveyPrompt Title="How is Blazor working for you?" /> *@
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        navigationManager.NavigateTo($"/dashboard");
+    }
+}

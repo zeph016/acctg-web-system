@@ -1,0 +1,67 @@
+@inject IDivisionService divisionService
+
+<MudDialog Class='customdialog'>
+    <TitleContent>
+        <div class='d-flex align-center'>
+            @if (GlobalClass.division.Id != 0)
+            {
+                <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3 mb-n1" />
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Filled.Add" Class="mr-3 mb-n1" />
+            }
+            <MudText Typo='Typo.h6'>@dialogTitle</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div class='customdialog__content-container'>
+            <MudGrid Spacing='1'>
+                <MudItem xs='12'>
+                    <MudTextField @bind-Value='@GlobalClass.division.divisionName' Label='Division Name' />
+                </MudItem>
+                <MudItem xs='9'>
+                    <MudTextField @bind-Value='@GlobalClass.division.shortcutName' Label='Short Name' />
+                </MudItem>
+                <MudItem Class='d-flex align-center' xs='3'>
+                    <MudCheckBox @bind-Checked='@GlobalClass.division.IsActive' Label='Active' />
+                </MudItem>
+            </MudGrid>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
+        <MudButton OnClick="Submit" Variant='Variant.Filled' Color="@color">@buttonText</MudButton>
+    </DialogActions>
+</MudDialog>
+@code{
+    [CascadingParameter]public MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public Color color { get; set; }
+    [Parameter] public string dialogTitle { get; set; } = string.Empty;
+    [Parameter] public string buttonText { get; set; } = string.Empty;
+     protected override async Task OnInitializedAsync()
+    {
+        if (GlobalClass.division.Id == 0)
+            GlobalClass.division.IsActive = true;
+        await Task.Delay(1);
+    }   
+    void Cancel() 
+    {
+        MudDialog.Cancel();
+    }
+
+    private async Task Submit()
+    {
+        if (GlobalClass.division.Id != 0)
+        {
+            await divisionService.UpdateDivision(GlobalClass.division, GlobalClass.token);
+            MudDialog.Close(DialogResult.Ok(1));
+        }
+        else
+        {
+            GlobalClass.division = await divisionService.AddDivision(GlobalClass.division, GlobalClass.token);
+            GlobalClassList.divisionList.Add(GlobalClass.division);
+            MudDialog.Close(DialogResult.Ok(0));
+        }
+    }
+}

@@ -1,0 +1,79 @@
+<MudDialog Class='customdialog'>
+    <DialogContent>
+        <div Class='customdialog__content-container'>
+            @contentText
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
+        <MudButton OnClick="Submit" Variant='Variant.Filled' Color="@color">@buttonText</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = new MudDialogInstance();
+    [Parameter] public string dialogTitle { get; set; } = string.Empty;
+    [Parameter] public string contentText { get; set; } = string.Empty;
+    [Parameter] public string buttonText { get; set; } = string.Empty;
+    [Parameter] public Enums.ActionMode actionMode { get; set; }
+    private Color color { get; set; }
+    private bool dataFetched;
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+
+        await base.SetParametersAsync(parameters);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        CheckActionsMode();
+        CompletedFetch();
+    }
+
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        Task.Run(StateHasChanged);
+    }
+
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void CheckActionsMode()
+    {
+        if (actionMode == Enums.ActionMode.Create) {
+            contentText = $"Are you sure you want to Create {contentText}?";
+            buttonText = "Confirm";
+            color = Color.Success;
+        } else if (actionMode == Enums.ActionMode.Update) {
+            contentText = $"Are you sure you want to Update {contentText}?";
+            buttonText = "Update";
+            color = Color.Info;
+        } else if (actionMode == Enums.ActionMode.Approve) {
+            contentText = $"Are you sure you want to Approve {contentText}?";
+            buttonText = "Approve";
+            color = Color.Info;
+        } else if (actionMode == Enums.ActionMode.Cancel) {
+            contentText = $"Are you sure you want to Cancel {contentText}?";
+            buttonText = "Cancel";
+            color = Color.Info;
+        } else if (actionMode == Enums.ActionMode.Receive) {
+            contentText = $"Are you sure you want to Receive {contentText}?";
+            buttonText = "Receive";
+            color = Color.Info;
+        } else if(actionMode == Enums.ActionMode.Delete) {
+            contentText = $"Are you sure you want to Remove {contentText}?";
+            buttonText = "Remove";
+            color = Color.Info;
+        }
+    }
+}
+

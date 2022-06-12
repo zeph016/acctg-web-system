@@ -1,0 +1,9 @@
+{
+    "version": 3,
+    "mappings": "AAAA,AAAA,aAAa,CAAC;EACV,OAAO,EAAE,OAAO;CASnB;;AARI,AAAD,uBAAW,CAAC;EACR,WAAW,EAAE,eAAe;CAC/B;;AACA,AAAD,uBAAW,EAAG,wBAAW,CAAC;EACtB,WAAW,EAAE,mBAAmB;EAChC,SAAS,EAAE,MAAM;CACpB;;AACA,AAAD,wBAAY,CAAC;EAAE,WAAW,EAAE,qBAAqB;CAAI",
+    "sources": [
+        "docheaderlogo.styles.scss"
+    ],
+    "names": [],
+    "file": "docheaderlogo.styles.css"
+}

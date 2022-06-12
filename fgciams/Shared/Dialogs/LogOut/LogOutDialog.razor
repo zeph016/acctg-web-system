@@ -1,0 +1,28 @@
+<MudDialog Class='customdialog'>
+    <DialogContent>
+        <div Class='customdialog__content-container'>
+            @contentText
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
+        <MudButton OnClick="Submit" Variant='Variant.Filled' Color="Color.Error">@buttonText</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public string dialogTitle { get; set; } = default!;
+    [Parameter] public string contentText { get; set; } = default!;
+    [Parameter] public string buttonText { get; set; } = default!;
+
+    private void Submit() 
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}
+

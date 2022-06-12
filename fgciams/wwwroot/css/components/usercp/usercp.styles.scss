@@ -1,0 +1,35 @@
+.usercp {
+    max-height: 50px;
+    background-color:#f7f7f8;
+    position: relative;
+    .mud-expand-panel-header {
+        max-width: 320px;
+        min-width: 320px;
+        padding: 1px 24px 0px 24px !important;
+        margin: 0px 0px 3px 0px !important
+    }
+    &__infocontainer {
+        width: 250px !important;
+    }
+    &__skeletonavatar, &__avatar {
+        margin-right: 10px;
+    }
+    &__lblusername {
+        font-size: 15px !important;
+    }
+    &__lbldesignation {
+        font-size: 12px !important;
+    }
+    &__btncontainer {
+        padding: 0px 16px !important;
+        .mud-svg-icon {
+            color: black !important;
+        }
+    }
+    &__btnsettings, &__btntohub {
+        text-transform: none !important;
+    }
+    &__btnlogout {
+        width: 100%;
+    }
+}

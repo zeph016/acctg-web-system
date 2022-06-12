@@ -1,0 +1,115 @@
+@page "/iconpage"
+
+<MudDialog Class="customdialog">
+     <TitleContent>
+         <div class='d-flex align-center'>
+            <MudIcon Icon="@Icons.Filled.Search" Class="mr-3 mb-n1" />
+            <MudText Typo='Typo.h6'>Search Icon</MudText>
+            <div class="row">
+                <div class="col text-right"><MudIconButton Icon="@Icons.Filled.Close" OnClick="Close" Class="mr-3 mb-n1" /></div>
+            </div>
+        </div>
+    </TitleContent>
+    <DialogContent>
+<div class='page-cont overflow-auto'>
+    <MudOverlay @bind-Visible="showOverlay" DarkBackground="true" AutoClose="true">
+         <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    </MudOverlay>
+    <MudContainer>
+        <MudContainer class='d-flex gap-2' Fixed='false' MaxWidth='MaxWidth.Medium'>
+            <MudTextField Class='flex-grow-1' @bind-Value='searchString' Variant='Variant.Outlined' Placeholder='Search Icon'
+            Adornment='Adornment.End' AdornmentIcon='@Icons.Filled.Search' OnAdornmentClick='(() => GetIconStringsList(numberOfIconsView))'/>
+            <MudSelect @bind-Value='GlobalClass.selectedIconType' Dense='true' Variant='Variant.Outlined' >
+            @foreach (var item in iconTypes)
+            {
+                <MudSelectItem Value='item'>@item.ToString()</MudSelectItem>
+            }
+            </MudSelect>
+            <MudSelect @bind-Value='numberOfIconsView' T="int" Dense='true' Variant='Variant.Outlined'
+                SelectedValuesChanged="((e) => OnSelectedValuesChanged(e))">
+                <MudSelectItem Value=50>50</MudSelectItem>
+                <MudSelectItem Value=100>100</MudSelectItem>
+                <MudSelectItem Value=150>150</MudSelectItem>
+                <MudSelectItem Value=200>200</MudSelectItem>
+                <MudSelectItem Value=250>250</MudSelectItem>
+            </MudSelect>
+        </MudContainer>
+        <div class='d-flex align center flex-wrap gap-2' style="height: 600px;max-height:600px;">
+        @if (dataFetched)
+        {
+            @foreach (var item in iconList)
+            {
+                <MudIconButton OnClick='(() => SelectIcon(item))' Icon="@Extensions.GetIconValue(@GlobalClass.selectedIconType, @item)" Size='Size.Medium' style="height: 40px;"/>
+            }
+        }
+        </div>
+    </MudContainer>
+</div>
+</DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance mudDialog {get;set;}
+    private bool dataFetched, showOverlay;
+    private List<object> iconTypes = new List<object>();
+    private List<string> iconList = new List<string>();
+    private int numberOfIconsView {get;set;} = 100;
+    private string searchString = string.Empty;
+    protected override async Task OnInitializedAsync()
+    {
+        PopulateIconTypes();
+        GetIconStringsList(numberOfIconsView);
+        CompletedFetch();
+    }
+
+    void CompletedFetch()
+    {
+        dataFetched = true;
+        showOverlay = false;
+        StateHasChanged();
+    }
+
+    private void SelectIcon(string iconName)
+    {
+       GlobalClass.acctgStatus.StatusIcon = String.Concat(GlobalClass.selectedIconType,".",iconName);
+       GlobalClass.selectedIcon = @Extensions.GetIconValue(GlobalClass.selectedIconType, iconName);
+       mudDialog.Close(DialogResult.Ok(101));
+    }
+    void Close() => mudDialog.Close(DialogResult.Ok(101));
+    private void PopulateIconTypes()
+    {
+        iconTypes.Add(MudBlazor.Icons.Filled);
+        iconTypes.Add(MudBlazor.Icons.Outlined);
+        iconTypes.Add(MudBlazor.Icons.Rounded);
+        iconTypes.Add(MudBlazor.Icons.Sharp);
+        iconTypes.Add(MudBlazor.Icons.TwoTone);
+        GlobalClass.selectedIconType = MudBlazor.Icons.Filled;
+    }
+    public async void GetIconStringsList(int numberOfIcons)
+    {
+        dataFetched = false;
+        showOverlay = true;
+        var iconListString = new List<string>();
+        iconList.Clear();
+        foreach (var item in GlobalClass.selectedIconType.GetType().GetProperties()) 
+        {
+            iconListString.Add(item.Name);
+            if (iconList.Count() == numberOfIcons){
+                Console.WriteLine(iconList.Count);
+                break;
+            }
+        }
+        iconList = iconListString.Where(x=>x.Contains(searchString, StringComparison.InvariantCultureIgnoreCase)).Take(numberOfIconsView).ToList();
+        CompletedFetch();
+    }
+    void Example(){
+        Console.WriteLine("Try");
+    }
+    void OnSelectedValuesChanged(IEnumerable<int> values)
+    {
+        string converted = string.Join(",", values);
+        numberOfIconsView = Int32.Parse(converted);
+        GetIconStringsList(numberOfIconsView);
+    }
+}
+

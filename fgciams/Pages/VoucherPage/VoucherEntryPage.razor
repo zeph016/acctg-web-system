@@ -1,0 +1,574 @@
+@page "/voucher/create"
+
+@inject IDialogService dialogService
+@inject IVoucherService voucherService
+@inject NavigationManager navigationManager
+
+<div class='page-cont d-flex'>
+    @if (!dataFetched)
+    {
+        <MudPaper Class='d-flex flex-1 ma-2 pa-2'>
+          <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='100%' Width='100%' Animation='Animation.Wave' />
+        </MudPaper>
+    }
+    else
+    {
+        <MudContainer Class='voucherpage d-flex pt-2 pr-2 pb-2 pl-2 gap-2' Fixed='false' MaxWidth='MaxWidth.False'>
+            <div class='d-flex flex-column transition-05s-ease' style='width: 520px'>
+                <MudPaper Class='pa-2' Square Elevation='1' Width='520px'>
+                    <div class='voucherpage__grid'>
+                        <div class="voucher-header d-flex align-center justify-center gap-1">
+                            <MudImage Class='fgcilogocont__imglogo' Src='images/fglogo/fgci1.png' Alt='fgci logo' Height='30' Width='30'/>
+                            <MudText Class='fgcilogocont__lblfirst'>F. GURREA</MudText>
+                            <MudText Class='fgcilogocont__lblsecond'>Construction, Inc.</MudText>
+                        </div>
+                        <div class="voucher-lblno d-flex align-center pa-2">
+                            <MudText Class='wspace-nowrap font10 font-bold txt-uppercase'>Voucher No:</MudText>
+                        </div>
+                        <div class="voucher-txtno d-flex align-center pa-2">
+                            <MudTextField Class='txt-top-0 font14-txtfield' @bind-Value=GlobalClass.voucher.ControlNumber />
+                        </div>
+                        <div class="voucher-lbldate d-flex align-center pa-2">
+                            <MudText Class='wspace-nowrap font10 font-bold txt-uppercase'>Voucher Date:</MudText>
+                        </div>
+                        <div class="voucher-txtdate d-flex align-center pa-2">
+                            <MudDatePicker Class='txt-top-0 font14-txtfield' @bind-Date=voucherDate IconSize='Size.Small' />
+                        </div>
+                        <div class="voucher-lblperiod d-flex align-center pa-2">
+                            <MudText Class='wspace-nowrap font10 font-bold txt-uppercase'>Period:</MudText>
+                        </div>
+                        <div class="voucher-txtperiod d-flex align-center pa-2">
+                            <MudTextField Class='txt-top-0 font14-txtfield' T=String />
+                        </div>
+                        <div class="voucher-lblprev-period d-flex align-center pa-2">
+                            <MudText Class='wspace-nowrap font10 font-bold txt-uppercase'>Prev. Period:</MudText>
+                        </div>
+                        <div class="voucher-txtprev-period d-flex align-center pa-2">
+                            <MudTextField Class='txt-top-0 font14-txtfield' T=String />
+                        </div>
+                        <div class='voucher-lblrfp d-flex align-center pa-2'>
+                            <MudText Class='wspace-nowrap font10 font-bold txt-uppercase'>RFP:</MudText>
+                        </div>
+                        <div class='voucher-rfp d-flex align-center pa-2 gap-1'>
+                            <MudTooltip Text='Add RFP'>
+                                <MudIconButton OnClick='(()=> AddRFP())' Icon="@Icons.Material.Filled.Add" aria-label="Add RFP" Color='Color.Info' Size='Size.Small' />
+                            </MudTooltip>
+                            @foreach (var item in GlobalClass.voucher.VoucherRFP)
+                            { 
+                                <MudChip OnClose='(()=> RemoveVoucherRFP(item))'>@item.RFPControlNumber</MudChip>
+                            }
+                        </div>
+                        <div class="voucher-description d-flex align-center pa-2">
+                            <MudTextField @bind-Value=GlobalClass.voucher.Description Label='Description' />
+                        </div>
+                        <div class="voucher-remarks d-flex align-center pa-2">
+                            <MudTextField @bind-Value=GlobalClass.voucher.Remarks Label='Remarks' />
+                        </div>
+                        <div class="voucher-lbldate-paid d-flex align-center pa-2">
+                            <MudText Class='wspace-nowrap font10 font-bold txt-uppercase'>Date Paid:</MudText>
+                        </div>
+                        <div class="voucher-txtdate-paid d-flex align-center pa-2">
+                            <MudDatePicker Class='txt-top-0 font14-txtfield' IconSize='Size.Small' />
+                        </div>
+                        <div class="voucher-lblamount d-flex align-center pa-2">
+                            <MudText Class='wspace-nowrap font10 font-bold txt-uppercase'>Amount:</MudText>
+                        </div>
+                        <div class="voucher-txtamount d-flex align-center pa-2 gap-1">
+                            <MudText Class='font-bold font12'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText> 
+                            <MudNumericField Class='txt-top-0 font14-txtfield txtfield-txt-right' @bind-Value=@GlobalClass.voucher.TotalAmount 
+                            Format='N2' HideSpinButtons />
+                        </div>
+                        <div class="voucher-signatories d-flex flex-column gap-1">
+                            <div class='d-flex align-center pa-2 gap-2'>
+                                <MudTextField Class='txt-top-0 txt-search-overflow font14-txtfield font-bold' @bind-Value=GlobalClass.voucher.PreparedByName HelperText='PREPARED BY'
+                                Adornment='Adornment.End' AdornmentIcon='@Icons.Filled.Search' OnAdornmentClick='(()=> Lookup("prepare"))' IconSize='Size.Small' />
+                                <MudTextField Class='txt-top-0 txt-search-overflow font14-txtfield font-bold' @bind-Value=GlobalClass.voucher.VerifiedByName HelperText='VERIFIED BY'
+                                Adornment='Adornment.End' AdornmentIcon='@Icons.Filled.Search' OnAdornmentClick='(()=> Lookup("verify"))' IconSize='Size.Small' />
+                            </div>
+                            <div class='d-flex align-center pa-2 gap-2'>
+                                <MudSpacer />
+                                <MudTextField Class='txt-top-0 txt-search-overflow font14-txtfield font-bold' @bind-Value=GlobalClass.voucher.ApprovedByName HelperText='APPROVED BY'
+                                Adornment='Adornment.End' AdornmentIcon='@Icons.Filled.Search' OnAdornmentClick='(()=> Lookup("approve"))' IconSize='Size.Small' />
+                                <MudSpacer />
+                            </div>
+                        </div>
+                    </div>
+                    <div class='d-flex justify-end gap-2 pa-2 width100'>
+                        <MudButton Variant="Variant.Text">Cancel</MudButton>
+                        <MudButton OnClick='(()=> SaveVoucher())' Variant="Variant.Filled" Color='Color.Primary'>Save voucher</MudButton>
+                    </div>
+                </MudPaper>
+            </div>
+            <div class='d-flex flex-column transition-05s-ease flex-grow-1'>
+                <MudTable Class='small-toolbar-gutter width100' Items='GlobalClass.voucher.VoucherDetails' Bordered='true' Striped='true'
+                Dense='true' Elevation='1' FixedHeader='true' Height='auto' Square>
+                    <ToolBarContent>
+                        <MudSpacer />
+                        <MudIconButton OnClick='(()=> AddNew())' Icon="@Icons.Filled.Add" aria-label="add" Color='Color.Info' Size='Size.Small' />
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh Class='wspace-nowrap customheader-1'>Expense</MudTh>
+                        <MudTh Class='wspace-nowrap customheader-1'>Name / Project / Equip</MudTh>
+                        <MudTh Class='wspace-nowrap customheader-1'>Division</MudTh>
+                        <MudTh Class='wspace-nowrap customheader-1'>Description</MudTh>
+                        <MudTh Class='wspace-nowrap customheader-1'>Debit</MudTh>
+                        <MudTh Class='wspace-nowrap customheader-1'>Credit</MudTh>
+                        <MudTh Class='wspace-nowrap customheader-1'>Amount</MudTh>
+                        <MudTh Class='wspace-nowrap customheader-1'></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.ExpenseName</MudTd>
+                        <MudTd>@context.ProjectName</MudTd>
+                        <MudTd>@context.DivisionName</MudTd>
+                        <MudTd>@context.Description</MudTd>
+                        <MudTd>@context.Debit</MudTd>
+                        <MudTd>@context.Credit</MudTd>
+                        <MudTd>@context.Amount</MudTd>
+                        <MudTd>
+                        <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'>
+                                <MudMenuItem OnClick='(()=> RemoveRFP(context))'>
+                                <MudText>Remove</MudText>
+                            </MudMenuItem>
+                        </MudMenu>
+                        </MudTd>
+                    </RowTemplate>
+                    <RowEditingTemplate>
+                        <MudTd>
+                            <MudTextField @bind-Value='@context.ExpenseName' Label='Expense'
+                            Adornment='Adornment.End' AdornmentIcon='@Icons.Filled.Search' OnAdornmentClick='(()=> VoucherDetailLookups(Enums.LookUpType.ExpLine, context))'></MudTextField>
+                        </MudTd>
+                        <MudTd>
+                            <MudTextField @bind-Value='@context.ProjectName' Label='Project'
+                            Adornment='Adornment.End' AdornmentIcon='@Icons.Filled.Search' OnAdornmentClick='(()=> VoucherDetailLookups(Enums.LookUpType.Project, context))'></MudTextField>
+                        </MudTd>
+                        <MudTd>
+                            <MudTextField @bind-Value='@context.DivisionName' Label='Division'
+                            Adornment='Adornment.End' AdornmentIcon='@Icons.Filled.Search' OnAdornmentClick='(()=> VoucherDetailLookups(Enums.LookUpType.Division, context))'></MudTextField>
+                        </MudTd>
+                        <MudTd>
+                            <MudTextField @bind-Value='@context.Description'></MudTextField>
+                        </MudTd>
+                        <MudTd>
+                            <MudTextField @bind-Value='@context.Debit'></MudTextField>
+                        </MudTd>
+                        <MudTd>
+                            <MudTextField @bind-Value='@context.Credit'></MudTextField>
+                        </MudTd>
+                        <MudTd>
+                            <MudTextField @bind-Value='@context.Amount'></MudTextField>
+                        </MudTd>
+                    </RowEditingTemplate>
+                </MudTable>
+            </div>
+        </MudContainer>
+    }
+</div>
+@code{
+    #region Properties
+
+    private List<VoucherDetailModel> voucherDetails = new List<VoucherDetailModel>();
+    private DivisionModel selectedDivision = new DivisionModel();
+    private Project selectedProject = new Project();
+    private ExpenseLineModel selectedExpLine = new ExpenseLineModel();
+    private Project payee = new Project();
+    private DateTime? voucherDate = default!;
+    private bool dataFetched;
+
+    #endregion
+
+    #region Methods
+
+    protected override async Task OnInitializedAsync()
+    {
+        GlobalClass.pageTitle = "Voucher entry";
+        while (GlobalClass.currentUserAccount == null)
+            await Task.Delay(1);
+
+        Task t = Task.WhenAll(InitializedComponent());
+        await t;
+        if (t.Status == TaskStatus.RanToCompletion)
+            CompletedFetch();
+    }
+    async Task InitializedComponent()
+    {
+        await Task.Delay(1);
+        navigationManager.LocationChanged += OnLocationChanged;
+        if (GlobalClass.voucher == null || GlobalClass.voucher.Id == 0)
+        {
+            GlobalClass.voucher = new VoucherModel();
+            GlobalClass.voucher.PreparedByName = GlobalClass.currentUserAccount.EmployeeName;
+            GlobalClass.voucher.PreparedById = GlobalClass.currentUserAccount.EmployeeId;
+        }
+        else
+        {
+            DisplayOtherProperties();
+        }
+    }
+
+    void CompletedFetch()
+    {
+        dataFetched = true;
+        Task.Run(StateHasChanged);
+    }
+
+    #region Location Changed
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        GlobalClass.voucher = new();
+        Dispose();
+    }
+
+
+    public void Dispose()
+    {
+        navigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+    #endregion
+
+    #region Save Voucher
+
+    private void SaveVoucher()
+    {
+      GlobalClass.forPrintingOrSaveVoucher = MapProperties();
+      navigationManager.NavigateTo($"/voucher/print");
+    }
+
+    #endregion
+
+    #region Add New Voucher Details
+
+    private void AddNew()
+    {
+        var temp = 1;
+        GlobalClass.voucher.VoucherDetails.Add(new VoucherDetailModel());
+        foreach (var item in GlobalClass.voucher.VoucherDetails)
+        {
+            item.TemporaryId = temp++;
+        }
+    }
+
+    #endregion
+
+    #region DisplayOtherProperties
+
+    private void DisplayOtherProperties()
+    {
+        voucherDate = GlobalClass.voucher.VoucherDate;
+        payee.ProjectId = GlobalClass.voucher.PayeeId;
+        payee.ProjectCategoryId = GlobalClass.voucher.PayeeCategoryId;
+        payee.ProjectName = GlobalClass.voucher.PayeeName;
+    }
+
+    #endregion
+
+    #region Map Properties
+
+    VoucherModel MapProperties()
+    {
+        GlobalClass.voucher.VoucherDate = voucherDate.GetValueOrDefault();
+        GlobalClass.voucher.PayeeId = payee.ProjectId;
+        GlobalClass.voucher.PayeeCategoryId = payee.ProjectCategoryId;
+        GlobalClass.voucher.UserId = GlobalClass.currentUserAccount.EmployeeId;
+        GlobalClass.voucher.Activity = "Save Voucher";
+        GlobalClass.voucher.IsActive = true;
+
+        GlobalClass.voucher.AccountingStatusId = GlobalClassList.accountingStatusList
+        .Where(x => x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.VG)
+        .Select(x => x.Id)
+        .FirstOrDefault();
+
+        return GlobalClass.voucher;
+    }
+
+    #endregion
+
+    #region Employee Lookup
+
+    private async Task Lookup(string role)
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = "Employee Look up";
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", "Select");
+        parameters.Add("color", Color.Success);
+        parameters.Add("lookUpType", Enums.LookUpType.Employee);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            var employee = (UserAccount)resultDialog.Data;
+            if (role == "prepare")
+                PreparedbyEmployee(employee);
+            if (role == "verify")
+                VerifiedbyEmployee(employee);
+            if (role == "approve")
+                ApprovedbyEmployee(employee);
+
+            StateHasChanged();
+        }
+    }
+    private void PreparedbyEmployee(UserAccount employee)
+    {
+        GlobalClass.voucher.PreparedById = employee.EmployeeId;
+        GlobalClass.voucher.PreparedByName = employee.EmployeeName;
+    }
+    private void VerifiedbyEmployee(UserAccount verify)
+    {
+        GlobalClass.voucher.VerifiedById = verify.EmployeeId;
+        GlobalClass.voucher.VerifiedByName = verify.EmployeeName;
+    }
+    private void ApprovedbyEmployee(UserAccount approve)
+    {
+        GlobalClass.voucher.ApprovedById = approve.EmployeeId;
+        GlobalClass.voucher.ApprovedByName = approve.EmployeeName;
+    }
+
+    #endregion
+
+    #region Voucher Details Lookup
+    private async Task VoucherDetailLookups(Enums.LookUpType lookUpType, VoucherDetailModel voucherDetail)
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = "";
+        if(lookUpType == Enums.LookUpType.Division)
+            dialogTitle = "Division";
+        if(lookUpType == Enums.LookUpType.Project)
+            dialogTitle = "Name / Project / Equip";
+        if(lookUpType == Enums.LookUpType.ExpLine)
+            dialogTitle = "Expense";
+            
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", "Select");
+        parameters.Add("color", Color.Success);
+        parameters.Add("lookUpType", lookUpType);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = false
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            if (lookUpType == Enums.LookUpType.Division)
+            {
+                selectedDivision = (DivisionModel)resultDialog.Data;
+                AddDivision(voucherDetail);
+            }
+            if (lookUpType == Enums.LookUpType.Project)
+            {
+                selectedProject = (Project)resultDialog.Data;
+                AddProjectLine(voucherDetail);
+            }
+            if (lookUpType == Enums.LookUpType.ExpLine)
+            {
+                selectedExpLine = (ExpenseLineModel)resultDialog.Data;
+                AddExpense(voucherDetail);
+            }
+        }
+    }
+
+    #endregion
+
+    #region Add RFP
+
+    private async Task AddRFP()
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = "Request for payments";
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", "Select");
+        parameters.Add("color", Color.Success);
+        parameters.Add("lookUpType", Enums.LookUpType.RFPVoucher);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GlobalRFPLiquidationLookUp.GlobalRFPLiquidationLookUp>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            StateHasChanged();
+        }
+    }
+
+    #endregion
+
+    #region Add Division
+
+    private void AddDivision(VoucherDetailModel voucherDetail)
+    {
+
+        if (voucherDetail.Id == 0)
+        {
+            GlobalClass.voucher.VoucherDetails.Where(x => x.TemporaryId == voucherDetail.TemporaryId).ToList().ForEach(x =>
+            {
+                x.DivisionId = selectedDivision.Id;
+                x.DivisionName = selectedDivision.divisionName;
+            });
+
+        }
+        else
+        {
+            GlobalClass.voucher.VoucherDetails.Where(x => x.Id == voucherDetail.Id).ToList().ForEach(x =>
+            {
+                x.DivisionId = selectedDivision.Id;
+                x.DivisionName = selectedDivision.divisionName;
+            });
+        }
+        StateHasChanged();
+    }
+
+    #endregion
+
+    #region Add Project
+
+    private void AddProjectLine(VoucherDetailModel voucherDetail)
+    {
+        if (voucherDetail.Id == 0)
+        {
+            GlobalClass.voucher.VoucherDetails.Where(x => x.TemporaryId == voucherDetail.TemporaryId).ToList().ForEach(x =>
+            {
+                x.ProjectId = selectedProject.ProjectId;
+                x.ProjectName = selectedProject.ProjectName;
+                x.ProjectCategoryId = selectedProject.ProjectCategoryId;
+            });
+
+        }
+        else
+        {
+            GlobalClass.voucher.VoucherDetails.Where(x => x.Id == voucherDetail.Id).ToList().ForEach(x =>
+            {
+                x.ProjectId = selectedProject.ProjectId;
+                x.ProjectName = selectedProject.ProjectName;
+                x.ProjectCategoryId = selectedProject.ProjectCategoryId;
+            });
+        }
+        StateHasChanged();
+    }
+
+    #endregion
+
+    #region Add Expense
+
+    private void AddExpense(VoucherDetailModel voucherDetail)
+    {
+
+
+        if (voucherDetail.Id == 0)
+        {
+            GlobalClass.voucher.VoucherDetails.Where(x => x.TemporaryId == voucherDetail.TemporaryId).ToList().ForEach(x =>
+            {
+                x.ExpenseId = selectedExpLine.Id;
+                x.ExpenseName = selectedExpLine.ExpenseName;
+            });
+
+        }
+        else
+        {
+            GlobalClass.voucher.VoucherDetails.Where(x => x.Id == voucherDetail.Id).ToList().ForEach(x =>
+            {
+                x.ExpenseId = selectedExpLine.Id;
+                x.ExpenseName = selectedExpLine.ExpenseName;
+            });
+        }
+        StateHasChanged();
+
+    }
+
+    #endregion
+
+    #region Payee Lookup
+
+    private async void PayeeLookUp()
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = "Payee Look Up";
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", "Select");
+        parameters.Add("color", Color.Success);
+        parameters.Add("lookUpType", Enums.LookUpType.Project);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = false
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            payee = (Project)resultDialog.Data;
+            StateHasChanged();
+        }
+    }
+
+    #endregion
+
+    #region Remove RFP Voucher
+    private async void RemoveRFP(VoucherDetailModel voucherDetail)
+    {
+      if(voucherDetail.Id != 0)
+      {
+        var parameters = new DialogParameters();
+        string contentText = "Voucher details";
+        string dialogTitle = "Remove " + contentText;
+        parameters.Add("contentText", contentText);
+        parameters.Add("actionMode", Enums.ActionMode.Delete);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if(!resultDialog.Cancelled)
+        {
+          voucherDetail.IsActive = false;
+          GlobalClass.voucher.RemovedVoucherDetails.Add(voucherDetail);
+          GlobalClass.voucher.VoucherDetails = GlobalClass.voucher.VoucherDetails.Where(x=>x.IsActive == true).ToList();
+        }
+      }
+      else
+      {
+          voucherDetail.IsActive = false;
+          GlobalClass.voucher.RemovedVoucherDetails.Add(voucherDetail);
+          GlobalClass.voucher.VoucherDetails = GlobalClass.voucher.VoucherDetails.Where(x=>x.IsActive == true).ToList();
+      }
+      GlobalClass.voucher.TotalAmount = GlobalClass.voucher.VoucherDetails.Sum(x=>x.Amount);
+      StateHasChanged();
+      
+    }
+
+    #endregion
+
+    #region Remove RFP 
+
+    private void RemoveVoucherRFP(VoucherRFPModel voucherRFP)
+    {
+      voucherRFP.IsActive = false;
+      GlobalClass.voucher.VoucherRFP.Remove(voucherRFP);
+      GlobalClass.voucher.RemovedVoucherRFP.Add(voucherRFP);
+      StateHasChanged();
+    }
+
+    #endregion
+
+    #endregion
+}

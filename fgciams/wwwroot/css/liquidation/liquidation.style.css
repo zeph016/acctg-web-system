@@ -1,0 +1,150 @@
+.liquidationpage-entry .liquidationpage-grid {
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: 80px 1fr 80px 1fr;
+      grid-template-columns: 80px 1fr 80px 1fr;
+  -ms-grid-rows: 0.5fr 0.5fr 0.5fr 2.5fr 1fr;
+      grid-template-rows: 0.5fr 0.5fr 0.5fr 2.5fr 1fr;
+  gap: 0px 0px;
+      grid-template-areas: "liqgrid-header liqgrid-header liqgrid-header liqgrid-header" "liqgrid-datelbl liqgrid-date-entry liqgrid-controllbl liqgrid-control-entry" "liqgrid-amountlbl liqgrid-amount-entry liqgrid-amount-entry liqgrid-amount-entry" "liqgrid-body liqgrid-body liqgrid-body liqgrid-body" "liqgrid-signatories liqgrid-signatories liqgrid-signatories liqgrid-signatories";
+  height: calc(100vh - 400px);
+}
+
+.liquidationpage-entry .liquidationpage-grid__date .mud-input-slot {
+  text-align: right !important;
+}
+
+.liquidationpage-entry .liquidationpage-grid__date .mud-input.mud-input-underline::before {
+  border-bottom: 0px !important;
+}
+
+.liquidationpage-entry .liquidationpage-grid__date .mud-input.mud-input-underline::after {
+  border-bottom: 0px !important;
+}
+
+.liquidationpage-entry .liqgrid-header {
+  -ms-grid-row: 1;
+  -ms-grid-column: 1;
+  -ms-grid-column-span: 4;
+  grid-area: liqgrid-header;
+}
+
+.liquidationpage-entry .liqgrid-datelbl {
+  -ms-grid-row: 2;
+  -ms-grid-column: 1;
+  grid-area: liqgrid-datelbl;
+}
+
+.liquidationpage-entry .liqgrid-date-entry {
+  -ms-grid-row: 2;
+  -ms-grid-column: 2;
+  grid-area: liqgrid-date-entry;
+}
+
+.liquidationpage-entry .liqgrid-controllbl {
+  -ms-grid-row: 2;
+  -ms-grid-column: 3;
+  grid-area: liqgrid-controllbl;
+}
+
+.liquidationpage-entry .liqgrid-control-entry {
+  -ms-grid-row: 2;
+  -ms-grid-column: 4;
+  grid-area: liqgrid-control-entry;
+}
+
+.liquidationpage-entry .liqgrid-amountlbl {
+  -ms-grid-row: 3;
+  -ms-grid-column: 1;
+  grid-area: liqgrid-amountlbl;
+}
+
+.liquidationpage-entry .liqgrid-amount-entry {
+  -ms-grid-row: 3;
+  -ms-grid-column: 2;
+  -ms-grid-column-span: 3;
+  grid-area: liqgrid-amount-entry;
+}
+
+.liquidationpage-entry .liqgrid-body {
+  -ms-grid-row: 4;
+  -ms-grid-column: 1;
+  -ms-grid-column-span: 4;
+  grid-area: liqgrid-body;
+}
+
+.liquidationpage-entry .liqgrid-signatories {
+  -ms-grid-row: 5;
+  -ms-grid-column: 1;
+  -ms-grid-column-span: 4;
+  grid-area: liqgrid-signatories;
+}
+
+.liquidationpage-entry .liqgrid-datelbl, .liquidationpage-entry .liqgrid-date-entry, .liquidationpage-entry .liqgrid-controllbl, .liquidationpage-entry .liqgrid-control-entry,
+.liquidationpage-entry .liqgrid-amountlbl, .liquidationpage-entry .liqgrid-amount-entry {
+  border-top: solid thin lightgray;
+}
+
+.liquidationpage-entry .liqgrid-amountlbl, .liquidationpage-entry .liqgrid-amount-entry {
+  border-bottom: solid thin lightgray;
+}
+
+.liquidationpage-entry .liqgrid-date-entry, .liquidationpage-entry .liqgrid-controllbl,
+.liquidationpage-entry .liqgrid-control-entry, .liquidationpage-entry .liqgrid-amount-entry {
+  border-right: solid thin lightgray;
+}
+
+.liquidationpage-entry .liqgrid-datelbl, .liquidationpage-entry .liqgrid-amountlbl {
+  border-left: solid thin lightgray;
+  border-right: solid thin lightgray;
+}
+
+.liquidationpage-entry .liqgrid-body__subgrid {
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr;
+  -ms-grid-rows: 0.4fr 1.8fr;
+      grid-template-rows: 0.4fr 1.8fr;
+  gap: 0px 0px;
+      grid-template-areas: "liqgrid-subgrid-header liqgrid-subgrid-header" "liqgrid-subgrid-remarks liqgrid-subgrid-remarks";
+  height: 100%;
+}
+
+.liquidationpage-entry .liqgrid-body__subgrid-header {
+  -ms-grid-row: 1;
+  -ms-grid-column: 1;
+  -ms-grid-column-span: 2;
+  grid-area: liqgrid-subgrid-header;
+}
+
+.liquidationpage-entry .liqgrid-body__subgrid-remarks {
+  -ms-grid-row: 2;
+  -ms-grid-column: 1;
+  -ms-grid-column-span: 2;
+  grid-area: liqgrid-subgrid-remarks;
+}
+
+.liquidationpage-entry .liqgrid-body__subgrid-header, .liquidationpage-entry .liqgrid-body__subgrid-remarks {
+  border-top: solid thin lightgray;
+  border-right: solid thin lightgray;
+  border-left: solid thin lightgray;
+}
+
+.liquidationpage-entry .liqgrid-body__subgrid-remarks {
+  border-bottom: solid thin lightgray;
+}
+
+.liquidationpage-entry__table .mud-table-container {
+  height: calc(100vh - 150px);
+  min-width: 75vh;
+}
+
+.liquidationpage-entry__table .mud-toolbar-gutters {
+  height: 2.5rem;
+}
+
+.liquidationpage-entry__table .mud-table-head {
+  white-space: nowrap;
+}
+/*# sourceMappingURL=liquidation.style.css.map */

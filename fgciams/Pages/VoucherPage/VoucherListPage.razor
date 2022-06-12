@@ -1,0 +1,179 @@
+@page "/voucher/list"
+@inject IDialogService dialogService
+@inject IVoucherService voucherService
+@inject NavigationManager navigationManager
+@inject ISnackbar snackBar
+
+<MudContainer>
+  <MudPaper>
+    <MudTable Items=GlobalClassList.Vouchers Height=500px>
+      <ToolBarContent>
+
+      </ToolBarContent>
+      <HeaderContent>
+        <MudTh>Date</MudTh>
+        <MudTh>Control #</MudTh>
+        <MudTh>Amount</MudTh>
+        <MudTh>Payee</MudTh>
+        <MudTh>Description</MudTh>
+        <MudTh>Prepared by</MudTh>
+        <MudTh>Verified by</MudTh>
+        <MudTh>Approved by</MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh></MudTh>
+      </HeaderContent>
+      <RowTemplate>
+        <MudTd>@context.VoucherDate</MudTd>
+        <MudTd>@context.ControlNumber</MudTd>
+        <MudTd>@context.TotalAmount</MudTd>
+        <MudTd>@context.PayeeName</MudTd>
+        <MudTd>@context.Description</MudTd>
+        <MudTd>@context.PreparedByName</MudTd>
+        <MudTd>@context.VerifiedByName</MudTd>
+        <MudTd>@context.ApprovedByName</MudTd>
+        <MudTd>@context.StatusName</MudTd>
+        <MudTd>
+          <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'>
+            @if(!ViewMenu(context))
+            {
+            <MudMenuItem OnClick='(()=> EditVoucher(context))'>
+              <MudText>Edit</MudText>
+            </MudMenuItem>
+            <MudMenuItem OnClick='(()=> ApprovedVoucher(context))'>
+              <MudText>Approved</MudText>
+            </MudMenuItem>
+            <MudMenuItem OnClick='(()=> CancelVoucher(context))'>
+              <MudText>Cancel</MudText>
+            </MudMenuItem>
+            }
+            <MudMenuItem>
+              <MudText>Audit Trail</MudText>
+            </MudMenuItem>
+            <MudMenuItem OnClick='(() => context.ShowReport = ShowReport(context.ShowReport, context))'>
+              <MudText>Show Report</MudText>
+            </MudMenuItem>
+          </MudMenu>
+        </MudTd>
+      </RowTemplate>
+       <ChildRowContent>
+          @if (context.ShowReport)
+              {
+                <td colspan="8">
+                  <div class='d-flex align-center pa-2 bgc-f2f2f2'>
+                      <MudSpacer />
+                      <MudButton OnClick='(() => context.ShowReport = ShowReport(context.ShowReport, context))' EndIcon="@Icons.Rounded.Close" IconColor='Color.Error' Size='Size.Small' >
+                          Close Report
+                      </MudButton>
+                  </div>
+                  <MudTr Class='d-flex align-stretch justify-center default-report-container'>
+                      @if (string.IsNullOrWhiteSpace(PDFContent))
+                      {
+                      <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
+                          <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                      </MudOverlay>
+                      }
+                      else
+                      {
+                      <iframe src='@PDFContent' />
+                      }
+                  </MudTr>
+                </td>
+              }
+      </ChildRowContent>
+    </MudTable>
+  </MudPaper>
+</MudContainer>
+
+@code{
+  private string PDFContent;
+  protected override async Task OnInitializedAsync()
+  {
+    GlobalClass.pageTitle = "voucher list";
+    Task t = Task.WhenAll(LoadVouchers());
+    await t;
+  }
+  private async Task LoadVouchers()
+  {
+    var filterParameter = new FilterParameter()
+    {
+
+    };
+    GlobalClassList.Vouchers = await voucherService.LoadVouchers(filterParameter, GlobalClass.token);
+  }
+  private async Task<bool> PromptMessage(Enums.ActionMode actionMode)
+  {
+        bool isNotCancel;
+        var parameters = new DialogParameters();
+        string contentText = "Voucher ";
+        string dialogTitle = actionMode == Enums.ActionMode.Cancel ? "Cancel " + contentText : "Approve " + contentText;
+        parameters.Add("contentText", contentText);
+        parameters.Add("actionMode", actionMode == Enums.ActionMode.Cancel ? Enums.ActionMode.Cancel : Enums.ActionMode.Approve);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+            isNotCancel = true;
+        else
+            isNotCancel = false;
+
+      StateHasChanged();
+
+      return isNotCancel;
+  }
+  private void EditVoucher(VoucherModel voucher)
+  {
+    GlobalClass.voucher = voucher;
+    navigationManager.NavigateTo($"/voucher/create");
+  }
+  private async Task ApprovedVoucher(VoucherModel voucher)
+  {
+    if(await PromptMessage(Enums.ActionMode.Approve))
+    {
+      voucher.AccountingStatusId = GlobalClassList.accountingStatusList.Where(x=>x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.VA).Select(x=>x.Id).FirstOrDefault();
+      voucher.Activity = "Update voucher status to approved";
+      voucher.UserId = GlobalClass.currentUserAccount.EmployeeId;
+      voucher.IsActive = true;
+      await voucherService.UpdateVoucherStatus(voucher, GlobalClass.token);
+      Extensions.ShowAlert("Voucher approved", Variant.Filled, snackBar, Severity.Success);
+    }
+    else
+      Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackBar, Severity.Normal);
+  }
+  private async Task CancelVoucher(VoucherModel voucher)
+  {
+    if(await PromptMessage(Enums.ActionMode.Cancel))
+    {
+      voucher.AccountingStatusId = GlobalClassList.accountingStatusList.Where(x=>x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.VC).Select(x=>x.Id).FirstOrDefault();
+      voucher.Activity = "Update voucher status to cancelled";
+      voucher.UserId = GlobalClass.currentUserAccount.EmployeeId;
+      voucher.IsActive = true;
+      await voucherService.UpdateVoucherStatus(voucher, GlobalClass.token);
+      Extensions.ShowAlert("Voucher cancelled", Variant.Filled, snackBar, Severity.Success);
+    }
+    else
+      Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackBar, Severity.Normal);
+    
+  }
+  private bool ViewMenu(VoucherModel voucher)
+  {
+    var accountingStatusList = new AccountingStatusModel();
+    accountingStatusList = GlobalClassList.accountingStatusList.Where(x => x.Id == voucher.AccountingStatusId).FirstOrDefault();
+    return accountingStatusList?.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.VA;
+  }
+  private bool ShowReport(bool isShow, VoucherModel voucher)
+  {
+    Task.Run(async()=> await LoadVoucherReport(voucher));
+    return isShow = !isShow;
+  }
+  private async Task LoadVoucherReport(VoucherModel voucher)
+  {
+    PDFContent = await voucherService.GenerateReport(voucher);
+  }
+
+}

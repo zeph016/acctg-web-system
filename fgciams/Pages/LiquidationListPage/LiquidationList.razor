@@ -1,0 +1,308 @@
+@page "/liquidationlist"
+@inject ILiquidationService liquidationService
+@inject NavigationManager navigationManager
+@inject ISnackbar snackBar
+@inject IDialogService dialogService
+
+<div class='page-cont'>
+    <div class='drawer-right'>
+        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <div class='drawer-right__filtercont'>
+                <div class='icon-area d-flex align-center'>
+                    <MudIconButton OnClick='OpenSideFilter' Icon='@Icons.Filled.FilterList' arial-label='Close Filter' Size='Size.Medium' />
+                </div>
+                <div class='filter-title d-flex align-center'>
+                    <p class='title875'>Filter</p>
+                    <MudSpacer />
+                    <MudIconButton OnClick='OpenSideFilter' Icon='@Icons.Filled.Close' aria-label='Close Filter' Size='Size.Medium' />
+                </div>
+                <div class='filter-content d-flex flex-column pl-4 pr-4 gap-1 @visibility'>
+                    <MudTextField Class='txtfield-75' @bind-Value='searchTerm' Placeholder='Control Number'
+                      Adornment='Adornment.Start' AdornmentIcon='@Icons.Material.Filled.Search' IconSize='Size.Small'
+                      Clearable='true' Variant='Variant.Outlined' />
+                    <MudButton Variant='Variant.Filled' Color='Color.Secondary'>Apply Filter</MudButton>
+                </div>
+            </div>
+        </MudDrawer>
+    </div>
+
+    <MudContainer Class='liquidationlist-page' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+    @if (!dataFetched)
+    {
+      <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
+        <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='calc(100vh - 135px)' Animation='Animation.Wave' />
+      </MudPaper>
+    }
+    else
+    {
+      <MudTable Class='configtables' Items='GlobalClassList.liquidations' Hover='true'
+      Breakpoint='Breakpoint.Sm' FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
+      RowsPerPage='30' Striped='true' Filter='new Func<LiquidationModel,bool>(FilterItems)'> 
+        <ToolBarContent>
+          <MudText Typo='Typo.caption'>
+            @GlobalClassList.liquidations.Count()
+            @(GlobalClassList.liquidations.Count() == 1 ? "item" : "items")
+            in Total
+          </MudText>
+          <MudSpacer />
+        </ToolBarContent>
+        <ColGroup>
+          <col style='width: 1%' />
+          <col />
+          <col />
+          <col />
+          <col style='width: 1%' />
+          <col style='width: 1%' />
+          <col style='width: 50px'/>
+        </ColGroup>
+        <HeaderContent>
+          <MudTh Class='customheader-1'>Control No.</MudTh>
+          <MudTh Class='customheader-1'>Period</MudTh>
+          <MudTh Class='customheader-1'>Prepared by</MudTh>
+          <MudTh Class='customheader-1'>Approver</MudTh>
+          <MudTh Class='customheader-1'></MudTh>
+          <MudTh Class='customheader-1 text-center'>Amount</MudTh>
+          <MudTh Class='customheader-1'></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+          <MudTd Class='text-center'>
+            <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'> @context.ControlNumber</MudChip>
+          </MudTd>
+          <MudTd Class='wbreak-breakword font12'>@context.PeriodFrom.ToString("MM/dd/yy") &#x2192; @context.PeriodTo.ToString("MM/dd/yy")</MudTd>
+          <MudTd Class='wbreak-breakword font12'>@context.PreparedByName</MudTd>
+          <MudTd Class='wbreak-breakword font12'>@context.ApprovedByName</MudTd>
+          <MudTd Class='text-center'>
+              <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@Extensions.GetAcctgStatusColor(context.StatusId)'>@context.StatusName</MudChip>
+          </MudTd>
+          <MudTd Class='wspace-nowrap text-right font-bold'>
+            @if (context.TotalAmount > 0)
+            {
+              <MudText Class='font-bold color-green' Typo='Typo.body2'>
+                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.TotalAmount.ToString("N2")
+              </MudText>
+            }
+            else
+            {
+              <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
+                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.TotalAmount.ToString("N2")
+              </MudText>
+            }
+          </MudTd>
+          <MudTd Class='text-center'>
+            <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'
+            TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
+                @if(!EnableEditApproved(context))
+                {
+                  <MudMenuItem OnClick='(()=> EditLiquidation(context))' Disabled='EnableEditApproved(context)'>
+                    <a class='d-flex align-center gap-2'>
+                      <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small'/>
+                      <MudText Typo='Typo.body2'>Edit</MudText>
+                    </a>
+                  </MudMenuItem>
+                  <MudMenuItem OnClick='(()=> ApproveLiquidation(context))'>
+                    <div class='d-flex align-center gap-2'>
+                        <MudIcon Icon='@Icons.Filled.CheckCircle' Size='Size.Small'/>
+                        <MudText Typo='Typo.body2'>Approved</MudText>
+                    </div>
+                  </MudMenuItem>
+                  <MudMenuItem OnClick='(()=> CancelLiquidation(context))'>
+                    <div class='d-flex align-center gap-2'>
+                      <MudIcon Icon='@Icons.Filled.Cancel' Size='Size.Small'/>
+                      <MudText Typo='Typo.body2'>Cancel</MudText>
+                    </div>
+                  </MudMenuItem>
+                }
+                <MudMenuItem>
+                  <a class='d-flex align-center gap-2' href='/liquidation-audit/@context.Id"'>
+                    <MudIcon Icon='@Icons.Filled.ListAlt' Size='Size.Small' />
+                    <MudText Typo='Typo.body2'>Audit Trail</MudText>
+                  </a>
+                </MudMenuItem>
+                <MudMenuItem OnClick='(()=> context.ShowReport = ShowReport(context.ShowReport, context))'>
+                    <div class='d-flex align-center gap-2'>
+                        <MudIcon Icon='@Icons.Filled.PictureAsPdf' Size='Size.Small' />
+                        <MudText Typo='Typo.body2'> @(context.ShowReport ? "Close" : "Show") Report</MudText>
+                    </div>
+                </MudMenuItem>
+            </MudMenu>
+          </MudTd>
+      </RowTemplate>
+      <ChildRowContent>
+          @if (context.ShowReport)
+              {
+                <td colspan="8">
+                  <div class='d-flex align-center pa-2 bgc-f2f2f2'>
+                      <MudSpacer />
+                      <MudButton OnClick='(() => context.ShowReport = ShowReport(context.ShowReport, context))' EndIcon="@Icons.Rounded.Close" IconColor='Color.Error' Size='Size.Small' >
+                          Close Report
+                      </MudButton>
+                  </div>
+                  <MudTr Class='d-flex align-stretch justify-center default-report-container'>
+                      @if (string.IsNullOrWhiteSpace(PDFContent))
+                      {
+                      <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
+                          <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                      </MudOverlay>
+                      }
+                      else
+                      {
+                      <iframe src='@PDFContent' />
+                      }
+                  </MudTr>
+                </td>
+              }
+      </ChildRowContent>
+          <PagerContent>
+              <MudTablePager PageSizeOptions="new int[]{50, 100}" />
+          </PagerContent>
+        </MudTable>
+    }
+</MudContainer>
+</div>
+
+@code{
+  private bool dataFetched, openSideFilter, showLoadingOverlay;
+  private string PDFContent = default!;
+  private string searchTerm = string.Empty, visibility = "visibility-animation-hide";
+
+  protected override async Task OnInitializedAsync()
+  {
+    GlobalClass.pageTitle = "Liquidation List";
+    while (GlobalClass.currentUserAccount == null || string.IsNullOrEmpty(GlobalClass.token) || GlobalClassList.accountingStatusList == null)
+      await Task.Delay(1);
+    Task t = Task.WhenAll(LoadLiquidations());
+    await t;
+    if (t.Status == TaskStatus.RanToCompletion)
+      CompletedFetch();
+  }
+  void CompletedFetch()
+  {
+    dataFetched = true;
+    StateHasChanged();
+  }
+  private async void EditLiquidation(LiquidationModel liquidation)
+  {
+    GlobalClass.liquidation = await Task.Run(()=> liquidation);
+    navigationManager.NavigateTo($"/liquidation");
+  }
+  private bool ShowReport(bool isShow, LiquidationModel liquidationModel)
+  {
+    Task.Run(()=> LoadLiquidationDetails(liquidationModel));
+    return isShow = !isShow;
+  }
+  private async Task LoadLiquidationDetails(LiquidationModel liquidationDetail)
+  {
+    var liquidationDetails = await liquidationService.LiquidationDetails(liquidationDetail.Id, GlobalClass.token);
+    liquidationDetail.LiquidationDetails = liquidationDetails.Select(details=> new LiquidationDetailModel()
+    {
+      Id = details.Id,
+      PettyCashId = details.PettyCashId,
+      ControlNumber = details.ControlNumber,
+      PayeeId = details.PayeeId,
+      PayeeName = details.PayeeName,
+      PayeeCategoryId = details.PayeeCategoryId,
+      Particular = details.Particular,
+      RequestedById = details.RequestedById,
+      RequestedByName = details.RequestedByName,
+      LiquidationId = liquidationDetail.Id,
+      IsActive = details.IsActive,
+      StatusId = details.StatusId,
+      StatusName = details.StatusName,
+      ExpenseLineId = details.ExpenseLineId,
+      ExpenseName = details.ExpenseName,
+      ChargingCategoryId = details.ChargingCategoryId,
+      ChargingId = details.ChargingId,
+      ChargingName = details.ChargingName,
+      Amount = details.Amount,
+      Remarks = details.Remarks
+
+      }).ToList();
+
+      PDFContent = await liquidationService.PrintSaveLiquidation(liquidationDetail);
+      StateHasChanged();
+  }
+  private async Task ApproveLiquidation(LiquidationModel liquidation)
+  {
+    if (await PromptMessage(Enums.ActionMode.Approve))
+    {
+      liquidation.StatusId = GlobalClassList.accountingStatusList.Where(x => x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.LA).Select(x => x.Id).FirstOrDefault();
+      liquidation.Activity = "Approved Status";
+      liquidation.UserId = GlobalClass.currentUserAccount.EmployeeId;
+      var updatedStatus = await liquidationService.UpdateLiquidationStatus(liquidation, GlobalClass.token);
+      Extensions.ShowAlert("Liquidation approved", Variant.Filled, snackBar, Severity.Info);
+    }
+    else
+      Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackBar, Severity.Normal);
+
+  }
+  private async Task CancelLiquidation(LiquidationModel liquidation)
+  {
+    if (await PromptMessage(Enums.ActionMode.Cancel))
+    {
+      liquidation.StatusId = GlobalClassList.accountingStatusList.Where(x => x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.LC).Select(x => x.Id).FirstOrDefault();
+      liquidation.Activity = "Cancelled Status";
+      liquidation.UserId = GlobalClass.currentUserAccount.EmployeeId;
+      var cancelLiquidation = await liquidationService.UpdateLiquidationStatus(liquidation, GlobalClass.token);
+      GlobalClassList.liquidations = GlobalClassList.liquidations.Where(x => x.StatusId != liquidation.StatusId).OrderByDescending(x => x.ControlNumber).ToList();
+      Extensions.ShowAlert("Liquidation cancelled", Variant.Filled, snackBar, Severity.Info);
+    }
+    else
+      Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackBar, Severity.Normal);
+  }
+  private bool EnableEditApproved(LiquidationModel liquidation)
+  {
+    var accountingStatusList = new AccountingStatusModel();
+    accountingStatusList = GlobalClassList.accountingStatusList.Where(x => x.Id == liquidation.StatusId).FirstOrDefault();
+    return accountingStatusList?.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.LA;
+  }
+
+  private async Task LoadLiquidations()
+  {
+    GlobalClassList.liquidations = await liquidationService.LiquidationList(new FilterParameter(), GlobalClass.token);
+  }
+
+  private void OpenSideFilter()
+  {
+    openSideFilter = !openSideFilter;
+    if (openSideFilter)
+        visibility = "visibility-animation-show";
+    if (!openSideFilter)
+        visibility = "visibility-animation-hide";
+  }
+  private async Task<bool> PromptMessage(Enums.ActionMode actionMode)
+  {
+    bool isNotCancel;
+    var parameters = new DialogParameters();
+    string contentText = "Liquidation ";
+    string dialogTitle = actionMode == Enums.ActionMode.Cancel ? "Cancel " + contentText : "Approve " + contentText;
+    parameters.Add("contentText", contentText);
+    parameters.Add("actionMode", actionMode == Enums.ActionMode.Cancel ? Enums.ActionMode.Cancel : Enums.ActionMode.Approve);
+    var options = new DialogOptions()
+    {
+        CloseButton = false,
+        MaxWidth = MaxWidth.ExtraSmall,
+        FullWidth = true,
+        NoHeader = false,
+        DisableBackdropClick = true
+    };
+    var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+    if (!resultDialog.Cancelled)
+        isNotCancel = true;
+    else
+        isNotCancel = false;
+
+    StateHasChanged();
+
+    return isNotCancel;
+  }
+  private bool FilterItems(LiquidationModel items)
+  {
+    if (string.IsNullOrEmpty(searchTerm))
+        return true;
+    if (items.ControlNumber.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase))
+        return true;
+    if (items.StatusName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase))
+        return true;
+    return true;
+  }
+}

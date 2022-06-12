@@ -1,0 +1,8 @@
+.default-report-container { height: calc(100vh - 300px); }
+.default-report-viewscreen { height: calc(100vh - 120px); }
+.default-report-view {
+    transform-origin: 0px 0px 0px; 
+    // transform: scale(0.5); 
+    width: 1200px; 
+    height: 500px;
+}

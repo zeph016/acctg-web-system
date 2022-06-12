@@ -1,0 +1,522 @@
+@page "/pettycash/create"
+@page "/pettycash"
+
+@inject IGlobalService globalService
+@inject IPettyCashService pettyCashService
+@inject ISnackbar snackBarService
+@inject IDialogService dialogService
+@inject NavigationManager navigationManager
+@inject IJSRuntime jsRuntimeService
+
+<div class='page-cont d-flex'>
+    @if (!dataFetched)
+    {
+        <MudPaper Class='d-flex flex-1 ma-2 pa-2'>
+          <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='100%' Width='100%' Animation='Animation.Wave' />
+        </MudPaper>
+    }
+    else
+    {
+        if(!showReport)
+        {
+            <MudContainer Class='pettycashpage-entry' Fixed='false' MaxWidth='MaxWidth.Small'>
+                <MudPaper Class='pcash-container' Elevation='2'>
+                    <div class='pcash-grid pa-2 ma-2'>
+                        <div class='pcash-header d-flex align-center justify-center gap-1 pa-2'>
+                            <MudImage Class='fgcilogocont__imglogo' Src='images/fglogo/fgci1.png' Alt='fgci logo' Height='30' Width='30'/>
+                            <MudText Class='fgcilogocont__lblfirst'>F. GURREA</MudText>
+                            <MudText Class='fgcilogocont__lblsecond'>Construction, Inc.</MudText>
+                            <MudSpacer />
+                            <MudButton OnClick='New' EndIcon='fa-regular fa-file' Color='Color.Tertiary' Size='Size.Small'>new</MudButton>
+                        </div>
+                        <div class='pcash-sysheader d-flex align-center justify-center pa-2'>
+                            <MudText Class='fgcilogocont__lblheader' Typo='Typo.h6'>PETTY CASH VOUCHER</MudText>
+                        </div>
+                        <div class='pcash-date d-flex align-center pa-2'>
+                            <MudText Class='wspace-nowrap lbl75'>date :</MudText>
+                        </div>
+                        <div class='pcash-dateentry d-flex align-center pa-2'>
+                            <MudDatePicker Class='txt-top-0 pcash-grid__date' @bind-Date='GlobalClass.pettyCash.RequestDate' />
+                        </div>
+                        <div class='pcash-refno d-flex align-center pa-2'>
+                            <MudText Class='wspace-nowrap lbl75'>ref no. :</MudText>
+                        </div>
+                        <div class='pcash-refnoentry d-flex align-center justify-center pa-2'>
+                            @if (GlobalClass.pettyCash.Id != 0)
+                                {
+                                    <MudChip Class='chip-radius-5 font-bold font12' Color='Color.Error' Size='Size.Medium'>
+                                        @GlobalClass.pettyCash.ControlNumber
+                                    </MudChip>
+                                    <MudChip Class='chip-radius-5 font-bold font12' Size='Size.Medium' Style="@Extensions.GetAcctgStatusColor(GlobalClass.pettyCash.StatusId)">
+                                        @GlobalClass.pettyCash.StatusName
+                                    </MudChip>
+                                    @* <MudTextField Class='txt-top-0' @bind-Value='GlobalClass.pettyCash.ControlNumber' DisableUnderLine='true' ReadOnly='true' /> *@
+                                }
+                                else
+                                {
+                                    <MudChip Class='chip-radius-5 font-bold font12' Color='Color.Error' Size='Size.Medium'>Auto Generated</MudChip>
+                                }
+                        </div>
+                        <div class='pcash-payee d-flex align-center pa-2'>
+                            <MudText Class='wspace-nowrap lbl75'>payee :</MudText>
+                        </div>
+                        <div class='pcash-payee-entry d-flex align-center justify-space-between pa-2 gap-2'>
+                            @if (payeeImg.Count() == 0)
+                            {
+                                <MudIcon Icon='@Icons.Filled.AccountCircle' Size='Size.Small'/>
+                            }
+                            else
+                            {
+                                <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(payeeImg)}")' Size='Size.Small'/>
+                            }
+                            <MudTextField Class='txt-top-0' @bind-Value='GlobalClass.pettyCash.PayeeName' DisableUnderLine='true' ReadOnly='true' 
+                            Adornment='Adornment.End' AdornmentIcon='@Icons.Filled.Search' OnAdornmentClick='(() => LookUp(Enums.LookUpType.Project, "project"))' IconSize='Size.Small' />
+                        </div>
+                        <div class='pcash-table d-flex align-stretch flex-1 flex-column gap-2 pt-2 overflow-hidden'>
+                            <div class='pcash-grid__subgrid-particular overflow-auto'>
+                                <div class='particular-header-left d-flex align-center justify-center'>
+                                    <MudText Typo='Typo.overline'>PARTICULARS</MudText>
+                                </div>
+                                <div class='particular-header-right d-flex align-center justify-center'>
+                                <MudText Typo='Typo.overline'>AMOUNT</MudText>
+                                </div>
+                                <div class='particular-body d-flex align-stretch flex-column'>
+                                    @if (modifyParticular)
+                                    {
+                                        <BlazoredTextEditor DebugLevel='warn' Theme='snow' 
+                                        Placeholder='Enter Particulars' @ref="particularsTextEditor">
+                                            <ToolbarContent>
+                                                <div class='d-flex'>
+                                                    <span class="ql-formats">
+                                                        <MudIconButton class="ql-bold" />
+                                                        <MudIconButton class="ql-italic" />
+                                                        <MudIconButton class="ql-underline" />
+                                                    </span>
+                                                    <span class="ql-formats">
+                                                        <MudIconButton class="ql-list" value="ordered" />
+                                                        <MudIconButton class="ql-list" value="bullet" />
+                                                    </span>
+                                                    <MudSpacer />
+                                                    <span class='ql-formats'>
+                                                        <MudButton Class='d-flex' OnClick='(() => { GetFromEditor(); modifyParticular = !modifyParticular; })' StartIcon="@Icons.Filled.Done" Size='Size.Small'>Done</MudButton>
+                                                    </span>
+                                                </div>
+                                            </ToolbarContent>
+                                        </BlazoredTextEditor>
+                                    }
+                                    else
+                                    {
+                                        <div class='d-flex flex-grow-1' @onclick='(() => { SetToEditor(GlobalClass.pettyCash.Particular, "particulars"); modifyParticular = !modifyParticular; })'>
+                                            <MudText Class='pa-2 ma-2'>@GlobalClass.pettyCash.Particular</MudText>
+                                        </div>
+                                    }
+                                </div>
+                                <div class='particular-amount d-flex align-center pa-2 gap-1'>
+                                    <MudText Typo='Typo.overline'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
+                                    <MudNumericField Class='txt-top-0 txt-search-overflow' @bind-Value='GlobalClass.pettyCash.Amount' Culture='CultureInfo.GetCultureInfo("en-PH")'
+                                    Format='N2' Variant='Variant.Text' DisableUnderLine='true' HideSpinButtons/>
+                                </div>
+                            </div>
+                            <div class='pcash-grid__subgrid-remarks overflow-auto'>
+                                <div class='remarks-header d-flex align-center justify-center'>
+                                    <MudText Typo='Typo.overline'>REMARKS</MudText>
+                                </div>
+                                <div class='remarks-body d-flex align-stretch flex-column'>
+                                    @if (modifyRemarks)
+                                    {
+                                        <BlazoredTextEditor DebugLevel='warn' Theme='snow'
+                                        Placeholder='Enter Remarks' @ref="remarksTextEditor">
+                                            <ToolbarContent>
+                                                <div class='d-flex'>
+                                                    <span class="ql-formats">
+                                                        <MudIconButton class="ql-bold" />
+                                                        <MudIconButton class="ql-italic" />
+                                                        <MudIconButton class="ql-underline" />
+                                                    </span>
+                                                    <span class="ql-formats">
+                                                        <MudIconButton class="ql-list" value="ordered" />
+                                                        <MudIconButton class="ql-list" value="bullet" />
+                                                    </span>
+                                                    <MudSpacer />
+                                                    <span class='ql-formats'>
+                                                        <MudButton Class='d-flex' OnClick='(() => { GetFromEditor(); modifyRemarks = !modifyRemarks; })' StartIcon="@Icons.Filled.Done" Size='Size.Small'>Done</MudButton>
+                                                    </span>
+                                                </div>
+                                            </ToolbarContent>
+                                        </BlazoredTextEditor>
+                                    }
+                                    else
+                                    {
+                                        <div class='d-flex flex-grow-1' @onclick='(() => { SetToEditor(GlobalClass.pettyCash.Remarks, "remarks"); modifyRemarks = !modifyRemarks; })'>
+                                            <MudText Class='pa-2 ma-2'>@GlobalClass.pettyCash.Remarks</MudText>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class='pcash-signatories d-flex align-center flex-column flex-grow-1 pa-2'>
+                            <div class='d-flex justify-space-between gap-2 pa-2'>
+                                <div class='d-flex align-center mb-2 gap-2'>
+                                    @if (requestorImg.Count() == 0)
+                                    {
+                                        <MudAvatar>
+                                            <MudIcon Icon='@Icons.Filled.AccountCircle' Size='Size.Medium'/>
+                                        </MudAvatar>
+                                    }
+                                    else
+                                    {
+                                        <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(requestorImg)}")' Size='Size.Medium'/>
+                                    }
+                                    <MudTextField Class='txt-top-0 txt-search-overflow' @bind-Value='GlobalClass.pettyCash.RequestedByName' HelperText='REQUESTED BY' ReadOnly='true'
+                                    Adornment='Adornment.End' AdornmentIcon='@Icons.Filled.Search' OnAdornmentClick='(() => LookUp(Enums.LookUpType.Employee, "requestor"))' IconSize='Size.Small' />
+                                </div>
+                                <div class='pa-2'>
+
+                                </div>
+                                <div class='d-flex align-center mb-2 gap-2'>
+                                    @if (approverImg.Count() == 0)
+                                    {
+                                        <MudAvatar>
+                                            <MudIcon Icon='@Icons.Filled.AccountCircle' Size='Size.Medium'/>
+                                        </MudAvatar>
+                                    }
+                                    else
+                                    {
+                                        <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(approverImg)}")' Size='Size.Medium'/>
+                                    }
+                                    <MudTextField Class='txt-top-0 txt-search-overflow' @bind-Value='GlobalClass.pettyCash.ApprovedByName' HelperText='APPROVED BY' ReadOnly='true'
+                                    Adornment='Adornment.End' AdornmentIcon='@Icons.Filled.Search' OnAdornmentClick='(() => LookUp(Enums.LookUpType.Employee, "approver"))' IconSize='Size.Small'/>
+                                </div>
+                            </div>
+                            <div class='d-flex align-center pa-2'>
+                                <div class='d-flex align-center mb-2 gap-2'>
+                                    @if (receiverImg.Count() == 0)
+                                    {
+                                        <MudAvatar>
+                                            <MudIcon Icon='@Icons.Filled.AccountCircle' Size='Size.Medium'/>
+                                        </MudAvatar>
+                                    }
+                                    else
+                                    {
+                                        <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(receiverImg)}")' Size='Size.Medium'/>
+                                    }
+                                    <MudTextField Class='txt-top-0 txt-search-overflow' @bind-Value='GlobalClass.pettyCash.ReceivedByName' HelperText='RECEIVED BY' ReadOnly='true'
+                                    Adornment='Adornment.End' AdornmentIcon='@Icons.Filled.Search' OnAdornmentClick='(() => LookUp(Enums.LookUpType.Employee, "receiver"))' IconSize='Size.Small' />
+                                </div>
+                            </div>
+                            <div class='d-flex justify-end gap-2 pa-2 width100'>
+                                <MudButton OnClick='(()=> navigationManager.NavigateTo($"/refresh/pettycash-list"))' Variant="Variant.Text">Cancel</MudButton>
+                                <MudButton OnClick='Submit' Variant="Variant.Filled" Color='Color.Primary'>@submitText</MudButton>
+                            </div>
+                        </div>
+                    </div>
+                </MudPaper>
+            </MudContainer>
+        } 
+        else 
+        {
+            <div class='d-flex flex-1 pa-2 ma-2'>
+                <MudPaper Class='d-flex flex-1 flex-column pa-2' Elevation='1' Height='calc(100vh - 120px)' Width='100%'>
+                    <div class='d-flex align-center pa-2 gap-1 bgc-f2f2f2'>
+                        <MudButton OnClick="(() => Prompt())" EndIcon="@Icons.Rounded.Save" IconColor="Color.Info" Size='Size.Small' >SAVE</MudButton>
+                        <MudSpacer />
+                        <MudButton OnClick="(() => showReport = false)" EndIcon="@Icons.Rounded.Close" IconColor="Color.Error" Size='Size.Small' >CANCEL</MudButton>
+                    </div>
+                    <div class='d-flex align-stretch justify-center default-report-viewscreen'>
+                        @if (string.IsNullOrWhiteSpace(PDFContent))
+                        {
+                            <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
+                                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                            </MudOverlay>
+                        }
+                        else
+                        {
+                            <iframe src='@PDFContent' />
+                        }
+                    </div>
+                </MudPaper>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public string pCashMode { get; set; } = string.Empty;
+    private Project payeeName = new Project();
+    private UserAccount employee = new UserAccount();
+    private DateTime? date = DateTime.Today;
+    BlazoredTextEditor particularsTextEditor = new BlazoredTextEditor(), remarksTextEditor = new BlazoredTextEditor();
+    private string submitText = "Create Petty Cash";
+    private bool dataFetched, modifyParticular, modifyRemarks;
+    private byte[] payeeImg = new byte[]{}, requestorImg = new byte[]{}, approverImg = new byte[]{}, receiverImg = new byte[]{};
+    private Enums.ActionMode currActionMode { get; set; }
+    private string PDFContent = default!;
+    private bool showReport {get;set;}
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        if(GlobalClass.pettyCash == null)
+            GlobalClass.pettyCash = new();
+        requestorImg = new byte[]{};
+        approverImg = new byte[]{};
+        receiverImg = new byte[]{};
+        await base.SetParametersAsync(parameters);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        GlobalClass.pageTitle = "PETTY CASH ENTRY";
+        navigationManager.LocationChanged += OnLocationChanged;
+        while (GlobalClass.currentUserAccount == null || string.IsNullOrWhiteSpace(GlobalClass.token))
+            await Task.Delay(1);
+        if (GlobalClass.pettyCash.Id != 0)
+            await ReMapDetails();
+        else
+            MapDefaultDetails();
+        CompletedFetch();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await Task.Delay(1);
+        submitText = Extensions.CheckUrlType(navigationManager.Uri) ? "Create Petty Cash" : "Update Petty Cash";
+        currActionMode = Extensions.CheckUrlType(navigationManager.Uri) ? Enums.ActionMode.Create : Enums.ActionMode.Update;
+    }
+
+    void CompletedFetch()
+    {
+        dataFetched = true;
+        Task.Run(StateHasChanged);
+    }
+
+    public async void GetFromEditor()
+    {
+        if (modifyParticular) {
+            GlobalClass.pettyCash.Particular = await this.particularsTextEditor.GetText();
+            GlobalClass.pettyCash.Particular = GlobalClass.pettyCash.Particular.Trim();
+        } else if (modifyRemarks) {
+            GlobalClass.pettyCash.Remarks = await this.remarksTextEditor.GetText();
+            GlobalClass.pettyCash.Remarks = GlobalClass.pettyCash.Remarks.Trim();
+        }
+        StateHasChanged();
+    }
+
+    public async void SetToEditor(string contentText, string textEditor)
+    {
+        await Task.Delay(1);
+        string Content = contentText;
+        if (textEditor.Contains("particulars"))
+            await this.particularsTextEditor.InsertText(Content);
+        else if (textEditor.Contains("remarks"))
+            await this.remarksTextEditor.InsertText(Content);
+        StateHasChanged();
+    }
+
+    private bool CheckUrlType()
+    {
+        if (Extensions.CheckUrlType(navigationManager.Uri))
+            return true;
+        return false;
+    }
+
+    private async void LookUp(Enums.LookUpType type, string lookFor)
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = string.Empty;
+        string searchPlaceholderText = string.Empty;
+        dialogTitle = type == Enums.LookUpType.Project  ? "Payee Look Up" : (type == Enums.LookUpType.Employee ? "Employee Look Up" : "");
+        searchPlaceholderText = type == Enums.LookUpType.Project ? "Payee" : (type == Enums.LookUpType.Employee ? "Employee" : "");
+        parameters.Add("lookUpType", type);
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", "Select");
+        parameters.Add("searchPlaceholderText", searchPlaceholderText);
+        parameters.Add("color", Color.Success);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = false
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled) {
+            if (type == Enums.LookUpType.Project) {
+                payeeName = (Project)resultDialog.Data;
+                GlobalClass.pettyCash.PayeeId = payeeName.ProjectId;
+                GlobalClass.pettyCash.PayeeName = payeeName.ProjectName;
+                GlobalClass.pettyCash.PayeeCategoryId = (Enums.ProjectCategory)payeeName.ProjectCategoryId;
+            } else if (type == Enums.LookUpType.Employee) {
+                employee = (UserAccount)resultDialog.Data;
+                if (lookFor.Contains("requestor")) {
+                    GlobalClass.pettyCash.RequestedById = employee.EmployeeId; 
+                    GlobalClass.pettyCash.RequestedByName = employee.EmployeeName;
+                    GlobalClass.pettyCash.RequestedBySection = employee.SectionName;
+                    GlobalClass.pettyCash.ReceivedByDepartment = employee.DepartmentName;
+                    requestorImg = employee.Picture; 
+                } else if (lookFor.Contains("approver")) {
+                    GlobalClass.pettyCash.ApprovedById = employee.EmployeeId;
+                    GlobalClass.pettyCash.ApprovedByName = employee.EmployeeName;
+                    GlobalClass.pettyCash.ApprovedBySection = employee.SectionName;
+                    GlobalClass.pettyCash.ApprovedByDepartment = employee.DepartmentName;
+                    GlobalClass.pettyCash.Position = employee.Designation;
+                    approverImg = employee.Picture;
+                } else if (lookFor.Contains("receiver")) {
+                    GlobalClass.pettyCash.ReceivedById = employee.EmployeeId;
+                    GlobalClass.pettyCash.ReceivedByName = employee.EmployeeName;
+                    receiverImg = employee.Picture;
+                } 
+            }
+        }
+        StateHasChanged();
+    }
+    private async Task ReMapDetails()
+    {
+        GlobalClass.pettyCash = await pettyCashService.GetPettyCash(GlobalClass.pettyCash.Id, GlobalClass.token);
+        requestorImg = await GetEmployeeDetails(GlobalClass.pettyCash.RequestedById);
+        approverImg = await GetEmployeeDetails(GlobalClass.pettyCash.ApprovedById);
+        receiverImg = await GetEmployeeDetails(GlobalClass.pettyCash.ReceivedById);
+
+        //Audit
+        GlobalClass.pettyCash.PettyCashId = GlobalClass.pettyCash.Id;
+        GlobalClass.pettyCash.UserId = GlobalClass.currentUserAccount.EmployeeId;
+        GlobalClass.pettyCash.UserName = GlobalClass.currentUserAccount.UserName;
+        GlobalClass.pettyCash.Department = GlobalClass.currentUserAccount.DepartmentName;
+        GlobalClass.pettyCash.Activity = "Update Petty Cash";
+    }
+    private void MapDefaultDetails()
+    {
+        GlobalClass.pettyCash = new ();
+        GlobalClass.pettyCash.RequestDate = date;
+        GlobalClass.pettyCash.IsActive = true;
+        GlobalClass.pettyCash.StatusId = (Int64)Enums.AccountingStatusEnumCategory.PCG+1;
+        GlobalClass.pettyCash.statusCategoryId = Enums.AccountingStatusEnumCategory.PCG;
+        GlobalClass.pettyCash.StatusName = string.Empty;
+        GlobalClass.pettyCash.RequestedById = GlobalClass.currentUserAccount.EmployeeId;
+        GlobalClass.pettyCash.RequestedByName = GlobalClass.currentUserAccount.EmployeeName;
+        GlobalClass.pettyCash.RequestedByDepartment = GlobalClass.currentUserAccount.DepartmentName;
+        GlobalClass.pettyCash.RequestedBySection = GlobalClass.currentUserAccount.SectionName;
+        GlobalClass.pettyCash.RequestedByPosition = GlobalClass.currentUserAccount.Designation;
+        requestorImg = GlobalClass.currentUserAccount.Picture;
+
+        //Audit
+        GlobalClass.pettyCash.UserId = GlobalClass.currentUserAccount.EmployeeId;
+        GlobalClass.pettyCash.UserName = GlobalClass.currentUserAccount.UserName;
+        GlobalClass.pettyCash.Department = GlobalClass.currentUserAccount.DepartmentName;
+        GlobalClass.pettyCash.LogDateTime = DateTime.Today;
+        GlobalClass.pettyCash.Activity = "Create Petty Cash";
+    }
+    private async Task<byte[]> GetEmployeeDetails(long employeeId)
+    {
+        var employeeDetail = await globalService.GetEmployeeById(employeeId, GlobalClass.token);
+        return employeeDetail.Picture;
+    }
+    private async Task Submit()
+    {
+        if (isValidated()){
+            await Task.Run(()=> LoadPettyCash(GlobalClass.pettyCash)); 
+            StateHasChanged();
+        }
+        else{
+            Extensions.ShowAlert("Cannot create Petty Cash. Incomplete Fields", Variant.Filled, snackBarService, Severity.Error);
+        }
+    }
+    public void New()
+    {
+        Console.WriteLine("new");
+        GlobalClass.pettyCash = new PettyCashModel();
+        MapDefaultDetails();
+        showReport = false;
+    }
+    private async Task Prompt()
+    {
+        var parameters = new DialogParameters();
+        string contentText = "Petty Cash ";
+        string dialogTitle = currActionMode == Enums.ActionMode.Create ? "Create " + contentText : "Update " + contentText;
+        parameters.Add("contentText", contentText);
+        parameters.Add("actionMode", currActionMode);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            if (currActionMode == Enums.ActionMode.Create)
+                if(await Save())
+                    Extensions.ShowAlert("Created Petty Cash Voucher", Variant.Filled, snackBarService, Severity.Success); 
+                else
+                    Extensions.ShowAlert("Error", Variant.Filled, snackBarService, Severity.Error); 
+            else if (currActionMode == Enums.ActionMode.Update)
+                if (await Update())
+                    Extensions.ShowAlert("Updated Petty Cash Voucher", Variant.Filled, snackBarService, Severity.Info);
+                else
+                    Extensions.ShowAlert("Error", Variant.Filled, snackBarService, Severity.Error);
+        }
+    }
+
+    private async Task<bool> Save()
+    {
+        var returnedItem = await pettyCashService.AddPettyCash(GlobalClass.pettyCash, GlobalClass.token);
+        if (returnedItem.responseMessage.IsSuccessStatusCode) {
+            if (GlobalClassList.pettyCashList == null)
+                GlobalClassList.pettyCashList = await pettyCashService.LoadPettyCashList(new FilterParameter(){ isActive = true}, GlobalClass.token);
+            else
+                GlobalClassList.pettyCashList.Add(returnedItem);
+            navigationManager.NavigateTo($"/pettycash-list");
+            return true;
+        }
+        return false;
+    }
+    private async Task<bool> Update()
+    {
+        
+        var returnedItem = await pettyCashService.UpdatePettyCash(GlobalClass.pettyCash, GlobalClass.token);
+        if (returnedItem.responseMessage.IsSuccessStatusCode){
+            string toPage = "pettycash-list";
+            navigationManager.NavigateTo($"/refresh/{toPage}");
+            return true;
+        }
+        return false;
+    }
+
+    private bool isValidated()
+    {
+        if(GlobalClass.pettyCash.RequestDate == null)
+            return false;
+        if(GlobalClass.pettyCash.PayeeId == 0)
+            return false;
+        if(String.IsNullOrEmpty(GlobalClass.pettyCash.Particular))
+            return false;
+        if(GlobalClass.pettyCash.Amount <= 0)
+            return false;
+        if(String.IsNullOrEmpty(GlobalClass.pettyCash.Remarks))
+            return false;
+        if(GlobalClass.pettyCash.RequestedById == 0)
+            return false;
+        if(GlobalClass.pettyCash.ApprovedById == 0)
+            return false;
+        if(String.IsNullOrEmpty(GlobalClass.pettyCash.RequestedByName))
+            return false;
+        return true;
+    }
+    private async Task LoadPettyCash(PettyCashModel pettyCashModel)
+    {
+        showReport = true;
+        PDFContent = await pettyCashService.GetPettyCashReport(pettyCashModel);
+        StateHasChanged();
+    }
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        GlobalClass.pettyCash = new();
+        Dispose();
+    }
+    public void Dispose()
+    {
+        navigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+}

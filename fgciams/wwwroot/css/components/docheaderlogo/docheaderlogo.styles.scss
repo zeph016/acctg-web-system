@@ -1,0 +1,11 @@
+.fgcilogocont {
+    padding: 0px 5px;
+    &__lblfirst {
+        font-weight: bold !important;
+    }
+    &__lblfirst, &__lblsecond {
+        font-family: 'Agency' !important;
+        font-size: 1.2rem;
+    }
+    &__lblheader { font-family: 'Theramin' !important; }
+}

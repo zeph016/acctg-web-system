@@ -1,0 +1,736 @@
+@page "/liquidation"
+@inject IGlobalService globalService
+@inject IAccountingStatusService accountingStatusService
+@inject ILiquidationService liquidationService
+@inject IGlobalService globalService
+@inject IAccountingStatusService accountingStatusService
+@inject IDialogService dialogService
+@inject ISnackbar snackBarService
+@inject NavigationManager navigationManager
+
+<div class='page-cont'>
+    <MudDrawerContainer Class='body-left mud-height-full d-flex position-rel'>
+        <MudDrawer Class='subdrawer-left' @bind-Open="@openControlDrawer" Width="150px" Fixed="false" Anchor="Anchor.Left" Elevation="0" Variant="@DrawerVariant.Mini" OpenMiniOnHover='true'>
+            <MudNavMenu>
+                <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Filled.AddBox" IconColor='Color.Success'>NEW</MudNavLink>
+            </MudNavMenu>
+            <div class='d-flex justify-center'>
+                <MudToggleIconButton @bind-Toggled='openControlDrawer'
+                Icon="@Icons.Filled.KeyboardDoubleArrowRight" Color="Color.Tertiary" ToggledSize='Size.Small'
+                ToggledIcon="@Icons.Filled.KeyboardDoubleArrowLeft" ToggledColor="Color.Secondary" Size='Size.Small' />
+            </div>
+        </MudDrawer>
+      <div class='d-flex flex-1 overflow-auto'>
+        @if (!dataFetched)
+        {
+          <MudPaper Class='d-flex flex-1 ma-2 pa-2'>
+            <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='100%' Width='100%' Animation='Animation.Wave' />
+          </MudPaper>
+        }
+        else
+        {
+          <MudContainer Class='liquidationpage-entry d-flex gap-2' Fixed='false' MaxWidth='MaxWidth.False'>
+            <div class='d-flex flex-column align-center transition-05s-ease flex-grow-1'>
+              <MudPaper Class='pa-2' Elevation='0' Square='true' MinWidth='420px' MaxWidth='520px'>
+                <div class='liquidationpage-grid'>
+                  <div class='liqgrid-header d-flex align-center justify-center gap-1 pa-2'>
+                    <MudImage Class='fgcilogocont__imglogo' Src='images/fglogo/fgci1.png' Alt='fgci logo' Height='30' Width='30'/>
+                    <MudText Class='fgcilogocont__lblfirst'>F. GURREA</MudText>
+                    <MudText Class='fgcilogocont__lblsecond'>Construction, Inc.</MudText>
+                  </div>
+                  <div class='liqgrid-datelbl d-flex align-center pa-2'>
+                    <MudText Typo='Typo.overline'>Date:</MudText>
+                  </div>
+                  <div class='liqgrid-date-entry d-flex align-center pa-2'>
+                    <MudDatePicker Class='liquidationpage-grid__date txt-top-0 txtfield-75' @bind-Date='@liquidationDate' IconSize='Size.Small' />
+                  </div>
+                  <div class='liqgrid-controllbl d-flex align-center wspace-nowrap pa-2'>
+                    <MudText Typo='Typo.overline'>Control #:</MudText>
+                  </div>
+                  <div class='liqgrid-control-entry d-flex align-center justify-center txtfield-txt-center pa-2'>
+                    @if (GlobalClass.liquidation.Id != 0 )
+                    {
+                      <MudChip Class='chip-radius-0 font-bold' Color='Color.Error' Size='Size.Small'>@GlobalClass.liquidation.ControlNumber</MudChip>
+                    }
+                    else
+                    {
+                      <MudChip Class='chip-radius-0 font-bold' Color='Color.Error' Size='Size.Small'>Auto Generated</MudChip>
+                    }
+                  </div>
+                  <div class='liqgrid-amountlbl d-flex align-center wspace-nowrap pa-2'>
+                    <MudText Typo='Typo.overline'>Amount:</MudText>
+                  </div>
+                  <div class='liqgrid-amount-entry d-flex align-center justify-start gap-1 pa-2'>
+                    <MudChip Class='wpsace-nowrap chip-radius-0 font-bold' Size='Size.Small' Color='Color.Success'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.liquidation.TotalAmount.ToString("N2")</MudChip>
+                    @* <MudText Typo='Typo.overline'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.liquidation.TotalAmount.ToString("N2")</MudText> *@
+                    <MudSpacer />
+                    <MudChip Class='wspace-nowrap chip-radius-0 font-bold' Size='Size.Small'>
+                      @GlobalClass.liquidation.LiquidationDetails.Count() : @(GlobalClass.liquidation.LiquidationDetails.Count() == 1 ? "detail" : "details") attached
+                    </MudChip>
+                  </div>
+                  <div class='liqgrid-body overflow-hidden'>
+                    <div class='liqgrid-body__subgrid pt-2 overflow-hidden'>
+                      <div class='liqgrid-body__subgrid-header d-flex align-center justify-center'>
+                        <MudText Typo='Typo.overline'>Remarks</MudText>
+                      </div>
+                      <MudDateRangePicker @bind-DateRange=@periodLiquidation></MudDateRangePicker>
+                      <div class='liqgrid-body__subgrid-remarks d-flex align-stretch flex-column overflow-hidden'>
+                        @if (modifyRemarks)
+                        {
+                          <BlazoredTextEditor DebugLevel='warn' Theme='snow'
+                          Placeholder='Enter remarks' @ref='remarksTextEditor'>
+                            <ToolbarContent>
+                                <div class='d-flex'>
+                                  <span class="ql-formats">
+                                    <MudIconButton class="ql-bold" />
+                                    <MudIconButton class="ql-italic" />
+                                    <MudIconButton class="ql-underline" />
+                                  </span>
+                                  <MudSpacer />
+                                  <span class='ql-formats'>
+                                    <MudButton Class='d-flex' OnClick='(() => { GetFromEditor(); modifyRemarks = !modifyRemarks; })' StartIcon="@Icons.Filled.Done" Size='Size.Small'>Done</MudButton>
+                                  </span>
+                                </div>
+                            </ToolbarContent>
+                          </BlazoredTextEditor>
+                        }
+                        else
+                        {
+                          <div class='d-flex flex-grow-1' @onclick='(() => { SetToEditor(GlobalClass.liquidation.Remarks); modifyRemarks = !modifyRemarks; })'>
+                            <MudText Class='pa-2 ma-2'>@GlobalClass.liquidation.Remarks</MudText>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                  <div class='liqgrid-signatories d-flex gap-2'>
+                    <div class='d-flex align-center mb-2 gap-2'>
+                      @if (preparedByImg.Count() == 0)
+                      {
+                        <MudAvatar>
+                          <MudIcon Icon='@Icons.Filled.AccountCircle' Size='Size.Medium'/>
+                        </MudAvatar>
+                      }
+                      else
+                      {
+                        <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(preparedByImg)}")' Size='Size.Medium'/>
+                      }
+                      <MudTextField Class='txt-top-0 txt-search-overflow' @bind-Value='_preparedBy' HelperText='Prepared By' AdornmentIcon='@Icons.Filled.Search' OnAdornmentClick='(()=> LookUpPreparedDialog())'
+                      Adornment="Adornment.End" Error=@requiredPreparedBy ErrorText="This field is required" IconSize='Size.Small' />
+                    </div>
+                    <div class='d-flex align-center mb-2 gap-2'>
+                      @if (approverImg.Count() == 0)
+                      {
+                        <MudAvatar>
+                          <MudIcon Icon='@Icons.Filled.AccountCircle' Size='Size.Medium'/>
+                        </MudAvatar>
+                      }
+                      else
+                      {
+                        <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(approverImg)}")' Size='Size.Medium'/>
+                      }
+                      <MudTextField Class='txt-top-0 txt-search-overflow' @bind-Value='_approvedBy' HelperText='Approved By' AdornmentIcon='@Icons.Filled.Search' OnAdornmentClick='(()=> LookUpApproverDialog())' 
+                      Adornment="Adornment.End" Error=@requiredApprover ErrorText="This field is required" IconSize='Size.Small' />
+                    </div>
+                  </div>
+                </div>
+                <MudSpacer />
+                <div class='d-flex justify-end gap-2 pa-2 width100'>
+                  <MudButton Variant="Variant.Text">Cancel</MudButton>
+                  <MudButton OnClick='PrintLiquidation' Variant="Variant.Filled" Color='Color.Primary'>@submitText</MudButton>
+                </div>
+              </MudPaper>
+            </div>
+            
+            <div class='d-flex transition-05s-ease overflow-hidden @liqTableContGrow' style='@liqTableEntryWidth'>
+              <MudPaper Class='d-flex flex-1 transition-05s-ease overflow-hidden' Elevation='0' Square='true' Style='@liqTableEntryWidth'>
+                <div class='d-flex flex-column pa-4 align-center justify-start bgc-fafafa'>
+                  <MudIconButton OnClick='CollapseTableCont' Icon='@Icons.Filled.TableChart' Size='Size.Small' />
+                  <MudSpacer />
+                  <MudToggleIconButton @onclick='CollapseTableCont' @bind-Toggled='isLiqTableCollapsed'
+                  Icon='@Icons.Filled.KeyboardDoubleArrowRight' Color='Color.Secondary' ToggledSize='Size.Small'
+                  ToggledIcon='@Icons.Filled.KeyboardDoubleArrowLeft' ToggledColor='Color.Tertiary' Size='Size.Small' />
+                </div>
+                <MudTable Class='liquidationpage-entry__table flex-1 transition-05s-ease overflow-auto' Items="GlobalClass.liquidation.LiquidationDetails" Bordered=true Striped=true ReadOnly=false 
+                  Dense=true Elevation='0' IsEditRowSwitchingBlocked=true CanCancelEdit=true Square='true'>
+                  <ToolBarContent>
+                    <MudIconButton OnClick='AddPettyCash' Icon="@Icons.Filled.Add" aria-label="add" Color='Color.Info' Size='Size.Small' />
+                    @* <MudIconButton OnClick='PrintLiquidation' Icon="@Icons.Filled.Save" aria-label="save" Color='Color.Primary' Size='Size.Small' /> *@
+                    <MudSpacer />
+                    @* <MudIconButton OnClick='PrintLiquidation' Icon="@Icons.Filled.KeyboardDoubleArrowUp" aria-label="collapse" Color='Color.Primary' Size='Size.Small' /> *@
+                    <MudToggleIconButton @onclick='CollapseDetails' @bind-Toggled='collapseLiqDetails'
+                    Icon='@Icons.Filled.KeyboardDoubleArrowDown' Color="Color.Secondary" ToggledSize='Size.Small'
+                    ToggledIcon="@Icons.Filled.KeyboardDoubleArrowUp" ToggledColor="Color.Info" Size='Size.Small' />
+                  </ToolBarContent>
+                  <ColGroup>
+                    <col style='width: 50px;' />
+                    <col />
+                    <col />
+                    <col style='width: 50px' />
+                    <col style='width: 50px' />
+                  </ColGroup>
+                  <HeaderContent>
+                    <MudTh Class='bgc-f6f6f6'></MudTh>
+                    <MudTh Class='bgc-f6f6f6'>Control #</MudTh>
+                    <MudTh Class='bgc-f6f6f6'>Payee Name</MudTh>
+                    <MudTh Class='bgc-f6f6f6'>Amount</MudTh>
+                    <MudTh Class='bgc-f6f6f6'></MudTh>
+                  </HeaderContent>
+                  <RowTemplate>
+                    <MudTd>
+                      <MudIconButton OnClick='(()=> RemovePettyCash(context))' Icon='@Icons.Filled.RemoveCircle' Color='Color.Error' Size='Size.Small' aria-label="remove"/>
+                    </MudTd>
+                    <MudTd Class='wspace-nowrap' DataLabel='ControlNumber'>@context.ControlNumber</MudTd>
+                    <MudTd Class='wspace-nowrap' DataLabel='Payee'>@context.PayeeName</MudTd>
+                    <MudTd Class='wspace-nowrap' DataLabel='Amount'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.Amount.ToString("N2")</MudTd>
+                    @* <MudTd Class='wspace-nowrap' DataLabel='Charging Name'>@context.ChargingName</MudTd>
+                    <MudTd Class='wspace-nowrap' DataLabel='Expense Name'>@context.ExpenseName</MudTd> *@
+                    <MudTd Class='text-center'>
+                      <MudToggleIconButton @bind-Toggled='context.ShowSubTable'
+                      Icon="@Icons.Filled.Info" Color="Color.Secondary" ToggledSize='Size.Small'
+                      ToggledIcon="@Icons.Filled.Info" ToggledColor="Color.Info" Size='Size.Small' />
+                    </MudTd>
+                  </RowTemplate>
+                  <ChildRowContent>
+                    @if(context.ShowSubTable)
+                    {
+                      <td class='liquidationpage-entry__table-child' colspan="5">
+                        <MudCard Class='d-flex gap-2 transition-05s-ease' Square='true' Elevation='1'>
+                          <div Class='d-flex flex-column flex-1'>
+                            <div class='d-flex align-center justify-space-between gap-1 border-thin-bottom pl-1 pr-2'>
+                              <MudChip Class='chip-radius-0 font-bold' Color='Color.Tertiary'>
+                                <MudText Class='wspace-nowrap' Typo='Typo.overline'> @context.StatusName</MudText>
+                              </MudChip>
+                              <MudSpacer />
+                              <MudChip Class='font-bold' Size='Size.Small'>@context.RequestDate</MudChip>
+                              <MudSpacer />
+                              <MudChip Class='wspace-nowrap font-bold' Size='Size.Small'>Requested by: @context.RequestedByName</MudChip>
+                              @* <MudText Class='wspace-nowrap' Typo='Typo.overline'>Requested by: @context.RequestedByName</MudText> *@
+                            </div>
+                            <div class='d-flex flex-grow-1 pa-1 gap-2'>
+                              <div class='d-flex flex-column gap-2'>
+                                <MudText Class='font-bold' Typo='Typo.overline'>Particulars: </MudText>
+                                <MudText Typo='Typo.overline'>Charge To:</MudText>
+                                <MudText Typo='Typo.overline'>Expense:</MudText>
+                              </div>
+                              <div class='d-flex flex-column gap-2'>
+                                <MudText Class='wbreak-breakword' Typo='Typo.overline' Style='max-width: calc(50vw - 400px)'>@context.Particular</MudText>
+                                <MudTextField Class='txt-top-0 txtfield-75' @bind-Value='@context.ChargingName' AdornmentIcon='@Icons.Filled.Search' OnAdornmentClick='(()=> LookUpChargingDialog(context))'
+                                Adornment="Adornment.Start" Placeholder='Charge To' IconSize='Size.Small' Required ReadOnly DisableUnderLine/>
+                                <MudTextField Class='txt-top-0 txtfield-75' @bind-Value='@context.ExpenseName' AdornmentIcon='@Icons.Filled.Search' OnAdornmentClick='(()=> LookUpExpenseDialog(context))'
+                                Adornment="Adornment.Start" Placeholder='Expense' IconSize='Size.Small' Required ReadOnly DisableUnderLine/>
+                              </div>
+                            </div>
+                          </div>
+                          </MudCard>
+                      </td>
+                    }
+                    </ChildRowContent>
+                  </MudTable>
+              </MudPaper>
+            </div>
+          </MudContainer>
+        }
+      </div>
+    </MudDrawerContainer>
+</div>
+
+
+@code{
+    Project project = new();
+    private DateTime? liquidationDate = DateTime.Now;
+    private DateRange periodLiquidation = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
+    private UserAccount selectedApprover = new();
+    private UserAccount preparedBy = new UserAccount();
+    private Project payee = new();
+    private ExpenseLineModel expenseLine = new();
+    BlazoredTextEditor remarksTextEditor = new BlazoredTextEditor();
+    private int tempId;
+    private decimal totalAmount;
+    private bool dataFetched, requiredApprover, requiredPreparedBy, openControlDrawer, isLiqTableCollapsed, modifyRemarks, collapseLiqDetails;
+    private string _preparedBy = string.Empty, _approvedBy = string.Empty, submitText = "Save Liquidation",
+    liqEntryContGrow = "flex-grow-0", liqTableContGrow = "flex-grow-1", liqTableEntryWidth = "width:100%";
+    private byte[] preparedByImg = new byte[] { }, approverImg = new byte[] { };
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        preparedBy = new UserAccount();
+        preparedByImg = new byte[] { };
+        approverImg = new byte[] { };
+        await base.SetParametersAsync(parameters);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        GlobalClass.pageTitle = "liquidation entry";
+        while (GlobalClass.currentUserAccount == null || preparedBy == null)
+            await Task.Delay(1);
+
+        Task t = Task.WhenAll(InitializeComponents());
+        await t;
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        await Task.Delay(1);
+        submitText = GlobalClass.liquidation.Id == 0 ? "Save Liquidation" : "Update Liquidation";
+    }
+    async Task InitializeComponents()
+    {
+        navigationManager.LocationChanged += OnLocationChanged;
+        if (GlobalClass.liquidation == null || GlobalClass.liquidation.Id == 0)
+        {
+            GlobalClass.liquidation = new();
+            GlobalClassList.liquidationDetails = new();
+            GlobalClassList.liquidationPettyCash = new();
+            _preparedBy = GlobalClass.currentUserAccount.EmployeeName;
+            preparedByImg = GlobalClass.currentUserAccount.Picture;
+            preparedBy.EmployeeId = GlobalClass.currentUserAccount.EmployeeId;
+        }
+        else
+        {
+            await DisplayProperties();
+            TotalAmount();
+        }
+        CompletedFetch();
+    }
+    void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+    #region Location Changed
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        GlobalClass.liquidation = new();
+        Dispose();
+    }
+
+     public void Dispose()
+    {
+        navigationManager.LocationChanged -= OnLocationChanged;
+    }
+    #endregion
+  #region Lookup Prepared by
+
+  private async void LookUpPreparedDialog()
+  {
+      var parameters = new DialogParameters();
+      string dialogTitle = "Employee Look Up";
+      parameters.Add("dialogTitle", dialogTitle);
+      parameters.Add("buttonText", "Select");
+      parameters.Add("color", Color.Success);
+      parameters.Add("lookUpType", Enums.LookUpType.Employee);
+      var options = new DialogOptions()
+      {
+          CloseButton = false,
+          MaxWidth = MaxWidth.Small,
+          FullWidth = true,
+          NoHeader = false,
+          DisableBackdropClick = false
+      };
+      var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
+      if (!resultDialog.Cancelled)
+      {
+          preparedBy = (UserAccount)resultDialog.Data;
+          _preparedBy = preparedBy.EmployeeName;
+          preparedByImg = preparedBy.Picture;
+          StateHasChanged();
+      }
+  }
+
+  #endregion
+
+  #region Lookup Approver
+
+  private async void LookUpApproverDialog()
+  {
+      var parameters = new DialogParameters();
+      string dialogTitle = "Employee Look Up";
+      parameters.Add("dialogTitle", dialogTitle);
+      parameters.Add("buttonText", "Select");
+      parameters.Add("color", Color.Success);
+      parameters.Add("lookUpType", Enums.LookUpType.Employee);
+      var options = new DialogOptions()
+      {
+          CloseButton = false,
+          MaxWidth = MaxWidth.Small,
+          FullWidth = true,
+          NoHeader = false,
+          DisableBackdropClick = false
+      };
+      var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
+      if (!resultDialog.Cancelled)
+      {
+          selectedApprover = (UserAccount)resultDialog.Data;
+          _approvedBy = selectedApprover.EmployeeName;
+          approverImg = selectedApprover.Picture;
+          StateHasChanged();
+      }
+  }
+
+  #endregion
+
+  #region Lookup Charging
+  private async void LookUpChargingDialog(LiquidationDetailModel liquidationDetail)
+  {
+      var parameters = new DialogParameters();
+      string dialogTitle = "Charge to";
+      parameters.Add("dialogTitle", dialogTitle);
+      parameters.Add("buttonText", "Select");
+      parameters.Add("color", Color.Success);
+      parameters.Add("lookUpType", Enums.LookUpType.Project);
+      var options = new DialogOptions()
+      {
+          CloseButton = false,
+          MaxWidth = MaxWidth.Small,
+          FullWidth = true,
+          NoHeader = false,
+          DisableBackdropClick = false
+      };
+      var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
+      if (!resultDialog.Cancelled)
+      {
+          project = (Project)resultDialog.Data;
+          if (liquidationDetail.Id == 0)
+          {
+              GlobalClass.liquidation.LiquidationDetails.Where(x => x.TemporaryId == liquidationDetail.TemporaryId).ToList().ForEach(x =>
+              {
+                  x.ChargingCategoryId = project.ProjectCategoryId;
+                  x.ChargingId = project.ProjectId;
+                  x.ChargingName = project.ProjectName;
+              });
+          }
+          else
+          {
+              GlobalClass.liquidation.LiquidationDetails.Where(x => x.Id == liquidationDetail.Id).ToList().ForEach(x =>
+              {
+                  x.ChargingCategoryId = project.ProjectCategoryId;
+                  x.ChargingId = project.ProjectId;
+                  x.ChargingName = project.ProjectName;
+              });
+          }
+          StateHasChanged();
+      }
+  }
+
+  #endregion
+
+  #region Lookup Expense
+  private async void LookUpExpenseDialog(LiquidationDetailModel liquidationDetail)
+  {
+      var parameters = new DialogParameters();
+      string dialogTitle = "Expense Liine";
+      parameters.Add("dialogTitle", dialogTitle);
+      parameters.Add("buttonText", "Select");
+      parameters.Add("color", Color.Success);
+      parameters.Add("lookUpType", Enums.LookUpType.ExpLine);
+      var options = new DialogOptions()
+      {
+          CloseButton = false,
+          MaxWidth = MaxWidth.Small,
+          FullWidth = true,
+          NoHeader = false,
+          DisableBackdropClick = false
+      };
+      var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
+      if (!resultDialog.Cancelled)
+      {
+        Console.WriteLine(liquidationDetail.TemporaryId);
+          expenseLine = (ExpenseLineModel)resultDialog.Data;
+          if(liquidationDetail.Id == 0)
+          {
+            GlobalClass.liquidation.LiquidationDetails.Where(x=>x.TemporaryId == liquidationDetail.TemporaryId).ToList().ForEach(x=>
+            {
+              x.ExpenseLineId = expenseLine.Id;
+              x.ExpenseName = expenseLine.ExpenseName;
+            });
+          }
+          else
+          {
+            GlobalClass.liquidation.LiquidationDetails.Where(x=>x.Id == liquidationDetail.Id).ToList().ForEach(x=>
+            {
+            x.ExpenseLineId = expenseLine.Id;
+            x.ExpenseName = expenseLine.ExpenseName;
+            });
+          }
+          StateHasChanged();
+      }
+  }
+
+  #endregion
+
+  #region Load Employee
+
+  async Task<IEnumerable<UserAccount>> LoadEmployee(string employeeName)
+  {
+      var filterParameter = new FilterParameter()
+      {
+          IsName = true,
+          Name = employeeName,
+          IsLookUp = true
+      };
+      return await globalService.LoadAllEmployee(filterParameter, GlobalClass.token);
+  }
+
+  #endregion
+
+  #region Add Petty Cash
+
+  async void AddPettyCash()
+  {
+      var parameters = new DialogParameters();
+      string dialogTitle = "Petty Cash";
+      parameters.Add("dialogTitle", dialogTitle);
+      parameters.Add("buttonText", "Select");
+      parameters.Add("color", Color.Success);
+      parameters.Add("lookUpType", Enums.LookUpType.PettyCash);
+      var options = new DialogOptions()
+      {
+          CloseButton = false,
+          MaxWidth = MaxWidth.Large,
+          FullWidth = true,
+          NoHeader = false,
+          DisableBackdropClick = true
+      };
+      var resultDialog = await dialogService.Show<Shared.Dialogs.GlobalRFPLiquidationLookUp.GlobalRFPLiquidationLookUp>(dialogTitle, parameters, options).Result;
+      if (!resultDialog.Cancelled)
+      {
+          StateHasChanged();
+          TotalAmount();
+      }
+  }
+
+  #endregion
+
+  #region Mapping Liquidation
+
+  LiquidationModel MapProperties()
+  {
+      GlobalClass.liquidation.LiquidationDate = Convert.ToDateTime(liquidationDate);
+      GlobalClass.liquidation.PreparedById = preparedBy.EmployeeId;
+      GlobalClass.liquidation.PreparedByName = _preparedBy;
+      GlobalClass.liquidation.ApprovedById = selectedApprover.EmployeeId;
+      GlobalClass.liquidation.PayeeId = 1;
+      GlobalClass.liquidation.PayeeCategoryId = Enums.ProjectCategory.Project;
+      GlobalClass.liquidation.UserId = GlobalClass.currentUserAccount.EmployeeId;
+      GlobalClass.liquidation.Activity = GlobalClass.liquidation.Id == 0 ? "Add Liquidation" : "Edit Liquidation";
+      GlobalClass.liquidation.StatusId = GlobalClassList.accountingStatusList.Where(x => x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.LG).Select(t => t.Id).FirstOrDefault();
+
+      GlobalClass.liquidation.LiquidationDetails.ForEach(liq=> 
+        {
+          liq.StatusId = GlobalClassList.accountingStatusList
+          .Where(x=>x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCL)
+          .Select(i=>i.Id)
+          .FirstOrDefault();
+
+          liq.UserId = GlobalClass.currentUserAccount.EmployeeId;
+          liq.Activity = "Petty Cash Liquidated";
+        });
+
+      GlobalClass.liquidation.PeriodFrom = (DateTime)periodLiquidation.Start.GetValueOrDefault();
+      GlobalClass.liquidation.PeriodTo = (DateTime)periodLiquidation.End.GetValueOrDefault();
+
+      GlobalClass.liquidation.IsActive = true;
+
+      return GlobalClass.liquidation;
+  }
+
+  #endregion
+
+  #region Display Properties
+
+  async Task DisplayProperties()
+  {
+      var liquidationDetails = await liquidationService.LiquidationDetails(GlobalClass.liquidation.Id, GlobalClass.token);
+      GlobalClass.liquidation.LiquidationDetails = liquidationDetails.Select(liquidationDetail => new LiquidationDetailModel()
+      {
+          Id = liquidationDetail.Id,
+          PettyCashId = liquidationDetail.PettyCashId,
+          ControlNumber = liquidationDetail.ControlNumber,
+          PayeeId = liquidationDetail.PayeeId,
+          PayeeName = liquidationDetail.PayeeName,
+          PayeeCategoryId = liquidationDetail.PayeeCategoryId,
+          Particular = liquidationDetail.Particular,
+          RequestedById = liquidationDetail.RequestedById,
+          RequestedByName = liquidationDetail.RequestedByName,
+          LiquidationId = GlobalClass.liquidation.Id,
+          IsActive = liquidationDetail.IsActive,
+          StatusId = liquidationDetail.StatusId,
+          StatusName = liquidationDetail.StatusName,
+          ExpenseLineId = liquidationDetail.ExpenseLineId,
+          ExpenseName = liquidationDetail.ExpenseName,
+          ChargingCategoryId = liquidationDetail.ChargingCategoryId,
+          ChargingId = liquidationDetail.ChargingId,
+          ChargingName = liquidationDetail.ChargingName,
+          Amount = liquidationDetail.Amount,
+          Remarks = liquidationDetail.Remarks
+
+      }).ToList();
+
+      liquidationDate = GlobalClass.liquidation.LiquidationDate;
+      preparedBy.EmployeeId = GlobalClass.liquidation.PreparedById;
+      _preparedBy = GlobalClass.liquidation.PreparedByName;
+      selectedApprover.EmployeeId = GlobalClass.liquidation.ApprovedById;
+      _approvedBy = GlobalClass.liquidation.ApprovedByName;
+
+      payee.ProjectId = GlobalClass.liquidation.PayeeId;
+      payee.ProjectName = GlobalClass.liquidation.PayeeName;
+      payee.ProjectCategoryId = GlobalClass.liquidation.PayeeCategoryId;
+
+      preparedByImg = await GetEmployeeDetails(GlobalClass.liquidation.PreparedById);
+      approverImg = await GetEmployeeDetails(GlobalClass.liquidation.ApprovedById);
+
+      periodLiquidation.Start = GlobalClass.liquidation.PeriodFrom;
+      periodLiquidation.End = GlobalClass.liquidation.PeriodTo;
+  }
+
+  #endregion
+
+  #region Total Amount
+
+  void TotalAmount()
+  {
+      totalAmount = GlobalClass.liquidation.LiquidationDetails.Sum(x => x.Amount);
+      GlobalClass.liquidation.TotalAmount = totalAmount;
+  }
+
+  #endregion
+
+    #region Print/Save Liquidation
+
+  void PrintLiquidation()
+  {
+    if (Validation())
+    {
+      GlobalClass.forPrintingOrSaveLiquidation = MapProperties();
+      navigationManager.NavigateTo($"liquidationreport");
+    }
+    else
+      Extensions.ShowAlert("Incomplete fields. Please complete data", Variant.Filled, snackBarService, Severity.Error);
+  }
+
+  #endregion
+
+  #region Remove Petty Cash
+
+  private async void RemovePettyCash(LiquidationDetailModel liquidationDetail)
+  {
+    if(liquidationDetail.Id != 0)
+    {
+        var parameters = new DialogParameters();
+        string contentText = "Petty Cash ";
+        string dialogTitle = "Remove " + contentText;
+        parameters.Add("contentText", contentText);
+        parameters.Add("actionMode", Enums.ActionMode.Delete);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if(!resultDialog.Cancelled)
+        {
+            liquidationDetail.IsActive = false;
+            GlobalClass.liquidation.RemovedLiquidationDetails.Add(liquidationDetail);
+            GlobalClass.liquidation.LiquidationDetails = GlobalClass.liquidation.LiquidationDetails.Where(x => x.IsActive == true).ToList();
+            StateHasChanged();
+        }
+        
+    }
+    else
+    {
+        liquidationDetail.IsActive = false;
+        GlobalClass.liquidation.RemovedLiquidationDetails.Add(liquidationDetail);
+        GlobalClass.liquidation.LiquidationDetails = GlobalClass.liquidation.LiquidationDetails.Where(x => x.IsActive == true).ToList();
+        StateHasChanged();
+    }
+
+   
+  }
+  #endregion
+
+  void NavigateTo(LiquidationModel liquidation)
+  {
+    GlobalClass.liquidation = liquidation;
+    navigationManager.NavigateTo($"liquidationreport");
+  }
+
+  private bool Validation()
+  {
+    bool validated = false;
+    long chargingId = 0, expenseLineId = 0;
+    GlobalClass.liquidation.LiquidationDetails.ForEach(x=>
+    {
+      expenseLineId = x.ExpenseLineId;
+      chargingId = x.ChargingId;
+    });
+    
+    if(GlobalClass.liquidation.LiquidationDetails.Count() == 0 
+    || chargingId == 0
+    || expenseLineId == 0)
+    {
+        validated = false;
+    }
+    else
+    {
+      validated = true;
+    }
+
+    if(preparedBy.EmployeeId == 0)
+      requiredPreparedBy = true;
+      else
+        requiredPreparedBy = false;
+
+    if(selectedApprover.EmployeeId == 0)
+      requiredApprover = true;
+      else
+        requiredApprover = false;
+
+    return validated;
+  }
+  public async void GetFromEditor()
+  {
+    GlobalClass.liquidation.Remarks = await this.remarksTextEditor.GetText();
+    GlobalClass.liquidation.Remarks = GlobalClass.liquidation.Remarks.Trim();
+    StateHasChanged();
+  }
+  public async void SetToEditor(string contentText)
+  {
+    await Task.Delay(1);
+    string content = contentText;
+    await this.remarksTextEditor.InsertText(content);
+    StateHasChanged();
+  }
+
+  private async Task<byte[]> GetEmployeeDetails(long employeeId)
+  {
+      var employeeDetail = await globalService.GetEmployeeById(employeeId, GlobalClass.token);
+      return employeeDetail.Picture;
+  }
+  private void CollapseTableCont()
+  {
+    if (isLiqTableCollapsed) {
+      liqTableContGrow = "flex-grow-1";
+      liqTableEntryWidth = "width:100%";
+      isLiqTableCollapsed = !isLiqTableCollapsed;
+    } else if (!isLiqTableCollapsed) {
+      liqTableContGrow = "flex-grow-0";
+      liqTableEntryWidth = "width:56px";
+      isLiqTableCollapsed = !isLiqTableCollapsed;
+    }
+  }
+  private void CollapseDetails()
+  {
+    collapseLiqDetails = !collapseLiqDetails;
+    if (collapseLiqDetails)
+      foreach (var item in GlobalClass.liquidation.LiquidationDetails)
+        item.ShowSubTable = true;
+    else
+      foreach (var item in GlobalClass.liquidation.LiquidationDetails)
+        item.ShowSubTable = false;
+  }
+}

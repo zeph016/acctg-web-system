@@ -1,0 +1,52 @@
+@inject IPettyCashService PettyCashService
+@inject ISnackbar Snackbar
+<MudDialog>
+    <DialogContent>
+        Are you sure you want to <strong>@action</strong> this Petty Cash?
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Yes</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public string pettyCashId { get; set; }
+    [Parameter] public string action { get; set; }
+    async Task Submit()
+    {
+        if(isValidated()){
+            GlobalClass.pettyCash.Activity = action+" Petty Cash";
+            GlobalClass.pettyCash.PettyCashId = GlobalClass.pettyCash.Id;
+            GlobalClass.pettyCash.UserId = GlobalClass.currentUserAccount.EmployeeId;
+            await PettyCashService.UpdatePettyCash(GlobalClass.pettyCash,GlobalClass.token);
+            MudDialog.Close(DialogResult.Ok(true));
+            Console.WriteLine(GlobalClass.pettyCash.StatusId);
+            Extensions.ShowAlert(action+" by: "+GlobalClass.currentUserAccount.EmployeeName,Variant.Filled,Snackbar,Severity.Success);
+        }else{
+            Extensions.ShowAlert("You are not allowed to "+action+" this Petty Cash",Variant.Filled,Snackbar,Severity.Error);
+        }
+    }
+    void Cancel()
+    {
+        MudDialog.Cancel(); 
+        GlobalClass.pettyCash = new();
+    }
+    bool isValidated(){
+        if(action.Equals("Approve")){
+            if(GlobalClass.currentUserAccount.EmployeeId.Equals(GlobalClass.pettyCash.ApprovedById))
+                GlobalClass.pettyCash.StatusId = (Int64)Enums.AccountingStatusEnumCategory.PCA;
+            else
+                return false;
+        }
+        else if(action.Equals("Cancel")){
+            GlobalClass.pettyCash.StatusId = (Int64)Enums.AccountingStatusEnumCategory.PCC;
+        }else{
+            if(GlobalClass.currentUserAccount.EmployeeId.Equals(GlobalClass.pettyCash.ReceivedById))
+                GlobalClass.pettyCash.StatusId = (Int64)Enums.AccountingStatusEnumCategory.PCR;
+            else
+                return false;
+        }
+        return true;
+    }
+}

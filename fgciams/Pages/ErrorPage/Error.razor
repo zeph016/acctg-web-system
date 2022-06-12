@@ -1,0 +1,84 @@
+@page "/error"
+@page "/error/{httpstatus:int}"
+@page "/logout/{httpstatus:int}"
+
+@inject NavigationManager navigationManager
+
+<div class='page-cont'>
+    <div class='d-flex errorpage'>
+        @if (!isDataFetched) 
+        {
+            <MudSkeleton Width="30%" Height="42px;" />
+            <MudSkeleton Width="80%" />
+            <MudSkeleton Width="100%" />
+            <MudSkeleton Width="64px" Height="40px" Class="ml-2" />
+            <MudSkeleton Width="105px" Height="40px" Class="ml-3" />
+        }
+        else
+        {
+            @if(httpstatus == 401)
+            {
+                <img class='errorpage__img' src="images/pagetokenexpired401.png" asp-append-version="true" />  
+            }
+            @if (httpstatus == 403) 
+            {
+                <img class='errorpage__img' src="images/pageforbidden403.png" asp-append-version="true" />
+            }
+            @if (httpstatus == 404) 
+            {
+                <img class='errorpage__img' src="images/pagenotfound404.png" asp-append-version="true" />
+            }
+            @if (httpstatus == 200 && currentUrl.Contains("logout")) {
+                <img class='errorpage__img' src="images/pageloggedout.png" asp-append-version="true" />
+            }
+            <MudButton class='errorpage__btn' OnClick='ReturnButton' Variant='Variant.Filled'>@buttonText</MudButton>
+        }
+   </div>
+</div>
+   
+
+@code {
+    [Parameter] public int httpstatus { get; set; }
+    private string currentUrl = default!;
+    private string buttonText { get; set; } = default!;
+    private bool isDataFetched;
+
+    protected override async Task OnInitializedAsync()
+    {
+        while (GlobalClass.currentUserAccount == null)
+            await Task.Delay(1);
+        CheckAuthIssue();
+        CompletedFetch();
+    }
+
+    private void CheckAuthIssue()
+    {
+        buttonText = httpstatus == 401 || httpstatus == 404 ? "Go To Hub" : "Back to Dashboard";
+    }
+
+    private void ReturnButton()
+    {
+        if (httpstatus == 404 || httpstatus == 401)
+            GoToHub();
+        else
+            BackToDashboard();
+    }
+
+    private void GoToHub()
+    {
+        navigationManager.NavigateTo($"http://10.0.0.7:8000");
+    }
+
+    private void BackToDashboard()
+    {
+        navigationManager.NavigateTo($"/dashboard");
+    }
+
+    private void CompletedFetch()
+    {
+        if(GlobalClass.isUserAuth)
+            navigationManager.NavigateTo($"/dashboard");
+        isDataFetched = true;
+        StateHasChanged();
+    }
+}

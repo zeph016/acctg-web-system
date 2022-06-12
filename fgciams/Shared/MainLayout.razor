@@ -1,0 +1,362 @@
+﻿@inherits LayoutComponentBase
+
+@inject IAccountingStatusService accountingStatusService
+@inject IDivisionService divisionService
+@inject IUserAccountService userAccountService
+@inject IModeOfPaymentService modeOfPaymentService
+@inject IBillingDocumentService billingDocumentService
+@inject IBankService bankService
+@inject IRequestTypeService requestTypeService
+@inject IPayeeService payeeService
+@inject IPayeeCategoryService payeeCategoryService
+@inject IProjectChargingLineService projectChargingService
+@inject ISubContractorCompanyService subContractorCompanyService
+@inject ISubConGeneralInformationService subConGeneralInformationService
+@inject ISubContractorPositionService subConPositionService
+@inject IRequestForPaymentService requestForPaymentService
+@inject IPettyCashService pettyCashService
+@inject ILiquidationService liquidationService
+@inject IJSRuntime jsRuntimeService
+@inject Blazored.LocalStorage.ILocalStorageService localStorageService
+@inject NavigationManager navigationManager
+@inject IDialogService dialogService
+@inject IExpenseLineService expenseLineService
+
+<MudThemeProvider/>
+<MudDialogProvider/>
+<MudSnackbarProvider/>
+
+<MudLayout>
+    <MudOverlay Visible='showLoadingOverlay' Absolute='true' DarkBackground='true'>
+         <MudProgressCircular class='loader-2' Size="Size.Large" Indeterminate="true"/>
+    </MudOverlay>
+    <MudAppBar Class='topbar' Fixed='true' Elevation='0' Dense='true'>
+        <MudText Class='topbar__tbxpagetitle'>@GlobalClass.pageTitle</MudText>
+        <MudSpacer/>
+        <MudBadge Content='0' Origin='Origin.TopLeft' Color='Color.Error' Overlap='true' style='@drawerStyleStr'>
+            <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Default" Size='Size.Small'/>
+        </MudBadge>
+        <div class='usercp' style='@drawerStyleStr'>
+            <MudExpansionPanels Class='usercp__expansionpanel-header' DisableBorders='userCPborderVal' Elevation='userCPElevationVal'> 
+                <MudExpansionPanel Class='usercp__expansionpanel' IsExpandedChanged='ToggleUserCP' Style='@userCPExpPanelStyleStr'>
+                    <TitleContent>
+                        <div class='d-flex usercp__infocontainer' style='@userCPInfoStyleStr'>
+                            @if(!dataFetched) 
+                            {
+                                <MudSkeleton class='usercp__skeletonavatar' SkeletonType='SkeletonType.Circle' Animation='Animation.Wave' Height='40px' Width='40px'/>
+                                <div>
+                                    <MudSkeleton SkeletonType='SkeletonType.Rectangle' Animation='Animation.Wave' Height='40px' Width='160px'/>
+                                </div>
+                            }
+                            else
+                            {
+                                <MudAvatar Class='usercp__avatar' Image='@($"data:image/png;base64, {Convert.ToBase64String(@GlobalClass.currentUserAccount.Picture)}")'/>
+                                <div>
+                                    <MudText Class='usercp__lblusername'>@GlobalClass.currentUserAccount.FirstName</MudText>
+                                    <MudText Class='usercp__lbldesignation'>@GlobalClass.currentUserAccount.Designation</MudText>
+                                </div>
+                            }
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        <div><hr class='horizline'></div>
+                        <MudContainer Class='d-flex usercp__btncontainer' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+                            <MudButton Class='usercp__btnsettings' Variant='Variant.Text' StartIcon='@Icons.Filled.Settings' Size='Size.Medium'>Settings</MudButton>
+                            <MudSpacer/>
+                            <MudButton Class='usercp__btntohub' OnClick='() => LogOut(false)' Variant='Variant.Text' StartIcon='@Icons.Filled.ExitToApp' Size='Size.Medium'>Back to Hub</MudButton>
+                        </MudContainer>
+                        <div><hr class='horizline'></div>
+                        <MudButton Class='usercp__btnlogout' OnClick='() => LogOut(true)' Variant='Variant.Filled' StartIcon='@Icons.Filled.Logout' Color='Color.Error'>Log Out</MudButton>
+                    </ChildContent>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </div>
+    </MudAppBar>
+    <MudDrawer Class='main-drawer' @bind-Open="GlobalVariable.drawerOpen" Fixed='true' Elevation='0' Variant='@DrawerVariant.Mini' OpenMiniOnHover='false'>
+        <MudDrawerHeader Class='drawer-header'>
+            <MudIconButton OnClick="@((e) => DrawerToggle())" Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" />
+            <MudText Class='drawer-header__header-text'>ACCTG MGMT SYSTEM</MudText>
+        </MudDrawerHeader>
+        <MudNavMenu style='@drawerStyleStr'>
+            <MudNavLink Href='/dashboard' Match="NavLinkMatch.All" Icon="@Icons.Filled.Dashboard">DASHBOARD</MudNavLink>    
+            <MudNavGroup Title='LIQUIDATION' Icon='@Icons.Filled.ReceiptLong' HideExpandIcon='true'>
+                <MudNavLink Href='/liquidation' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck">LIQUIDATION ENTRY</MudNavLink>
+                <MudNavLink Href='/liquidationlist' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList">LIQUIDATION LIST</MudNavLink>
+            </MudNavGroup>
+            <MudNavGroup Title='PETTY CASH' Icon='fa-solid fa-coins' HideExpandIcon='true'>
+                <MudNavLink Href='/pettycash/create' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck">PETTY CASH ENTRY</MudNavLink>
+                <MudNavLink Href='/pettycash-list' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList">PETTY CASH LIST</MudNavLink>
+            </MudNavGroup>
+            <MudNavGroup Title='REQUEST FOR PAYMENT' Icon='@Icons.Filled.Payments' HideExpandIcon='true'>
+                <MudNavLink Href='/requestpayment/create' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck">RFP ENTRY</MudNavLink>
+                <MudNavLink Href='/requestpaymentlist' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList">RFP LIST</MudNavLink>
+            </MudNavGroup>
+            <MudNavGroup Title='VOUCHER' Icon='@Icons.Filled.ReceiptLong' HideExpandIcon='true'>
+                <MudNavLink Href='/voucher/create' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck">VOUCHER ENTRY</MudNavLink>
+                <MudNavLink Href='/voucher/list' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList">VOUCHER LIST</MudNavLink>
+            </MudNavGroup>
+            <MudNavGroup Class='expandheight-navgroup' Title='CONFIGURATION' Icon='@Icons.Filled.Settings' HideExpandIcon='true'>
+                <MudNavLink Href='/accounting-status' Match="NavLinkMatch.All" Icon="@Icons.Filled.Group">ACCOUNTING STATUS</MudNavLink>
+                <MudNavLink Href='/bank' Match="NavLinkMatch.All" Icon="@Icons.Filled.AccountBalance">BANK</MudNavLink>
+                <MudNavLink Class='fa-icon-center' Href='/billingdocument' Match="NavLinkMatch.All" Icon="fa-solid fa-receipt">BILLING DOCUMENT</MudNavLink>
+                <MudNavLink Class='fa-icon-center' Href='/division' Match="NavLinkMatch.All" Icon="fa-solid fa-bars-staggered">DIVISION</MudNavLink>
+                <MudNavLink Href='/modeofpayment' Match="NavLinkMatch.All" Icon="@Icons.Filled.Payment">MODE OF PAYMENT</MudNavLink>
+                <MudNavLink Class='fa-icon-center' Href='/payee' Match="NavLinkMatch.All" Icon="fa-solid fa-person">PAYEE</MudNavLink>
+                <MudNavLink Href='/payeecategory' Match="NavLinkMatch.All" Icon='@Icons.Filled.Group'>PAYEE CATEGORY</MudNavLink>
+                <MudNavLink Href='/projectcharging' Match="NavLinkMatch.All" Icon="@Icons.Filled.CreditScore">PROJECT CHARGING LINE</MudNavLink>
+                <MudNavLink Class='fa-icon-center' Href='/requesttype' Match="NavLinkMatch.All" Icon='fa-solid fa-clipboard-check'>REQUEST TYPES</MudNavLink>
+                <MudNavGroup Class='childnavgroup expandheight-group fa-icon-center' Title='SUBCON' Icon='fa-solid fa-briefcase' HideExpandIcon='true'>
+                    <MudNavLink Class='fa-icon-center' Href='/subcontractor-company' Match="NavLinkMatch.All" Icon='fa-solid fa-building'>SUB CON COMPANY</MudNavLink>
+                    <MudNavLink Href='/subcontractor-generalinfo' Match="NavLinkMatch.All" Icon="@Icons.Filled.Info">SUB CON GENERAL INFO.</MudNavLink>
+                    <MudNavLink Href='/subcontractor-position' Match="NavLinkMatch.All" Icon='@Icons.Filled.Engineering'>SUB CON POSITION</MudNavLink>
+                </MudNavGroup>
+                <MudNavLink Class='fa-icon-center' Href='/expenseline-list' Match="NavLinkMatch.All" Icon='@Icons.Filled.AttachMoney'>EXPENSE LINE</MudNavLink>
+            </MudNavGroup>
+        </MudNavMenu>
+        <MudSpacer />
+        <MudImage Class='drawer-system-icon' Src='@systemIconSource' style='@drawerStyleStr' />
+    </MudDrawer>
+    <MudMainContent>
+        @* <MudContainer Class='main-body' Fixed='true'>
+            @Body
+        </MudContainer> *@
+         <div Class='main-body overflow-hidden'>
+            @Body
+        </div>
+    </MudMainContent>
+    <MudAppBar Class='footerbar' Fixed='true' Elevation='0' Dense='true' Bottom='true'>
+        <MudText>
+            v1.0.0.1
+        </MudText>
+        <MudIconButton Class='footerbar__btn-hardreload' OnClick='RefreshPage' Icon='@Icons.Material.Filled.Refresh' aria-label='Refresh Page'>
+        </MudIconButton>
+        <MudSpacer />
+        <MudText>
+            <div @ref='timeElement'></div>
+        </MudText>
+        <MudIconButton Class='footerbar__btn-fullscreen' OnClick='ToggleFullScreen' Icon='@Icons.Material.Filled.Fullscreen' aria-label='Toggle Full Screen'>
+        </MudIconButton>
+    </MudAppBar>
+</MudLayout>
+
+@code {
+    #region Properties
+    private string? systemIconSource = $"images/icons/file-invoice.svg", drawerStyleStr = "display: none;", 
+    userCPExpPanelStyleStr = "background-color: #fafafa;", userCPInfoStyleStr = "width: 250px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;",
+    currentUrl;
+    private bool _drawerOpen = true, _isFullScreen, _hideExpandDrawerIcon, dataFetched, showLoadingOverlay = true, 
+    userCPOpen, userCPborderVal;
+    private int userCPElevationVal = 0;
+    ElementReference timeElement;
+    #endregion
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUrl = navigationManager.Uri;
+        Console.WriteLine(navigationManager.Uri);
+        GlobalClass.isUserAuth = await Extensions.ValidateToken(userAccountService, localStorageService, jsRuntimeService);
+        if (GlobalClass.isUserAuth) {
+            Console.WriteLine("Validated");
+            EnableLinks();
+            await LoadGlobalLists();
+            string redirectURL = !currentUrl.Contains("error") ? currentUrl : "/dashboard";
+            navigationManager.NavigateTo($"{redirectURL}"); 
+            CompletedFetch();
+        } else if (!GlobalClass.isUserAuth) {
+            Console.WriteLine("Unauthorized");
+            string tokenState;
+            DisableLinks();
+            showLoadingOverlay = false;
+            if (string.IsNullOrWhiteSpace(GlobalClass.token))
+                tokenState = "/error/403";
+            else 
+                tokenState = Extensions.isTokenExpired(GlobalClass.token) ? "/error/401" : "/error/404";
+            navigationManager.NavigateTo($"{tokenState}");
+        }
+    }
+
+    void CompletedFetch()
+    {
+        dataFetched = true;
+        showLoadingOverlay = false;
+        StateHasChanged();
+    }
+
+    private async Task LoadGlobalLists()
+    {
+        Task t = Task.WhenAll(LoadAcctgStatusList(), LoadDivisionList(), LoadPaymentModes(), 
+        LoadBillingDocs(), LoadBanks(), LoadRequestTypes(),
+        LoadPayees(), LoadPayeeCategories(), LoadChargingLines(),
+        LoadSubContractors(), LoadSubConGenInfos(), LoadSubConPositions(), LoadNotRFPLiquidation());
+        await t;
+    }
+
+    private async Task LoadAcctgStatusList()
+    {
+        GlobalClassList.accountingStatusList = await accountingStatusService.LoadAccountingStatusList(GlobalClass.token);
+    }
+
+    private async Task LoadDivisionList()
+    {
+        GlobalClassList.divisionList = await divisionService.LoadDivisionList(GlobalClass.token);
+    }
+
+    private async Task LoadPaymentModes()
+    {
+        GlobalClassList.modeOfPaymentList = await modeOfPaymentService.LoadModeOfPaymentList(GlobalClass.token);
+    }
+
+    private async Task LoadBillingDocs()
+    {
+        GlobalClassList.billingDocumentList = await billingDocumentService.LoadListOfBillingDocuments(GlobalClass.token);
+    }
+
+    private async Task LoadBanks()
+    {
+        GlobalClassList.banks = await bankService.LoadBanks(GlobalClass.token);
+    }
+
+    private async Task LoadRequestTypes()
+    {
+      GlobalClassList.requestTypes = await requestTypeService.LoadRequestType(GlobalClass.token);
+    }
+
+    private async Task LoadPayees()
+    {
+        GlobalClassList.payeeList = await payeeService.LoadPayee(GlobalClass.token);
+    }
+
+    private async Task LoadPayeeCategories()
+    {
+        GlobalClassList.payeeCategoryList = await payeeCategoryService.LoadListOfPayeeCategory(GlobalClass.token);
+    }
+
+    private async Task LoadChargingLines()
+    {
+        GlobalClassList.projectChargingLines = await projectChargingService.LoadProjectChargingLine(GlobalClass.token);
+    }
+
+    private async Task LoadSubContractors()
+    {
+        GlobalClassList.subContractorCompanies = await subContractorCompanyService.LoadSubContractorCompany(GlobalClass.token);
+    }
+    private async Task LoadExpenseLine()
+    {
+        GlobalClassList.expenseLineList = await expenseLineService.LoadExpenseLine(GlobalClass.token);
+    }
+    private async Task LoadSubConGenInfos()
+    {
+        GlobalClassList.subConGeneralInformations = await subConGeneralInformationService.LoadSubConGenInfo(GlobalClass.token);
+    }
+
+    private async Task LoadSubConPositions()
+    {
+        GlobalClassList.subContractorPositions = await subConPositionService.LoadSubContractorPosition(GlobalClass.token);
+    }
+    private async Task LoadNotRFPLiquidation()
+    {
+      GlobalClassList.LiquidationNotInRFP = await liquidationService.LiquidationNotRFP(GlobalClass.token);
+    }
+  
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await jsRuntimeService.InvokeVoidAsync("startTime", timeElement);
+    }
+
+    private async void LogOut(bool isLogOut)
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = !isLogOut ? "To Hub" : "Log Out";
+        string contentText = !isLogOut ? "Return to Hub?" : "Log Out from Accounting Management System?";
+        string buttonText = !isLogOut ? "To Hub" : "Log Out";
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("contentText", contentText);
+        parameters.Add("buttonText", buttonText);
+
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = false
+        };
+
+        var resultDialog = await dialogService.Show<Shared.Dialogs.LogOut.LogOutDialog>(dialogTitle,parameters,options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            if (isLogOut) {
+                await localStorageService.SetItemAsync("token","");
+                await jsRuntimeService.InvokeVoidAsync("DeleteCookie");
+            }
+            NavigateToPage($"http://10.0.0.7:8000"); //server 7 main hub
+        }
+    }
+    private void DrawerToggle()
+    {
+        GlobalVariable.drawerOpen = !GlobalVariable.drawerOpen;
+        GlobalVariable.hideExpandIcon = !GlobalVariable.hideExpandIcon;
+    }
+
+    private async void RefreshPage()
+    {
+        await jsRuntimeService.InvokeVoidAsync("HardReload");
+    }
+    private async void ToggleFullScreen()
+    {
+        if(!_isFullScreen) {
+            await jsRuntimeService.InvokeVoidAsync("openFullScreen");
+            _isFullScreen = !_isFullScreen;
+        } else {
+             await jsRuntimeService.InvokeVoidAsync("closeFullScreen");
+            _isFullScreen = !_isFullScreen;
+        }
+    }
+    private void ToggleUserCP()
+    {
+        userCPOpen = !userCPOpen;
+        if (userCPOpen) {
+            userCPborderVal = false;
+            userCPElevationVal = 1;
+            userCPExpPanelStyleStr = "background: color: white;";
+            userCPInfoStyleStr = "width: 250px;";
+        } else if (!userCPOpen) {
+            userCPborderVal = true;
+            userCPElevationVal = 0;
+            userCPExpPanelStyleStr = "background-color: #fafafa;";
+            userCPInfoStyleStr = "width: 250px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;";
+        }
+    }
+
+    private void DisableLinks()
+    {
+        drawerStyleStr = "display: none;";
+    }
+    private void EnableLinks()
+    {
+        drawerStyleStr = "display: block;";
+    }
+    private void NavigateToAccountingStatus(){
+        navigationManager.NavigateTo("/accountingStatusPage");
+    }
+    private void NavigateToModeOfPayment(){
+        navigationManager.NavigateTo("/modeOfPaymentPage");
+    }
+    private void NavigateToDivision(){
+        navigationManager.NavigateTo("/divisionPage");
+    }
+    private void NavigateToPayeeCategory(){
+        navigationManager.NavigateTo("/payeeCategoryPage");
+    }
+    private void NavigateToPage(string location)
+    {
+        navigationManager.NavigateTo($"{location}");
+    }
+
+    private void PageTitle(string pageTitle)
+    {
+        Console.WriteLine(pageTitle);
+        GlobalClass.pageTitle = pageTitle;
+    }
+}

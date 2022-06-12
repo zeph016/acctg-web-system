@@ -1,0 +1,28 @@
+.border-radius-0 {
+  border-radius: 0px !important;
+}
+
+.border-radius-5 {
+  border-radius: 5px !important;
+}
+
+.border-thin {
+  border: solid thin lightgray;
+}
+
+.border-thin-top {
+  border-top: solid thin lightgray;
+}
+
+.border-thin-right {
+  border-right: solid thin lightgray;
+}
+
+.border-thin-bottom {
+  border-bottom: solid thin lightgray;
+}
+
+.border-thin-left {
+  border-left: solid thin lightgray;
+}
+/*# sourceMappingURL=border.styles.css.map */

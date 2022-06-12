@@ -1,0 +1,178 @@
+@page "/subcontractor-position"
+
+@inject ISubContractorPositionService subConPositionService
+@inject IDialogService dialogService
+@inject ISnackbar snackBarService
+
+
+<div class="page-cont">
+  <div class='drawer-right'>
+    <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+      <div class='drawer-right__filtercont'>
+        <div class='icon-area d-flex align-center'>
+          <MudIconButton OnClick='OpenSideFilter' Icon="@Icons.Filled.FilterList" aria-label="Filter" Size='Size.Medium' />
+        </div>
+        <div class='filter-title d-flex align-center'>
+          <p class='title875'>Filter</p>
+          <MudSpacer />
+          <MudIconButton OnClick='OpenSideFilter' Icon="@Icons.Filled.Close" aria-label="Close Filter" Size='Size.Medium' />
+        </div>
+        <div class='filter-content d-flex flex-column pl-4 pr-4 gap-1 @visibility'>
+          <MudTextField Class='txtfield-75' @bind-Value='searchTerm' Placeholder='Position Name'
+          Adornment='Adornment.Start' AdornmentIcon='@Icons.Material.Filled.Search' IconSize='Size.Small'
+          Clearable='true' Variant='Variant.Outlined' />
+          <MudButton Variant='Variant.Filled' Color='Color.Secondary'>Apply Filter</MudButton>
+        </div>
+      </div>
+    </MudDrawer>
+  </div>
+  <MudContainer Class='subconpospage' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+    @if (!dataFetched)
+    {
+      <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
+        <MudSkeleton SkeletonType='SkeletonType.Text' Height='100px' Animation='Animation.Wave' />
+        <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='71vh' Animation='Animation.Wave' />
+      </MudPaper>
+    }
+    else
+    {
+      <MudTable Class='configtables' Items="@GlobalClassList.subContractorPositions" Hover="true"
+      Breakpoint='Breakpoint.Sm' FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true' RowsPerPage='30'
+      Striped="true" Filter='new Func<SubContractorPositionModel,bool>(FilterItems)'>
+        <ToolBarContent>
+          <MudText Typo='Typo.caption'>
+            @GlobalClassList.subContractorPositions.Count() 
+            @(GlobalClassList.subContractorPositions.Count() == 1 ? "item" : "items") 
+            in Total
+          </MudText>
+          <MudSpacer />
+          <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' TransformOrigin='Origin.TopCenter'
+          Dense='true' Size='Size.Small' Label='More'>
+            <MudMenuItem OnClick='(() => SubConPositionDialog(new SubContractorPositionModel()))'>
+              <div class='d-flex align-center gap-2'>
+                <MudIcon Icon='@Icons.Filled.Add' Size='Size.Medium' />
+                <MudText Typo='Typo.body2'>Add</MudText>
+              </div>
+            </MudMenuItem>
+            <MudMenuItem OnClick='OpenSideFilter'>
+              <div class='d-flex align-center gap-2'>
+                <MudIcon Icon='@Icons.Filled.FilterList' />
+                <MudText Typo='Typo.body2'>Filter</MudText>
+              </div>
+            </MudMenuItem>
+          </MudMenu>
+        </ToolBarContent>
+        <ColGroup>
+          <col />
+          <col />
+          <col class='text-center' style='width: 5%;' />
+          <col style='width: 5%;' />
+        </ColGroup>
+        <HeaderContent>
+          <MudTh Class='customheader-1'>Position</MudTh>
+          <MudTh Class='customheader-1'>Remarks</MudTh>
+          <MudTh Class='customheader-1 text-center'>Active</MudTh>
+          <MudTh Class='customheader-1 text-center'>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+          <MudTd DataLabel="Position">@context.PositionName</MudTd>
+          <MudTd DataLabel="Remarks">@context.Remarks</MudTd>
+          <MudTd Class='text-center' DataLabel="Active">
+            <MudCheckBox @bind-Checked='@context.IsActive' ReadOnly='true' Size='Size.Small' />
+          </MudTd>
+          <MudTd Class='text-center'>
+            <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' TransformOrigin='Origin.TopCenter'
+            Dense='true' Size='Size.Small'>
+              <MudMenuItem OnClick='(() => SubConPositionDialog(context))'>
+                <div class='d-flex align-center gap-2'>
+                  <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small' />
+                  <MudText Typo='Typo.body2'>Edit</MudText>
+                </div>
+              </MudMenuItem>
+            </MudMenu>
+          </MudTd>
+        </RowTemplate>
+        <PagerContent>
+          <MudTablePager PageSizeOptions='@pageSize' />
+        </PagerContent>
+      </MudTable>
+    }
+  </MudContainer>
+</div>
+
+
+
+@code {
+  private bool dataFetched, openSideFilter;
+  private int[] pageSize = new int[] { 30, 50, 100, 500, 1000 };
+  private string searchTerm = string.Empty, visibility = "visibility-animation-hide";
+  protected override async Task OnInitializedAsync()
+  {
+    GlobalClass.pageTitle = "SUBCON POSITION";
+    while (GlobalClass.currentUserAccount == null || GlobalClassList.subContractorPositions == null)
+      await Task.Delay(1);
+    CompletedFetch();
+  }
+
+  void CompletedFetch()
+  {
+    dataFetched = true;
+    StateHasChanged();
+  }
+
+  private async Task SubConPositionDialog(SubContractorPositionModel subConPosition)
+  {
+    var parameters = new DialogParameters();
+    GlobalClass.subContractorPosition = subConPosition;
+    string dialogTitle = GlobalClass.subContractorPosition.Id != 0 ? "Edit SubCon Position" : "Add SubCon Position";
+    string buttonText = GlobalClass.subContractorPosition.Id != 0 ? "Update " : "Add";
+    Color color = GlobalClass.subContractorPosition.Id != 0 ? Color.Info : Color.Success;
+    parameters.Add("color", color);
+    parameters.Add("dialogTitle", dialogTitle);
+    parameters.Add("buttonText", buttonText);
+    var options = new DialogOptions()
+    {
+      CloseButton = false,
+      MaxWidth = MaxWidth.ExtraSmall,
+      FullWidth = true,
+      NoHeader = false,
+      DisableBackdropClick = false
+    };
+    var resultDialog = await dialogService.Show<Shared.Dialogs.SubContractorPositionDialogs.SubContractorPositionDialog>("",
+    parameters, options).Result;
+    if (!resultDialog.Cancelled)
+    {
+      if ((int)resultDialog.Data == 0)
+        ShowAlert("Added new subcon position", Variant.Filled, Severity.Success);
+      else if ((int)resultDialog.Data == 1)
+        ShowAlert("Updated subcon position", Variant.Filled, Severity.Info);
+      GlobalClassList.subContractorPositions = GlobalClassList.subContractorPositions.Where(x => x.IsActive == true).ToList();
+    }
+  }
+
+  private bool FilterItems(SubContractorPositionModel items)
+  {
+    if (string.IsNullOrEmpty(searchTerm))
+      return true;
+    if (items.PositionName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase))
+      return true;
+    return false;
+  }
+
+  private void ShowAlert(string message, Variant variant, Severity severity)
+  {
+    snackBarService.Clear();
+    snackBarService.Configuration.PositionClass = Defaults.Classes.Position.BottomCenter;
+    snackBarService.Configuration.SnackbarVariant = variant;
+    snackBarService.Configuration.MaxDisplayedSnackbars = 10;
+    snackBarService.Add($"{message}", severity);
+  }
+  private void OpenSideFilter()
+  {
+    openSideFilter = !openSideFilter;
+    if(openSideFilter)
+      visibility = "visibility-animation-show";
+    if(!openSideFilter)
+      visibility = "visibility-animation-hide";
+  }
+}

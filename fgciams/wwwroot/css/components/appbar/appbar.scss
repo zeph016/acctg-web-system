@@ -1,0 +1,31 @@
+.topbar,
+.footerbar {
+    background-color: #f7f7f8 !important;
+    .mud-toolbar {
+        padding: 0px 16px;
+    }
+}
+.topbar {
+    .mud-toolbar {
+        background-color: #fafafa;
+        height: 55px !important;
+    }
+    &__tbxpagetitle {
+        color: #7d7d7d;;
+        font-family: "Theramin", sans-serif !important;
+        font-size: 1.5rem !important;
+        text-transform: uppercase !important;
+    }
+}
+.footerbar {
+    height: 32px;
+    .mud-typography {
+        color: black;
+        font-size: 12px;
+    }
+    &__btn-hardreload,
+    &__btn-fullscreen {
+        margin: 0px 0px 0px 5px !important;
+        padding: 0px !important;
+    }
+}

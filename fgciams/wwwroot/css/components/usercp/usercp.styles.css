@@ -1,0 +1,45 @@
+.usercp {
+  max-height: 50px;
+  background-color: #f7f7f8;
+  position: relative;
+}
+
+.usercp .mud-expand-panel-header {
+  max-width: 320px;
+  min-width: 320px;
+  padding: 1px 24px 0px 24px !important;
+  margin: 0px 0px 3px 0px !important;
+}
+
+.usercp__infocontainer {
+  width: 250px !important;
+}
+
+.usercp__skeletonavatar, .usercp__avatar {
+  margin-right: 10px;
+}
+
+.usercp__lblusername {
+  font-size: 15px !important;
+}
+
+.usercp__lbldesignation {
+  font-size: 12px !important;
+}
+
+.usercp__btncontainer {
+  padding: 0px 16px !important;
+}
+
+.usercp__btncontainer .mud-svg-icon {
+  color: black !important;
+}
+
+.usercp__btnsettings, .usercp__btntohub {
+  text-transform: none !important;
+}
+
+.usercp__btnlogout {
+  width: 100%;
+}
+/*# sourceMappingURL=usercp.styles.css.map */

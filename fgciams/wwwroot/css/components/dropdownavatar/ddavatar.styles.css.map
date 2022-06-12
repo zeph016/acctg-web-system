@@ -1,0 +1,9 @@
+{
+    "version": 3,
+    "mappings": "AAAA,AAAA,SAAS,CAAC;EACN,WAAW,EAAE,MAAM;EACnB,OAAO,EAAE,IAAI;EACb,GAAG,EAAE,IAAI;CACZ",
+    "sources": [
+        "ddavatar.styles.scss"
+    ],
+    "names": [],
+    "file": "ddavatar.styles.css"
+}

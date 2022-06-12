@@ -1,0 +1,14 @@
+.subdrawer-left {
+    background-color: #fafafa !important;
+    .mud-navmenu {
+        height: 100%;
+    }
+}
+
+
+.drawer-no-left {
+    .mud-drawer { left: unset !important; }
+}
+.drawer-no-top {
+    .mud-drawer { top: unset !important; }
+}

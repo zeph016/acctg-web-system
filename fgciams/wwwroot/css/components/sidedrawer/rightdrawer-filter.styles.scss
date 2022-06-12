@@ -1,0 +1,18 @@
+.drawer-right { 
+    .mud-drawer { 
+        background-color: #fafafa ;
+        // height: calc(100vh - 85px) !important; 
+        height: 100% !important;
+        overflow: hidden;
+    }
+    .mud-drawer--open { width: 325px !important; }
+    &__filtercont {
+        display: grid; 
+        grid-template-columns: 56px 1fr; 
+        grid-template-rows: 50px 1fr; 
+        gap: 0px 0px; 
+    }
+    .icon-area { grid-area: 1 / 1 / 2 / 3; }
+    .filter-title { grid-area: 1 / 2 / 2 / 3; }
+    .filter-content { grid-area: 2 / 1 / 3 / 3; }
+}

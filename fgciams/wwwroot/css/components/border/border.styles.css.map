@@ -1,0 +1,9 @@
+{
+    "version": 3,
+    "mappings": "AAAA,AAAA,gBAAgB,CAAC;EAAE,aAAa,EAAE,cAAc;CAAI;;AACpD,AAAA,gBAAgB,CAAC;EAAE,aAAa,EAAE,cAAc;CAAI;;AACpD,AAAA,YAAY,CAAC;EAAE,MAAM,EAAE,oBAAoB;CAAG;;AAC9C,AAAA,gBAAgB,CAAC;EAAE,UAAU,EAAE,oBAAoB;CAAI;;AACvD,AAAA,kBAAkB,CAAC;EAAE,YAAY,EAAE,oBAAoB;CAAI;;AAC3D,AAAA,mBAAmB,CAAC;EAAE,aAAa,EAAE,oBAAoB;CAAI;;AAC7D,AAAA,iBAAiB,CAAC;EAAE,WAAW,EAAE,oBAAoB;CAAI",
+    "sources": [
+        "border.styles.scss"
+    ],
+    "names": [],
+    "file": "border.styles.css"
+}

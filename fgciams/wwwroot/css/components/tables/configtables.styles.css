@@ -1,0 +1,28 @@
+.configtables .mud-table-container {
+  height: calc(100vh - 190px);
+  min-width: 75vh;
+}
+
+.configtables .mud-table-pagination-caption {
+  font-size: 12px;
+}
+
+.configtables .mud-toolbar-gutters {
+  height: 2.5rem;
+}
+
+.configtables .mud-table-head {
+  white-space: nowrap;
+}
+
+.customheader-1 {
+  border-bottom: solid thick #7E57C2 !important;
+  border-radius: 0px !important;
+  font-size: .775rem !important;
+  text-transform: uppercase;
+}
+
+.small-toolbar-gutter .mud-toolbar-gutters {
+  height: 2.5rem;
+}
+/*# sourceMappingURL=configtables.styles.css.map */

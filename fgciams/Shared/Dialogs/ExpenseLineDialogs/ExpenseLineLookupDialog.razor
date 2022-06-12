@@ -1,0 +1,50 @@
+@inject IExpenseLineService expenseLineService
+
+<MudDialog Class='customdialog'>
+    <TitleContent>
+        <div class='d-flex align-center'>
+            <MudIcon Icon="@Icons.Filled.Search" Class="mr-3 mb-n1"/>
+            <MudText Typo='Typo.h6'>@dialogTitle</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div Class='customdialog__content-container'>
+            <BlazoredTypeahead SearchMethod=LoadExpense 
+            @bind-Value='expenseLine' Debounce="500" placeholder='Expense' >
+              <SelectedTemplate>
+              @context.ExpenseName
+              </SelectedTemplate>
+              <ResultTemplate>
+              @context.ExpenseName
+            </ResultTemplate>
+            </BlazoredTypeahead> 
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
+        <MudButton OnClick="Submit" Variant='Variant.Filled' Color="@color">@buttonText</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public string dialogTitle { get; set; } = string.Empty;
+    [Parameter] public string contentText { get; set; } = string.Empty;
+    [Parameter] public string buttonText { get; set; } = string.Empty;
+    [Parameter] public Color color { get; set; }
+    ExpenseLineModel expenseLine = new ExpenseLineModel();
+
+    private void Submit() 
+    {
+        MudDialog.Close(DialogResult.Ok(expenseLine));
+    }
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private async Task<IEnumerable<ExpenseLineModel>> LoadExpense(string expenseLine)
+    {
+      var charging = await expenseLineService.LoadExpenseLine(GlobalClass.token);
+      return charging.Where(x=>x.ExpenseName.Contains(expenseLine, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+}

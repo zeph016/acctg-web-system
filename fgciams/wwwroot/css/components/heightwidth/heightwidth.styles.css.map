@@ -1,0 +1,9 @@
+{
+    "version": 3,
+    "mappings": "AAAA,AAAA,SAAS,CAAC;EAAE,KAAK,EAAE,eAAe;CAAI;;AACtC,AAAA,UAAU,CAAC;EAAE,MAAM,EAAE,eAAe;CAAI;;AACxC,AAAA,SAAS,CAAC;EAAE,MAAM,EAAE,cAAc;CAAI",
+    "sources": [
+        "heightwidth.styles.scss"
+    ],
+    "names": [],
+    "file": "heightwidth.styles.css"
+}

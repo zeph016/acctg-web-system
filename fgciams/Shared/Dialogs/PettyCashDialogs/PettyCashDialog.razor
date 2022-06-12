@@ -1,0 +1,191 @@
+@inject IGlobalService globalService
+@inject IPettyCashService PettyCashService
+@inject IDialogService dialogService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<MudDialog class="mudDialog">
+    <DialogContent>
+        <MudContainer Style="max-height: 800px; overflow-y: scroll; ;">
+                    <MudPaper Class="py-0" Style="width:500px;height:800px;">
+                        <h4>PETTY CASH VOUCHER</h4>
+                        <MudGrid Class="pa-2">
+                            <MudItem xs="12" sm="6" Class="align-bottom py-0">
+                                    <MudCheckBox @bind-Checked="@GlobalClass.pettyCash.IsActive" Label="Active" Color="Color.Primary"></MudCheckBox>
+                            </MudItem>
+                            <MudItem xs="12" sm="12" Class="py-0">
+                                <MudDatePicker Label='Request Date' @bind-Date='@GlobalClass.pettyCash.RequestDate'></MudDatePicker>
+                            </MudItem>
+                            <MudItem xs="12" sm="12" Class="d-flex align-left justify-left mud-width-half">
+                                <span>Payee</span>
+                            </MudItem>
+                            <MudItem xs="12" sm="8" Class="d-flex align-left justify-left py-0 mud-width-half"  style="width: 200px;">
+                                <BlazoredTypeahead SearchMethod=LoadPayee @bind-Value='Payee' placeholder='Payee'>
+                                    <SelectedTemplate>
+                                    @context.ProjectName
+                                    </SelectedTemplate>
+                                    <ResultTemplate>
+                                    @context.ProjectName
+                                    </ResultTemplate>
+                                </BlazoredTypeahead>
+                            </MudItem>
+                            <MudItem xs="12" sm="12" Class="d-flex align-left justify-left mud-width-half">
+                                <span>Particulars</span>
+                            </MudItem>
+                            <MudItem xs="12" sm="8"  Class="d-flex align-left justify-left py-0">
+                                <MudTextField T="string" @bind-Value="@GlobalClass.pettyCash.Particular"  Variant="Variant.Outlined" Lines="3" Margin="Margin.Dense" />
+                            </MudItem>
+                            <MudItem xs="6" sm="2"  Class="d-flex align-left justify-left">
+                                <span>Amount</span>
+                            </MudItem>
+                            <MudItem xs="4" sm="2"  Class="d-flex align-left justify-left py-0">
+                                <MudTextField @bind-Value="@GlobalClass.pettyCash.Amount" Variant="Variant.Outlined" Margin="Margin.Dense"/>
+                            </MudItem>
+                            <MudItem xs="12" Class="d-flex align-left justify-left py-0">
+                                <span>Note: All Cash Advance (CA) shall automatically be deducted on the next payroll cut-off or billing.
+                                    as applicable. All CA to be liquidated (CA2BL) should be liquidated within one (1) month from the receipt of the cash.
+                                </span>
+                            </MudItem>
+                            <MudItem xs="12"  Class="d-flex align-left justify-left">
+                                <span>Remarks</span>
+                            </MudItem>
+                            <MudItem xs="12" sm="8"  Class="d-flex align-left justify-left">
+                                <MudTextField T="string" @bind-Value="@GlobalClass.pettyCash.Remarks" Variant="Variant.Outlined" Lines="3" Margin="Margin.Dense" />
+                            </MudItem>
+                            <MudItem xs="12" Class="d-flex align-left justify-left py-0">
+                                <span>Approved By</span>
+                            </MudItem>
+                            <MudItem xs="12" sm="8"  Class="d-flex align-left justify-left">
+                                <BlazoredTypeahead SearchMethod=LoadEmployee @bind-Value='approvedBy' placeholder='Requested By'>
+                                    <SelectedTemplate>
+                                    @context.EmployeeName
+                                    </SelectedTemplate>
+                                    <ResultTemplate>
+                                    @context.EmployeeName | @context.DepartmentName
+                                    </ResultTemplate>
+                                </BlazoredTypeahead> 
+                            </MudItem>
+                            <MudItem xs="12" Class="d-flex align-left justify-left py-0">
+                                <span>Approved By</span>
+                            </MudItem>
+                            <MudItem xs="12" sm="8"  Class="d-flex align-left justify-left">
+                                <BlazoredTypeahead SearchMethod=LoadEmployee @bind-Value='receivedBy' placeholder='Received By'>
+                                    <SelectedTemplate>
+                                    @context.EmployeeName
+                                    </SelectedTemplate>
+                                    <ResultTemplate>
+                                    @context.EmployeeName | @context.DepartmentName
+                                    </ResultTemplate>
+                                </BlazoredTypeahead>
+                            </MudItem>
+                            <MudItem xs="12"  Class="d-flex align-left justify-left">
+                                <span>Requested By</span>
+                            </MudItem>
+                            <MudItem xs="12" sm="8"  Class="d-flex align-left justify-left py-0">
+                                @if(pettyCashId ==0){
+                                <MudTextField Text="@GlobalClass.currentUserAccount?.EmployeeName"  T="string" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                }else{
+                                <MudTextField Text="@GlobalClass.pettyCash.RequestedByName" T="string" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                }
+                            </MudItem>
+                            <MudItem xs="12" sm="12"  Class="d-flex align-right justify-right">
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="(() => SavePettyCash())">Generate</MudButton>
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="(() => Cancel())">Cancel</MudButton>
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+        </MudContainer>
+    </DialogContent>
+</MudDialog>
+@code{
+    [CascadingParameter] MudDialogInstance dialogInstance { get; set; }
+    [Parameter] public Int64 pettyCashId { get; set; }
+    private Project Payee {get;set;} = new Project();
+    private PettyCashReport report {get;set;} = new PettyCashReport();
+    private UserAccount approvedBy {get;set;} = new UserAccount();
+    private UserAccount receivedBy {get;set;} = new UserAccount();
+    protected override async Task OnInitializedAsync()
+    {
+        if(pettyCashId != 0){
+            GlobalClass.pettyCash = await PettyCashService.GetPettyCash(pettyCashId,GlobalClass.token);
+            //Payee = await globalService.GetPayee(new FilterParameter(){IsProject=true,ProjectName=GlobalClass.pettyCash.PayeeName}, GlobalClass.token,GlobalClass.pettyCash.PayeeId);
+            //approvedBy = await globalService.GetEmployee(new FilterParameter(){IsLookUp=true,Name=GlobalClass.pettyCash.ApprovedByName}, GlobalClass.token,GlobalClass.pettyCash.ApprovedById);
+            //receivedBy = await globalService.GetEmployee(new FilterParameter(){IsLookUp=true,Name=GlobalClass.pettyCash.ApprovedByName}, GlobalClass.token,GlobalClass.pettyCash.ReceivedById);
+        }
+    }
+    async Task<IEnumerable<Project>> LoadPayee(string projectName)
+    {
+        return await globalService.LoadPayees(new FilterParameter(){IsProject=true,ProjectName=projectName}, GlobalClass.token);
+    }
+    async Task<IEnumerable<UserAccount>> LoadEmployee(string employeeName)
+    {
+        return await globalService.LoadAllEmployee(new FilterParameter(){IsLookUp=true,Name=employeeName}, GlobalClass.token);
+    }
+    private async Task SavePettyCash()
+    { 
+        if(isValidated()){
+            MapProperties();
+            NavigationManager.NavigateTo($"/pettyCashReport/{pettyCashId}");
+            dialogInstance.Close(DialogResult.Ok(GlobalClass.pettyCash));
+        }else{
+            Extensions.ShowAlert("All Fields are required!" ,Variant.Filled,Snackbar,Severity.Error);
+        }
+    }
+    PettyCashModel MapProperties()
+    {
+        GlobalClass.pettyCash.Id = pettyCashId;
+        GlobalClass.pettyCash.PettyCashId = pettyCashId;
+        GlobalClass.pettyCash.IsActive = GlobalClass.pettyCash.IsActive;
+        GlobalClass.pettyCash.PayeeId = Payee.ProjectId;
+        GlobalClass.pettyCash.PayeeCategoryId = (Enums.ProjectCategory)Payee.ProjectCategoryId;
+        GlobalClass.pettyCash.StatusId = 1;
+        GlobalClass.pettyCash.PayeeName = Payee.ProjectName;
+        GlobalClass.pettyCash.ApprovedById = approvedBy.EmployeeId;
+        GlobalClass.pettyCash.ApprovedByName = approvedBy.EmployeeName;
+        GlobalClass.pettyCash.ApprovedBySection = approvedBy.SectionName;
+        GlobalClass.pettyCash.ApprovedByDepartment = approvedBy.DepartmentName;
+        GlobalClass.pettyCash.ReceivedById = receivedBy.EmployeeId;
+        GlobalClass.pettyCash.ReceivedByName = receivedBy.EmployeeName;
+        GlobalClass.pettyCash.RequestedBySection = receivedBy.SectionName;
+        GlobalClass.pettyCash.ReceivedByDepartment = receivedBy.DepartmentName;
+        GlobalClass.pettyCash.Position = approvedBy.Designation;
+        if(pettyCashId == 0){
+            GlobalClass.pettyCash.IsActive = true;
+            GlobalClass.pettyCash.RequestedById = GlobalClass.currentUserAccount.EmployeeId;
+            GlobalClass.pettyCash.RequestedByName = GlobalClass.currentUserAccount.EmployeeName;
+            GlobalClass.pettyCash.RequestedByDepartment = GlobalClass.currentUserAccount.DepartmentName;
+            GlobalClass.pettyCash.RequestedBySection = GlobalClass.currentUserAccount.SectionName;
+            GlobalClass.pettyCash.RequestedByPosition = GlobalClass.currentUserAccount.Designation;
+            GlobalClass.pettyCash.Activity = "Create Petty Cash";
+        }else{
+            GlobalClass.pettyCash.RequestedById = GlobalClass.currentUserAccount.EmployeeId;
+            GlobalClass.pettyCash.UserId = GlobalClass.currentUserAccount.EmployeeId;
+            GlobalClass.pettyCash.Activity = "Update Petty Cash";
+        }
+        return GlobalClass.pettyCash;
+    }
+    private void Cancel()
+    {
+        GlobalClass.pettyCash = new();
+        dialogInstance.Cancel();
+    }
+    bool isValidated()
+    {
+        bool validate = true;
+        if(GlobalClass.pettyCash.RequestDate == null)
+            validate =false;
+        if(Payee == null)
+            validate = false;
+        if(String.IsNullOrEmpty(GlobalClass.pettyCash.Particular))
+            validate = false;
+        if(GlobalClass.pettyCash.Amount <= 0)
+            validate = false;
+        if(String.IsNullOrEmpty(GlobalClass.pettyCash.Remarks))
+            validate = false;
+        if(approvedBy == null)
+            validate = false;
+        if(receivedBy == null)
+            validate = false;
+        return validate;
+    }
+}

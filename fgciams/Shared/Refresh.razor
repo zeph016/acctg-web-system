@@ -1,0 +1,17 @@
+@page "/refresh"
+@page "/refresh/{urlTo}"
+@page "/refresh/{urlTo}/{pcashid:long}"
+
+@inject NavigationManager navigationManager
+
+<h1>If you see this text, Then you are not force refreshing your content page</h1>
+
+@code {
+    [Parameter] public string urlTo { get; set; } = string.Empty;
+    [Parameter] public long pcashid { get; set; }
+
+    protected override void OnInitialized()
+    {
+        navigationManager.NavigateTo($"/{urlTo}");
+    }
+}

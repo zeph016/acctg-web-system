@@ -1,0 +1,87 @@
+@page "/liquidationreport"
+
+@inject ILiquidationService liquidationService
+@inject NavigationManager navigationManager
+@inject IDialogService dialogService
+@inject ISnackbar snackBarService
+
+<div class='page-cont d-flex'>
+    <div class='d-flex flex-1 pa-2 ma-2'>
+        <MudPaper Class='d-flex flex-1 flex-column pa-2'Elevation='1' Height='calc(100vh - 120px)' Width='100%'>
+            <div class='d-flex align-center pa-2 gap-1 bgc-f2f2f2'>
+                <MudButton OnClick='(()=> SaveLiquidation())' EndIcon="@Icons.Rounded.Save" IconColor="Color.Info" Size='Size.Small'>SAVE</MudButton>
+                <MudSpacer />
+                <MudButton OnClick='(()=> Back())' EndIcon="@Icons.Rounded.Close" IconColor="Color.Error" Size='Size.Small'>CANCEL</MudButton>
+            </div>
+            <div class='d-flex align-stretch justify-center default-report-viewscreen'>
+                @if (string.IsNullOrWhiteSpace(pdfReport))
+                {
+                    <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
+                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                    </MudOverlay>
+                }
+                else
+                {
+                    <iframe src='@pdfReport' />
+                }
+            </div>
+        </MudPaper>
+    </div>
+</div>
+
+@code{
+
+    string pdfReport = default!;
+    protected override async Task OnInitializedAsync()
+    {
+        GlobalClass.pageTitle = "liquidation report";
+        Task t = Task.WhenAll(LoadPDFReport());
+        await t;
+    }
+    async Task LoadPDFReport()
+    {
+        pdfReport = await liquidationService.PrintSaveLiquidation(GlobalClass.forPrintingOrSaveLiquidation);
+        pdfReport += "#toolbar=0";
+    }
+    async Task SaveLiquidation()
+    {
+        var liquidation = new LiquidationModel();
+        var parameters = new DialogParameters();
+        string contentText = "Liquidation ";
+        string dialogTitle = GlobalClass.forPrintingOrSaveLiquidation.Id == 0 ? "Create " + contentText : "Update " + contentText;
+        parameters.Add("contentText", contentText);
+        parameters.Add("actionMode", GlobalClass.forPrintingOrSaveLiquidation.Id == 0 ? Enums.ActionMode.Create : Enums.ActionMode.Update);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            if (GlobalClass.forPrintingOrSaveLiquidation.Id == 0)
+            {
+                liquidation = await liquidationService.AddLiquidation(GlobalClass.forPrintingOrSaveLiquidation, GlobalClass.token);
+                GlobalClassList.liquidations.Add(liquidation);
+                Extensions.ShowAlert("Liquidation successfully added", Variant.Filled, snackBarService, Severity.Success);
+            }
+            else
+            {
+                liquidation = await liquidationService.UpdateLiquidation(GlobalClass.forPrintingOrSaveLiquidation, GlobalClass.token);
+                GlobalClassList.liquidations.Remove(GlobalClass.forPrintingOrSaveLiquidation);
+                GlobalClassList.liquidations.Add(liquidation);
+                Extensions.ShowAlert("Liquidation successfully updated", Variant.Filled, snackBarService, Severity.Success);
+            }
+
+            pdfReport = await liquidationService.PrintSaveLiquidation(liquidation);
+        }
+
+    }
+    private void Back()
+    {
+        navigationManager.NavigateTo($"/liquidationlist");
+    }
+}

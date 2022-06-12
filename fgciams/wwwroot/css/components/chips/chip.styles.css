@@ -1,0 +1,12 @@
+.chip-radius-0 {
+  border-radius: 0px !important;
+}
+
+.chip-radius-5 {
+  border-radius: 5px !important;
+}
+
+.chip-uppercase .mud-chip .mud-chip-content {
+  text-transform: uppercase;
+}
+/*# sourceMappingURL=chip.styles.css.map */
