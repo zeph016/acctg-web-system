@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using fgciams.domain.clsEnums;
 
 namespace fgciams.domain.clsVoucher
 {
@@ -12,7 +13,10 @@ namespace fgciams.domain.clsVoucher
         public long VoucherId { get; set; }
         public long RequestForPaymentId { get; set; }
         public bool IsActive { get; set; }
-        public string RFPControlNumber { get; set; }
-        public string VoucherControlNumber { get; set; }
+        public string RFPControlNumber { get; set; } = string.Empty;
+        public string VoucherControlNumber { get; set; } = string.Empty;
+        public decimal Amount {get; set;}
+        public long payeeId { get; set; }
+        public Enums.ProjectCategory payeeCategory { get; set; }
     }
 }

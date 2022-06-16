@@ -5,7 +5,7 @@
 <MudDialog Class='customdialog'>
     <TitleContent>
         <div class='d-flex align-center'>
-            <MudIcon Icon='@iconString' Class='mr-3 mb-n1'/>
+            <MudIcon Class='text-center mr-4' Icon='@iconString' Size='Size.Medium' />
             <MudText Typo='Typo.h6'>@dialogTitle</MudText>
         </div>
     </TitleContent>
@@ -98,6 +98,10 @@
             iconString = Icons.Filled.PersonSearch;
         if (lookUpType == Enums.LookUpType.Project)
             iconString = Icons.Filled.Groups;
+        if (lookUpType == Enums.LookUpType.Division)
+            iconString = "fa-solid fa-users-between-lines";
+        if (lookUpType == Enums.LookUpType.ExpLine)
+            iconString = "fa-solid fa-money-check";
         await Task.Delay(1);
     }
 

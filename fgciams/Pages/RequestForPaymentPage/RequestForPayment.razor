@@ -62,7 +62,7 @@
                             </MudItem>
                             <MudItem Class='text-right d-flex align-center gap-1' xs='4'>
                                 <MudText Class='pt-6 font-bold font12'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText> 
-                                <MudNumericField Class='txt-search-overflow font12 txtfield-txt-right' @bind-Value='selectedRFPDModelEdit.Amount' HideSpinButtons='true' 
+                                <MudNumericField Class='txt-search-overflow font12 txtfield-right' @bind-Value='selectedRFPDModelEdit.Amount' HideSpinButtons='true' 
                                 Format="N2" Error='reqAmount'
                                 ReadOnly='@(GlobalClass.requestForPayment?.RFPDetailTypeId != Enums.RFPDetailTypeId.None ? true : false)' />
                             </MudItem>
@@ -422,7 +422,7 @@
                     </div>
                     <div class="rpfooterfoot d-flex align-center justify-space-around pa-2">
                         <div class='d-flex align-center gap-1'>
-                             @if (preparedByImg.Count() == 0)
+                            @if (preparedByImg.Count() == 0)
                             {
                                 <MudAvatar>
                                     <MudIcon Icon='@Icons.Filled.AccountCircle' Size='Size.Medium' />
@@ -1343,6 +1343,7 @@
             break;
         }
         openEditDrawer = !openEditDrawer;
+        totalAmount = GlobalClassList.requestForPayments.Sum(x=>x.Amount);
         MarginToDrawer();
     }
 

@@ -118,6 +118,24 @@ namespace fgciams.service.VoucherServices
       return pdfContent;
     }
 
+    public async Task<List<VoucherAuditTrailModel>> VoucherAuditTrail(long voucherId, string token)
+    {
+      try
+      {
+        var auditTrails = new List<VoucherAuditTrailModel>();
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        HttpResponseMessage responseMessage = await _client.GetAsync("voucher-audit-trail/" + voucherId);
+        if(responseMessage.IsSuccessStatusCode)
+          auditTrails = await responseMessage.Content.ReadAsAsync<List<VoucherAuditTrailModel>>();
+        return auditTrails;
+      }
+      catch (System.Exception ex)
+      {
+         // TODO
+         throw;
+      }
+    }
+
     #endregion
   }
 }

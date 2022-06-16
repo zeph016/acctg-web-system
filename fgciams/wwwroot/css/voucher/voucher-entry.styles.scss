@@ -1,39 +1,38 @@
 .voucherpage {
     &__grid {
         display: grid; 
-        grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr; 
-        grid-template-rows: 40px 40px 40px 40px 0.8fr 0.8fr 40px 0.1fr; 
+        grid-template-columns: 1fr 1fr 1fr 1fr; 
+        grid-template-rows: 40px 40px 40px 40px 25vh 25vh 0.5fr; 
         gap: 0px 0px; 
         grid-template-areas: 
-        "voucher-header voucher-header voucher-header voucher-header voucher-header voucher-header"
-        "voucher-lblno voucher-txtno voucher-txtno voucher-lbldate voucher-txtdate voucher-txtdate"
-        "voucher-lblperiod voucher-txtperiod voucher-txtperiod voucher-lblprev-period voucher-txtprev-period voucher-txtprev-period"
-        "voucher-lblrfp voucher-rfp voucher-rfp voucher-rfp voucher-rfp voucher-rfp"
-        "voucher-description voucher-description voucher-description voucher-description voucher-description voucher-description"
-        "voucher-remarks voucher-remarks voucher-remarks voucher-remarks voucher-remarks voucher-remarks"
-        "voucher-lbldate-paid voucher-txtdate-paid voucher-txtdate-paid voucher-lblamount voucher-txtamount voucher-txtamount"
-        "voucher-signatories voucher-signatories voucher-signatories voucher-signatories voucher-signatories voucher-signatories"; 
+          "voucher-header voucher-header voucher-header voucher-date"
+          "voucher-payee voucher-payee voucher-payee voucher-status"
+          "voucher-rfp voucher-rfp voucher-rfp voucher-rfp"
+          "voucher-desc voucher-desc voucher-remarks voucher-remarks"
+          "voucher-details voucher-details voucher-details voucher-details"
+          "voucher-details voucher-details voucher-details voucher-details"
+          "voucher-signatories voucher-signatories voucher-signatories voucher-signatories"; 
     }
     .voucher-header { grid-area: voucher-header; }
-    .voucher-lblno { grid-area: voucher-lblno; }
-    .voucher-txtno { grid-area: voucher-txtno; }
-    .voucher-lbldate { grid-area: voucher-lbldate; }
-    .voucher-txtdate { grid-area: voucher-txtdate; }
-    .voucher-lblperiod { grid-area: voucher-lblperiod; }
-    .voucher-txtperiod { grid-area: voucher-txtperiod; }
-    .voucher-lblprev-period { grid-area: voucher-lblprev-period; }
-    .voucher-txtprev-period { grid-area: voucher-txtprev-period; }
-    .voucher-lblrfp { grid-area: voucher-lblrfp; }
+    .voucher-date { grid-area: voucher-date; }
+    .voucher-payee { grid-area: voucher-payee; }
+    .voucher-status { grid-area: voucher-status; }
     .voucher-rfp { grid-area: voucher-rfp; }
-    .voucher-description { grid-area: voucher-description; }
+    .voucher-desc { grid-area: voucher-desc; }
     .voucher-remarks { grid-area: voucher-remarks; }
-    .voucher-lbldate-paid { grid-area: voucher-lbldate-paid; }
-    .voucher-txtdate-paid { grid-area: voucher-txtdate-paid; }
-    .voucher-lblamount { grid-area: voucher-lblamount; }
-    .voucher-txtamount { grid-area: voucher-txtamount; }
+    .voucher-details { grid-area: voucher-details; }
     .voucher-signatories { grid-area: voucher-signatories; }
 
-    .voucher-header, .voucher-lblno, .voucher-txtno, .voucher-lbldate,
-    .voucher-txtdate { border-top: solid thin lightgrey; }
+    .voucher-header, .voucher-date, .voucher-payee, .voucher-status, .voucher-rfp,
+    .voucher-desc, .voucher-remarks, .voucher-details, .voucher-signatories { border-top: solid thin lightgray; }
+
+    .voucher-header, .voucher-payee, .voucher-rfp, .voucher-desc, .voucher-details,
+    .voucher-signatories { 
+        border-right: solid thin lightgray;
+        border-left: solid thin lightgray; 
+    }
+
+    .voucher-date, .voucher-status, .voucher-remarks { border-right: solid thin lightgray; }
+    .voucher-signatories { border-bottom: solid thin lightgray; }
 }
 

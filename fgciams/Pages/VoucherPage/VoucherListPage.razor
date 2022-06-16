@@ -1,96 +1,203 @@
 @page "/voucher/list"
+@page "/voucher-list"
+
 @inject IDialogService dialogService
 @inject IVoucherService voucherService
 @inject NavigationManager navigationManager
 @inject ISnackbar snackBar
 
-<MudContainer>
-  <MudPaper>
-    <MudTable Items=GlobalClassList.Vouchers Height=500px>
-      <ToolBarContent>
+<div class='page-cont'>
+  <div class='drawer-right'>
+    <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+      <div class='drawer-right__filtercont'>
+        <div class='icon-area d-flex align-center'>
+          <MudIconButton OnClick='OpenSideFilter' Icon='@Icons.Filled.FilterList' arial-label='Close Filter' Size='Size.Medium' />
+        </div>
+        <div class='filter-title d-flex align-center'>
+          <p class='title875'>Filter</p>
+          <MudSpacer />
+          <MudIconButton OnClick='OpenSideFilter' Icon='@Icons.Filled.Close' aria-label='Close Filter' Size='Size.Medium' />
+        </div>
+        <div class='filter-content d-flex flex-column pl-4 pr-4 gap-1 @visibility'>
+          <MudTextField Class='txtfield-75' @bind-Value='searchTerm' Placeholder='Control Number'
+          Adornment='Adornment.Start' AdornmentIcon='@Icons.Material.Filled.Search' IconSize='Size.Small'
+          Clearable='true' Variant='Variant.Outlined'/>
+          <MudButton Class='wspace-nowrap' Variant='Variant.Filled' Color='Color.Secondary'>Apply Filter</MudButton>
+        </div>
+      </div>
+    </MudDrawer>
+  </div>
 
-      </ToolBarContent>
-      <HeaderContent>
-        <MudTh>Date</MudTh>
-        <MudTh>Control #</MudTh>
-        <MudTh>Amount</MudTh>
-        <MudTh>Payee</MudTh>
-        <MudTh>Description</MudTh>
-        <MudTh>Prepared by</MudTh>
-        <MudTh>Verified by</MudTh>
-        <MudTh>Approved by</MudTh>
-        <MudTh>Status</MudTh>
-        <MudTh></MudTh>
-      </HeaderContent>
-      <RowTemplate>
-        <MudTd>@context.VoucherDate</MudTd>
-        <MudTd>@context.ControlNumber</MudTd>
-        <MudTd>@context.TotalAmount</MudTd>
-        <MudTd>@context.PayeeName</MudTd>
-        <MudTd>@context.Description</MudTd>
-        <MudTd>@context.PreparedByName</MudTd>
-        <MudTd>@context.VerifiedByName</MudTd>
-        <MudTd>@context.ApprovedByName</MudTd>
-        <MudTd>@context.StatusName</MudTd>
-        <MudTd>
-          <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'>
-            @if(!ViewMenu(context))
-            {
-            <MudMenuItem OnClick='(()=> EditVoucher(context))'>
-              <MudText>Edit</MudText>
-            </MudMenuItem>
-            <MudMenuItem OnClick='(()=> ApprovedVoucher(context))'>
-              <MudText>Approved</MudText>
-            </MudMenuItem>
-            <MudMenuItem OnClick='(()=> CancelVoucher(context))'>
-              <MudText>Cancel</MudText>
-            </MudMenuItem>
-            }
-            <MudMenuItem>
-              <MudText>Audit Trail</MudText>
-            </MudMenuItem>
-            <MudMenuItem OnClick='(() => context.ShowReport = ShowReport(context.ShowReport, context))'>
-              <MudText>Show Report</MudText>
-            </MudMenuItem>
-          </MudMenu>
-        </MudTd>
-      </RowTemplate>
-       <ChildRowContent>
-          @if (context.ShowReport)
+  <MudContainer Class='voucherlist' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+    @if (!dataFetched)
+    {
+      <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
+        <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='calc(100vh - 135px)' Animation='Animation.Wave' />
+      </MudPaper>
+    }
+    else
+    {
+      <MudPaper>
+        <MudTable Class='configtables' Items=GlobalClassList.Vouchers Hover='true' Height='calc(100vh - 150px)'
+        Breakpoint='Breakpoint.Sm' FixedHeader FixedFooter Bordered Dense Striped='false'
+        RowsPerPage='30'>
+          <ToolBarContent>
+            <MudText Typo='Typo.caption'>
+              @GlobalClassList.Vouchers.Count()
+              @(GlobalClassList.Vouchers.Count() == 1 ? "item" : "items")
+              in Total
+            </MudText>
+          </ToolBarContent>
+          <ColGroup>
+            <col style='width: 20px' />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col style='width: 20px' />
+          </ColGroup>
+          <HeaderContent>
+            <MudTh Class='customheader-1'>
+              <MudTableSortLabel Class='lbl75' InitialDirection='SortDirection.Descending'
+              SortBy='new Func<VoucherModel, object>(x=>x.ControlNumber)'>
+                Control No.
+              </MudTableSortLabel>
+            </MudTh>
+            <MudTh Class='customheader-1'>Payee</MudTh>
+            <MudTh Class='customheader-1'>Description</MudTh>
+            <MudTh Class='customheader-1'>Prepared by</MudTh>
+            <MudTh Class='customheader-1'>Verified by</MudTh>
+            <MudTh Class='customheader-1'>Approved by</MudTh>
+            <MudTh Class='customheader-1 text-center'>Status</MudTh>
+            <MudTh Class='customheader-1 text-right'>Amount</MudTh>
+            <MudTh Class='customheader-1'>Action</MudTh>
+          </HeaderContent>
+          <RowTemplate>
+            <MudTd DataLabel='control no.'>
+              <div class='d-flex align-center'>
+                  <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'>
+                    @context.ControlNumber
+                  </MudChip>
+                  <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Text' Icon='@Icons.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
+                    @Convert.ToDateTime(context.VoucherDate).ToShortDateString()
+                  </MudChip>
+              </div>
+            </MudTd>
+            <MudTd Class='wbreak-breakword font12'>@context.PayeeName</MudTd>
+            <MudTd Class='wbreak-breakword font12'>@context.Description</MudTd>
+            <MudTd Class='wbreak-breakword font12'>@context.PreparedByName</MudTd>
+            <MudTd Class='wbreak-breakword font12'>@context.VerifiedByName</MudTd>
+            <MudTd Class='wbreak-breakword font12'>@context.ApprovedByName</MudTd>
+            <MudTd Class='text-left' DataLabel='Status'>
+            <MudChip Class='chip-radius-5 font-bold font10' Color='Color.Info' Variant='Variant.Filled' Size='Size.Small'>
+                @context.StatusName
+              </MudChip>
+            </MudTd>
+            <MudTd Class='wspace-nowrap text-right' DataLabel='Amount'>
+              @if (context.TotalAmount > 0)
               {
-                <td colspan="8">
-                  <div class='d-flex align-center pa-2 bgc-f2f2f2'>
-                      <MudSpacer />
-                      <MudButton OnClick='(() => context.ShowReport = ShowReport(context.ShowReport, context))' EndIcon="@Icons.Rounded.Close" IconColor='Color.Error' Size='Size.Small' >
-                          Close Report
-                      </MudButton>
-                  </div>
-                  <MudTr Class='d-flex align-stretch justify-center default-report-container'>
-                      @if (string.IsNullOrWhiteSpace(PDFContent))
-                      {
-                      <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
-                          <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-                      </MudOverlay>
-                      }
-                      else
-                      {
-                      <iframe src='@PDFContent' />
-                      }
-                  </MudTr>
-                </td>
+                <MudText Class='font-bold color-green' Typo='Typo.body2'>
+                  @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.TotalAmount.ToString("N2")
+                </MudText>
               }
-      </ChildRowContent>
-    </MudTable>
-  </MudPaper>
-</MudContainer>
+              else
+              {
+                <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
+                  @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.TotalAmount.ToString("N2")
+                </MudText>
+              }
+            </MudTd>
+            <MudTd Class='text-center' DataLabel='Action'>
+              <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'
+              TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small'>
+                @if(!ViewMenu(context))
+                {
+                  <MudMenuItem OnClick='(()=> EditVoucher(context))'>
+                    <a class='d-flex align-center gap-2'>
+                      <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small'/>
+                      <MudText Typo='Typo.body2'>Edit</MudText>
+                    </a>
+                  </MudMenuItem>
+                  <MudMenuItem OnClick='(()=> ApprovedVoucher(context))'>
+                    <div class='d-flex align-center gap-2'>
+                      <MudIcon Icon='@Icons.Filled.ThumbUp' Size='Size.Small' />
+                      <MudText Typo='Typo.body2'>Approved</MudText>
+                    </div>
+                  </MudMenuItem>
+                  <MudMenuItem OnClick='(()=> CancelVoucher(context))'>
+                    <div class='d-flex align-center gap-2'>
+                      <MudIcon Icon='@Icons.Filled.FreeCancellation' Size='Size.Small' />
+                      <MudText Typo='Typo.body2'>Cancel</MudText>
+                    </div>
+                  </MudMenuItem>
+                }
+                <MudMenuItem OnClick='(()=> navigationManager.NavigateTo($"/voucher-audit/{context.Id}"))'>
+                  <a class='d-flex align-center gap-2'>
+                    <MudIcon Icon='@Icons.Filled.Checklist' Size='Size.Small' />
+                    <MudText Typo='Typo.body2'>Audit Trail</MudText>
+                  </a>
+                </MudMenuItem>
+                <MudMenuItem OnClick='(() => context.ShowReport = ShowReport(context.ShowReport, context))'>
+                  <div class='d-flex align-center gap-2'>
+                    <MudIcon Icon='@Icons.Filled.PictureAsPdf' Size='Size.Small' />
+                    <MudText Typo='Typo.body2'>Show Report</MudText>
+                  </div>
+                </MudMenuItem>
+              </MudMenu>
+            </MudTd>
+          </RowTemplate>
+          <ChildRowContent>
+              @if (context.ShowReport)
+                  {
+                    <td colspan="9">
+                      <div class='d-flex align-center pa-2 bgc-f2f2f2'>
+                          <MudSpacer />
+                          <MudButton OnClick='(() => context.ShowReport = ShowReport(context.ShowReport, context))' EndIcon="@Icons.Rounded.Close" IconColor='Color.Error' Size='Size.Small' >
+                              Close Report
+                          </MudButton>
+                      </div>
+                      <MudTr Class='d-flex align-stretch justify-center default-report-container'>
+                          @if (string.IsNullOrWhiteSpace(PDFContent))
+                          {
+                          <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
+                              <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                          </MudOverlay>
+                          }
+                          else
+                          {
+                          <iframe src='@PDFContent' />
+                          }
+                      </MudTr>
+                    </td>
+                  }
+          </ChildRowContent>
+        </MudTable>
+      </MudPaper>
+    }
+  </MudContainer>
+</div>
 
 @code{
-  private string PDFContent;
+  private bool dataFetched, openSideFilter;
+  private string PDFContent = string.Empty, searchTerm = string.Empty, visibility = "visibility-animation-hide";
   protected override async Task OnInitializedAsync()
   {
     GlobalClass.pageTitle = "voucher list";
+    if (GlobalClass.currentUserAccount == null)
+      await Task.Delay(1);
     Task t = Task.WhenAll(LoadVouchers());
     await t;
+    if (t.Status == TaskStatus.RanToCompletion)
+      CompletedFetch();
+  }
+
+  void CompletedFetch()
+  {
+    dataFetched = true;
+    Task.Run(StateHasChanged);
   }
   private async Task LoadVouchers()
   {
@@ -176,4 +283,12 @@
     PDFContent = await voucherService.GenerateReport(voucher);
   }
 
+  private void OpenSideFilter()
+  {
+    openSideFilter = !openSideFilter;
+    if(openSideFilter)
+    visibility = "visibility-animation-show";
+    if(!openSideFilter)
+    visibility = "visibility-animation-hide";
+  }
 }

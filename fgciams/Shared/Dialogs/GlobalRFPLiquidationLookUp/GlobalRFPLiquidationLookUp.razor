@@ -373,48 +373,79 @@
       }
       @if(lookUpType == Enums.LookUpType.RFPVoucher)
       {
-        <MudTable Class='configtables overflow-auto' Items="noVoucherRFP" Bordered=true Striped=true ReadOnly=false 
-        Dense=true Elevation='0' Height='300px' Square='true' FixedHeader='true'>
-        <ToolBarContent>
-        <MudSpacer/>
-        <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'
-        TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small' Label='More'>
-          <MudMenuItem OnClick='OpenSideFilter'>
-          <div class='d-flex align-center gap-2'>
-            <MudIcon Icon='@Icons.Filled.FilterList' />
-            <MudText Typo='Typo.body2'>Filter</MudText>
-          </div>
-          </MudMenuItem>
-        </MudMenu>
-        </ToolBarContent>
+        <MudTable Class='configtables overflow-auto' Items="noVoucherRFP" Bordered Striped ReadOnly=false 
+        Dense Elevation='0' Height='calc(100vh - 350px)' Square FixedHeader>
+        <ColGroup>
+          <col style='width: 50px' />
+          <col style='width: 50px' />
+          <col />
+          <col />
+          <col style='width: 1%' />
+          <col style='width: 1%' />
+        </ColGroup>
         <HeaderContent>
-            <MudTh></MudTh>
-            <MudTh>Control #</MudTh>
-            <MudTh>Payee</MudTh>
-            <MudTh>Requestor</MudTh>
-            <MudTh>Category</MudTh>
-            <MudTh>Type</MudTh>
-            <MudTh>Status</MudTh>
-            <MudTh>Amount</MudTh>
+            <MudTh Class='customheader-1 text-center'>Select</MudTh>
+            <MudTh Class='customheader-1'>
+              <MudTableSortLabel InitialDirection='SortDirection.Ascending'
+                SortBy='new Func<RequestForPaymentModel, object>(x=>x.ControlNumber)'>
+                 Control No.
+              </MudTableSortLabel>
+            </MudTh>
+            <MudTh Class='customheader-1'>Payee</MudTh>
+            <MudTh Class='customheader-1'>Requestor</MudTh>
+            <MudTh Class='customheader-1 text-center'>Status</MudTh>
+            <MudTh Class='customheader-1 text-right'>
+               <MudTableSortLabel InitialDirection='SortDirection.None'
+                SortBy='new Func<RequestForPaymentModel, object>(x=>x.Amount)'>
+                Amount
+              </MudTableSortLabel>
+            </MudTh>
         </HeaderContent>
         <RowTemplate>
-        <MudTd>
-          @if(GlobalClass.voucher.VoucherRFP.Any(x=>x.RequestForPaymentId == context.Id))
-          {
-            <MudButton OnClick='(()=> SelectRFP(context))'>Remove</MudButton>
-          }
-          else
-          {
-            <MudButton OnClick='(()=> SelectRFP(context))'>SELECT</MudButton>
-          }
-        </MudTd>
-            <MudTd DataLabel='Date'>@context.ControlNumber</MudTd>
-            <MudTd DataLabel='Status'>@context.PayeeName</MudTd>
-            <MudTd DataLabel='Control number'>@context.RequestedByName</MudTd>
-            <MudTd DataLabel='Total Amount'>@context.RFPDetailTypeId</MudTd>
-            <MudTd DataLabel='Supplier'>@context.RequestTypeName</MudTd>
-            <MudTd Class='wspace-nowrap' DataLabel='Prepared by'>@context.AccountingStaus</MudTd>
-            <MudTd>@context.Amount</MudTd>
+          <MudTd Class='text-center pa-0'>
+            @if(GlobalClass.voucher.VoucherRFP.Any(x=>x.RequestForPaymentId == context.Id))
+            {
+              <MudTooltip Text='Remove Detail'>
+                <MudIconButton OnClick='(()=> SelectRFP(context))' Icon='@Icons.Filled.RemoveCircle' Color='Color.Error' Size='Size.Small' />
+              </MudTooltip>
+            }
+            else
+            {
+              <MudTooltip Text='Select Detail'>
+                <MudIconButton OnClick='(()=> SelectRFP(context))' Icon='@Icons.Filled.AddCircle' Color='Color.Success' Size='Size.Small' />
+              </MudTooltip>
+            }
+          </MudTd>
+          <MudTd Class='text-center' DataLabel='Control No.'>
+            <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'> @context.ControlNumber</MudChip>
+          </MudTd>
+          <MudTd Class='wbreak-breakword font12' DataLabel='Payee Name'>@context.PayeeName</MudTd>
+          <MudTd Class='wbreak-breakword font12' DataLabel='Requestor Name'>@context.RequestedByName</MudTd>
+          <MudTd Class='wspace-nowrap pa-0' DataLabel='All Statuses'>
+            <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Info' Size='Size.Small'>
+              @context.RFPDetailTypeId
+            </MudChip>
+            <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Dark' Size='Size.Small'>
+              @context.RequestTypeName
+            </MudChip>
+            <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@Extensions.GetAcctgStatusColor(Convert.ToInt64(context.AccountingStatusId))'>
+              @context.AccountingStaus
+            </MudChip>
+          </MudTd>
+          <MudTd Class='wspace-nowrap text-right' DataLabel='Amount'>
+            @if (context.Amount > 0)
+            {
+              <MudText Class='font-bold color-green' Typo='Typo.body2'>
+                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.Amount.ToString("N2")
+              </MudText>
+            }
+            else
+            {
+              <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
+                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.Amount.ToString("N2")
+              </MudText>
+            }
+          </MudTd>
         </RowTemplate>
         </MudTable>
       }
@@ -445,16 +476,29 @@
         @POList.Count() : @(POList.Count() == 1 ? "item selected" : "items selected")
       </MudText>
     }
+    @if (lookUpType == Enums.LookUpType.RFPVoucher)
+    {
+      <MudText Class='pl-1' Typo='Typo.overline'>
+        @GlobalClass.voucher.VoucherRFP.Count() : @(GlobalClass.voucher.VoucherRFP.Count() == 1 ? "item selected" : "items selected")
+      </MudText>
+    }
     <MudSpacer />
     <MudText Class='pl-1 font-bold' Typo='Typo.overline'>
       Total Amount Selected:
     </MudText>
     <MudText Class='pl-1 font-bold' Typo='Typo.overline' Color='Color.Success'>
-      @foreach (var item in GlobalClassList.requestForPayments)
+      @if(lookUpType != Enums.LookUpType.RFPVoucher)
       {
-        totalAmounts += item.Amount;
-      }
+        @foreach (var item in GlobalClassList.requestForPayments)
+        {
+          totalAmounts += item.Amount;
+        }
         @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @totalAmounts.ToString("N2")
+      }
+      else if (lookUpType == Enums.LookUpType.RFPVoucher)
+      {
+        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.voucher.TotalAmount.ToString("N2")
+      }
     </MudText>
     <MudSpacer />
     <MudButton OnClick='(()=> CloseDialog())'>Close</MudButton>
@@ -610,14 +654,15 @@
     decimal totalAmount = 0;
     VoucherRFPModel voucherRFP = new VoucherRFPModel();
     totalAmount = GlobalClass.voucher.TotalAmount + requestForPayment.Amount;
-
+    
     voucherRFP.RequestForPaymentId = requestForPayment.Id;
     voucherRFP.RFPControlNumber = requestForPayment.ControlNumber;
     voucherRFP.IsActive = true;
+    @* voucherRFP.payeeId = requestForPayment.RequestForPaymentDetails. *@
+    voucherRFP.payeeCategory = requestForPayment.PayeeCategoryId;
     GlobalClass.voucher.VoucherRFP.Add(voucherRFP);
     
     GlobalClass.voucher.TotalAmount = totalAmount;
-    GlobalClass.voucher.RFP = string.Join(", ", GlobalClass.voucher.VoucherRFP.Select(x=>x.RFPControlNumber));
 
     if(requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.Liquidation)
     {
@@ -631,10 +676,10 @@
         ExpenseName = details.ExpenseName,
         ProjectId = details.PayeeId,
         ProjectCategoryId = details.PayeeCategoryId,
-        ProjectName = details.PayeeName
-
+        ProjectName = details.PayeeName,
+        Description = details.Particular,
+        Amount = details.Amount
       }).ToList();
-
     }
   }
   private void OpenSideFilter()

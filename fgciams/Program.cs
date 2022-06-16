@@ -26,6 +26,8 @@ using fgciams.service.LiquidationServices;
 using fgciams.service.PettyCashServices;
 using fgciams.service.ExpenseLineServices;
 using fgciams.service.VoucherServices;
+using fgciams.service.AccountingLineServices;
+using fgciams.service.AccountLineTypeServices;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -55,4 +57,6 @@ builder.Services.AddScoped<IPayeeService, PayeeService>();
 builder.Services.AddScoped<IPettyCashService, PettyCashService>();
 builder.Services.AddScoped<IExpenseLineService, ExpenseLineService>();
 builder.Services.AddScoped<IVoucherService, VoucherService>();
+builder.Services.AddScoped<IAccountingLineService, AccountingLineService>();
+builder.Services.AddScoped<IAccountLineTypeService, AccountLineTypeService>();
 await builder.Build().RunAsync();

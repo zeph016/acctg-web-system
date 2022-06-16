@@ -55,8 +55,8 @@
         else
         {
             <MudTable Class='configtables' Items="@GlobalClassList.requestForPaymentsList" Hover="true"
-                      Breakpoint='Breakpoint.Sm' FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
-                      RowsPerPage='30' Striped='false' Filter='new Func<RequestForPaymentModel,bool>(FilterItems)'>
+            Breakpoint='Breakpoint.Sm' FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
+            RowsPerPage='30' Striped='false' Filter='new Func<RequestForPaymentModel,bool>(FilterItems)'>
                 <ToolBarContent>
                     <MudText Typo='Typo.caption'>
                         @GlobalClassList.requestForPaymentsList.Count()

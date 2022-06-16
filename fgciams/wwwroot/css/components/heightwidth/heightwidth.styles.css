@@ -2,6 +2,14 @@
   width: 100% !important;
 }
 
+.width50 {
+  width: 50% !important;
+}
+
+.width25 {
+  width: 25% !important;
+}
+
 .height100 {
   height: 100% !important;
 }

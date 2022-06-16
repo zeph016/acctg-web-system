@@ -1,6 +1,3 @@
-.text-center { text-align: center !important; }
-.text-right { text-align: right !important; }
-.text-left { text-align: left !important; }
 .text-search {
     .mud-input-control-input-container { width: 50%; }
     .mud-input { margin-top: 0px !important; }
@@ -12,38 +9,9 @@
 
 .min-toolbar { padding: 0px 5px; }
 
-.txtfield-txt-center {
-    .mud-input-slot { text-align: center; }
-}
-.txtfield-txt-right {
-    .mud-input-slot { text-align: right; }
-}
-
-.txt-top-0 {
-    margin-top: 0px !important;
-    .mud-input-control, .mud-input { margin-top: 0px !important; }
-}
-
 .txtlbl-bold {
     .mud-input-label { font-weight: bold !important; }
 }
-
-.txt-search-overflow {
-    .mud-input-slot {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-}
-.wspace-nowrap { white-space: nowrap !important; }
-.wbreak-breakword { word-break: break-word ;}
-
-.overflow-auto { overflow: auto !important; }
-.overflow-hidden { overflow: hidden !important; }
-
-.position-rel { position: relative !important; }
-
-.font-bold { font-weight: bold !important; }
 
 .txt-overflow-ellipsis {
     white-space: nowrap;

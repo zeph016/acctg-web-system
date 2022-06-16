@@ -1,8 +1,8 @@
 .drawer-right { 
     .mud-drawer { 
         background-color: #fafafa ;
-        // height: calc(100vh - 85px) !important; 
-        height: 100% !important;
+        height: calc(100vh - 85px) !important; 
+        // height: 100% !important;
         overflow: hidden;
     }
     .mud-drawer--open { width: 325px !important; }

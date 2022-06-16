@@ -21,6 +21,8 @@
 @inject NavigationManager navigationManager
 @inject IDialogService dialogService
 @inject IExpenseLineService expenseLineService
+@inject IAccountingLineService accountLineService
+@inject IAccountLineTypeService accountLineTypeService
 
 <MudThemeProvider/>
 <MudDialogProvider/>
@@ -96,6 +98,8 @@
                 <MudNavLink Href='/voucher/list' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList">VOUCHER LIST</MudNavLink>
             </MudNavGroup>
             <MudNavGroup Class='expandheight-navgroup' Title='CONFIGURATION' Icon='@Icons.Filled.Settings' HideExpandIcon='true'>
+                <MudNavLink Href='/account-line' Match="NavLinkMatch.All" Icon="@Icons.Filled.Group">ACCOUNT LINE GROUP</MudNavLink>
+                <MudNavLink Href='/account-line-type' Match="NavLinkMatch.All" Icon="@Icons.Filled.Group">ACCOUNT LINE TYPE</MudNavLink>
                 <MudNavLink Href='/accounting-status' Match="NavLinkMatch.All" Icon="@Icons.Filled.Group">ACCOUNTING STATUS</MudNavLink>
                 <MudNavLink Href='/bank' Match="NavLinkMatch.All" Icon="@Icons.Filled.AccountBalance">BANK</MudNavLink>
                 <MudNavLink Class='fa-icon-center' Href='/billingdocument' Match="NavLinkMatch.All" Icon="fa-solid fa-receipt">BILLING DOCUMENT</MudNavLink>
@@ -187,7 +191,8 @@
         Task t = Task.WhenAll(LoadAcctgStatusList(), LoadDivisionList(), LoadPaymentModes(), 
         LoadBillingDocs(), LoadBanks(), LoadRequestTypes(),
         LoadPayees(), LoadPayeeCategories(), LoadChargingLines(),
-        LoadSubContractors(), LoadSubConGenInfos(), LoadSubConPositions(), LoadNotRFPLiquidation());
+        LoadSubContractors(), LoadSubConGenInfos(), LoadSubConPositions(), LoadNotRFPLiquidation(),
+        LoadExpenseLine(), LoadAccountLineGroup(), LoadAccountLineType());
         await t;
     }
 
@@ -257,7 +262,14 @@
     {
       GlobalClassList.LiquidationNotInRFP = await liquidationService.LiquidationNotRFP(GlobalClass.token);
     }
-  
+    private async Task LoadAccountLineGroup()
+    {
+      GlobalClassList.accountLineGroups = await accountLineService.LoadAccountLineGroup(GlobalClass.token);
+    }
+    private async Task LoadAccountLineType()
+    {
+      GlobalClassList.accountLineTypes = await accountLineTypeService.LoadAccountLineType(GlobalClass.token);
+    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)

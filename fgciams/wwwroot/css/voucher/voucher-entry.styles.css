@@ -1,135 +1,92 @@
 .voucherpage__grid {
   display: -ms-grid;
   display: grid;
-  -ms-grid-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
-      grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
-  -ms-grid-rows: 40px 40px 40px 40px 0.8fr 0.8fr 40px 0.1fr;
-      grid-template-rows: 40px 40px 40px 40px 0.8fr 0.8fr 40px 0.1fr;
+  -ms-grid-columns: 1fr 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+  -ms-grid-rows: 40px 40px 40px 40px 25vh 25vh 0.5fr;
+      grid-template-rows: 40px 40px 40px 40px 25vh 25vh 0.5fr;
   gap: 0px 0px;
-      grid-template-areas: "voucher-header voucher-header voucher-header voucher-header voucher-header voucher-header" "voucher-lblno voucher-txtno voucher-txtno voucher-lbldate voucher-txtdate voucher-txtdate" "voucher-lblperiod voucher-txtperiod voucher-txtperiod voucher-lblprev-period voucher-txtprev-period voucher-txtprev-period" "voucher-lblrfp voucher-rfp voucher-rfp voucher-rfp voucher-rfp voucher-rfp" "voucher-description voucher-description voucher-description voucher-description voucher-description voucher-description" "voucher-remarks voucher-remarks voucher-remarks voucher-remarks voucher-remarks voucher-remarks" "voucher-lbldate-paid voucher-txtdate-paid voucher-txtdate-paid voucher-lblamount voucher-txtamount voucher-txtamount" "voucher-signatories voucher-signatories voucher-signatories voucher-signatories voucher-signatories voucher-signatories";
+      grid-template-areas: "voucher-header voucher-header voucher-header voucher-date" "voucher-payee voucher-payee voucher-payee voucher-status" "voucher-rfp voucher-rfp voucher-rfp voucher-rfp" "voucher-desc voucher-desc voucher-remarks voucher-remarks" "voucher-details voucher-details voucher-details voucher-details" "voucher-details voucher-details voucher-details voucher-details" "voucher-signatories voucher-signatories voucher-signatories voucher-signatories";
 }
 
 .voucherpage .voucher-header {
   -ms-grid-row: 1;
   -ms-grid-column: 1;
-  -ms-grid-column-span: 6;
+  -ms-grid-column-span: 3;
   grid-area: voucher-header;
 }
 
-.voucherpage .voucher-lblno {
+.voucherpage .voucher-date {
+  -ms-grid-row: 1;
+  -ms-grid-column: 4;
+  grid-area: voucher-date;
+}
+
+.voucherpage .voucher-payee {
   -ms-grid-row: 2;
   -ms-grid-column: 1;
-  grid-area: voucher-lblno;
+  -ms-grid-column-span: 3;
+  grid-area: voucher-payee;
 }
 
-.voucherpage .voucher-txtno {
-  -ms-grid-row: 2;
-  -ms-grid-column: 2;
-  -ms-grid-column-span: 2;
-  grid-area: voucher-txtno;
-}
-
-.voucherpage .voucher-lbldate {
+.voucherpage .voucher-status {
   -ms-grid-row: 2;
   -ms-grid-column: 4;
-  grid-area: voucher-lbldate;
-}
-
-.voucherpage .voucher-txtdate {
-  -ms-grid-row: 2;
-  -ms-grid-column: 5;
-  -ms-grid-column-span: 2;
-  grid-area: voucher-txtdate;
-}
-
-.voucherpage .voucher-lblperiod {
-  -ms-grid-row: 3;
-  -ms-grid-column: 1;
-  grid-area: voucher-lblperiod;
-}
-
-.voucherpage .voucher-txtperiod {
-  -ms-grid-row: 3;
-  -ms-grid-column: 2;
-  -ms-grid-column-span: 2;
-  grid-area: voucher-txtperiod;
-}
-
-.voucherpage .voucher-lblprev-period {
-  -ms-grid-row: 3;
-  -ms-grid-column: 4;
-  grid-area: voucher-lblprev-period;
-}
-
-.voucherpage .voucher-txtprev-period {
-  -ms-grid-row: 3;
-  -ms-grid-column: 5;
-  -ms-grid-column-span: 2;
-  grid-area: voucher-txtprev-period;
-}
-
-.voucherpage .voucher-lblrfp {
-  -ms-grid-row: 4;
-  -ms-grid-column: 1;
-  grid-area: voucher-lblrfp;
+  grid-area: voucher-status;
 }
 
 .voucherpage .voucher-rfp {
-  -ms-grid-row: 4;
-  -ms-grid-column: 2;
-  -ms-grid-column-span: 5;
+  -ms-grid-row: 3;
+  -ms-grid-column: 1;
+  -ms-grid-column-span: 4;
   grid-area: voucher-rfp;
 }
 
-.voucherpage .voucher-description {
-  -ms-grid-row: 5;
+.voucherpage .voucher-desc {
+  -ms-grid-row: 4;
   -ms-grid-column: 1;
-  -ms-grid-column-span: 6;
-  grid-area: voucher-description;
+  -ms-grid-column-span: 2;
+  grid-area: voucher-desc;
 }
 
 .voucherpage .voucher-remarks {
-  -ms-grid-row: 6;
-  -ms-grid-column: 1;
-  -ms-grid-column-span: 6;
+  -ms-grid-row: 4;
+  -ms-grid-column: 3;
+  -ms-grid-column-span: 2;
   grid-area: voucher-remarks;
 }
 
-.voucherpage .voucher-lbldate-paid {
-  -ms-grid-row: 7;
+.voucherpage .voucher-details {
+  -ms-grid-row: 5;
+  -ms-grid-row-span: 2;
   -ms-grid-column: 1;
-  grid-area: voucher-lbldate-paid;
-}
-
-.voucherpage .voucher-txtdate-paid {
-  -ms-grid-row: 7;
-  -ms-grid-column: 2;
-  -ms-grid-column-span: 2;
-  grid-area: voucher-txtdate-paid;
-}
-
-.voucherpage .voucher-lblamount {
-  -ms-grid-row: 7;
-  -ms-grid-column: 4;
-  grid-area: voucher-lblamount;
-}
-
-.voucherpage .voucher-txtamount {
-  -ms-grid-row: 7;
-  -ms-grid-column: 5;
-  -ms-grid-column-span: 2;
-  grid-area: voucher-txtamount;
+  -ms-grid-column-span: 4;
+  grid-area: voucher-details;
 }
 
 .voucherpage .voucher-signatories {
-  -ms-grid-row: 8;
+  -ms-grid-row: 7;
   -ms-grid-column: 1;
-  -ms-grid-column-span: 6;
+  -ms-grid-column-span: 4;
   grid-area: voucher-signatories;
 }
 
-.voucherpage .voucher-header, .voucherpage .voucher-lblno, .voucherpage .voucher-txtno, .voucherpage .voucher-lbldate,
-.voucherpage .voucher-txtdate {
-  border-top: solid thin lightgrey;
+.voucherpage .voucher-header, .voucherpage .voucher-date, .voucherpage .voucher-payee, .voucherpage .voucher-status, .voucherpage .voucher-rfp,
+.voucherpage .voucher-desc, .voucherpage .voucher-remarks, .voucherpage .voucher-details, .voucherpage .voucher-signatories {
+  border-top: solid thin lightgray;
+}
+
+.voucherpage .voucher-header, .voucherpage .voucher-payee, .voucherpage .voucher-rfp, .voucherpage .voucher-desc, .voucherpage .voucher-details,
+.voucherpage .voucher-signatories {
+  border-right: solid thin lightgray;
+  border-left: solid thin lightgray;
+}
+
+.voucherpage .voucher-date, .voucherpage .voucher-status, .voucherpage .voucher-remarks {
+  border-right: solid thin lightgray;
+}
+
+.voucherpage .voucher-signatories {
+  border-bottom: solid thin lightgray;
 }
 /*# sourceMappingURL=voucher-entry.styles.css.map */

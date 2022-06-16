@@ -16,6 +16,7 @@ namespace fgciams.service.VoucherServices
         Task<List<VoucherModel>> LoadVouchers(FilterParameter filterParameter, string token);
         Task<VoucherModel> UpdateVoucher(VoucherModel voucher, string token);
         Task<VoucherModel> UpdateVoucherStatus(VoucherModel voucher, string token);
+        Task<List<VoucherAuditTrailModel>> VoucherAuditTrail(Int64 voucherId, string token);
         Task<string> GenerateReport(VoucherModel voucher);
     }
 }

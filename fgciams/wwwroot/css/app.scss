@@ -1,5 +1,6 @@
 // @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 @import url("https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap");
+
 @import url("../assets/fontawesome/css/all.min.css");
 @import url("../assets/quilljs/css/quill.bubble.styles.css");
 @import url("../assets/quilljs/css/quill.snow.styles.css");
@@ -23,10 +24,12 @@
 @import url('./components/reportview/reportview.styles.css');
 @import url('./components/menufilter/menufilter.styles.css');
 @import url('./components/colorbox/colorbox.styles.css');
-@import url('./components/font/fontsizes.styles.css');
+@import url('./components/font/fontmods.styles.css');
 @import url('./components/border/border.styles.css');
 @import url('./components/scrollbar/scrollbar.styles.css');
 @import url('./components/heightwidth/heightwidth.styles.css');
+@import url('./components/textfieldmods/textfieldmods.styles.css');
+@import url('./components/spacings/spacings.styles.css');
 @import url('./voucher/voucher-entry.styles.css');
 @import url("./requestpayment/requestpayment.css");
 @import url('./requestpayment/requestpaymetlist.styles.css');
@@ -44,10 +47,22 @@
   font-family: "Agency";
   src: url("../fonts/agency/AgencyFBV2.woff2") format("woff2");
 }
+@font-face {
+  font-family: "Roboto-Latin-Regular";
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/roboto/roboto-v30-latin-regular.eot');
+  src: local(''),
+    url('../fonts/roboto/roboto-v30-latin-regular.eot?#iefix') format('embedded-opentype'),
+    url('../fonts/roboto/roboto-v30-latin-regular.woff2') format('woff2'),
+    url('../fonts/roboto/roboto-v30-latin-regular.woff') format('woff'),
+    url('../fonts/roboto/roboto-v30-latin-regular.ttf') format('truetype'),
+    url('../fonts/roboto/roboto-v30-latin-regular.svg#Roboto') format('svg');
+}
 
 html,
 body {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: 'Roboto-Latin-Regular', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 h1:focus {

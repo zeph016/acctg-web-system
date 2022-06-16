@@ -1,0 +1,48 @@
+.wspace-nowrap {
+  white-space: nowrap !important;
+}
+
+.wbreak-breakword {
+  word-break: break-word;
+}
+
+.overflow-auto {
+  overflow: auto !important;
+}
+
+.overflow-hidden {
+  overflow: hidden !important;
+}
+
+.overflowx-auto {
+  overflow-x: auto;
+}
+
+.overflowy-auto {
+  overflow-y: auto;
+}
+
+.overflowx-hidden {
+  overflow-x: hidden;
+}
+
+.overflowy-hidden {
+  overflow-y: hidden;
+}
+
+.position-rel {
+  position: relative !important;
+}
+
+.align-self-start {
+  -ms-flex-item-align: start;
+      -ms-grid-row-align: start;
+      align-self: start;
+}
+
+.align-self-end {
+  -ms-flex-item-align: end;
+      -ms-grid-row-align: end;
+      align-self: end;
+}
+/*# sourceMappingURL=spacings.styles.css.map */
