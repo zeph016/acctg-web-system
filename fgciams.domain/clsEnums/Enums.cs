@@ -9,7 +9,7 @@ namespace fgciams.domain.clsEnums
 {
     public class Enums
     {
-        public enum ProjectCategory : byte
+      public enum ProjectCategory : byte
         {
             Project = 0,
             OtherDepartment = 1,
@@ -84,9 +84,13 @@ namespace fgciams.domain.clsEnums
             RFPA = 8,
             [Description("Request for Payment Cancelled")]
             RFPC = 9,
+            [Description("Petty Cash Liquidated")]
             PCL = 10,
+            [Description("Voucher Generated")]
             VG = 11,
+            [Description("Voucher Approved")]
             VA = 12,
+            [Description("Voucher Cancelled")]
             VC = 13
         }
         public enum RFPDetailTypeId
@@ -138,6 +142,35 @@ namespace fgciams.domain.clsEnums
             Delete = 4,
             [Description("Receive")]
             Receive = 5
+        }
+        public enum AccountReportGroup : byte
+        {
+            [Description("Balance Sheet")]
+            BalanceSheet = 0
+        }
+        public enum AccountDefaultBalance : byte
+        {
+            [Description("Debit")]
+            Debit = 0,
+            [Description("Credit")]
+            Credit = 1
+        }
+        public enum AccountingAccessLevel
+        {
+            [Description("Administrator")]
+            Administrator = 0,
+            [Description("Accounting-Admin")]
+            AccountingAdmin = 1,
+            [Description("Accounting-Requestor")]
+            AccountingRequestor = 2,
+            [Description("Accounting-Issuer")]
+            AccountingIssuer = 3,
+            [Description("Accounting-Viewer")]
+            AccountingViewer = 4,
+            [Description("Others-Requestor")]
+            OthersRequestor = 5,
+            [Description("Others-Viewer")]
+            OthersViewer = 6,
         }
     }
 }

@@ -113,7 +113,7 @@
             <MudTd Class='text-center' DataLabel='Action'>
               <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'
               TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small'>
-                @if(!ViewMenu(context))
+                @if(!ViewMenu(context) && CheckAccessLevel())
                 {
                   <MudMenuItem OnClick='(()=> EditVoucher(context))'>
                     <a class='d-flex align-center gap-2'>
@@ -139,7 +139,7 @@
                     <MudIcon Icon='@Icons.Filled.Checklist' Size='Size.Small' />
                     <MudText Typo='Typo.body2'>Audit Trail</MudText>
                   </a>
-                </MudMenuItem>
+              </MudMenuItem>
                 <MudMenuItem OnClick='(() => context.ShowReport = ShowReport(context.ShowReport, context))'>
                   <div class='d-flex align-center gap-2'>
                     <MudIcon Icon='@Icons.Filled.PictureAsPdf' Size='Size.Small' />
@@ -186,8 +186,10 @@
   protected override async Task OnInitializedAsync()
   {
     GlobalClass.pageTitle = "voucher list";
-    if (GlobalClass.currentUserAccount == null)
+    if (GlobalClass.currentUserAccount == null || string.IsNullOrEmpty(GlobalVariable.AMSHubConnection.ConnectionId))
       await Task.Delay(1);
+
+    VoucherHubConnection();
     Task t = Task.WhenAll(LoadVouchers());
     await t;
     if (t.Status == TaskStatus.RanToCompletion)
@@ -246,8 +248,9 @@
       voucher.Activity = "Update voucher status to approved";
       voucher.UserId = GlobalClass.currentUserAccount.EmployeeId;
       voucher.IsActive = true;
-      await voucherService.UpdateVoucherStatus(voucher, GlobalClass.token);
+      var updatedStatus = await voucherService.UpdateVoucherStatus(voucher, GlobalClass.token);
       Extensions.ShowAlert("Voucher approved", Variant.Filled, snackBar, Severity.Success);
+      await GlobalVariable.AMSHubConnection.InvokeAsync("SaveVoucher", updatedStatus);
     }
     else
       Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackBar, Severity.Normal);
@@ -260,12 +263,12 @@
       voucher.Activity = "Update voucher status to cancelled";
       voucher.UserId = GlobalClass.currentUserAccount.EmployeeId;
       voucher.IsActive = true;
-      await voucherService.UpdateVoucherStatus(voucher, GlobalClass.token);
+      var updatedStatus = await voucherService.UpdateVoucherStatus(voucher, GlobalClass.token);
       Extensions.ShowAlert("Voucher cancelled", Variant.Filled, snackBar, Severity.Success);
+      await GlobalVariable.AMSHubConnection.InvokeAsync("SaveVoucher", updatedStatus);
     }
     else
       Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackBar, Severity.Normal);
-    
   }
   private bool ViewMenu(VoucherModel voucher)
   {
@@ -291,4 +294,37 @@
     if(!openSideFilter)
     visibility = "visibility-animation-hide";
   }
+  private void VoucherHubConnection()
+  {
+    try
+    {
+      var statusId = GlobalClassList.accountingStatusList
+      .Where(x=>x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.VC)
+      .Select(x=>x.Id).FirstOrDefault();
+
+      GlobalVariable.AMSHubConnection.On<VoucherModel>("SaveVoucher", (_voucher) =>{
+
+        GlobalClassList.Vouchers.RemoveAll(x=>x.Id == _voucher.Id);
+        GlobalClassList.Vouchers.Add(_voucher);
+        GlobalClassList.Vouchers = GlobalClassList.Vouchers.Where(x=>x.AccountingStatusId != statusId).OrderBy(x=>x.ControlNumber).ToList();
+        StateHasChanged();
+
+      });
+    }
+    catch (System.Exception ex)
+    {
+       // TODO
+    }
+  }
+   private bool CheckAccessLevel()
+    {
+      switch(GlobalClass.currentUserAccount.AccessLevel)
+      {
+        case Enums.AccountingAccessLevel.AccountingViewer :
+        case Enums.AccountingAccessLevel.OthersViewer :
+          return false;
+      }
+
+    return true;
+    }
 }

@@ -108,6 +108,7 @@
         while (GlobalClass.currentUserAccount == null || GlobalClassList.modeOfPaymentList == null)
             await Task.Delay(1);
         CompletedFetch(); 
+        SignalR();
     }
 
     void CompletedFetch()
@@ -141,7 +142,6 @@
                 ShowAlert("Added new Mode of Payment", Variant.Filled, Severity.Success);
             else if ((int)resultDialog.Data == 1)
                 ShowAlert("Updated Mode of Payment", Variant.Filled, Severity.Info);
-            GlobalClassList.modeOfPaymentList = GlobalClassList.modeOfPaymentList.Where(x => x.IsActive == true).ToList();
         }
     }
 
@@ -170,6 +170,23 @@
         visibility = "visibility-animation-show";
         if(!openSideFilter)
         visibility = "visibility-animation-hide";
+    }
+    private void SignalR()
+    {
+        try
+        {
+            GlobalVariable.AMSHubConnection.On<ModeOfPaymentModel>("SaveModeOfPayment",(modeOfPayment) => 
+            {
+                GlobalClassList.modeOfPaymentList.RemoveAll(mode => mode.Id == modeOfPayment.Id);
+                if(modeOfPayment.IsActive == true)
+                    GlobalClassList.modeOfPaymentList.Insert(0,modeOfPayment);
+                StateHasChanged();
+            });
+        }catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            throw;
+        }
     }
 }
 

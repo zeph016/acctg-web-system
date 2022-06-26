@@ -1,4 +1,5 @@
  @inject IProjectChargingLineService projectChargingLineService
+ @inject ISnackbar snackbar
 
  <MudDialog Class="customdialog">
    <TitleContent>
@@ -55,14 +56,30 @@
   {
     if (GlobalClass.projectChargingLine.Id != 0)
     {
-      await projectChargingLineService.UpdateProjectChargingLine(GlobalClass.projectChargingLine, GlobalClass.token);
-      MudDialog.Close(DialogResult.Ok(1));
+      try
+      {
+        await projectChargingLineService.UpdateProjectChargingLine(GlobalClass.projectChargingLine, GlobalClass.token);
+        MudDialog.Close(DialogResult.Ok(1));
+      }
+      catch (System.Exception ex)
+      {
+         // TODO
+         Extensions.ShowAlert(ex.Message, Variant.Filled, snackbar, Severity.Normal);
+      }
     }
     else
     {
-      GlobalClass.projectChargingLine = await projectChargingLineService.AddProjectChargingLine(GlobalClass.projectChargingLine, GlobalClass.token);
-      GlobalClassList.projectChargingLines.Add(GlobalClass.projectChargingLine);
-      MudDialog.Close(DialogResult.Ok(0));
+      try
+      {
+        GlobalClass.projectChargingLine = await projectChargingLineService.AddProjectChargingLine(GlobalClass.projectChargingLine, GlobalClass.token);
+        GlobalClassList.projectChargingLines.Add(GlobalClass.projectChargingLine);
+        MudDialog.Close(DialogResult.Ok(0));
+      }
+      catch (System.Exception ex)
+      {
+         // TODO
+          Extensions.ShowAlert(ex.Message, Variant.Filled, snackbar, Severity.Normal);
+      }
     }
   }
 }

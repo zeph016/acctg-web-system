@@ -16,7 +16,7 @@
                     <MudIconButton OnClick='OpenSideFilter' Icon="@Icons.Filled.Close" aria-label="Close Filter" Size='Size.Medium' />
                 </div>
                 <div class='filter-content d-flex flex-column pl-4 pr-4 gap-1 @visibility'>
-                    <MudTextField Class='txtfield-75' @bind-Value='searchTerm' Placeholder='Expense Line'
+                    <MudTextField Immediate=true Class='txtfield-75' @bind-Value='searchTerm' Placeholder='Expense Line'
                     Adornment='Adornment.Start' AdornmentIcon='@Icons.Material.Filled.Search' IconSize='Size.Small'
                     Clearable='true' Variant='Variant.Outlined' />
                     <MudButton Variant='Variant.Filled' Color='Color.Secondary'>Apply Filter</MudButton>
@@ -48,7 +48,7 @@
                     TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small' Label='More'>
                          <MudMenuItem OnClick='(() => ExpenseLineDialog(new ExpenseLineModel()))'>
                             <div class='d-flex align-center gap-2'>
-                                <MudIcon Icon='@Icons.Filled.Add' Size='Size.Medium' />
+                                <MudIcon Icon='@Icons.Filled.Add' Size='Size.Small' />
                                 <MudText Typo='Typo.body2'>Add</MudText>
                             </div>
                         </MudMenuItem>
@@ -62,34 +62,82 @@
                 </ToolBarContent>
                 <ColGroup>
                     <col />
-                    <col />
-                    <col style='width: 5%' />
-                    <col style='width: 5%' />
+                    <col style='width: 40px;' />
+                    <col style='width: 40px;' />
+                    <col style='width: 40px;' />
                 </ColGroup>
                 <HeaderContent>
-                    <MudTh Class='customheader-1'>Expense Name</MudTh>
-                    <MudTh Class='customheader-1'>Remarks</MudTh>
+                    <MudTh Class='customheader-1'>
+                        <MudTableSortLabel InitialDirection="SortDirection.Ascending" 
+                        SortBy="new Func<ExpenseLineModel, object>(x=>x.ExpenseName)">
+                            Expense Name
+                        </MudTableSortLabel>
+                    </MudTh>
+                    <MudTh Class='customheader-1 text-center'>Remarks</MudTh>
                     <MudTh Class='customheader-1 text-center'>Active</MudTh>
-                    <MudTh Class='customheader-1'>Action</MudTh>
+                    <MudTh Class='customheader-1 text-center'>Action</MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                        <MudTd DataLabel="Expense Line">@context.ExpenseName</MudTd>
-                        <MudTd DataLabel="Remarks">@context.Remarks</MudTd>
-                        <MudTd Class='text-center'>
-                            <MudCheckBox Checked=@context.IsActive ReadOnly='true' />
-                        </MudTd>
-                        <MudTd Class='text-center'>
-                            <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'
-                            TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small'>
-                                 <MudMenuItem OnClick='(() => ExpenseLineDialog(context))'>
-                                    <div class='d-flex align-center gap-2'>
-                                        <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Medium' />
-                                        <MudText Typo='Typo.body2'>Edit</MudText>
-                                    </div>
-                                </MudMenuItem>
-                            </MudMenu>
-                        </MudTd>
+                    <MudTd DataLabel="Expense Line">
+                        @context.ExpenseName
+                        <div class='d-flex align-center'>
+                            <MudIcon Size="Size.Small" Icon="@Icons.Filled.LabelImportant"></MudIcon>
+                            <MudChip Class='chip-radius-5 font-bold font10 txt-uppercase' Variant='Variant.Text' Color='Color.Error' Size='Size.Small'>
+                                @context.AccountTypeName
+                            </MudChip>
+                            <MudChip Class='chip-radius-5 font-bold font10 txt-uppercase' Variant='Variant.Text' Color='Color.Dark' Size='Size.Small'>
+                                @context.AccountLineTypeName
+                            </MudChip>
+                            <MudChip Class='chip-radius-5 font-bold font10 txt-uppercase' Variant='Variant.Text' Color='Color.Primary' Size='Size.Small'>
+                                @context.AccountLineGroupName
+                            </MudChip>
+                            <MudChip Class='chip-radius-5 font-bold font10 txt-uppercase' Variant='Variant.Text' Color='Color.Secondary' Size='Size.Small'>
+                                @Extensions.GetEnumDescription((Enums.AccountReportGroup)context.AccountReportGroupId)
+                            </MudChip>
+                            <MudChip Class='chip-radius-5 font-bold font10 txt-uppercase' Variant='Variant.Text' Color='Color.Info' Size='Size.Small'>
+                                @Extensions.GetEnumDescription((Enums.AccountDefaultBalance)context.AccountDefaultBalanceId)
+                            </MudChip>
+                            <MudSpacer />
+                            <div class='d-flex align-start justify-start gap-4'>
+                                <MudCheckBox Class='chkbxfont10 chkbxbold' Checked=@context.WithLedger ReadOnly='true' Label='w/Ledger' Size='Size.Small' Dense />
+                            </div>
+                        </div>
+                    </MudTd>
+                    <MudTd Class='text-center'>
+                        <MudIconButton OnClick='(() => context.isShowChild = ShowChild(context.isShowChild,context))' Icon="@Icons.Filled.ListAlt" aria-label="Details" Size='Size.Small' />
+                    </MudTd>
+                    <MudTd Class='text-center'>
+                        <MudCheckBox Checked=@context.IsActive ReadOnly='true' Size='Size.Small' Dense />
+                    </MudTd>
+                    <MudTd Class='text-center'>
+                        <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'
+                        TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small'>
+                                <MudMenuItem OnClick='(() => ExpenseLineDialog(context))'>
+                                <div class='d-flex align-center gap-2'>
+                                    <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small' />
+                                    <MudText Typo='Typo.body2'>Edit</MudText>
+                                </div>
+                            </MudMenuItem>
+                        </MudMenu>
+                    </MudTd>
                 </RowTemplate>
+                <ChildRowContent>
+                @if(context.isShowChild)
+                {
+                    <td colspan='5'>
+                        <MudTr Class='d-flex justify-end align-center'>
+                            <MudCard Class='pa-2 ma-2 d-flex align-center gap-6'>
+                            <div class='d-flex align-center gap-2'>
+                                <MudIcon Icon="@Icons.Filled.Message" Title="Account type" />
+                                <MudText Typo='Typo.body2'>
+                                    @(String.IsNullOrEmpty(context.Remarks) ? "No Remarks":context.Remarks)
+                                </MudText>
+                            </div>
+                            </MudCard>
+                        </MudTr>
+                    </td>
+                }
+                </ChildRowContent>
                 <PagerContent>
                     <MudTablePager PageSizeOptions='@pageSize' />
                 </PagerContent>
@@ -109,6 +157,7 @@
         while (GlobalClass.currentUserAccount == null || GlobalClassList.expenseLineList == null)
             await Task.Delay(1);
         CompletedFetch();
+        SignalR();
     }
     private void CompletedFetch()
     {
@@ -152,11 +201,35 @@
         var resultDialog = await dialogService.Show<Shared.Dialogs.ExpenseLineDialogs.ExpenseLineDialog>("", parameters, options).Result;
         if (!resultDialog.Cancelled)
         {
-            if ((int)resultDialog.Data == 0)
+            if (resultDialog.Data.Equals(0))
                 Extensions.ShowAlert("Added new Expense Line", Variant.Filled, snackBarService, Severity.Success);
-            else if ((int)resultDialog.Data == 1)
+            else if (resultDialog.Data.Equals(1))
                 Extensions.ShowAlert("Updated Expense Line", Variant.Filled, snackBarService, Severity.Info);
-            GlobalClassList.expenseLineList = GlobalClassList.expenseLineList.Where(x=>x.IsActive == true).ToList();
         }
+    }
+    private void SignalR()
+    {
+        try
+        {
+            GlobalVariable.AMSHubConnection.On<ExpenseLineModel>("SaveExpenseLine",(expenseLineModel) => 
+            {
+                GlobalClassList.expenseLineList.RemoveAll(expense => expense.Id == expenseLineModel.Id);
+                if(expenseLineModel.IsActive == true)
+                    GlobalClassList.expenseLineList.Insert(0,expenseLineModel);
+                StateHasChanged(); 
+            });
+        }catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            throw;
+        }
+    }
+    private bool ShowChild(bool isShow,ExpenseLineModel expenseLine)
+    {
+        @* GlobalClassList.expenseLineList.ForEach(model => {
+            if(model.Id != expenseLine.Id)
+                model.isShowChild = false;
+        }); *@
+        return isShow = !isShow;
     }
 }

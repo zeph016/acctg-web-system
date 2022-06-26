@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net.Http;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using fgciams.domain.clsAccountingStatus;
-using Newtonsoft.Json;
+using System.Net;
+using fgciams.domain.common;
 
 namespace fgciams.service.AccountingStatusServices
 {
@@ -49,11 +44,18 @@ namespace fgciams.service.AccountingStatusServices
         {
             try
             {
+                accountingStatusModel = new();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 HttpResponseMessage httpResponse = await client.PostAsJsonAsync("accounting-status", accountingStatus);
                 if (httpResponse.IsSuccessStatusCode)
-                {
                     accountingStatusModel = await httpResponse.Content.ReadAsAsync<AccountingStatusModel>();
+                else if(httpResponse.StatusCode == HttpStatusCode.BadRequest)
+                {
+                    string errorContent = await httpResponse.Content.ReadAsStringAsync();
+                    if(errorContent.Contains("UniqueAccountingStatus"))
+                        throw HttpException.HttpExceptionMessage(accountingStatus.StatusName);
+                    else
+                        throw HttpException.HttpErrorMessage(errorContent);
                 }
                 return accountingStatusModel;
             }

@@ -1,72 +1,63 @@
-.liquidationpage-entry {
-    .liquidationpage-grid {
-        display: grid;
-        grid-template-columns: 80px 1fr 80px 1fr;
-        grid-template-rows: 0.5fr 0.5fr 0.5fr 2.5fr 1fr;
-        gap: 0px 0px;
-        grid-template-areas:
-        "liqgrid-header liqgrid-header liqgrid-header liqgrid-header"
-        "liqgrid-datelbl liqgrid-date-entry liqgrid-controllbl liqgrid-control-entry"
-        "liqgrid-amountlbl liqgrid-amount-entry liqgrid-amount-entry liqgrid-amount-entry"
-        "liqgrid-body liqgrid-body liqgrid-body liqgrid-body"
-        "liqgrid-signatories liqgrid-signatories liqgrid-signatories liqgrid-signatories"; 
-        &__date {
-            .mud-input-slot { text-align: right !important; }
-            .mud-input.mud-input-underline::before { border-bottom: 0px !important; }
-            .mud-input.mud-input-underline::after { border-bottom: 0px !important; } 
-        }
-        height: calc(100vh - 400px);
+.liquidationpage {
+    &__grid {
+        display: grid; 
+        grid-template-columns: 1fr 1fr 1fr 1fr; 
+        grid-template-rows: 40px 40px 40px 40vh 40px 0.5fr; 
+        gap: 0px 0px; 
+        grid-template-areas: 
+        "liq-header liq-header liq-header liq-date"
+        "liq-period liq-period liq-period liq-controlno"
+        "liq-remarks liq-remarks liq-remarks liq-remarks"
+        "liq-details liq-details liq-details liq-details"
+        "liq-totalamt liq-totalamt liq-totalamt liq-totalamt"
+        "liq-signatories liq-signatories liq-signatories liq-signatories"; 
     }
-    .liqgrid-header { grid-area: liqgrid-header; }
-    .liqgrid-datelbl { grid-area: liqgrid-datelbl; }
-    .liqgrid-date-entry { grid-area: liqgrid-date-entry; }
-    .liqgrid-controllbl { grid-area: liqgrid-controllbl; }
-    .liqgrid-control-entry { grid-area: liqgrid-control-entry; }
-    .liqgrid-amountlbl { grid-area: liqgrid-amountlbl; }
-    .liqgrid-amount-entry { grid-area: liqgrid-amount-entry; }
-    .liqgrid-body { grid-area: liqgrid-body; }
-    .liqgrid-signatories { grid-area: liqgrid-signatories; }
-    
-    .liqgrid-datelbl, .liqgrid-date-entry, .liqgrid-controllbl, .liqgrid-control-entry, 
-    .liqgrid-amountlbl, .liqgrid-amount-entry { border-top: solid thin lightgray; }
-    .liqgrid-amountlbl, .liqgrid-amount-entry { border-bottom: solid thin lightgray; }
-    .liqgrid-date-entry, .liqgrid-controllbl, 
-    .liqgrid-control-entry, .liqgrid-amount-entry { border-right: solid thin lightgray; }
-    .liqgrid-datelbl, .liqgrid-amountlbl {
+    .liq-header { grid-area: liq-header; }
+    .liq-date { grid-area: liq-date; }
+    .liq-period { grid-area: liq-period; }
+    .liq-controlno { grid-area: liq-controlno; }
+    .liq-remarks { grid-area: liq-remarks; }
+    .liq-details { grid-area: liq-details; }
+    .liq-totalamt { grid-area: liq-totalamt; }
+    .liq-signatories { grid-area: liq-signatories; }
+
+    .liq-header, .liq-date, .liq-period, .liq-controlno, .liq-remarks,
+    .liq-details, .liq-totalamt, .liq-signatories { border-top: solid thin lightgray; }
+
+    .liq-header, .liq-period, .liq-remarks, .liq-details,
+    .liq-totalamt, .liq-signatories { 
+        border-right: solid thin lightgray;
         border-left: solid thin lightgray;
+    }
+
+    .liq-date, .liq-controlno {
         border-right: solid thin lightgray;
     }
-    .liqgrid-body {
-        &__subgrid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 0.4fr 1.8fr;
-            gap: 0px 0px;
-            grid-template-areas: 
-            "liqgrid-subgrid-header liqgrid-subgrid-header"
-            "liqgrid-subgrid-remarks liqgrid-subgrid-remarks"; 
-            height: 100%;
-        }
-        &__subgrid-header { grid-area: liqgrid-subgrid-header; }
-        &__subgrid-remarks { grid-area: liqgrid-subgrid-remarks; }
-        &__subgrid-header, &__subgrid-remarks { 
-            border-top: solid thin lightgray; 
-            border-right: solid thin lightgray;
-            border-left: solid thin lightgray;
-        }
-        &__subgrid-remarks { border-bottom: solid thin lightgray; }
+
+    .liq-signatories { border-bottom: solid thin lightgray; }
+
+    &__liqdetgrid {
+        display: grid; 
+        grid-template-columns: 100px 1fr 100px 1fr; 
+        grid-template-rows: 40px 40px 1fr 40px; 
+        gap: 0px 0px; 
+        grid-template-areas: 
+        "liqdet-lblstatus liqdet-status liqdet-status liqdet-status"
+        "liqdet-lblpayee liqdet-payee liqdet-lblreq liqdet-req"
+        "liqdet-lblparticulars liqdet-particulars liqdet-lblremarks liqdet-remarks"
+        "liqdet-lblamt liqdet-amt liqdet-amt liqdet-amt"; 
     }
-    &__table {
-        .mud-table-container {
-            height: calc(100vh - 150px);
-            min-width: 75vh;
-        }
-        .mud-toolbar-gutters {
-            height: 2.5rem;
-        }
-        .mud-table-head {
-            white-space: nowrap;
-        }
-    }
+    .liqdet-lblstatus { grid-area: liqdet-lblstatus; }
+    .liqdet-status { grid-area: liqdet-status; }
+    .liqdet-lblpayee { grid-area: liqdet-lblpayee; }
+    .liqdet-payee { grid-area: liqdet-payee; }
+    .liqdet-lblreq { grid-area: liqdet-lblreq; }
+    .liqdet-req { grid-area: liqdet-req; }
+    .liqdet-lblparticulars { grid-area: liqdet-lblparticulars; }
+    .liqdet-particulars { grid-area: liqdet-particulars; }
+    .liqdet-lblremarks { grid-area: liqdet-lblremarks; }
+    .liqdet-remarks { grid-area: liqdet-remarks; }
+    .liqdet-lblamt { grid-area: liqdet-lblamt; }
+    .liqdet-amt { grid-area: liqdet-amt; }
 }
 

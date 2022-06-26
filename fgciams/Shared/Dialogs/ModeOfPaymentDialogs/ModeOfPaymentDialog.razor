@@ -1,5 +1,5 @@
 @inject IModeOfPaymentService modeOfPaymentService
-
+@inject ISnackbar snackBar
 <MudDialog class="customdialog">
     <TitleContent>
         <div class='d-flex align-center'>
@@ -51,16 +51,21 @@
 
     private async Task Submit()
     {
-        if (GlobalClass.modeOfPayment.Id != 0)
+        try
         {
-            await modeOfPaymentService.UpdateModeOfpayment(GlobalClass.modeOfPayment, GlobalClass.token);
-            MudDialog.Close(DialogResult.Ok(1));
-        }
-        else
-        {
-            GlobalClass.modeOfPayment = await modeOfPaymentService.AddModeOfPayment(GlobalClass.modeOfPayment, GlobalClass.token);
-            GlobalClassList.modeOfPaymentList.Add(GlobalClass.modeOfPayment);
-            MudDialog.Close(DialogResult.Ok(0));
+            if (GlobalClass.modeOfPayment.Id != 0)
+            {
+                await modeOfPaymentService.UpdateModeOfpayment(GlobalClass.modeOfPayment, GlobalClass.token);
+                MudDialog.Close(DialogResult.Ok(1));
+            }
+            else
+            {
+                GlobalClass.modeOfPayment = await modeOfPaymentService.AddModeOfPayment(GlobalClass.modeOfPayment, GlobalClass.token);
+                MudDialog.Close(DialogResult.Ok(0));
+            }
+            await GlobalVariable.AMSHubConnection.InvokeAsync("SaveModeOfPayment",GlobalClass.modeOfPayment);
+        }catch (Exception ex) {
+            Extensions.ShowAlert(ex.Message,Variant.Filled,snackBar,Severity.Info);
         }
     }
 } 

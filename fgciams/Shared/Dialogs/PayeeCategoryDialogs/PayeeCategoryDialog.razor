@@ -1,5 +1,5 @@
 @inject IPayeeCategoryService payeeCategoryServices
-@inject Blazored.LocalStorage.ILocalStorageService ILocalStorageService
+@inject ISnackbar snackBar
 
 <MudDialog Class="customdialog">
     <TitleContent>
@@ -52,17 +52,22 @@
 
     private async Task Submit()
     {
-        if (GlobalClass.payeeCategory.Id != 0)
+        try
         {
-            await payeeCategoryServices.UpdatePayeeCategory(GlobalClass.payeeCategory, GlobalClass.token);
-            MudDialog.Close(DialogResult.Ok(1));
+            if (GlobalClass.payeeCategory.Id != 0)
+            {
+                await payeeCategoryServices.UpdatePayeeCategory(GlobalClass.payeeCategory, GlobalClass.token);
+                MudDialog.Close(DialogResult.Ok(1));
+            }
+            else
+            {
+                GlobalClass.payeeCategory = await payeeCategoryServices.AddPayeeCategory(GlobalClass.payeeCategory, GlobalClass.token);
+                GlobalClassList.payeeCategoryList.Add(GlobalClass.payeeCategory);
+                MudDialog.Close(DialogResult.Ok(0));
+            }
+            await GlobalVariable.AMSHubConnection.InvokeAsync("SavePayeeCategory",GlobalClass.payeeCategory);
+        } catch (Exception ex) {
+            Extensions.ShowAlert(ex.Message,Variant.Filled,snackBar,Severity.Info);
         }
-        else
-        {
-            GlobalClass.payeeCategory = await payeeCategoryServices.AddPayeeCategory(GlobalClass.payeeCategory, GlobalClass.token);
-            GlobalClassList.payeeCategoryList.Add(GlobalClass.payeeCategory);
-            MudDialog.Close(DialogResult.Ok(0));
-        }
-       
     }
 } 

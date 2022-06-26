@@ -117,8 +117,12 @@ namespace fgciams.domain.clsRequest
         public decimal ARPhp { get; set; }
         public decimal RetentionPhp { get; set; }
         public decimal Amount {get; set;}
+        public string RFP{get; set;}
         public Enums.RFPDetailTypeId RFPDetailTypeId { get; set; }
-        
         public bool ShowReport {get; set;}
+        public byte[] PreparedByPicture {get;set;}
+        public byte[] RequestedByPicture {get;set;}
+        public byte[] RecommendedByPicture {get;set;}
+        public byte[] ApprovedByPicture {get;set;}
     }
 }

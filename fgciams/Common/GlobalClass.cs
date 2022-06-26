@@ -26,7 +26,9 @@ using fgciams.domain.clsExpenseLine;
 using fgciams.domain.clsRequestForPaymentAuditTrail;
 using fgciams.domain.clsAccountingPOBilling;
 using fgciams.domain.clsVoucher;
+using fgciams.domain.clsAccountType;
 using fgciams.domain.clsAccountingLine;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace fgciams.Common
 {
@@ -58,6 +60,7 @@ namespace fgciams.Common
         public static RequestForPaymentModel forPrintingOrSaveRFP {get; set; } = default!;
         public static VoucherModel voucher {get; set;} = default!;
         public static VoucherModel forPrintingOrSaveVoucher {get; set;} = default!;
+        public static AccountTypeModel accountTypeModel {get; set;} = default!;
         public static AccountLineGroupModel accountLineGroup {get; set;} = default!;
         public static AccountLineTypeModel accountLineType {get; set;} = default!;
     }
@@ -90,6 +93,7 @@ namespace fgciams.Common
         public static List<LiquidationModel> LiquidationNotInRFP {get;set;} = default!;
         public static List<AccountingPOBillingModel> POBillingList {get; set;} = default!;
         public static List<VoucherModel> Vouchers {get; set;} = default!;
+        public static List<AccountTypeModel> listOfAccountTypes {get;set;} = default!;
         public static List<AccountLineGroupModel> accountLineGroups {get; set;} = default!;
         public static List<AccountLineTypeModel> accountLineTypes {get; set;} = default!;
     }
@@ -98,5 +102,7 @@ namespace fgciams.Common
     {
         public static bool drawerOpen { get; set; } = true;
         public static bool hideExpandIcon { get; set; }
+        public static Enums.ActionMode CRUDMode {get; set;}
+        public static HubConnection AMSHubConnection {get; set;}
     }
 }

@@ -11,7 +11,7 @@ namespace fgciams.domain.clsUserAccount
     {
         public UserAccount()
         {
-            SystemName = "FGCITicketing";
+            SystemName = "FGCIAccountingManagement";
         }
         public UserAccount(UserAccount userAccount)
         {
@@ -41,13 +41,13 @@ namespace fgciams.domain.clsUserAccount
         {
             get
             {
-                var _employeename = "";
-                if (!string.IsNullOrEmpty(NameExtension))
-                    _employeename = FirstName + " " + LastName + " " + NameExtension;
-                else
-                    _employeename = FirstName + " " + LastName;
-                return _employeename;
+                var _middlename = "";
+                if (!String.IsNullOrEmpty(MiddleName))
+                    _middlename = " " + MiddleName.Substring(0, 1) + ".";
+
+                return LastName + ", " + FirstName + _middlename; ;
             }
+            set{ }
         }
         public string UserName { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
@@ -56,5 +56,6 @@ namespace fgciams.domain.clsUserAccount
         //public Enums.AccessLevel AccessLevel { get; set; }
         public System.Net.HttpStatusCode httpResponse { get; set; }
         public string httpResponseMesg { get; set; } = string.Empty;
+         public Enums.AccountingAccessLevel AccessLevel { get; set; }    
     }
 }

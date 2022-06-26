@@ -19,7 +19,7 @@ namespace fgciams.service.GlobalServices
         Task<UserAccount> GetEmployeeById(Int64 EmployeeId, string token);
         Task<List<Project>> LoadProjects(FilterParameter filterParameter, string token);
         Task<List<Project>> LoadPayees(FilterParameter filterParameter, string token);
-        Task<List<ProjectChargingLineModel>> LoadProjectLine(FilterParameter filterParameter, string token);
+        Task<List<Project>> LoadChargeProjectLine(FilterParameter filterParameter, string token);
         Task<List<ProjectChargingLineModel>> projectChargingLine(FilterParameter filterParameter, string token);
         Task<List<POModel>> LoadPOs(FilterParameter filterParameter, string token);
     }

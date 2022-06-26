@@ -59,7 +59,8 @@ namespace fgciams.domain.clsLiquidation
         public bool ShowSubTable { get; set; }
         public DateTime PeriodFrom { get; set; }
         public DateTime PeriodTo { get; set; }
-       
+        public byte[] PreparedByPicture {get; set;}
+        public byte[] ApprovedByPicture {get; set;}
     }
 
 }

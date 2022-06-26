@@ -26,7 +26,6 @@ namespace fgciams.domain.clsVoucher
         public string DivisionName { get; set; } = string.Empty;
         public bool IsActive {get; set;}
         public int TemporaryId {get; set;}
-
         ///
         public bool showDesc { get; set; }
     }

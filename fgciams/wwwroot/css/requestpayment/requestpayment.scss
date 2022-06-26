@@ -7,7 +7,7 @@
       display: grid; 
       grid-auto-columns: 1fr; 
       grid-template-columns: 20px 0.9fr 1fr 1fr 1fr; 
-      grid-template-rows: 0.1fr 2rem 1fr 2rem 20px 120px 70px; 
+      grid-template-rows: 0.1fr 2rem calc(40vh - 30px) 2rem 20px 120px 70px; 
       gap: 0px 0px; 
       grid-template-areas: 
         "rpheader rpheader rpheader rpheader rpheader"
@@ -17,7 +17,7 @@
         "rpfooterhead rpfooterhead rpfooterhead rpfooterhead rpfooterhead"
         "rpfooterbody rpfooterbody rpfooterbody rpfooterbody rpfooterbody"
         "rpfooterfoot rpfooterfoot rpfooterfoot rpfooterfoot rpfooterfoot";
-      height: calc(100vh - 110px);
+      // height: calc(100vh - 110px);
       .rpheader { grid-area: rpheader; }
       .rpheadmid { grid-area: rpheadmid; }
       .rptbbody { grid-area: rptbbody; }

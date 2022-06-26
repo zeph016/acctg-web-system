@@ -6,6 +6,8 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using fgciams.domain.clsFilterParameter;
+using System.Net;
+using fgciams.domain.common;
 
 namespace fgciams.service.ExpenseLineServices
 {
@@ -41,6 +43,14 @@ namespace fgciams.service.ExpenseLineServices
             HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("expense-line",model);
             if (responseMessage.IsSuccessStatusCode)
                 expenses = await responseMessage.Content.ReadAsAsync<ExpenseLineModel>();
+            else if(responseMessage.StatusCode == HttpStatusCode.BadRequest)
+            {
+                string errorContent = await responseMessage.Content.ReadAsStringAsync();
+                if(errorContent.Contains("UniqueAccountingStatus"))
+                    throw HttpException.HttpExceptionMessage(model.ExpenseName);
+                else
+                    throw HttpException.HttpErrorMessage(errorContent);
+            }
             return expenses;
         }
 

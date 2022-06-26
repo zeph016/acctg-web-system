@@ -65,6 +65,8 @@ namespace fgciams.domain.clsLiquidation
         ////
         public bool ShowSubTable { get; set; }
         public int TemporaryId {get; set;}
+        public bool ShowParticulars { get; set; }
+        public bool ShowRemarks { get; set; }
     }
     
 }

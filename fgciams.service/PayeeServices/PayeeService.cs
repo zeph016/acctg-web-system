@@ -1,4 +1,6 @@
 using fgciams.domain.clsPayee;
+using fgciams.domain.common;
+using System.Net;
 using System.Net.Http.Headers;
 
 namespace fgciams.service.PayeeServices{
@@ -36,8 +38,14 @@ namespace fgciams.service.PayeeServices{
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 HttpResponseMessage httpResponse = await client.PostAsJsonAsync("payee", model);
                 if (httpResponse.IsSuccessStatusCode)
-                {
                     payeeModel = await httpResponse.Content.ReadAsAsync<PayeeModel>();
+                else if(httpResponse.StatusCode == HttpStatusCode.BadRequest)
+                {
+                    string errorContent = await httpResponse.Content.ReadAsStringAsync();
+                    if(errorContent.Contains("UniqueAccountingStatus"))
+                        throw HttpException.HttpExceptionMessage(model.PayeeName);
+                    else
+                        throw HttpException.HttpErrorMessage(errorContent);
                 }
                 return payeeModel;
             }

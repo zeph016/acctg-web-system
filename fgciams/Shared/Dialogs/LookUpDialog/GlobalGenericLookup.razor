@@ -1,6 +1,6 @@
 @inject IGlobalService globalService
 @inject IExpenseLineService expenseLineService
-@inject  IJSRuntime jsRuntime
+@inject  IJSRuntime jsRuntimeService
 
 <MudDialog Class='customdialog'>
     <TitleContent>
@@ -13,7 +13,7 @@
         <div class='customdialog__content-container'>
             @if (lookUpType == Enums.LookUpType.Employee)
             {
-                <BlazoredTypeahead SearchMethod='LoadEmployee'
+                <BlazoredTypeahead SearchMethod='LoadEmployee' @ref='employeeTypeahead'
                 @bind-Value='selectedEmployee' Debounce='500' placeholder='@searchPlaceholderText'>
                 <SelectedTemplate>
                     <div class='ddavatar'>
@@ -34,7 +34,7 @@
             }
             @if (lookUpType == Enums.LookUpType.Project)
             {
-                <BlazoredTypeahead SearchMethod=LoadProject 
+                <BlazoredTypeahead SearchMethod=LoadProject @ref='projectTypeahead'
                 @bind-Value='selectedPayee' Debounce="500" placeholder='Project / Charge to' >
                 <SelectedTemplate>
                     @context.ProjectName | @context.Location
@@ -46,8 +46,7 @@
             }
             @if (lookUpType == Enums.LookUpType.ExpLine)
             {
-             
-            <BlazoredTypeahead SearchMethod=LoadExpense 
+            <BlazoredTypeahead SearchMethod=LoadExpense @ref='expenseTypeahead'
             @bind-Value='selectedExpense' Debounce="500" placeholder='Expense' >
               <SelectedTemplate>
                   @context.ExpenseName
@@ -59,7 +58,7 @@
             }
             @if (lookUpType == Enums.LookUpType.Division)
             {
-              <BlazoredTypeahead SearchMethod=SearchDivision 
+              <BlazoredTypeahead SearchMethod=SearchDivision @ref='divisionTypeahead'
               @bind-Value='selectedDivision' Debounce="500" placeholder='Division' >
               <SelectedTemplate>
                   @context.divisionName
@@ -69,6 +68,18 @@
             </ResultTemplate>
             </BlazoredTypeahead> 
             }
+            @if (lookUpType == Enums.LookUpType.ChargeLine)
+            {
+                <BlazoredTypeahead SearchMethod=SearchCharging @ref='projectTypeahead'
+                @bind-Value='selectedCharging' Debounce="500" placeholder='Project / Charge to' >
+                <SelectedTemplate>
+                    @context.ProjectName | @context.Location
+                </SelectedTemplate>
+                <ResultTemplate>
+                    @context.ProjectName | @context.Location
+                </ResultTemplate>
+                </BlazoredTypeahead> 
+            }          
         </div>
     </DialogContent>
     <DialogActions>
@@ -87,22 +98,40 @@
     [Parameter] public string searchPlaceholderText { get; set; } = string.Empty;
     [Parameter] public Color color { get; set; }
     private UserAccount selectedEmployee = new UserAccount();
-    private Project selectedPayee = new Project();
+    private Project selectedPayee = new Project(), selectedCharging = new Project();
     private ExpenseLineModel selectedExpense = new ExpenseLineModel();
     private DivisionModel selectedDivision = new DivisionModel();
     private string iconString = "Icons.Filled.PersonSearch";
-
+    private BlazoredTypeahead<UserAccount, UserAccount> employeeTypeahead = new BlazoredTypeahead<UserAccount, UserAccount>();
+    private BlazoredTypeahead<Project, Project> projectTypeahead = new BlazoredTypeahead<Project, Project>();
+    private BlazoredTypeahead<ExpenseLineModel, ExpenseLineModel> expenseTypeahead = new BlazoredTypeahead<ExpenseLineModel, ExpenseLineModel>();
+    private BlazoredTypeahead<DivisionModel, DivisionModel> divisionTypeahead = new BlazoredTypeahead<DivisionModel, DivisionModel>();
+    
+    
     protected override async Task OnInitializedAsync()
     {
         if (lookUpType == Enums.LookUpType.Employee)
             iconString = Icons.Filled.PersonSearch;
-        if (lookUpType == Enums.LookUpType.Project)
+        if (lookUpType == Enums.LookUpType.Project || lookUpType == Enums.LookUpType.ChargeLine)
             iconString = Icons.Filled.Groups;
         if (lookUpType == Enums.LookUpType.Division)
             iconString = "fa-solid fa-users-between-lines";
         if (lookUpType == Enums.LookUpType.ExpLine)
             iconString = "fa-solid fa-money-check";
         await Task.Delay(1);
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) {
+            if (lookUpType == Enums.LookUpType.Employee)
+                await employeeTypeahead.Focus();
+            if (lookUpType == Enums.LookUpType.Project || lookUpType == Enums.LookUpType.ChargeLine)
+                await projectTypeahead.Focus();
+            if (lookUpType == Enums.LookUpType.ExpLine)
+                await expenseTypeahead.Focus();
+            if (lookUpType == Enums.LookUpType.Division)
+                await divisionTypeahead.Focus();
+        }
     }
 
     private void Submit() 
@@ -115,7 +144,8 @@
             MudDialog.Close(DialogResult.Ok(selectedExpense));
         if(lookUpType == Enums.LookUpType.Division)
             MudDialog.Close(DialogResult.Ok(selectedDivision));
-
+        if(lookUpType == Enums.LookUpType.ChargeLine)
+            MudDialog.Close(DialogResult.Ok(selectedCharging));
     }
     private void Cancel()
     {
@@ -154,5 +184,16 @@
     {
       var division = GlobalClassList.divisionList;
       return await Task.FromResult(division.Where(x=>x.shortcutName.Contains(searchText, StringComparison.InvariantCultureIgnoreCase)).ToList());
+    }
+    private async Task<IEnumerable<Project>> SearchCharging(string chargingName)
+    {
+      var filterParameter = new FilterParameter()
+      {
+        IsProject = true,
+        ProjectName = chargingName,
+        IsId = false
+      };
+      var charging = await globalService.LoadChargeProjectLine(filterParameter, GlobalClass.token);
+      return charging;
     }
 }

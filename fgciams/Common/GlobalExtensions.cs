@@ -14,8 +14,11 @@ using fgciams.service.UserAccountServices;
 using System.IdentityModel.Tokens.Jwt;
 using MudBlazor;
 using System.Net;
+using Microsoft.AspNetCore.SignalR.Client;
+using fgciams.domain.clsEnums;
+using Microsoft.AspNetCore.Components;
 
-public class Extensions
+public static class Extensions
 {
     public static bool CheckGlobalToken()
     {
@@ -101,7 +104,7 @@ public class Extensions
 
         var ts = new TimeSpan(DateTime.Now.Ticks - expirationTime.Ticks);
         double delta = Math.Abs(ts.TotalSeconds);
-        if (delta > 8 * hour) 
+        if (delta > 8 * hour)
             return true;
         return false;
     }
@@ -164,5 +167,20 @@ public class Extensions
         acctgStatus = GlobalClassList.accountingStatusList.Where(x => x.Id == acctgStatusId).FirstOrDefault();
         return "background-color:" + acctgStatus?.StatusColor;
     }
+    public static HubConnection ConnectionBuilder(string connection)
+    {
+      HubConnection hubConnection = new HubConnectionBuilder()
+      .WithUrl(connection)
+      .WithAutomaticReconnect()
+      .Build();
+
+       return hubConnection;
+    }
     
+
+    //NOT USED FOR NOW - MIGHT BE USED IN THE FUTURE
+    public static ValueTask FocusAsync(this IJSRuntime jSRuntimeService, string className)
+    {
+        return jSRuntimeService.InvokeVoidAsync("AutoFocusElement", className);
+    }
 }

@@ -109,8 +109,10 @@
   protected override async Task OnInitializedAsync()
   {
     GlobalClass.pageTitle = "REQUEST TYPES";
-    while (GlobalClass.currentUserAccount == null || GlobalClassList.requestTypes == null)
+    while (GlobalClass.currentUserAccount == null || GlobalClassList.requestTypes == null || string.IsNullOrEmpty(GlobalVariable.AMSHubConnection.ConnectionId))
       await Task.Delay(1);
+
+    RequestTypeHub();
     CompletedFetch();
   }
 
@@ -172,6 +174,24 @@
       visibility = "visibility-animation-show";
     if(!openSideFilter)
       visibility = "visibility-animation-hide";
+  }
+  private void RequestTypeHub()
+  {
+    try
+    {
+      GlobalVariable.AMSHubConnection.On<RequestTypeModel>("SaveRequestType", (_type) =>{
+
+        GlobalClassList.requestTypes.RemoveAll(x=>x.Id == _type.Id);
+        GlobalClassList.requestTypes.Add(_type);
+        GlobalClassList.requestTypes = GlobalClassList.requestTypes.Where(x=>x.IsActive == true).OrderBy(x=>x.TypeName).ToList();
+        StateHasChanged();
+
+        });
+    }
+    catch (System.Exception ex)
+    {
+       // TODO
+    }
   }
 }
 

@@ -104,8 +104,11 @@
     protected override async Task OnInitializedAsync()
     {
         GlobalClass.pageTitle = "account line group";
-        while (GlobalClass.currentUserAccount == null || GlobalClassList.accountLineGroups == null)
+        while (GlobalClass.currentUserAccount == null || GlobalClassList.accountLineGroups == null 
+        || string.IsNullOrEmpty(GlobalVariable.AMSHubConnection.ConnectionId))
             await Task.Delay(1);
+
+        AccontLineGroupHub();
         CompletedFetch();
     }
 
@@ -169,5 +172,16 @@
         visibility = "visibility-animation-show";
         if(!openSideFilter)
         visibility = "visibility-animation-hide";
+    }
+    private void AccontLineGroupHub()
+    {
+      GlobalVariable.AMSHubConnection.On<AccountLineGroupModel>("SaveAccountLineGroup", (_group)=>{
+        
+        GlobalClassList.accountLineGroups.RemoveAll(x=>x.Id == _group.Id);
+        GlobalClassList.accountLineGroups.Add(_group);
+        GlobalClassList.accountLineGroups = GlobalClassList.accountLineGroups.Where(x=>x.IsActive == true).OrderBy(x=>x.LineGroupName).ToList();
+        StateHasChanged();
+
+        });
     }
 }

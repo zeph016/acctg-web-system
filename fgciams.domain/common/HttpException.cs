@@ -13,5 +13,9 @@ namespace fgciams.domain.common
         {
             return new ApplicationException(customMessage + " already exists");
         }
+        public static ApplicationException HttpErrorMessage(string customMessage)
+        {
+          return new ApplicationException(customMessage);
+        }
     }
 }

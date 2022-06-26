@@ -1,7 +1,9 @@
 ﻿using fgciams.domain.clsRequestType;
+using fgciams.domain.common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,8 +33,14 @@ namespace fgciams.service.RequestTypeServices
                 HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("request-type", requestType);
                 if (responseMessage.IsSuccessStatusCode)
                     request = await responseMessage.Content.ReadAsAsync<RequestTypeModel>();
-                else
-                    throw new ApplicationException($"Error proccessing your request, Please contact IT for assistance");
+                else if(responseMessage.StatusCode == HttpStatusCode.BadRequest)
+                {
+                  string ContentRequest = await responseMessage.Content.ReadAsStringAsync();
+                  if(ContentRequest.Contains("UniqueTypeName"))
+                    throw HttpException.HttpExceptionMessage(requestType.TypeName);
+                  else
+                    throw HttpException.HttpErrorMessage(ContentRequest);
+                }
                 return request;
             }
             catch (Exception)
@@ -60,8 +68,14 @@ namespace fgciams.service.RequestTypeServices
                 HttpResponseMessage responseMessage = await _client.PutAsJsonAsync("request-type", requestType);
                 if (responseMessage.IsSuccessStatusCode)
                     request = await responseMessage.Content.ReadAsAsync<RequestTypeModel>();
-                else
-                    throw new ApplicationException($"Error proccessing your request, Please contact IT for assistance");
+                else if(responseMessage.StatusCode == HttpStatusCode.BadRequest)
+                {
+                  string ContentRequest = await responseMessage.Content.ReadAsStringAsync();
+                  if(ContentRequest.Contains("UniqueTypeName"))
+                    throw HttpException.HttpExceptionMessage(requestType.TypeName);
+                  else
+                    throw HttpException.HttpErrorMessage(ContentRequest);
+                }
                 return request;
             }
             catch (Exception)

@@ -51,5 +51,9 @@ namespace fgciams.domain.clsVoucher
         public List<VoucherRFPModel> VoucherRFP { get; set; }
         public List<VoucherRFPModel> RemovedVoucherRFP { get; set; }
         public bool ShowReport {get; set;}
+
+        public byte[] PreparedByPicture {get; set;}
+        public byte[] VerifiedByPicture {get; set;}
+        public byte[] ApprovedByPicture {get; set;}
     }
 }

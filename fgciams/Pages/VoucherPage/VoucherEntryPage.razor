@@ -20,7 +20,7 @@
                 <MudGrid Spacing='2'>
                     <MudItem xs=12>
                         <MudTextField @bind-Value='@selectedVoucherDetailModel.ProjectName' Label='Project/Payee'
-                        @onclick='(()=> VoucherDetailLookups(Enums.LookUpType.Project, selectedVoucherDetailModel))' 
+                        @onclick='(()=> VoucherDetailLookups(Enums.LookUpType.ChargeLine, selectedVoucherDetailModel))' 
                         Required='reqProj' Error='reqProj' ReadOnly></MudTextField>
                     </MudItem>
                     <MudItem xs=6>
@@ -36,22 +36,6 @@
                     <MudItem xs=12>
                         <MudTextField @bind-Value='selectedVoucherDetailModel.Description' Variant='Variant.Outlined' Lines=4 Label='Description' />
                     </MudItem>
-                    @* <MudItem Class='d-flex align-center' xs=6>
-                        <MudText Class='txt-uppercase font-bold font12 mr-2'>Debit:</MudText>
-                    </MudItem>
-                     <MudItem Class='d-flex align-center' xs=6>
-                        <MudText Class='txt-uppercase font-bold font12 mr-2'>Credit:</MudText>
-                    </MudItem>
-                    <MudItem Class='d-flex align-center gap-2' xs=6>
-                        <MudText Class='font-bold font12'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText> 
-                        <MudNumericField Class='txt-search-overflow txt-top-0 txtfield-right' @bind-Value='selectedVoucherDetailModel.Debit' Variant='Variant.Filled'
-                        HideSpinButtons Format='N2' Error='reqDebt'/>
-                    </MudItem>
-                    <MudItem Class='d-flex align-center gap-2' xs=6>
-                        <MudText Class='font-bold font12'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText> 
-                        <MudNumericField Class='txt-search-overflow txt-top-0 txtfield-right' @bind-Value='selectedVoucherDetailModel.Credit' Variant='Variant.Filled'
-                        HideSpinButtons Format='N2' Error='reqCred'/>
-                    </MudItem> *@
                     <MudItem xs=6>
                         <MudText Class='txt-uppercase font-bold font12 mr-2'>Amount:</MudText>
                     </MudItem>
@@ -92,7 +76,7 @@
                             <MudText Class='fgcilogocont__lblfirst'>F. GURREA</MudText>
                             <MudText Class='fgcilogocont__lblsecond'>Construction, Inc.</MudText>
                             <MudSpacer />
-                             <MudButton OnClick='New' EndIcon='fa-regular fa-file' Variant='Variant.Filled' Color='Color.Tertiary' Size='Size.Small'>new</MudButton>
+                            <MudButton OnClick='New' EndIcon='fa-regular fa-file' Variant='Variant.Filled' Color='Color.Tertiary' Size='Size.Small'>new</MudButton>
                         </div>
                         <div class="voucher-date">
                             <MudText Class='d-flex align-center justify-center pa-2 font-bold font14'>@voucherDate.ToShortDateString()</MudText>
@@ -101,6 +85,16 @@
                             <MudText Class='txt-uppercase font-bold font10'>Pay To:</MudText>
                             <MudTextField Class='font14-txtfield txt-top-0' @bind-Value='GlobalClass.voucher.PayeeName'
                             @onclick='(() => Lookup("payee"))' ReadOnly> </MudTextField>
+                            <div class='d-flex align-center'>
+                                <MudText Class='wspace-nowrap font10 font-bold txt-uppercase'>Period:</MudText>
+                                <MudDatePicker Class='txt-top-0 font14-txtfield txtfield-right width120px' @bind-Date='GlobalClass.voucher.PeriodTo'
+                                IconSize='Size.Small'></MudDatePicker>
+                            </div>
+                            <div class='d-flex align-center'>
+                                <MudText Class='wspace-nowrap font10 font-bold txt-uppercase'>Prev. Period:</MudText>
+                                <MudDatePicker Class='txt-top-0 font14-txtfield txtfield-right width120px' @bind-Date='GlobalClass.voucher.PeriodFrom'
+                                IconSize='Size.Small'></MudDatePicker>
+                            </div>
                         </div>
                         <div class="voucher-status d-flex align-center justify-start gap-2 pa-2">
                             <MudText Class='txt-uppercase font-bold font10'>Voucher No.:</MudText>
@@ -134,38 +128,15 @@
                             <MudTextField Class='txtfield-overflow-ellipsis font14-txtfield txt-top-0' @bind-Value=GlobalClass.voucher.Remarks />
                         </div>
                         <div class="voucher-details d-flex">
-                            <div class='d-flex flex-column border-thin-right'>
-                                <div class='pa-2'>
-                                    <MudText Class='wspace-nowrap font10 font-bold txt-uppercase'>Period:</MudText>
-                                    <MudDatePicker Class='txt-top-0 font14-txtfield txtfield-right' bind-Date='GlobalClass.voucher.Period'
-                                    IconSize='Size.Small'></MudDatePicker>
-                                </div>
-                                <div class='pa-2'>
-                                    <MudText Class='wspace-nowrap font10 font-bold txt-uppercase'>Prev. Period:</MudText>
-                                    <MudDatePicker Class='txt-top-0 font14-txtfield txtfield-right' bind-Date='GlobalClass.voucher.PeriodFrom'
-                                    IconSize='Size.Small'></MudDatePicker>
-                                </div>
-                                <div class='d-flex align-center flex-column justify-end pa-2 gap-2 wspace-nowrap'>
-                                    <MudText Class='wspace-nowrap font12 font-bold txt-uppercase align-self-start'>Total Amount:</MudText>
-                                    @if (GlobalClass.voucher.TotalAmount > 0)
-                                    {
-                                        <MudText Class='font-bold align-self-end' Color='Color.Tertiary' Typo='Typo.body2'>
-                                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.voucher.TotalAmount.ToString("N2")
-                                        </MudText>
-                                    }
-                                    else
-                                    {
-                                        <MudText Class='font-bold align-self-end' Typo='Typo.body2' Color='Color.Error'>
-                                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.voucher.TotalAmount.ToString("N2")
-                                        </MudText>
-                                    }
-                                </div>
-                            </div>
-                            <MudTable Class='small-toolbar-gutter flex-1 overflow-auto' Items='GlobalClass.voucher.VoucherDetails' Bordered='true' Striped='true'
+                            <MudTable Class='small-toolbar-gutter toolbar-pad-0 flex-1 overflow-auto mudtoolbar-bg-8080805c' Items='GlobalClass.voucher.VoucherDetails' Bordered='true' Striped='true'
                             Dense='true' Elevation='0' FixedHeader='true' Height='auto' Square>
                                 <ToolBarContent>
-                                    <div class='d-flex flex-1 align-center gap-2'>
-                                        <MudText Class='txt-uppercase font-bold font12'>Voucher Detail</MudText>
+                                    <div class='d-flex flex-1 align-center pr-2 pl-2 gap-2'>
+                                        <MudText Class='txt-uppercase font-bold font12'>Voucher Detail :</MudText>
+                                        <MudText Class='txt-uppercase font-bold font10'>
+                                            @GlobalClass.voucher.VoucherDetails.Count() 
+                                            @(GlobalClass.voucher.VoucherDetails.Count() == 1 ? "item" : "items")
+                                        </MudText>
                                         <MudSpacer />
                                         <MudTooltip Text='Add Detail'>
                                             <MudButton OnClick='(()=> AddNew())' StartIcon="@Icons.Filled.Add" aria-label="add"  Color='Color.Info' Size='Size.Small'>Add Detail</MudButton>
@@ -181,12 +152,12 @@
                                     <col />
                                 </ColGroup>
                                 <HeaderContent>
-                                    <MudTh Class='wspace-nowrap customheader-1'></MudTh>
+                                    <MudTh Class='wspace-nowrap customheader-1 pa-0'></MudTh>
                                 </HeaderContent>
                                 <RowTemplate>
                                     <MudTd>
                                         <MudCard Class='d-flex'>
-                                            <div class='d-flex flex-column gap-2 pa-2 border-thin-right'>
+                                            <div class='d-flex flex-column pa-2 gap-2 border-thin-right'>
                                                 <MudTooltip Text='Add Details'>
                                                     <MudIconButton OnClick='(() => EditRow(context))' Icon='@Icons.Filled.Edit' Color='Color.Tertiary' Size='Size.Small' />
                                                 </MudTooltip>
@@ -194,57 +165,78 @@
                                                     <MudIconButton OnClick='(() => RemoveRFP(context))' Icon='@Icons.Filled.RemoveCircle' Color='Color.Error' Size='Size.Small' />
                                                 </MudTooltip>
                                             </div>
-                                            <MudCardContent Class='d-flex flex-column pa-2'>
-                                                <div class='d-flex flex-column pa-2'>
-                                                    <MudText Class='txt-uppercase font-bold font10'>Charging</MudText>
-                                                    <MudText Class='font-bold font14'>@context.ProjectName</MudText>
-                                                </div>
-                                                <div class='d-flex gap-1'>
-                                                    @if (context.ExpenseId != 0)
-                                                    {
-                                                        <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Dark' Size='Size.Small'>
-                                                            @context.ExpenseName
-                                                        </MudChip>
-                                                    }
-                                                    @if (context.DivisionId != 0)
-                                                    {
-                                                        <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Dark' Size='Size.Small'>
-                                                            @context.DivisionName
-                                                        </MudChip>
-                                                    }
-                                                
-                                                </div>
-                                                <div class='d-flex flex-column pa-2'>
-                                                    <MudText Class='txt-uppercase font-bold font10'>
-                                                        Description:
+                                            <MudCardContent Class='d-flex flex-1 pa-2'>
+                                                <div class='voucherpage__vdetailgrid'>
+                                                    <div class='vdetail-lblcharge d-flex align-center'>
+                                                        <MudText Class='txt-uppercase font-bold font10'>Charge:</MudText>
+                                                    </div>
+                                                    <div class='vdetail-charge d-flex align-center'>
+                                                        <MudText Class='font-bold font14 pr-4'>@context.ProjectName</MudText>
+                                                        @if (context.ExpenseId != 0)
+                                                        {
+                                                            <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Dark' Size='Size.Small'>
+                                                                @context.ExpenseName
+                                                            </MudChip>
+                                                        }
+                                                        @if (context.DivisionId != 0)
+                                                        {
+                                                            <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Dark' Size='Size.Small'>
+                                                                @context.DivisionName
+                                                            </MudChip>
+                                                        }
+                                                    </div>
+                                                    <div class="vdetail-lbldesc d-flex align-center gap-2">
+                                                        <MudText Class='txt-uppercase font-bold font10'>Description:</MudText>
                                                         <MudToggleIconButton @bind-Toggled="@context.showDesc"
                                                         Icon="@Icons.Filled.KeyboardArrowDown" Color="@Color.Info" Title="Off" Size='Size.Small'
                                                         ToggledIcon="@Icons.Filled.KeyboardArrowUp" ToggledColor="@Color.Secondary" ToggledTitle="On" ToggledSize='Size.Small' />
-                                                    </MudText>
-                                                    <MudText Class='transition-05s-ease pa-2 font12 rounded bgc-f2f2f2 overflow-hidden' style='@(context.showDesc ? "height:100%" : "height:30px")'>@context.Description</MudText>
-                                                </div>
-                                                <div class='wspace-nowrap d-flex align-start gap-2 pa-2'>
-                                                    <MudText Class='pl-2 txt-uppercase font-bold font12'>
-                                                        Amount :
-                                                    </MudText>
-                                                    @if (context.Amount <= 0)
-                                                    {
-                                                        <MudText Class='font-bold font12' Color='Color.Error'>
-                                                            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.Amount.ToString("N2")
-                                                        </MudText>
-                                                    }
-                                                    else
-                                                    {
-                                                        <MudText Class='font-bold font12' Color='Color.Tertiary'>
-                                                            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.Amount.ToString("N2")
-                                                        </MudText>
-                                                    }
+                                                    </div>
+                                                    <div class="vdetail-desc d-flex align-center">
+                                                        <MudText Class='transition-05s-ease pa-2 font12 rounded bgc-f2f2f2 overflow-hidden' style='@(context.showDesc ? "height:100%" : "height:30px")'>@context.Description</MudText>
+                                                    </div>
+                                                    <div class="vdetail-lblamt d-flex align-center">
+                                                        <MudText Class='txt-uppercase font-bold font10'>Amount :</MudText>
+                                                    </div>
+                                                    <div class="vdetail-amt d-flex align-center">
+                                                        @if (context.Amount <= 0)
+                                                        {
+                                                            <MudText Class='font-bold font12' Color='Color.Error'>
+                                                                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.Amount.ToString("N2")
+                                                            </MudText>
+                                                        }
+                                                        else
+                                                        {
+                                                            <MudText Class='font-bold font12' Color='Color.Tertiary'>
+                                                                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.Amount.ToString("N2")
+                                                            </MudText>
+                                                        }
+                                                    </div>
                                                 </div>
                                             </MudCardContent>
                                         </MudCard>
                                     </MudTd>
                                 </RowTemplate>
                             </MudTable>
+                        </div>
+                        <div class="voucher-totalamt d-flex align-center justify-end gap-2">
+                            <div class='flex-1 border-thin-right bgc-f2f2f2 height100'>
+                               
+                            </div>
+                            <div class='d-flex align-center pa-2 gap-2'>
+                                <MudText Class='wspace-nowrap font12 font-bold txt-uppercase'>Total Amount:</MudText>
+                                @if (GlobalClass.voucher.TotalAmount > 0)
+                                {
+                                    <MudText Class='font-bold' Color='Color.Tertiary' Typo='Typo.body2'>
+                                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.voucher.TotalAmount.ToString("N2")
+                                    </MudText>
+                                }
+                                else
+                                {
+                                    <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
+                                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.voucher.TotalAmount.ToString("N2")
+                                    </MudText>
+                                }
+                            </div>
                         </div>
                         <div class="voucher-signatories d-flex align-center justify-space-between pa-2 gap-2">
                             <div class='d-flex align-center gap-2 width25'>
@@ -261,7 +253,6 @@
                                 <MudTextField Class='txt-top-0 txt-search-overflow font14-txtfield font-bold' @bind-Value=GlobalClass.voucher.PreparedByName HelperText='PREPARED BY' 
                                 @onclick='(()=> Lookup("prepare"))' ReadOnly></MudTextField>
                             </div>
-                            @* <MudSpacer /> *@
                             <div class='d-flex align-center gap-2 width25'>
                                 @if(verifiedByImg.Count() == 0)
                                 {
@@ -276,7 +267,6 @@
                                 <MudTextField Class='txt-top-0 txt-search-overflow font14-txtfield font-bold' @bind-Value=GlobalClass.voucher.VerifiedByName HelperText='VERIFIED BY' 
                                 @onclick='(()=> Lookup("verify"))' ReadOnly></MudTextField>
                             </div>
-                             @* <MudSpacer /> *@
                             <div class='d-flex align-center gap-2 width25'>
                                 @if(approvedByImg.Count() == 0)
                                 {
@@ -337,11 +327,24 @@
         navigationManager.LocationChanged += OnLocationChanged;
         if (GlobalClass.voucher == null || GlobalClass.voucher.Id == 0)
         {
-            GlobalClass.voucher = new VoucherModel();
-            GlobalClass.voucher.PreparedByName = GlobalClass.currentUserAccount.EmployeeName;
-            GlobalClass.voucher.PreparedById = GlobalClass.currentUserAccount.EmployeeId;
-            preparedByImg = GlobalClass.currentUserAccount.Picture;
-            voucherDate = DateTime.Now.Date;
+           switch(GlobalClass.forPrintingOrSaveVoucher)
+           {
+            case null :
+
+              GlobalClass.voucher = new VoucherModel();
+              voucherDate = DateTime.Now.Date;
+              GlobalClass.voucher.PreparedByName = GlobalClass.currentUserAccount.EmployeeName;
+              GlobalClass.voucher.PreparedById = GlobalClass.currentUserAccount.EmployeeId;
+              preparedByImg = GlobalClass.currentUserAccount.Picture;
+
+            break;
+
+            default :
+
+            RemappedProperties();
+
+            break;
+           }
         }
         else
         {
@@ -355,10 +358,32 @@
         Task.Run(StateHasChanged);
     }
 
+    #region Remapped Properties
+    void RemappedProperties()
+    {
+      GlobalClass.voucher.PeriodFrom = GlobalClass.forPrintingOrSaveVoucher.PeriodFrom;
+      GlobalClass.voucher.PeriodTo = GlobalClass.forPrintingOrSaveVoucher.PeriodTo;
+      GlobalClass.voucher.PreparedById = GlobalClass.forPrintingOrSaveVoucher.PreparedById;
+      GlobalClass.voucher.PreparedByName = GlobalClass.forPrintingOrSaveVoucher.PreparedByName;
+      preparedByImg = GlobalClass.forPrintingOrSaveVoucher.PreparedByPicture;
+      verifiedByImg = GlobalClass.forPrintingOrSaveVoucher.VerifiedByPicture;
+      approvedByImg = GlobalClass.forPrintingOrSaveVoucher.ApprovedByPicture;
+
+      GlobalClass.voucher.PreparedByName = GlobalClass.forPrintingOrSaveVoucher.PreparedByName;
+      GlobalClass.voucher.PreparedById = GlobalClass.forPrintingOrSaveVoucher.PreparedById;
+      preparedByImg = GlobalClass.forPrintingOrSaveVoucher.PreparedByPicture;
+      GlobalClass.voucher.PeriodFrom = GlobalClass.forPrintingOrSaveVoucher.PeriodFrom;
+      GlobalClass.voucher.PeriodTo = GlobalClass.forPrintingOrSaveVoucher.PeriodTo;
+    }
+
+    #endregion
+
     #region Location Changed
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
         GlobalClass.voucher = new();
+        verifiedByImg = new byte[]{};
+        approvedByImg = new byte[]{};
         Dispose();
     }
 
@@ -415,11 +440,13 @@
     VoucherModel MapProperties()
     {
         GlobalClass.voucher.VoucherDate = voucherDate;
-        GlobalClass.voucher.PayeeId = payee.ProjectId;
-        GlobalClass.voucher.PayeeCategoryId = payee.ProjectCategoryId;
         GlobalClass.voucher.UserId = GlobalClass.currentUserAccount.EmployeeId;
         GlobalClass.voucher.IsActive = true;
 
+        GlobalClass.voucher.PreparedByPicture = preparedByImg;
+        GlobalClass.voucher.VerifiedByPicture = verifiedByImg;
+        GlobalClass.voucher.ApprovedByPicture = approvedByImg;
+        Console.WriteLine("Id: " + GlobalClass.voucher.PreparedById + " Name: " + GlobalClass.voucher.PreparedByName);
         GlobalClass.voucher.AccountingStatusId = GlobalClassList.accountingStatusList
         .Where(x => x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.VG)
         .Select(x => x.Id)
@@ -437,7 +464,6 @@
             GlobalClass.voucher.Activity += " and removed voucher details";
           });
         }
-
         return GlobalClass.voucher;
     }
 
@@ -447,6 +473,8 @@
 
     private async Task Lookup(string role)
     {
+        GlobalClass.voucher.PreparedByName = GlobalClass.currentUserAccount.EmployeeName;
+        GlobalClass.voucher.PreparedById = GlobalClass.currentUserAccount.EmployeeId;
         var parameters = new DialogParameters();
         string dialogTitle = role == "payee" ? "Payee Look Up" : "Employee Look Up";
         Enums.LookUpType lookUpType = role == "payee" ? Enums.LookUpType.Project : Enums.LookUpType.Employee;
@@ -502,6 +530,7 @@
     {
         GlobalClass.voucher.PayeeId = payee.ProjectId;
         GlobalClass.voucher.PayeeName = payee.ProjectName;
+        GlobalClass.voucher.PayeeCategoryId = payee.ProjectCategoryId;
     }
 
     #endregion
@@ -513,7 +542,7 @@
         string dialogTitle = "";
         if(lookUpType == Enums.LookUpType.Division)
             dialogTitle = "Division";
-        if(lookUpType == Enums.LookUpType.Project)
+        if(lookUpType == Enums.LookUpType.Project || lookUpType == Enums.LookUpType.ChargeLine)
             dialogTitle = "Name / Project / Equip";
         if(lookUpType == Enums.LookUpType.ExpLine)
             dialogTitle = "Expense";
@@ -538,7 +567,7 @@
                 selectedDivision = (DivisionModel)resultDialog.Data;
                 AddDivision(voucherDetail);
             }
-            if (lookUpType == Enums.LookUpType.Project)
+            if (lookUpType == Enums.LookUpType.Project || lookUpType == Enums.LookUpType.ChargeLine)
             {
                 selectedProject = (Project)resultDialog.Data;
                 AddProjectLine(voucherDetail);
@@ -574,8 +603,6 @@
         var resultDialog = await dialogService.Show<Shared.Dialogs.GlobalRFPLiquidationLookUp.GlobalRFPLiquidationLookUp>(dialogTitle, parameters, options).Result;
         if (!resultDialog.Cancelled)
         {
-            foreach (var item in GlobalClass.voucher.VoucherDetails)
-                Console.WriteLine(item.ProjectId);
             StateHasChanged();
         }
     }
@@ -763,7 +790,6 @@
     #region Edit Row
     private void EditRow(VoucherDetailModel model)
     {
-        Console.WriteLine(model.ProjectId);
         selectedVoucherDetailModel = new VoucherDetailModel();
         selectedVoucherDetailModel = model;
         if (!openEditDrawer)
@@ -777,6 +803,11 @@
         if(!ValidateEntries()) {
             Extensions.ShowAlert("Please complete required fields", Variant.Filled, snackbarService, Severity.Error);
             return;
+        }
+        if(!ValidateAmount())
+        {
+           Extensions.ShowAlert("Amount is greater than total voucher amount", Variant.Filled, snackbarService, Severity.Error);
+           return;
         }
         openEditDrawer = !openEditDrawer;
     }
@@ -795,6 +826,17 @@
         if (reqProj || reqExp || reqDiv)
             return false;
         return true;
+    }
+    #endregion
+
+    #region ValidateAmount
+    private bool ValidateAmount()
+    {
+      if(selectedVoucherDetailModel.Amount > GlobalClass.voucher.TotalAmount)
+      {
+        return false;
+      }
+      return true;
     }
     #endregion
 
@@ -823,6 +865,9 @@
         @* MapDefaultDetails();
         showReport = false; *@
     }
+    #endregion
+
+    #region Validate Entry
     #endregion
 
     #endregion

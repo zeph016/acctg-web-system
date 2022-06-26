@@ -84,15 +84,15 @@ namespace fgciams.service.GlobalServices
         #endregion
 
         #region Load Project Charging Line
-        public async Task<List<ProjectChargingLineModel>> LoadProjectLine(FilterParameter filterParameter, string token)
+        public async Task<List<Project>> LoadChargeProjectLine(FilterParameter filterParameter, string token)
         {
             try
             {
-                var projectCharging = new List<ProjectChargingLineModel>();
+                var projectCharging = new List<Project>();
                 _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("accounting-global/charging-list", filterParameter);
                 if (responseMessage.IsSuccessStatusCode)
-                    projectCharging = await responseMessage.Content.ReadAsAsync<List<ProjectChargingLineModel>>();
+                    projectCharging = await responseMessage.Content.ReadAsAsync<List<Project>>();
 
                 return projectCharging;
             }

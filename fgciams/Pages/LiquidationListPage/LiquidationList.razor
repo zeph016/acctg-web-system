@@ -3,6 +3,7 @@
 @inject NavigationManager navigationManager
 @inject ISnackbar snackBar
 @inject IDialogService dialogService
+@inject IConfiguration config
 
 <div class='page-cont'>
     <div class='drawer-right'>
@@ -17,10 +18,29 @@
                     <MudIconButton OnClick='OpenSideFilter' Icon='@Icons.Filled.Close' aria-label='Close Filter' Size='Size.Medium' />
                 </div>
                 <div class='filter-content d-flex flex-column pl-4 pr-4 gap-1 @visibility'>
-                    <MudTextField Class='txtfield-75' @bind-Value='searchTerm' Placeholder='Control Number'
-                      Adornment='Adornment.Start' AdornmentIcon='@Icons.Material.Filled.Search' IconSize='Size.Small'
-                      Clearable='true' Variant='Variant.Outlined' />
-                    <MudButton Variant='Variant.Filled' Color='Color.Secondary'>Apply Filter</MudButton>
+                  <div class='d-flex align-center gap-2 @visibility'>
+                    <MudCheckBox Class='pt-1' @bind-Checked='filterParameter.IsControlNumber' Dense Size='Size.Small' />
+                    <MudTextField Class='txt-top-0 txt-search-overflow font14-txtfield font-bold' @bind-Value='filterParameter.ControlNumber' Immediate HelperText='Control Number'
+                    Clearable='true' Variant='Variant.Text' Disabled='!filterParameter.IsControlNumber'/>
+                  </div>
+                  <div class='d-flex align-center gap-2 @visibility'>
+                    <MudCheckBox @bind-Checked='filterParameter.IsDate' Dense Size='Size.Small' />
+                    <MudDateRangePicker Class='txt-top-0 font14-txtfield txtfield-right' @bind-DateRange='dateRange' Disabled='!filterParameter.IsDate' 
+                    HelperText='Filter Date' IconSize='Size.Small' />
+                  </div>
+                  <div class='d-flex align-center gap-2 @visibility'>
+                    <MudCheckBox @bind-Checked='filterParameter.IsAccountingStatus' Dense Size='Size.Small' />
+                    <MudSelect Class='txt-top-0 txt-search-overflow font14-txtfield font-bold' MultiSelectionTextFunc='@(new Func<List<string>, string>(AccountingStatus))' @bind-SelectedValues='hasAccountingStatus' 
+                      @bind-Value="selectedStatus" Dense="true" MultiSelection=true Disabled='!filterParameter.IsAccountingStatus' HelperText='Accounting Status'>
+                        @foreach (var item in statusList.Where(x=> (int)x.StatusEnumCategoryId == 4 || (int)x.StatusEnumCategoryId == 5 || (int)x.StatusEnumCategoryId == 6))
+                        {
+                          <MudSelectItem Value="@item">@item.StatusName</MudSelectItem>
+                        }
+                    </MudSelect>
+                  </div>
+                  <div class='d-flex align-center justify-center pa-2'>
+                    <MudButton Class='flex-grow-1' Variant='Variant.Filled' Color='Color.Secondary' OnClick='(()=> FilteredItems())'>Apply Filter</MudButton>
+                  </div>
                 </div>
             </div>
         </MudDrawer>
@@ -35,13 +55,13 @@
     }
     else
     {
-      <MudTable Class='configtables' Items='GlobalClassList.liquidations' Hover='true'
-      Breakpoint='Breakpoint.Sm' FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
-      RowsPerPage='30' Striped='true' Filter='new Func<LiquidationModel,bool>(FilterItems)'> 
+      <MudTable Class='configtables' ServerData='new Func<TableState, Task<TableData<LiquidationModel>>>(LoadLiquidationFromServer)' Hover='true' Virtualize=true 
+      Breakpoint='Breakpoint.Sm' FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'  LoadingProgressColor='Color.Primary'
+      RowsPerPage='10' Striped='true' Filter='new Func<LiquidationModel,bool>(FilterItems)' @ref='tableVariable'> 
         <ToolBarContent>
           <MudText Typo='Typo.caption'>
-            @GlobalClassList.liquidations.Count()
-            @(GlobalClassList.liquidations.Count() == 1 ? "item" : "items")
+            @totalItems
+            @(totalItems == 1 ? "item" : "items")
             in Total
           </MudText>
           <MudSpacer />
@@ -57,6 +77,7 @@
         </ColGroup>
         <HeaderContent>
           <MudTh Class='customheader-1'>Control No.</MudTh>
+          <MudTh Class='customheader-1'>Date</MudTh>
           <MudTh Class='customheader-1'>Period</MudTh>
           <MudTh Class='customheader-1'>Prepared by</MudTh>
           <MudTh Class='customheader-1'>Approver</MudTh>
@@ -68,6 +89,7 @@
           <MudTd Class='text-center'>
             <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'> @context.ControlNumber</MudChip>
           </MudTd>
+          <MudTd Class='wbreak-breakword font12'>@context.LiquidationDate.ToString("MM/dd/yyyy")</MudTd>
           <MudTd Class='wbreak-breakword font12'>@context.PeriodFrom.ToString("MM/dd/yy") &#x2192; @context.PeriodTo.ToString("MM/dd/yy")</MudTd>
           <MudTd Class='wbreak-breakword font12'>@context.PreparedByName</MudTd>
           <MudTd Class='wbreak-breakword font12'>@context.ApprovedByName</MudTd>
@@ -91,7 +113,7 @@
           <MudTd Class='text-center'>
             <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'
             TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
-                @if(!EnableEditApproved(context))
+                @if(!EnableEditApproved(context) && CheckAccessLevel())
                 {
                   <MudMenuItem OnClick='(()=> EditLiquidation(context))' Disabled='EnableEditApproved(context)'>
                     <a class='d-flex align-center gap-2'>
@@ -161,19 +183,29 @@
 </div>
 
 @code{
+
   private bool dataFetched, openSideFilter, showLoadingOverlay;
   private string PDFContent = default!;
   private string searchTerm = string.Empty, visibility = "visibility-animation-hide";
-
+  private int totalItems;
+  private FilterParameter filterParameter = new();
+  private IEnumerable<LiquidationModel>? pageData;
+  private MudTable<LiquidationModel> tableVariable;
+  private DateRange dateRange = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
+  private AccountingStatusModel selectedStatus = new();
+  private IEnumerable<AccountingStatusModel> hasAccountingStatus {get; set;} = new HashSet<AccountingStatusModel>();
+  private List<AccountingStatusModel> statusList = new();
   protected override async Task OnInitializedAsync()
   {
     GlobalClass.pageTitle = "Liquidation List";
-    while (GlobalClass.currentUserAccount == null || string.IsNullOrEmpty(GlobalClass.token) || GlobalClassList.accountingStatusList == null)
-      await Task.Delay(1);
-    Task t = Task.WhenAll(LoadLiquidations());
-    await t;
-    if (t.Status == TaskStatus.RanToCompletion)
-      CompletedFetch();
+    while (GlobalClass.currentUserAccount == null || string.IsNullOrEmpty(GlobalClass.token) 
+    || GlobalClassList.accountingStatusList == null || string.IsNullOrEmpty(GlobalVariable.AMSHubConnection.ConnectionId))
+        await Task.Delay(1);
+    
+    SignalRHubConnection();
+    CompletedFetch();
+
+    statusList = GlobalClassList.accountingStatusList;
   }
   void CompletedFetch()
   {
@@ -230,6 +262,7 @@
       liquidation.UserId = GlobalClass.currentUserAccount.EmployeeId;
       var updatedStatus = await liquidationService.UpdateLiquidationStatus(liquidation, GlobalClass.token);
       Extensions.ShowAlert("Liquidation approved", Variant.Filled, snackBar, Severity.Info);
+      await GlobalVariable.AMSHubConnection.InvokeAsync("SaveLiquidation", updatedStatus);
     }
     else
       Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackBar, Severity.Normal);
@@ -245,6 +278,7 @@
       var cancelLiquidation = await liquidationService.UpdateLiquidationStatus(liquidation, GlobalClass.token);
       GlobalClassList.liquidations = GlobalClassList.liquidations.Where(x => x.StatusId != liquidation.StatusId).OrderByDescending(x => x.ControlNumber).ToList();
       Extensions.ShowAlert("Liquidation cancelled", Variant.Filled, snackBar, Severity.Info);
+      await GlobalVariable.AMSHubConnection.InvokeAsync("SaveLiquidation", cancelLiquidation);
     }
     else
       Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackBar, Severity.Normal);
@@ -255,10 +289,35 @@
     accountingStatusList = GlobalClassList.accountingStatusList.Where(x => x.Id == liquidation.StatusId).FirstOrDefault();
     return accountingStatusList?.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.LA;
   }
-
-  private async Task LoadLiquidations()
+  private async Task<TableData<LiquidationModel>> LoadLiquidationFromServer(TableState tableState)
   {
-    GlobalClassList.liquidations = await liquidationService.LiquidationList(new FilterParameter(), GlobalClass.token);
+    GlobalClassList.liquidations =  await liquidationService.LiquidationList(filterParameter, GlobalClass.token);
+    pageData = GlobalClassList.liquidations.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
+
+    await Task.Delay(3);
+    totalItems = GlobalClassList.liquidations.Count();
+
+    return new TableData<LiquidationModel>()
+    {
+      TotalItems = totalItems,
+      Items = pageData.OrderByDescending(x=>x.ControlNumber).ToList(),
+    };
+  }
+  private async void FilteredItems()
+  {
+    filterParameter.DateFrom = (DateTime)dateRange.Start.GetValueOrDefault();
+    filterParameter.DateTo = (DateTime)dateRange.End.GetValueOrDefault();
+    filterParameter.AccountingStatusId = string.Join(",", hasAccountingStatus.Select(x => x.Id));
+    await tableVariable.ReloadServerData();
+  }
+  private string AccountingStatus(List<string> selectedStatus)
+  {
+    var status = "";
+    foreach (var item in hasAccountingStatus)
+    {
+     status = string.Join(", ", hasAccountingStatus.Select(x => x.StatusName));      
+    }
+    return $"{status}";
   }
 
   private void OpenSideFilter()
@@ -303,6 +362,35 @@
         return true;
     if (items.StatusName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase))
         return true;
+    return true;
+  }
+  private void SignalRHubConnection()
+  {
+      try
+      {
+
+        GlobalVariable.AMSHubConnection.On<LiquidationModel>("SaveLiquidation", (_liquidation)=> {
+
+        tableVariable.ReloadServerData();
+        
+        StateHasChanged();
+
+        });
+      }
+      catch (System.Exception ex)
+      {
+         throw;
+      }
+  }
+  private bool CheckAccessLevel()
+  {
+    switch(GlobalClass.currentUserAccount.AccessLevel)
+    {
+      case Enums.AccountingAccessLevel.AccountingViewer :
+      case Enums.AccountingAccessLevel.OthersViewer :
+        return false;
+    }
+
     return true;
   }
 }

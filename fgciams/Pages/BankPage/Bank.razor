@@ -145,8 +145,10 @@
     protected override async Task OnInitializedAsync()
     {
       GlobalClass.pageTitle = "BANK";
-      while (GlobalClass.currentUserAccount == null || GlobalClassList.banks == null)
+      while (GlobalClass.currentUserAccount == null || GlobalClassList.banks == null || string.IsNullOrEmpty(GlobalVariable.AMSHubConnection.ConnectionId))
         await Task.Delay(1);
+      
+      BankHub();
       CompletedFetch();
     }
     private void CompletedFetch()
@@ -211,5 +213,16 @@
         visibility = "visibility-animation-show";
       if(!openSideFilter)
         visibility = "visibility-animation-hide";
+    }
+    private void BankHub()
+    {
+      GlobalVariable.AMSHubConnection.On<BankModel>("SaveBank", (_bank) => {
+
+        GlobalClassList.banks.RemoveAll(x=>x.Id == _bank.Id);
+        GlobalClassList.banks.Add(_bank);
+        GlobalClassList.banks = GlobalClassList.banks.Where(x=>x.IsActive == true).OrderBy(x=>x.BankName).ToList();
+        StateHasChanged();
+
+        });
     }
 }

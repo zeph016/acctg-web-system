@@ -25,4 +25,8 @@
 .small-toolbar-gutter .mud-toolbar-gutters {
   height: 2.5rem;
 }
+
+.toolbar-pad-0 .mud-toolbar-gutters {
+  padding: 0px;
+}
 /*# sourceMappingURL=configtables.styles.css.map */

@@ -18,6 +18,14 @@
   background-color: #542d6f;
 }
 
+.bgc-gray {
+  background-color: gray;
+}
+
+.bgc-8080805c {
+  background-color: #8080805c;
+}
+
 .color-white {
   color: #ffffff;
 }
@@ -28,5 +36,9 @@
 
 .color-beige {
   color: #F5F5DC;
+}
+
+.mudtoolbar-bg-8080805c .mud-toolbar {
+  background-color: #8080805c;
 }
 /*# sourceMappingURL=colors.styles.css.map */

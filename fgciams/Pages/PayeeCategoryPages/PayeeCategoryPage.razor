@@ -107,6 +107,7 @@
         while (GlobalClass.currentUserAccount == null || GlobalClassList.payeeList == null || GlobalClassList.payeeCategoryList == null)
             await Task.Delay(1);
         CompletedFetch();
+        SignalR();
     }
 
     void CompletedFetch()
@@ -140,7 +141,6 @@
                 ShowAlert("Added new status", Variant.Filled, Severity.Success);
             else if ((int)resultDialog.Data == 1)
                 ShowAlert("Updated payee category", Variant.Filled, Severity.Info);
-            GlobalClassList.payeeCategoryList = GlobalClassList.payeeCategoryList.Where(x => x.IsActive == true).ToList();
         }
     }
 
@@ -168,5 +168,22 @@
         visibility = "visibility-animation-show";
         if(!openSideFilter)
         visibility = "visibility-animation-hide";
+    }
+    private void SignalR()
+    {
+        try
+        {
+            GlobalVariable.AMSHubConnection.On<PayeeCategoryModel>("SavePayeeCategory",(catergoryModel) => 
+            {
+                GlobalClassList.payeeCategoryList.RemoveAll(category => category.Id == catergoryModel.Id);
+                if(catergoryModel.IsActive == true)
+                    GlobalClassList.payeeCategoryList.Insert(0,catergoryModel);
+                StateHasChanged();
+            });
+        }catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            throw;
+        }
     }
 }

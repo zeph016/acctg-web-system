@@ -86,7 +86,7 @@
                 {
                     try
                     {
-                        await accountLineService.UpdateAccountLineGroup(GlobalClass.accountLineGroup, GlobalClass.token);
+                        GlobalClass.accountLineGroup = await accountLineService.UpdateAccountLineGroup(GlobalClass.accountLineGroup, GlobalClass.token);
                         MudDialog.Close(DialogResult.Ok(1));
                     }
                     catch (System.Exception ex)
@@ -109,6 +109,9 @@
                         MudDialog.Close();
                     }
                 }
+
+                await GlobalVariable.AMSHubConnection.InvokeAsync("SaveAccountLineGroup", GlobalClass.accountLineGroup);
+
                 break;
             case 1:
                 if (GlobalClass.accountLineType.Id != 0)
@@ -141,6 +144,9 @@
                         MudDialog.Close();
                     }
                 }
+
+                await GlobalVariable.AMSHubConnection.InvokeAsync("SaveAccountLineType", GlobalClass.accountLineGroup);
+
                 break;
         }
     }

@@ -1,5 +1,5 @@
 @inject IDivisionService divisionService
-
+@inject ISnackbar snackbar
 <MudDialog Class='customdialog'>
     <TitleContent>
         <div class='d-flex align-center'>
@@ -52,16 +52,22 @@
 
     private async Task Submit()
     {
-        if (GlobalClass.division.Id != 0)
+        try
         {
-            await divisionService.UpdateDivision(GlobalClass.division, GlobalClass.token);
-            MudDialog.Close(DialogResult.Ok(1));
-        }
-        else
-        {
-            GlobalClass.division = await divisionService.AddDivision(GlobalClass.division, GlobalClass.token);
-            GlobalClassList.divisionList.Add(GlobalClass.division);
-            MudDialog.Close(DialogResult.Ok(0));
+            if (GlobalClass.division.Id != 0)
+            {
+                await divisionService.UpdateDivision(GlobalClass.division, GlobalClass.token);
+                MudDialog.Close(DialogResult.Ok(1));
+            }
+            else
+            {
+                GlobalClass.division = await divisionService.AddDivision(GlobalClass.division, GlobalClass.token);
+                GlobalClassList.divisionList.Add(GlobalClass.division);
+                MudDialog.Close(DialogResult.Ok(0));
+            }
+            await GlobalVariable.AMSHubConnection.InvokeAsync("SaveDivision",GlobalClass.division);
+        } catch (Exception ex) {
+            Extensions.ShowAlert(ex.Message,Variant.Filled,snackbar,Severity.Info);
         }
     }
 }

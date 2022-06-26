@@ -11,6 +11,7 @@
 @using BlazorContentEditable
 @using Blazored.TextEditor
 @using System.Reflection
+@using Microsoft.AspNetCore.SignalR.Client
 @using fgciams.Pages.AccountingStatusPage;
 
 @using Blazored.Typeahead
@@ -48,7 +49,9 @@
 @using fgciams.domain.clsRequestForPaymentAuditTrail
 @using fgciams.domain.clsPO
 @using fgciams.domain.clsVoucher
+@using fgciams.domain.clsAccountType
 @using fgciams.domain.clsAccountingLine
+@using fgciams.domain.common
 
 @using fgciams.service.UserAccountServices
 @using fgciams.service.AccountingStatusServices
@@ -70,5 +73,6 @@
 @using fgciams.service.PettyCashServices
 @using fgciams.service.ExpenseLineServices
 @using fgciams.service.VoucherServices
+@using fgciams.service.AccountTypeServices
 @using fgciams.service.AccountingLineServices
 @using fgciams.service.AccountLineTypeServices

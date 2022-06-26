@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using fgciams.domain.clsModeOfPayment;
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
+using System.Net;
+using fgciams.domain.common;
 
 namespace fgciams.service.ModeOfPaymentServices
 {
@@ -51,8 +53,14 @@ namespace fgciams.service.ModeOfPaymentServices
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 HttpResponseMessage httpResponse = await client.PostAsJsonAsync("mode-of-payment", model);
                 if (httpResponse.IsSuccessStatusCode)
-                {
                     modeOfPaymentModel = await httpResponse.Content.ReadAsAsync<ModeOfPaymentModel>();
+                else if(httpResponse.StatusCode == HttpStatusCode.BadRequest)
+                {
+                    string errorContent = await httpResponse.Content.ReadAsStringAsync();
+                    if(errorContent.Contains("UniqueAccountingStatus"))
+                        throw HttpException.HttpExceptionMessage(model.ModeName);
+                    else
+                        throw HttpException.HttpErrorMessage(errorContent);
                 }
                 return modeOfPaymentModel;
             }

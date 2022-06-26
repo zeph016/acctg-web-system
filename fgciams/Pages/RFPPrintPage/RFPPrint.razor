@@ -1,4 +1,5 @@
-@page "/rfpreport"
+@page "/rfpreport/print"
+
 @inject IRequestForPaymentService requestForPaymentService
 @inject NavigationManager navigationManager
 @inject IDialogService dialogService
@@ -11,7 +12,7 @@
             <div class='d-flex pa-2'>
                 <MudSpacer />
                 <MudButton OnClick='(()=> Back())' Variant='Variant.Text'>Back</MudButton>
-                <MudButton OnClick='(()=> SaveRFP())' Variant='Variant.Filled' Color='Color.Success'>Save</MudButton>
+                <MudButton OnClick='(()=> SaveRFP())' Variant='Variant.Filled' Color='Color.Success' Disabled='isSaved'>Save</MudButton>
             </div>
         </MudPaper>
     </div>
@@ -21,6 +22,7 @@
 @code{
 
     string pdfReport = default!;
+    bool isSaved;
 
     protected override async Task OnInitializedAsync()
     {
@@ -56,18 +58,33 @@
             {
                SavedRFP = await requestForPaymentService.AddRequestPayment(GlobalClass.forPrintingOrSaveRFP, GlobalClass.token);
                Extensions.ShowAlert("Request for payment successfully added", Variant.Filled, snackBar,Severity.Success);
+               isSaved = true;
             }
             else
             {
                 SavedRFP = await requestForPaymentService.UpdateRequestPayment(GlobalClass.forPrintingOrSaveRFP, GlobalClass.token);
                 Extensions.ShowAlert("Request for payment successfully updated", Variant.Filled, snackBar,Severity.Success);
+                isSaved = true;
             }
             pdfReport = await requestForPaymentService.GenerateRFPReport(SavedRFP);
 
+            await GlobalVariable.AMSHubConnection.InvokeAsync("SaveRequestForPayment", SavedRFP);
         }
     }
     private void Back()
     {
+      if(!isSaved)
+      {
+        GlobalClass.requestForPayment = GlobalClass.forPrintingOrSaveRFP;
+        GlobalClassList.requestForPayments = GlobalClass.forPrintingOrSaveRFP.RequestForPaymentDetails.ToList();
+        navigationManager.NavigateTo($"/requestpayment");
+      }
+      else
+      {
         navigationManager.NavigateTo($"/requestpaymentlist");
+        GlobalClass.forPrintingOrSaveRFP = default!;
+      }
+       
+       
     }
 }

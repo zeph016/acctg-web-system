@@ -1,5 +1,5 @@
 @inject IExpenseLineService expenseLineService
-
+@inject ISnackbar snackBar
 <MudDialog Class='customdialog'>
     <TitleContent>
         <div class='d-flex align-center'>
@@ -17,8 +17,51 @@
     <DialogContent>
         <div class='customdialog__content-container'>
             <MudGrid Spacing='1'>
-                <MudItem xs='12'>
+                <MudItem xs='9'>
                     <MudTextField @bind-Value='@GlobalClass.expenseLine.ExpenseName' Label='Expense Line' />
+                </MudItem>
+                <MudItem Class='d-flex align-center' xs='3'>
+                    <MudCheckBox @bind-Checked='@GlobalClass.expenseLine.WithLedger' Label='With Ledger' />
+                </MudItem>
+                <MudItem xs='12'>
+                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountTypeId" Text="@GlobalClass.expenseLine.AccountTypeName" Placeholder="Account Type" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var accountTypes in GlobalClassList.listOfAccountTypes)
+                        {
+                            <MudSelectItem Value="@accountTypes.Id">@accountTypes.TypeName</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs='12'>
+                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountLineTypeId" Text="@GlobalClass.expenseLine.AccountLineTypeName" Placeholder="Account Line Type" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var accountLineType in GlobalClassList.accountLineTypes)
+                        {
+                            <MudSelectItem Value="@accountLineType.Id">@accountLineType.LineTypeName</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs='12'>
+                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountLineGroupId" Text="@GlobalClass.expenseLine.AccountLineGroupName" Placeholder="Account Line Group" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var accountLineGroup in GlobalClassList.accountLineGroups)
+                        {
+                            <MudSelectItem Value="@accountLineGroup.Id">@accountLineGroup.LineGroupName</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs='12'>
+                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountReportGroupId" Text="@Extensions.GetEnumDescription(GlobalClass.expenseLine.AccountReportGroupId)" Placeholder="Account Report Group" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (Enums.AccountReportGroup accountReportGroup in Enum.GetValues(typeof(Enums.AccountReportGroup)))
+                        {
+                            <MudSelectItem Value="@accountReportGroup">@Extensions.GetEnumDescription(accountReportGroup)</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs='12'>
+                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountDefaultBalanceId" Text="@Extensions.GetEnumDescription(GlobalClass.expenseLine.AccountDefaultBalanceId)" Placeholder="Account Default Balance" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (Enums.AccountDefaultBalance accountDefaultBalance in Enum.GetValues(typeof(Enums.AccountDefaultBalance)))
+                        {
+                            <MudSelectItem Value="@accountDefaultBalance">@Extensions.GetEnumDescription(accountDefaultBalance)</MudSelectItem>
+                        }
+                    </MudSelect>
                 </MudItem>
                 <MudItem xs='9'>
                     <MudTextField @bind-Value='@GlobalClass.expenseLine.Remarks' Label='Remarks' />
@@ -49,21 +92,35 @@
     {
         MudDialog.Cancel();
     }
-
     private async Task Submit()
     {
-        
-        if (GlobalClass.expenseLine.Id == 0)
+        try
         {
-            await expenseLineService.AddExpenseLine(GlobalClass.expenseLine, GlobalClass.token);
-            GlobalClassList.expenseLineList.Insert(0,GlobalClass.expenseLine);
-            MudDialog.Close(DialogResult.Ok(0));
+            if(isNotValidate()) {
+                Extensions.ShowAlert("Cannot add new expense line. Incomplete Fields", Variant.Filled, snackBar, Severity.Error);
+            } else {
+                if(GlobalClass.expenseLine.Id == 0) 
+                {
+                    GlobalClass.expenseLine = await expenseLineService.AddExpenseLine(GlobalClass.expenseLine, GlobalClass.token);
+                    MudDialog.Close(DialogResult.Ok(0));
+                } else {
+                    GlobalClass.expenseLine = await expenseLineService.UpdateExpenseLine(GlobalClass.expenseLine, GlobalClass.token);
+                    MudDialog.Close(DialogResult.Ok(1));
+                }
+             await GlobalVariable.AMSHubConnection.InvokeAsync("SaveExpenseLine",GlobalClass.expenseLine);
+            }
+        }catch(Exception ex)
+        {
+            Extensions.ShowAlert(ex.Message,Variant.Filled,snackBar,Severity.Info);
         }
-        else
-        { 
-            GlobalClass.expenseLine = await expenseLineService.UpdateExpenseLine(GlobalClass.expenseLine, GlobalClass.token);
-            MudDialog.Close(DialogResult.Ok(1));
-        }
-        
+    }
+    private bool isNotValidate()
+    {
+        return 
+        String.IsNullOrEmpty(GlobalClass.expenseLine.ExpenseName) ||
+        GlobalClass.expenseLine.AccountTypeId == 0 ||
+        GlobalClass.expenseLine.AccountLineTypeId == 0 || 
+        GlobalClass.expenseLine.AccountLineGroupId == 0
+        ;
     }
 }

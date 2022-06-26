@@ -1,7 +1,9 @@
 ﻿using fgciams.domain.clsProjectChargingLine;
+using fgciams.domain.common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,6 +35,15 @@ namespace fgciams.service.ProjectChargingLineServices
                 HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("project-charging-line", projectChargingLineModel);
                 if (responseMessage.IsSuccessStatusCode)
                     project = await responseMessage.Content.ReadAsAsync<ProjectChargingLineModel>();
+                else if(responseMessage.StatusCode == HttpStatusCode.BadRequest)
+                {
+                  string ContentRequest = await responseMessage.Content.ReadAsStringAsync();
+                  if(ContentRequest.Contains("UniqueProjectName"))
+                    throw HttpException.HttpExceptionMessage(projectChargingLineModel.ProjectName);
+                  else
+                    throw HttpException.HttpErrorMessage(ContentRequest);
+
+                }
                 return project;
             }
             catch (Exception)
@@ -54,6 +65,15 @@ namespace fgciams.service.ProjectChargingLineServices
                 HttpResponseMessage responseMessage = await _client.PutAsJsonAsync("project-charging-line", projectChargingLineModel);
                 if (responseMessage.IsSuccessStatusCode)
                     project = await responseMessage.Content.ReadAsAsync<ProjectChargingLineModel>();
+                else if(responseMessage.StatusCode == HttpStatusCode.BadRequest)
+                {
+                  string ContentRequest = await responseMessage.Content.ReadAsStringAsync();
+                  if(ContentRequest.Contains("UniqueProjectName"))
+                    throw HttpException.HttpExceptionMessage(projectChargingLineModel.ProjectName);
+                  else
+                    throw HttpException.HttpErrorMessage(ContentRequest);
+
+                }                    
                 return project;
             }
             catch (Exception)

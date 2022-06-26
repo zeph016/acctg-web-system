@@ -20,13 +20,13 @@ namespace fgciams.service.PettyCashServices
         }
         public async Task<List<PettyCashModel>> LoadPettyCashList(FilterParameter filter,string token)
         {
-            try{
+            try{ 
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",token);
             HttpResponseMessage responseMessage = await client.PostAsJsonAsync("petty-cash/list",filter);
             if(responseMessage.IsSuccessStatusCode){
                 listOfPettyCash = await responseMessage.Content.ReadAsAsync<List<PettyCashModel>>();
             }
-            return listOfPettyCash.OrderBy(x=>x.ControlNumber).Reverse().ToList();
+            return listOfPettyCash.ToList();
             }catch(Exception ee)
             {
                 Console.WriteLine(ee.Message);
@@ -41,7 +41,6 @@ namespace fgciams.service.PettyCashServices
             HttpResponseMessage responseMessage = await client.PostAsJsonAsync("petty-cash",model);
             if(responseMessage.IsSuccessStatusCode){
                 pettyCash = await responseMessage.Content.ReadAsAsync<PettyCashModel>();
-                pettyCash.responseMessage = responseMessage;
             }
             return pettyCash;
             }catch(Exception ee){
@@ -56,7 +55,6 @@ namespace fgciams.service.PettyCashServices
             HttpResponseMessage responseMessage = await client.PutAsJsonAsync("petty-cash",model);
             if(responseMessage.IsSuccessStatusCode){
                 pettyCash = await responseMessage.Content.ReadAsAsync<PettyCashModel>();
-                pettyCash.responseMessage = responseMessage;
             }
             return pettyCash;
             }catch(Exception ee){
@@ -71,7 +69,6 @@ namespace fgciams.service.PettyCashServices
                 HttpResponseMessage responseMessage = await client.GetAsync($"petty-cash/list/{Id}");
                 if(responseMessage.IsSuccessStatusCode){
                     pettyCash = await responseMessage.Content.ReadAsAsync<PettyCashModel>();
-                    pettyCash.responseMessage = responseMessage;
                 }
                 return pettyCash;
             }catch(Exception ee){

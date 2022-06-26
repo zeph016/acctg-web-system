@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using fgciams.domain.clsDivision;
+using System.Net;
+using fgciams.domain.common;
 
 namespace fgciams.service.DivisionServices
 {
@@ -42,8 +44,15 @@ namespace fgciams.service.DivisionServices
             try{   
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",token);
                 HttpResponseMessage responseMessage = await client.PostAsJsonAsync("division",divisionModel);
-                if(responseMessage.IsSuccessStatusCode){
+                if(responseMessage.IsSuccessStatusCode)
                     divisionModel = await responseMessage.Content.ReadAsAsync<DivisionModel>();
+                else if(responseMessage.StatusCode == HttpStatusCode.BadRequest)
+                {
+                    string errorContent = await responseMessage.Content.ReadAsStringAsync();
+                    if(errorContent.Contains("UniqueAccountingStatus"))
+                        throw HttpException.HttpExceptionMessage(divisionModel.divisionName);
+                    else
+                        throw HttpException.HttpErrorMessage(errorContent);
                 }
                 return divisionModel;
             }catch(Exception ee){

@@ -1,5 +1,6 @@
 @inject IPayeeService payeeService
 @inject IPayeeCategoryService payeeCategoryService
+@inject ISnackbar snackBar
 
 <MudDialog Class="customdialog">
     <TitleContent>
@@ -91,22 +92,28 @@
 
     private async Task Submit()
     {
-        if (GlobalClass.payee.Id != 0)
+        try
         {
-            foreach (var item in GlobalClassList.payeeCategoryList)
-                if (item.Id == GlobalClass.payee.PayeeCategoryId) {
-                    GlobalClass.payee.PayeeCategory = item;
-                    break;
-                }
-            
-            await payeeService.UpdatePayee(GlobalClass.payee, GlobalClass.token);
-            MudDialog.Close(DialogResult.Ok(1));
-        }
-        else
+            if (GlobalClass.payee.Id != 0)
+            {
+                foreach (var item in GlobalClassList.payeeCategoryList)
+                    if (item.Id == GlobalClass.payee.PayeeCategoryId) {
+                        GlobalClass.payee.PayeeCategory = item;
+                        break;
+                    }
+                GlobalClass.payee = await payeeService.UpdatePayee(GlobalClass.payee, GlobalClass.token);
+                MudDialog.Close(DialogResult.Ok(1));
+            }
+            else
+            {
+                GlobalClass.payee.PayeeCategoryId = GlobalClass.payee.PayeeCategory.Id;
+                GlobalClass.payee = await payeeService.AddPayee(GlobalClass.payee, GlobalClass.token);
+                MudDialog.Close(DialogResult.Ok(0));
+            }
+            await GlobalVariable.AMSHubConnection.InvokeAsync("SavePayee",GlobalClass.payee);
+        }catch(Exception ex)
         {
-            GlobalClass.payee.PayeeCategoryId = GlobalClass.payee.PayeeCategory.Id;
-            GlobalClass.payee = await payeeService.AddPayee(GlobalClass.payee, GlobalClass.token);
-            MudDialog.Close(DialogResult.Ok(0));
+            Extensions.ShowAlert(ex.Message,Variant.Filled,snackBar,Severity.Info);
         }
     }
 } 

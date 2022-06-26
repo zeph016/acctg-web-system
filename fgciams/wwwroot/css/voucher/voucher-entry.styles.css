@@ -3,10 +3,10 @@
   display: grid;
   -ms-grid-columns: 1fr 1fr 1fr 1fr;
       grid-template-columns: 1fr 1fr 1fr 1fr;
-  -ms-grid-rows: 40px 40px 40px 40px 25vh 25vh 0.5fr;
-      grid-template-rows: 40px 40px 40px 40px 25vh 25vh 0.5fr;
+  -ms-grid-rows: 40px 40px 40px 40px 20vh 20vh 40px 0.5fr;
+      grid-template-rows: 40px 40px 40px 40px 20vh 20vh 40px 0.5fr;
   gap: 0px 0px;
-      grid-template-areas: "voucher-header voucher-header voucher-header voucher-date" "voucher-payee voucher-payee voucher-payee voucher-status" "voucher-rfp voucher-rfp voucher-rfp voucher-rfp" "voucher-desc voucher-desc voucher-remarks voucher-remarks" "voucher-details voucher-details voucher-details voucher-details" "voucher-details voucher-details voucher-details voucher-details" "voucher-signatories voucher-signatories voucher-signatories voucher-signatories";
+      grid-template-areas: "voucher-header voucher-header voucher-header voucher-date" "voucher-payee voucher-payee voucher-payee voucher-status" "voucher-rfp voucher-rfp voucher-rfp voucher-rfp" "voucher-desc voucher-desc voucher-remarks voucher-remarks" "voucher-details voucher-details voucher-details voucher-details" "voucher-details voucher-details voucher-details voucher-details" "voucher-totalamt voucher-totalamt voucher-totalamt voucher-totalamt" "voucher-signatories voucher-signatories voucher-signatories voucher-signatories";
 }
 
 .voucherpage .voucher-header {
@@ -64,20 +64,28 @@
   grid-area: voucher-details;
 }
 
-.voucherpage .voucher-signatories {
+.voucherpage .voucher-totalamt {
   -ms-grid-row: 7;
+  -ms-grid-column: 1;
+  -ms-grid-column-span: 4;
+  grid-area: voucher-totalamt;
+}
+
+.voucherpage .voucher-signatories {
+  -ms-grid-row: 8;
   -ms-grid-column: 1;
   -ms-grid-column-span: 4;
   grid-area: voucher-signatories;
 }
 
 .voucherpage .voucher-header, .voucherpage .voucher-date, .voucherpage .voucher-payee, .voucherpage .voucher-status, .voucherpage .voucher-rfp,
-.voucherpage .voucher-desc, .voucherpage .voucher-remarks, .voucherpage .voucher-details, .voucherpage .voucher-signatories {
+.voucherpage .voucher-desc, .voucherpage .voucher-remarks, .voucherpage .voucher-details, .voucherpage .voucher-totalamt,
+.voucherpage .voucher-signatories {
   border-top: solid thin lightgray;
 }
 
 .voucherpage .voucher-header, .voucherpage .voucher-payee, .voucherpage .voucher-rfp, .voucherpage .voucher-desc, .voucherpage .voucher-details,
-.voucherpage .voucher-signatories {
+.voucherpage .voucher-totalamt, .voucherpage .voucher-signatories {
   border-right: solid thin lightgray;
   border-left: solid thin lightgray;
 }
@@ -88,5 +96,52 @@
 
 .voucherpage .voucher-signatories {
   border-bottom: solid thin lightgray;
+}
+
+.voucherpage__vdetailgrid {
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: 100px 1fr;
+      grid-template-columns: 100px 1fr;
+  -ms-grid-rows: 40px 1fr 40px;
+      grid-template-rows: 40px 1fr 40px;
+  gap: 0px 0px;
+      grid-template-areas: "vdetail-lblcharge vdetail-charge" "vdetail-lbldesc vdetail-desc" "vdetail-lblamt vdetail-amt";
+}
+
+.voucherpage .vdetail-lblcharge {
+  -ms-grid-row: 1;
+  -ms-grid-column: 1;
+  grid-area: vdetail-lblcharge;
+}
+
+.voucherpage .vdetail-charge {
+  -ms-grid-row: 1;
+  -ms-grid-column: 2;
+  grid-area: vdetail-charge;
+}
+
+.voucherpage .vdetail-lbldesc {
+  -ms-grid-row: 2;
+  -ms-grid-column: 1;
+  grid-area: vdetail-lbldesc;
+}
+
+.voucherpage .vdetail-desc {
+  -ms-grid-row: 2;
+  -ms-grid-column: 2;
+  grid-area: vdetail-desc;
+}
+
+.voucherpage .vdetail-lblamt {
+  -ms-grid-row: 3;
+  -ms-grid-column: 1;
+  grid-area: vdetail-lblamt;
+}
+
+.voucherpage .vdetail-amt {
+  -ms-grid-row: 3;
+  -ms-grid-column: 2;
+  grid-area: vdetail-amt;
 }
 /*# sourceMappingURL=voucher-entry.styles.css.map */

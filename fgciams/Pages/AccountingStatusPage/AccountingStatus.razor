@@ -129,6 +129,7 @@
         while (GlobalClass.currentUserAccount == null || GlobalClassList.accountingStatusList == null)
             await Task.Delay(1);
         CompletedFetch();
+        SignalR();
     }
     void CompletedFetch()
     {
@@ -162,7 +163,6 @@
                 ShowAlert("Added new status", Variant.Filled, Severity.Success);
             else if ((int)resultDialog.Data == 1)
                 ShowAlert("Updated status", Variant.Filled, Severity.Info);
-            GlobalClassList.accountingStatusList = GlobalClassList.accountingStatusList.Where(x => x.IsActive == true).ToList();
         }
     }
 
@@ -190,5 +190,22 @@
         visibility = "visibility-animation-show";
         if(!openSideFilter)
         visibility = "visibility-animation-hide";
+    }
+       private void SignalR()
+    {
+        try
+        {
+            GlobalVariable.AMSHubConnection.On<AccountingStatusModel>("SaveAccountingStatus",(acctgModel) => 
+            {
+                GlobalClassList.accountingStatusList.RemoveAll(acctg => acctg.Id == acctgModel.Id);
+                if(acctgModel.IsActive == true)
+                    GlobalClassList.accountingStatusList.Insert(0,acctgModel);
+                StateHasChanged();
+            });
+        }catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            throw;
+        }
     }
 }

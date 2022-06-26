@@ -32,20 +32,20 @@ namespace fgciams.service.AccountLineTypeServices
               HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("account-line-type", type);
               if(responseMessage.IsSuccessStatusCode)
                 lineType = await responseMessage.Content.ReadAsAsync<AccountLineTypeModel>();
-              else if(responseMessage.StatusCode == HttpStatusCode.BadRequest) {
-                string str = await responseMessage.Content.ReadAsStringAsync();
-                Console.WriteLine(str);
-                // if (str.Contains("UniqueLineTypeName"))
-                //   Console.WriteLine("Hello World");
-                throw HttpException.HttpExceptionMessage(type.LineTypeName);
+              else if(responseMessage.StatusCode == HttpStatusCode.BadRequest) 
+              {
+                string ContentRequest = await responseMessage.Content.ReadAsStringAsync();
+                if(ContentRequest.Contains("UniqueLineTypeName"))
+                  throw HttpException.HttpExceptionMessage(type.LineTypeName);
+                else
+                  throw HttpException.HttpErrorMessage(ContentRequest);
+                
               }
                 
-
               return lineType;
             }
             catch (System.Exception ex)
             {
-               // TODO HttpExceptionMessage(HttpStatusCode statusCode, string customMessage)
                throw new ApplicationException(ex.Message);
             }
         }
@@ -60,7 +60,13 @@ namespace fgciams.service.AccountLineTypeServices
               if(responseMessage.IsSuccessStatusCode)
                 lineType = await responseMessage.Content.ReadAsAsync<AccountLineTypeModel>();
               else if(responseMessage.StatusCode == HttpStatusCode.BadRequest)
-                throw HttpException.HttpExceptionMessage(type.LineTypeName);
+              {
+                string ContentRequest = await responseMessage.Content.ReadAsStringAsync();
+                if(ContentRequest.Contains("UniqueLineTypeName"))
+                  throw HttpException.HttpExceptionMessage(type.LineTypeName);
+                else
+                  throw HttpException.HttpErrorMessage(ContentRequest);
+              }
 
               return lineType;
             }

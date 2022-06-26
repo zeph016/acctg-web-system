@@ -25,6 +25,53 @@ namespace fgciams.domain.clsFilterParameter
         public bool IsDate { get; set; }
         public DateTime DateFrom { get; set; }
         public DateTime DateTo { get; set; }
-
+        public bool IsAccountingStatus {get; set;}
+        public string AccountingStatusId {get; set;}
+        public bool IsPreparedBy { get; set; }
+        public Int64 PreparedById { get; set; }
+        public bool IsRequestCategory { get; set; }
+        public string RequestCategoryId { get; set; }
+        public bool IsRequestType{ get; set; }
+        public string RequestTypeId { get; set; }
+        public bool IsModeOfPayment { get; set; }
+        public string ModeOfPaymentId { get; set; }
+        //Others
+        public int PageSize { get; set; }
+        public int PageNo { get; set; }
+        public int OffSet
+        {
+            get
+            {
+                return PageSize * PageNo;
+            }
+        }
+        public string SortColumnName { get; set; }
+        public string SortDirection { get; set; }
+        //Accounting
+        public Enums.AccountingAccessLevel AccountingAccessLevel { get; set; }
+        public bool IsVoid { get; set; }
+        public bool IsRequestor { get; set; }
+        public Int64 RequestorId { get; set; }
+        public FilterParameter()
+        {
+            isActive = true;
+            IsName = false;
+            Name = "";
+            IsDate = false;
+            DateFrom = DateTime.Now;
+            DateTo = DateTime.Now;
+            IsProject = false;
+            ProjectName = "";
+            PageSize = 0;
+            IsPayee = false;
+            PayeeCategoryId = 0;
+            PayeeId = 0;
+            IsVoid = false;
+            IsRequestor = false;
+            IsAccountingStatus = false;
+            AccountingStatusId = string.Empty;
+            RequestorId = 0;
+            IsControlNumber = false;
+        }
     }
 }

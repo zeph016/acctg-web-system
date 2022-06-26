@@ -1,5 +1,7 @@
+using System.Net;
 using System.Net.Http.Headers;
 using fgciams.domain.clsPayeeCategory;
+using fgciams.domain.common;
 
 namespace fgciams.service.PayeeCategoryServices
 {
@@ -32,8 +34,15 @@ namespace fgciams.service.PayeeCategoryServices
             try{
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",token);
             HttpResponseMessage responseMessage = await client.PostAsJsonAsync("payee-category",model);
-            if(responseMessage.IsSuccessStatusCode){
+            if(responseMessage.IsSuccessStatusCode)
                 payeeCategoryModel = await responseMessage.Content.ReadAsAsync<PayeeCategoryModel>();
+            else if(responseMessage.StatusCode == HttpStatusCode.BadRequest)
+            {
+                string errorContent = await responseMessage.Content.ReadAsStringAsync();
+                if(errorContent.Contains("UniqueAccountingStatus"))
+                    throw HttpException.HttpExceptionMessage(model.CategoryName);
+                else
+                    throw HttpException.HttpErrorMessage(errorContent);
             }
             return payeeCategoryModel;
             }catch(Exception ee){

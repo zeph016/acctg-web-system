@@ -21,8 +21,11 @@
 @inject NavigationManager navigationManager
 @inject IDialogService dialogService
 @inject IExpenseLineService expenseLineService
+@inject IAccountTypeService accountTypeService
 @inject IAccountingLineService accountLineService
 @inject IAccountLineTypeService accountLineTypeService
+@inject IConfiguration config
+@inject ISnackbar Snackbar
 
 <MudThemeProvider/>
 <MudDialogProvider/>
@@ -55,7 +58,7 @@
                                 <MudAvatar Class='usercp__avatar' Image='@($"data:image/png;base64, {Convert.ToBase64String(@GlobalClass.currentUserAccount.Picture)}")'/>
                                 <div>
                                     <MudText Class='usercp__lblusername'>@GlobalClass.currentUserAccount.FirstName</MudText>
-                                    <MudText Class='usercp__lbldesignation'>@GlobalClass.currentUserAccount.Designation</MudText>
+                                    <MudText Class='usercp__lbldesignation'>@Extensions.GetEnumDescription(GlobalClass.currentUserAccount.AccessLevel)</MudText>
                                 </div>
                             }
                         </div>
@@ -81,26 +84,24 @@
         </MudDrawerHeader>
         <MudNavMenu style='@drawerStyleStr'>
             <MudNavLink Href='/dashboard' Match="NavLinkMatch.All" Icon="@Icons.Filled.Dashboard">DASHBOARD</MudNavLink>    
-            <MudNavGroup Title='LIQUIDATION' Icon='@Icons.Filled.ReceiptLong' HideExpandIcon='true'>
-                <MudNavLink Href='/liquidation' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck">LIQUIDATION ENTRY</MudNavLink>
+            <MudNavGroup Title='PETTY CASH' Icon='fa-solid fa-coins' HideExpandIcon='true' style='@HidePettyCash'>
+                <MudNavLink Href='/pettycash/create' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck" style='@HideEntry'>PETTY CASH ENTRY</MudNavLink>
+                <MudNavLink Href='/pettycash-list' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList" >PETTY CASH LIST</MudNavLink>
+            </MudNavGroup>
+            <MudNavGroup Title='LIQUIDATION' Icon='@Icons.Filled.ReceiptLong' HideExpandIcon='true' style='@HideLiquidation'>
+                <MudNavLink Href='/liquidation' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck" style='@HideEntry'>LIQUIDATION ENTRY</MudNavLink>
                 <MudNavLink Href='/liquidationlist' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList">LIQUIDATION LIST</MudNavLink>
             </MudNavGroup>
-            <MudNavGroup Title='PETTY CASH' Icon='fa-solid fa-coins' HideExpandIcon='true'>
-                <MudNavLink Href='/pettycash/create' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck">PETTY CASH ENTRY</MudNavLink>
-                <MudNavLink Href='/pettycash-list' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList">PETTY CASH LIST</MudNavLink>
-            </MudNavGroup>
-            <MudNavGroup Title='REQUEST FOR PAYMENT' Icon='@Icons.Filled.Payments' HideExpandIcon='true'>
-                <MudNavLink Href='/requestpayment/create' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck">RFP ENTRY</MudNavLink>
+            <MudNavGroup Title='REQUEST FOR PAYMENT' Icon='@Icons.Filled.Payments' HideExpandIcon='true' style='@HideRFP'>
+                <MudNavLink Href='/requestpayment/create' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck"style='@HideEntry'>RFP ENTRY</MudNavLink>
                 <MudNavLink Href='/requestpaymentlist' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList">RFP LIST</MudNavLink>
             </MudNavGroup>
-            <MudNavGroup Title='VOUCHER' Icon='@Icons.Filled.ReceiptLong' HideExpandIcon='true'>
-                <MudNavLink Href='/voucher/create' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck">VOUCHER ENTRY</MudNavLink>
-                <MudNavLink Href='/voucher/list' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList">VOUCHER LIST</MudNavLink>
+            <MudNavGroup Title='VOUCHER' Icon='@Icons.Filled.ReceiptLong' HideExpandIcon='true' style='@HideVoucher'>
+                <MudNavLink Href='/voucher/create' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck" style='@HideEntry'>VOUCHER ENTRY</MudNavLink>
+                <MudNavLink Href='/voucher/list' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList" >VOUCHER LIST</MudNavLink>
             </MudNavGroup>
-            <MudNavGroup Class='expandheight-navgroup' Title='CONFIGURATION' Icon='@Icons.Filled.Settings' HideExpandIcon='true'>
-                <MudNavLink Href='/account-line' Match="NavLinkMatch.All" Icon="@Icons.Filled.Group">ACCOUNT LINE GROUP</MudNavLink>
-                <MudNavLink Href='/account-line-type' Match="NavLinkMatch.All" Icon="@Icons.Filled.Group">ACCOUNT LINE TYPE</MudNavLink>
-                <MudNavLink Href='/accounting-status' Match="NavLinkMatch.All" Icon="@Icons.Filled.Group">ACCOUNTING STATUS</MudNavLink>
+            <MudNavGroup Class='expandheight-navgroup' Title='CONFIGURATION' Icon='@Icons.Filled.Settings' HideExpandIcon='true' style='@HideConfiguration'>
+                <MudNavLink Href='/accounting-status' Match="NavLinkMatch.All" Icon="@Icons.Filled.FactCheck">ACCOUNTING STATUS</MudNavLink>
                 <MudNavLink Href='/bank' Match="NavLinkMatch.All" Icon="@Icons.Filled.AccountBalance">BANK</MudNavLink>
                 <MudNavLink Class='fa-icon-center' Href='/billingdocument' Match="NavLinkMatch.All" Icon="fa-solid fa-receipt">BILLING DOCUMENT</MudNavLink>
                 <MudNavLink Class='fa-icon-center' Href='/division' Match="NavLinkMatch.All" Icon="fa-solid fa-bars-staggered">DIVISION</MudNavLink>
@@ -109,12 +110,17 @@
                 <MudNavLink Href='/payeecategory' Match="NavLinkMatch.All" Icon='@Icons.Filled.Group'>PAYEE CATEGORY</MudNavLink>
                 <MudNavLink Href='/projectcharging' Match="NavLinkMatch.All" Icon="@Icons.Filled.CreditScore">PROJECT CHARGING LINE</MudNavLink>
                 <MudNavLink Class='fa-icon-center' Href='/requesttype' Match="NavLinkMatch.All" Icon='fa-solid fa-clipboard-check'>REQUEST TYPES</MudNavLink>
-                <MudNavGroup Class='childnavgroup expandheight-group fa-icon-center' Title='SUBCON' Icon='fa-solid fa-briefcase' HideExpandIcon='true'>
+                <MudNavGroup Class='childnavgroup expandheight-group fa-icon-center' Title='SUBCON' Icon='fa-solid fa-industry' HideExpandIcon='true'>
                     <MudNavLink Class='fa-icon-center' Href='/subcontractor-company' Match="NavLinkMatch.All" Icon='fa-solid fa-building'>SUB CON COMPANY</MudNavLink>
                     <MudNavLink Href='/subcontractor-generalinfo' Match="NavLinkMatch.All" Icon="@Icons.Filled.Info">SUB CON GENERAL INFO.</MudNavLink>
                     <MudNavLink Href='/subcontractor-position' Match="NavLinkMatch.All" Icon='@Icons.Filled.Engineering'>SUB CON POSITION</MudNavLink>
                 </MudNavGroup>
-                <MudNavLink Class='fa-icon-center' Href='/expenseline-list' Match="NavLinkMatch.All" Icon='@Icons.Filled.AttachMoney'>EXPENSE LINE</MudNavLink>
+                <MudNavGroup Class='childnavgroup expandheight-group fa-icon-center' Title='CHART OF ACCOUNTS' Icon='@Icons.Filled.AddChart' HideExpandIcon='true'>
+                    <MudNavLink Class='fa-icon-center' Href='/expenseline-list' Match="NavLinkMatch.All" Icon='fa-solid fa-file-invoice-dollar'>EXPENSE LINE</MudNavLink>
+                    <MudNavLink Class='fa-icon-center' Href='/account-line' Match="NavLinkMatch.All" Icon="fa-solid fa-business-time">ACCOUNT LINE GROUP</MudNavLink>
+                    <MudNavLink Class='fa-icon-center' Href='/account-type/list' Match="NavLinkMatch.All" Icon='fa-solid fa-money-check'>ACCOUNT TYPE</MudNavLink>
+                    <MudNavLink Class='fa-icon-center' Href='/account-line-type' Match="NavLinkMatch.All" Icon="fa-solid fa-house-laptop">ACCOUNT LINE TYPE</MudNavLink>
+                </MudNavGroup>
             </MudNavGroup>
         </MudNavMenu>
         <MudSpacer />
@@ -145,10 +151,11 @@
 
 @code {
     #region Properties
+    private HubConnection signalHubConnection;
     private string? systemIconSource = $"images/icons/file-invoice.svg", drawerStyleStr = "display: none;", 
     userCPExpPanelStyleStr = "background-color: #fafafa;", userCPInfoStyleStr = "width: 250px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;",
-    currentUrl;
-    private bool _drawerOpen = true, _isFullScreen, _hideExpandDrawerIcon, dataFetched, showLoadingOverlay = true, 
+    currentUrl, HideRFP = "", HidePC = "", HideLiquidation="", HideVoucher = "", HideConfiguration = "", HidePettyCash = "", HideEntry;
+    private bool _isFullScreen, _hideExpandDrawerIcon, dataFetched, showLoadingOverlay = true, 
     userCPOpen, userCPborderVal;
     private int userCPElevationVal = 0;
     ElementReference timeElement;
@@ -175,6 +182,7 @@
                 tokenState = "/error/403";
             else 
                 tokenState = Extensions.isTokenExpired(GlobalClass.token) ? "/error/401" : "/error/404";
+            await Extensions.ClearAllToken(localStorageService, jsRuntimeService);
             navigationManager.NavigateTo($"{tokenState}");
         }
     }
@@ -184,6 +192,7 @@
         dataFetched = true;
         showLoadingOverlay = false;
         StateHasChanged();
+        CheckAccessLevel();
     }
 
     private async Task LoadGlobalLists()
@@ -192,10 +201,13 @@
         LoadBillingDocs(), LoadBanks(), LoadRequestTypes(),
         LoadPayees(), LoadPayeeCategories(), LoadChargingLines(),
         LoadSubContractors(), LoadSubConGenInfos(), LoadSubConPositions(), LoadNotRFPLiquidation(),
-        LoadExpenseLine(), LoadAccountLineGroup(), LoadAccountLineType());
+        LoadExpenseLine(), LoadAccountLineGroup(),LoadAccountType(),LoadAccountLineType(),SignalRHubConnection());
         await t;
     }
-
+    private async Task LoadAccountType()
+    {
+        GlobalClassList.listOfAccountTypes = await accountTypeService.LoadAccountType(GlobalClass.token);
+    }
     private async Task LoadAcctgStatusList()
     {
         GlobalClassList.accountingStatusList = await accountingStatusService.LoadAccountingStatusList(GlobalClass.token);
@@ -269,6 +281,19 @@
     private async Task LoadAccountLineType()
     {
       GlobalClassList.accountLineTypes = await accountLineTypeService.LoadAccountLineType(GlobalClass.token);
+    }
+    private async Task SignalRHubConnection()
+    {
+      try
+      {
+        var connection = Extensions.ConnectionBuilder(config["SignalRHub"] + "amshub");
+        GlobalVariable.AMSHubConnection = connection;
+        await GlobalVariable.AMSHubConnection.StartAsync();
+      }
+      catch (System.Exception ex)
+      {
+         Extensions.ShowAlert(ex.Message, Variant.Filled, Snackbar, Severity.Error);
+      }
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -370,5 +395,36 @@
     {
         Console.WriteLine(pageTitle);
         GlobalClass.pageTitle = pageTitle;
+    }
+    private void CheckAccessLevel()
+    {
+      switch(GlobalClass.currentUserAccount.AccessLevel)
+      {
+        case Enums.AccountingAccessLevel.AccountingRequestor :
+        case Enums.AccountingAccessLevel.OthersRequestor :
+
+          HideConfiguration = "display: none";
+          HideVoucher = "display: none";
+
+        break;
+
+        case Enums.AccountingAccessLevel.AccountingViewer :
+        case Enums.AccountingAccessLevel.OthersViewer :
+
+          HideEntry = "display : none";
+          HideConfiguration = "display : none";
+
+        break;
+        
+        case Enums.AccountingAccessLevel.AccountingIssuer :
+
+          HideConfiguration = "display : none";
+
+        break;
+
+        default :
+        HideConfiguration = "";
+        break;
+      }
     }
 }

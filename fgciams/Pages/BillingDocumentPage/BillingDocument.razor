@@ -105,8 +105,11 @@
     protected override async Task OnInitializedAsync()
     {
         GlobalClass.pageTitle = "BILLING DOCUMENT";
-        while (GlobalClass.currentUserAccount == null || GlobalClassList.billingDocumentList == null)
+        while (GlobalClass.currentUserAccount == null || GlobalClassList.billingDocumentList == null 
+        || string.IsNullOrEmpty(GlobalVariable.AMSHubConnection.ConnectionId))
             await Task.Delay(1);
+
+        BillingDocsHub();
         CompletedFetch();
     }
 
@@ -171,5 +174,24 @@
         visibility = "visibility-animation-show";
         if(!openSideFilter)
         visibility = "visibility-animation-hide";
+    }
+    private void BillingDocsHub()
+    {
+      try
+      {
+        GlobalVariable.AMSHubConnection.On<BillingDocumentModel>("SaveBillingDocument", (_docs)=>{
+
+          GlobalClassList.billingDocumentList.RemoveAll(x=>x.Id == _docs.Id);
+          GlobalClassList.billingDocumentList.Add(_docs);
+          GlobalClassList.billingDocumentList = GlobalClassList.billingDocumentList.Where(x=>x.IsActive == true).OrderBy(x=>x.DocumentName).ToList();
+          StateHasChanged();
+
+          });
+      }
+      catch (System.Exception ex)
+      {
+         // TODO
+         throw;
+      }
     }
 }

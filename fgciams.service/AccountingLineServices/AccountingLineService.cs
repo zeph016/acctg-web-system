@@ -34,8 +34,14 @@ namespace fgciams.service.AccountingLineServices
                 if (responseMessage.IsSuccessStatusCode)
                     accountLine = await responseMessage.Content.ReadAsAsync<AccountLineGroupModel>();
                 else if(responseMessage.StatusCode == HttpStatusCode.BadRequest)
-                  throw HttpException.HttpExceptionMessage(accountLineGroup.LineGroupName);
-                  
+                {
+                  string ContentRequest = await responseMessage.Content.ReadAsStringAsync();
+                  if(ContentRequest.Contains("UniqueLineGroupName"))
+                    throw HttpException.HttpExceptionMessage(accountLineGroup.LineGroupName);
+                  else
+                    throw HttpException.HttpErrorMessage(ContentRequest);
+                }
+                 
                 return accountLine;
             }
             catch (Exception)
@@ -55,7 +61,13 @@ namespace fgciams.service.AccountingLineServices
                 if (responseMessage.IsSuccessStatusCode)
                     accountLine = await responseMessage.Content.ReadAsAsync<AccountLineGroupModel>();
                 else if(responseMessage.StatusCode == HttpStatusCode.BadRequest)
+                {
+                  string ContentRequest = await responseMessage.Content.ReadAsStringAsync();
+                  if(ContentRequest.Contains("UniqueLineGroupName"))
                     throw HttpException.HttpExceptionMessage(accountLineGroup.LineGroupName);
+                  else
+                    throw HttpException.HttpErrorMessage(ContentRequest);
+                }
 
                 return accountLine;
             }

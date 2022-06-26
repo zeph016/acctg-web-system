@@ -75,4 +75,12 @@
 .txt-uppercase {
   text-transform: uppercase !important;
 }
+
+.chkbxfont10 .mud-typography {
+  font-size: 10px;
+}
+
+.chkbxtxbold .mud-typography {
+  font-weight: bold;
+}
 /*# sourceMappingURL=fontmods.styles.css.map */

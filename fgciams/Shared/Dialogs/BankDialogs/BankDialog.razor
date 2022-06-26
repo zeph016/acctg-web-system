@@ -86,16 +86,25 @@
 
   private async Task Submit()
   {
-    if (GlobalClass.bank.Id != 0)
+    try
     {
-      await bankService.UpdateBank(GlobalClass.bank, GlobalClass.token);
-      MudDialog.Close(DialogResult.Ok(1));
+      if (GlobalClass.bank.Id != 0)
+      { 
+        await bankService.UpdateBank(GlobalClass.bank, GlobalClass.token);
+        MudDialog.Close(DialogResult.Ok(1));
+      }
+      else
+      {
+        GlobalClass.bank = await bankService.AddBank(GlobalClass.bank, GlobalClass.token);
+        GlobalClassList.banks.Add(GlobalClass.bank);
+        MudDialog.Close(DialogResult.Ok(0));
+      }
+    
+       await GlobalVariable.AMSHubConnection.InvokeAsync("SaveBank", GlobalClass.bank);     
     }
-    else
+    catch (System.Exception ex)
     {
-      GlobalClass.bank = await bankService.AddBank(GlobalClass.bank, GlobalClass.token);
-      GlobalClassList.banks.Add(GlobalClass.bank);
-      MudDialog.Close(DialogResult.Ok(0));
-    } 
+       // TODO
+    }
   }
 }

@@ -62,8 +62,8 @@
                 <ColGroup>
                     <col />
                     <col />
-                    <col style='width: 5%' />
-                    <col style='width: 5%' />
+                    <col style='width: 40px' />
+                    <col style='width: 40px' />
                 </ColGroup>
                 <HeaderContent>
                     <MudTh Class='customheader-1'>Type Name</MudTh>
@@ -72,8 +72,8 @@
                     <MudTh Class='customheader-1 text-center'>Action</MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                        <MudTd DataLabel="Division Name">@context.LineTypeName</MudTd>
-                        <MudTd DataLabel="Short Name">@context.Remarks</MudTd>
+                        <MudTd DataLabel="Type Name">@context.LineTypeName</MudTd>
+                        <MudTd DataLabel="Remarks">@context.Remarks</MudTd>
                         <MudTd Class='text-center'>
                             <MudCheckBox Checked=@context.IsActive ReadOnly='true' Size='Size.Small' />
                         </MudTd>
@@ -82,7 +82,7 @@
                             TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small'>
                                 <MudMenuItem OnClick='(() => AccountTypeDialog(context))'>
                                     <div class='d-flex align-center gap-2'>
-                                        <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Medium' />
+                                        <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small' />
                                         <MudText Typo='Typo.body2'>Edit</MudText>
                                     </div>
                                 </MudMenuItem>
@@ -104,8 +104,11 @@
     protected override async Task OnInitializedAsync()
     {
         GlobalClass.pageTitle = "account line type";
-        while (GlobalClass.currentUserAccount == null || GlobalClassList.accountLineTypes == null)
+        while (GlobalClass.currentUserAccount == null || GlobalClassList.accountLineTypes == null 
+        || string.IsNullOrEmpty(GlobalVariable.AMSHubConnection.ConnectionId))
             await Task.Delay(1);
+
+        AccountLineTypeHub();    
         CompletedFetch();
     }
 
@@ -169,5 +172,15 @@
         visibility = "visibility-animation-show";
         if(!openSideFilter)
         visibility = "visibility-animation-hide";
+    }
+    private void AccountLineTypeHub()
+    {
+      GlobalVariable.AMSHubConnection.On<AccountLineTypeModel>("SaveAccountLineType", (_type)=>{
+
+        GlobalClassList.accountLineTypes.RemoveAll(x=>x.Id == _type.Id);
+        GlobalClassList.accountLineTypes.Add(_type);
+        GlobalClassList.accountLineTypes.Where(x=>x.IsActive == true).OrderBy(x=>x.LineTypeName).ToList();
+
+        });
     }
 }

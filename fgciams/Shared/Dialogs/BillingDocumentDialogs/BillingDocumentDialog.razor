@@ -65,5 +65,7 @@
             GlobalClassList.billingDocumentList.Add(GlobalClass.billingDoc);
             MudDialog.Close(DialogResult.Ok(0));
         }
+
+        await GlobalVariable.AMSHubConnection.InvokeAsync("SaveBillingDocument", GlobalClass.billingDoc);
     }
 }

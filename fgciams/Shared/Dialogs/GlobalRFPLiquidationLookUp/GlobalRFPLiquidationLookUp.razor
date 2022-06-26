@@ -405,9 +405,9 @@
           <MudTd Class='text-center pa-0'>
             @if(GlobalClass.voucher.VoucherRFP.Any(x=>x.RequestForPaymentId == context.Id))
             {
-              <MudTooltip Text='Remove Detail'>
+              @* <MudTooltip Text='Remove Detail'>
                 <MudIconButton OnClick='(()=> SelectRFP(context))' Icon='@Icons.Filled.RemoveCircle' Color='Color.Error' Size='Size.Small' />
-              </MudTooltip>
+              </MudTooltip> *@
             }
             else
             {
@@ -417,7 +417,16 @@
             }
           </MudTd>
           <MudTd Class='text-center' DataLabel='Control No.'>
-            <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'> @context.ControlNumber</MudChip>
+
+            @if(context.RFPDetailTypeId == Enums.RFPDetailTypeId.POBilling)
+            {
+              <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'> @context.RFP</MudChip>
+            }
+            else
+            {
+              <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'> @context.ControlNumber</MudChip>
+            }
+            
           </MudTd>
           <MudTd Class='wbreak-breakword font12' DataLabel='Payee Name'>@context.PayeeName</MudTd>
           <MudTd Class='wbreak-breakword font12' DataLabel='Requestor Name'>@context.RequestedByName</MudTd>
@@ -489,15 +498,22 @@
     <MudText Class='pl-1 font-bold' Typo='Typo.overline' Color='Color.Success'>
       @if(lookUpType != Enums.LookUpType.RFPVoucher)
       {
-        @foreach (var item in GlobalClassList.requestForPayments)
+        if(GlobalClassList.requestForPayments != null)
         {
-          totalAmounts += item.Amount;
+           @foreach (var item in GlobalClassList.requestForPayments)
+          { 
+            totalAmounts += item.Amount;
+          }
         }
         @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @totalAmounts.ToString("N2")
       }
       else if (lookUpType == Enums.LookUpType.RFPVoucher)
       {
         @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.voucher.TotalAmount.ToString("N2")
+      }
+      else
+      {
+        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.liquidation.LiquidationDetails.Sum(x=>x.Amount).ToString("N2")
       }
     </MudText>
     <MudSpacer />
@@ -510,7 +526,7 @@
   [Parameter] public Color color { get; set; }
   [Parameter] public string dialogTitle { get; set; } = string.Empty;
   [Parameter] public string buttonText { get; set; } = string.Empty;
-  [Parameter] public Enums.LookUpType lookUpType {get; set;}
+  [Parameter] public Enums.LookUpType lookUpType {get; init;}
   private bool dataFetched, openSideFilter, IsDate, isSubTableCollaped;
   private DateTime? dateFrom , dateTo;
   private string payeeName = default!, controlNumber = string.Empty, searchTerm = string.Empty;
@@ -541,7 +557,7 @@
   private async Task InitializeLists()
   {
     if (lookUpType == Enums.LookUpType.PettyCash)
-      GlobalClassList.notLiquidatedPettyCashList = await liquidationService.GetPettyCashNotLiquidated(filterParameter, GlobalClass.token);
+      await LoadNotLiquidatedPettyCash();
     if (lookUpType == Enums.LookUpType.POBilling)
       await SearchPOBilling();
     if (lookUpType == Enums.LookUpType.PO)
@@ -549,7 +565,14 @@
     if(lookUpType == Enums.LookUpType.RFPVoucher)
       await LoadNotInVoucher();
   }
-
+  private async Task LoadNotLiquidatedPettyCash()
+  {
+     var notLiquidated = await liquidationService.GetPettyCashNotLiquidated(filterParameter, GlobalClass.token);
+     GlobalClass.liquidation.LiquidationDetails.ForEach(x=>{
+       notLiquidated.RemoveAll(p=>p.Id == x.PettyCashId);
+     });
+     GlobalClassList.notLiquidatedPettyCashList = notLiquidated;
+  }
   private async Task SearchPOBilling()
   {
     var filterParameter = new FilterParameter()
@@ -558,7 +581,13 @@
       ControlNumber = controlNumber
 
     };
-    GlobalClassList.POBillingList = await accountingPOBillingService.LoadAccountingBillingPO(filterParameter, GlobalClass.token);
+    var POBillingList = await accountingPOBillingService.LoadAccountingBillingPO(filterParameter, GlobalClass.token);
+
+    GlobalClassList.requestForPayments.ForEach(rfp=>{
+      POBillingList.RemoveAll(x=>x.POBillingId == rfp.POBillingId);
+    });
+
+    GlobalClassList.POBillingList = POBillingList;
   }
   private async Task LoadPOs()
   {
@@ -567,6 +596,10 @@
 
     };
     POList = await globalService.LoadPOs(filterParameter, GlobalClass.token);
+
+    GlobalClassList.requestForPayments.ForEach(rfp=>{
+      POList.RemoveAll(x=>x.POId == rfp.POId);
+    });
   }
   private async Task LoadNotInVoucher()
   {
@@ -578,7 +611,6 @@
       var liquidationDetail = new LiquidationDetailModel();
       liquidationDetail.PettyCashId = pettyCash.Id;
       liquidationDetail.PayeeId = pettyCash.PayeeId;
-      Console.WriteLine(liquidationDetail.PettyCashId);
       liquidationDetail.PayeeCategoryId = pettyCash.PayeeCategoryId;
       liquidationDetail.IsActive = true;
       liquidationDetail.ControlNumber = pettyCash.ControlNumber;
@@ -656,9 +688,8 @@
     totalAmount = GlobalClass.voucher.TotalAmount + requestForPayment.Amount;
     
     voucherRFP.RequestForPaymentId = requestForPayment.Id;
-    voucherRFP.RFPControlNumber = requestForPayment.ControlNumber;
+    voucherRFP.RFPControlNumber = requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.POBilling ?requestForPayment.RFP : requestForPayment.ControlNumber;
     voucherRFP.IsActive = true;
-    @* voucherRFP.payeeId = requestForPayment.RequestForPaymentDetails. *@
     voucherRFP.payeeCategory = requestForPayment.PayeeCategoryId;
     GlobalClass.voucher.VoucherRFP.Add(voucherRFP);
     
@@ -669,14 +700,14 @@
       var rfp = await requestForPaymentService.LoadRequestPaymentDetail(requestForPayment.Id, GlobalClass.token);
       var liquidationId =  rfp.Select(x=>x.LiquidationId).FirstOrDefault();
       var liquidationDetails = await liquidationService.LiquidationDetails(Convert.ToInt64(liquidationId), GlobalClass.token);
-      
+
       GlobalClass.voucher.VoucherDetails = liquidationDetails.Select(details => new VoucherDetailModel()
       {
         ExpenseId = details.ExpenseLineId,
         ExpenseName = details.ExpenseName,
-        ProjectId = details.PayeeId,
+        ProjectId = details.ChargingId,
         ProjectCategoryId = details.PayeeCategoryId,
-        ProjectName = details.PayeeName,
+        ProjectName = details.ChargingName,
         Description = details.Particular,
         Amount = details.Amount
       }).ToList();

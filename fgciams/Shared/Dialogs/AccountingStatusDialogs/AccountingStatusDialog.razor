@@ -1,6 +1,7 @@
 @inject IAccountingStatusService accountingStatusService
 @inject IDialogService dialogService
 @inject NavigationManager NavigationManager
+@inject ISnackbar snackbar
 <MudDialog Class="customdialog">
     <TitleContent>
         <div class='d-flex align-center'>
@@ -75,16 +76,24 @@
 
     private async Task Submit()
     {
-        if (GlobalClass.acctgStatus.Id != 0)
+        try
         {
-            await accountingStatusService.UpdateAccountingStatus(GlobalClass.acctgStatus, GlobalClass.token);
-            MudDialog.Close(DialogResult.Ok(1));
+            if (GlobalClass.acctgStatus.Id != 0)
+            {
+                await accountingStatusService.UpdateAccountingStatus(GlobalClass.acctgStatus, GlobalClass.token);
+                MudDialog.Close(DialogResult.Ok(1));
+            }
+            else
+            {
+                GlobalClass.acctgStatus = await accountingStatusService.AddAccountingStatus(GlobalClass.acctgStatus, GlobalClass.token);
+                GlobalClassList.accountingStatusList.Add(GlobalClass.acctgStatus);
+                MudDialog.Close(DialogResult.Ok(0));
+            }
+            await GlobalVariable.AMSHubConnection.InvokeAsync("SaveAccountingStatus",GlobalClass.acctgStatus);
         }
-        else
+        catch(System.Exception ex)
         {
-            GlobalClass.acctgStatus = await accountingStatusService.AddAccountingStatus(GlobalClass.acctgStatus, GlobalClass.token);
-            GlobalClassList.accountingStatusList.Add(GlobalClass.acctgStatus);
-            MudDialog.Close(DialogResult.Ok(0));
+            Extensions.ShowAlert(ex.Message, Variant.Filled, snackbar, Severity.Info);
         }
     }
     private void UpdateSelectedColor(MudColor colorValue)

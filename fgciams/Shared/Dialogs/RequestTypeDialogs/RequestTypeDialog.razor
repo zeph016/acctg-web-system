@@ -1,4 +1,5 @@
 @inject IRequestTypeService requestTypeService
+@inject ISnackbar Snackbar
 
 <MudDialog Class="customdialog">
   <TitleContent>
@@ -55,14 +56,33 @@
   {
     if (GlobalClass.requestType.Id != 0)
     {
-      await requestTypeService.UpdateRequestType(GlobalClass.requestType, GlobalClass.token);
-      MudDialog.Close(DialogResult.Ok(1));
+      try
+      {
+        GlobalClass.requestType = await requestTypeService.UpdateRequestType(GlobalClass.requestType, GlobalClass.token);
+        MudDialog.Close(DialogResult.Ok(1));        
+      }
+      catch (System.Exception ex)
+      {
+         // TODO
+         Extensions.ShowAlert(ex.Message, Variant.Filled, Snackbar, Severity.Normal);
+      }
+
     }
     else
     {
-      GlobalClass.requestType = await requestTypeService.AddRequestType(GlobalClass.requestType, GlobalClass.token);
-      GlobalClassList.requestTypes.Add(GlobalClass.requestType);
-      MudDialog.Close(DialogResult.Ok(0));
+      try
+      {
+        GlobalClass.requestType = await requestTypeService.AddRequestType(GlobalClass.requestType, GlobalClass.token);
+        GlobalClassList.requestTypes.Add(GlobalClass.requestType);
+        MudDialog.Close(DialogResult.Ok(0));        
+      }
+      catch (System.Exception ex)
+      {
+         // TODO
+         Extensions.ShowAlert(ex.Message, Variant.Filled, Snackbar, Severity.Normal);
+      }
+
     }
+    await GlobalVariable.AMSHubConnection.InvokeAsync("SaveRequestType", GlobalClass.requestType);
   }
 }

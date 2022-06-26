@@ -1,150 +1,169 @@
-.liquidationpage-entry .liquidationpage-grid {
+.liquidationpage__grid {
   display: -ms-grid;
   display: grid;
-  -ms-grid-columns: 80px 1fr 80px 1fr;
-      grid-template-columns: 80px 1fr 80px 1fr;
-  -ms-grid-rows: 0.5fr 0.5fr 0.5fr 2.5fr 1fr;
-      grid-template-rows: 0.5fr 0.5fr 0.5fr 2.5fr 1fr;
+  -ms-grid-columns: 1fr 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+  -ms-grid-rows: 40px 40px 40px 40vh 40px 0.5fr;
+      grid-template-rows: 40px 40px 40px 40vh 40px 0.5fr;
   gap: 0px 0px;
-      grid-template-areas: "liqgrid-header liqgrid-header liqgrid-header liqgrid-header" "liqgrid-datelbl liqgrid-date-entry liqgrid-controllbl liqgrid-control-entry" "liqgrid-amountlbl liqgrid-amount-entry liqgrid-amount-entry liqgrid-amount-entry" "liqgrid-body liqgrid-body liqgrid-body liqgrid-body" "liqgrid-signatories liqgrid-signatories liqgrid-signatories liqgrid-signatories";
-  height: calc(100vh - 400px);
+      grid-template-areas: "liq-header liq-header liq-header liq-date" "liq-period liq-period liq-period liq-controlno" "liq-remarks liq-remarks liq-remarks liq-remarks" "liq-details liq-details liq-details liq-details" "liq-totalamt liq-totalamt liq-totalamt liq-totalamt" "liq-signatories liq-signatories liq-signatories liq-signatories";
 }
 
-.liquidationpage-entry .liquidationpage-grid__date .mud-input-slot {
-  text-align: right !important;
-}
-
-.liquidationpage-entry .liquidationpage-grid__date .mud-input.mud-input-underline::before {
-  border-bottom: 0px !important;
-}
-
-.liquidationpage-entry .liquidationpage-grid__date .mud-input.mud-input-underline::after {
-  border-bottom: 0px !important;
-}
-
-.liquidationpage-entry .liqgrid-header {
+.liquidationpage .liq-header {
   -ms-grid-row: 1;
   -ms-grid-column: 1;
-  -ms-grid-column-span: 4;
-  grid-area: liqgrid-header;
+  -ms-grid-column-span: 3;
+  grid-area: liq-header;
 }
 
-.liquidationpage-entry .liqgrid-datelbl {
+.liquidationpage .liq-date {
+  -ms-grid-row: 1;
+  -ms-grid-column: 4;
+  grid-area: liq-date;
+}
+
+.liquidationpage .liq-period {
   -ms-grid-row: 2;
   -ms-grid-column: 1;
-  grid-area: liqgrid-datelbl;
+  -ms-grid-column-span: 3;
+  grid-area: liq-period;
 }
 
-.liquidationpage-entry .liqgrid-date-entry {
-  -ms-grid-row: 2;
-  -ms-grid-column: 2;
-  grid-area: liqgrid-date-entry;
-}
-
-.liquidationpage-entry .liqgrid-controllbl {
-  -ms-grid-row: 2;
-  -ms-grid-column: 3;
-  grid-area: liqgrid-controllbl;
-}
-
-.liquidationpage-entry .liqgrid-control-entry {
+.liquidationpage .liq-controlno {
   -ms-grid-row: 2;
   -ms-grid-column: 4;
-  grid-area: liqgrid-control-entry;
+  grid-area: liq-controlno;
 }
 
-.liquidationpage-entry .liqgrid-amountlbl {
+.liquidationpage .liq-remarks {
   -ms-grid-row: 3;
   -ms-grid-column: 1;
-  grid-area: liqgrid-amountlbl;
+  -ms-grid-column-span: 4;
+  grid-area: liq-remarks;
 }
 
-.liquidationpage-entry .liqgrid-amount-entry {
-  -ms-grid-row: 3;
-  -ms-grid-column: 2;
-  -ms-grid-column-span: 3;
-  grid-area: liqgrid-amount-entry;
-}
-
-.liquidationpage-entry .liqgrid-body {
+.liquidationpage .liq-details {
   -ms-grid-row: 4;
   -ms-grid-column: 1;
   -ms-grid-column-span: 4;
-  grid-area: liqgrid-body;
+  grid-area: liq-details;
 }
 
-.liquidationpage-entry .liqgrid-signatories {
+.liquidationpage .liq-totalamt {
   -ms-grid-row: 5;
   -ms-grid-column: 1;
   -ms-grid-column-span: 4;
-  grid-area: liqgrid-signatories;
+  grid-area: liq-totalamt;
 }
 
-.liquidationpage-entry .liqgrid-datelbl, .liquidationpage-entry .liqgrid-date-entry, .liquidationpage-entry .liqgrid-controllbl, .liquidationpage-entry .liqgrid-control-entry,
-.liquidationpage-entry .liqgrid-amountlbl, .liquidationpage-entry .liqgrid-amount-entry {
+.liquidationpage .liq-signatories {
+  -ms-grid-row: 6;
+  -ms-grid-column: 1;
+  -ms-grid-column-span: 4;
+  grid-area: liq-signatories;
+}
+
+.liquidationpage .liq-header, .liquidationpage .liq-date, .liquidationpage .liq-period, .liquidationpage .liq-controlno, .liquidationpage .liq-remarks,
+.liquidationpage .liq-details, .liquidationpage .liq-totalamt, .liquidationpage .liq-signatories {
   border-top: solid thin lightgray;
 }
 
-.liquidationpage-entry .liqgrid-amountlbl, .liquidationpage-entry .liqgrid-amount-entry {
+.liquidationpage .liq-header, .liquidationpage .liq-period, .liquidationpage .liq-remarks, .liquidationpage .liq-details,
+.liquidationpage .liq-totalamt, .liquidationpage .liq-signatories {
+  border-right: solid thin lightgray;
+  border-left: solid thin lightgray;
+}
+
+.liquidationpage .liq-date, .liquidationpage .liq-controlno {
+  border-right: solid thin lightgray;
+}
+
+.liquidationpage .liq-signatories {
   border-bottom: solid thin lightgray;
 }
 
-.liquidationpage-entry .liqgrid-date-entry, .liquidationpage-entry .liqgrid-controllbl,
-.liquidationpage-entry .liqgrid-control-entry, .liquidationpage-entry .liqgrid-amount-entry {
-  border-right: solid thin lightgray;
-}
-
-.liquidationpage-entry .liqgrid-datelbl, .liquidationpage-entry .liqgrid-amountlbl {
-  border-left: solid thin lightgray;
-  border-right: solid thin lightgray;
-}
-
-.liquidationpage-entry .liqgrid-body__subgrid {
+.liquidationpage__liqdetgrid {
   display: -ms-grid;
   display: grid;
-  -ms-grid-columns: 1fr 1fr;
-      grid-template-columns: 1fr 1fr;
-  -ms-grid-rows: 0.4fr 1.8fr;
-      grid-template-rows: 0.4fr 1.8fr;
+  -ms-grid-columns: 100px 1fr 100px 1fr;
+      grid-template-columns: 100px 1fr 100px 1fr;
+  -ms-grid-rows: 40px 40px 1fr 40px;
+      grid-template-rows: 40px 40px 1fr 40px;
   gap: 0px 0px;
-      grid-template-areas: "liqgrid-subgrid-header liqgrid-subgrid-header" "liqgrid-subgrid-remarks liqgrid-subgrid-remarks";
-  height: 100%;
+      grid-template-areas: "liqdet-lblstatus liqdet-status liqdet-status liqdet-status" "liqdet-lblpayee liqdet-payee liqdet-lblreq liqdet-req" "liqdet-lblparticulars liqdet-particulars liqdet-lblremarks liqdet-remarks" "liqdet-lblamt liqdet-amt liqdet-amt liqdet-amt";
 }
 
-.liquidationpage-entry .liqgrid-body__subgrid-header {
+.liquidationpage .liqdet-lblstatus {
   -ms-grid-row: 1;
   -ms-grid-column: 1;
-  -ms-grid-column-span: 2;
-  grid-area: liqgrid-subgrid-header;
+  grid-area: liqdet-lblstatus;
 }
 
-.liquidationpage-entry .liqgrid-body__subgrid-remarks {
+.liquidationpage .liqdet-status {
+  -ms-grid-row: 1;
+  -ms-grid-column: 2;
+  -ms-grid-column-span: 3;
+  grid-area: liqdet-status;
+}
+
+.liquidationpage .liqdet-lblpayee {
   -ms-grid-row: 2;
   -ms-grid-column: 1;
-  -ms-grid-column-span: 2;
-  grid-area: liqgrid-subgrid-remarks;
+  grid-area: liqdet-lblpayee;
 }
 
-.liquidationpage-entry .liqgrid-body__subgrid-header, .liquidationpage-entry .liqgrid-body__subgrid-remarks {
-  border-top: solid thin lightgray;
-  border-right: solid thin lightgray;
-  border-left: solid thin lightgray;
+.liquidationpage .liqdet-payee {
+  -ms-grid-row: 2;
+  -ms-grid-column: 2;
+  grid-area: liqdet-payee;
 }
 
-.liquidationpage-entry .liqgrid-body__subgrid-remarks {
-  border-bottom: solid thin lightgray;
+.liquidationpage .liqdet-lblreq {
+  -ms-grid-row: 2;
+  -ms-grid-column: 3;
+  grid-area: liqdet-lblreq;
 }
 
-.liquidationpage-entry__table .mud-table-container {
-  height: calc(100vh - 150px);
-  min-width: 75vh;
+.liquidationpage .liqdet-req {
+  -ms-grid-row: 2;
+  -ms-grid-column: 4;
+  grid-area: liqdet-req;
 }
 
-.liquidationpage-entry__table .mud-toolbar-gutters {
-  height: 2.5rem;
+.liquidationpage .liqdet-lblparticulars {
+  -ms-grid-row: 3;
+  -ms-grid-column: 1;
+  grid-area: liqdet-lblparticulars;
 }
 
-.liquidationpage-entry__table .mud-table-head {
-  white-space: nowrap;
+.liquidationpage .liqdet-particulars {
+  -ms-grid-row: 3;
+  -ms-grid-column: 2;
+  grid-area: liqdet-particulars;
+}
+
+.liquidationpage .liqdet-lblremarks {
+  -ms-grid-row: 3;
+  -ms-grid-column: 3;
+  grid-area: liqdet-lblremarks;
+}
+
+.liquidationpage .liqdet-remarks {
+  -ms-grid-row: 3;
+  -ms-grid-column: 4;
+  grid-area: liqdet-remarks;
+}
+
+.liquidationpage .liqdet-lblamt {
+  -ms-grid-row: 4;
+  -ms-grid-column: 1;
+  grid-area: liqdet-lblamt;
+}
+
+.liquidationpage .liqdet-amt {
+  -ms-grid-row: 4;
+  -ms-grid-column: 2;
+  -ms-grid-column-span: 3;
+  grid-area: liqdet-amt;
 }
 /*# sourceMappingURL=liquidation.style.css.map */

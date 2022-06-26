@@ -1,75 +1,31 @@
-.pcash-grid {
-    display: grid; 
-    grid-template-columns: 0.3fr 1fr 0.3fr 1fr; 
-    grid-template-rows: 40px 40px 40px 50px 1fr 0.2fr; 
-    gap: 0px;
-    grid-template-areas: 
-    "pcash-header pcash-header pcash-header pcash-header"
-    "pcash-sysheader pcash-sysheader pcash-sysheader pcash-sysheader"
-    "pcash-date pcash-dateentry pcash-refno pcash-refnoentry"
-    "pcash-payee pcash-payee-entry pcash-payee-entry pcash-payee-entry"
-    "pcash-table pcash-table pcash-table pcash-table"
-    "pcash-signatories pcash-signatories pcash-signatories pcash-signatories"; 
-    height: calc(100vh - 130px);
-    &__date {
-        .mud-input-slot { text-align: right !important; }
-        .mud-input.mud-input-underline::before { border-bottom: 0px !important; }
-        .mud-input.mud-input-underline::after { border-bottom: 0px !important; } 
-    }
-    &__subgrid-particular {
-        display: grid;
-        border: solid thin lightgrey;
-        grid-template-columns: 1fr 0.3fr;
-        grid-template-rows: 0.4fr 1.8fr;
-        gap: 0px 0px;
+.pettycashpage {
+    &__grid {
+        display: grid; 
+        grid-template-columns: 1fr 1fr 1fr 1fr; 
+        grid-template-rows: 40px 40px 40px 1fr 1fr 40px 0.5fr; 
+        gap: 0px 0px; 
         grid-template-areas: 
-        "particular-header-left particular-header-right"
-        "particular-body particular-amount";
-        .particular-header-left { grid-area: particular-header-left; }
-        .particular-header-right { grid-area: particular-header-right; }
-        .particular-body { grid-area: particular-body; }
-        .particular-amount { grid-area: particular-amount; }
-        height: 100%;
-        .particular-header-left, .particular-header-right { background-color: #80808042}
-        .particular-header-left, .particular-body { border-right: solid thin lightgrey;}
-        .particular-body, .particular-amount { border-top: solid thin lightgrey; }
+            "pcash-header pcash-header pcash-header pcash-header"
+            "pcash-hsub pcash-hsub pcash-hsub pcash-hsub"
+            "pcash-payee pcash-payee pcash-payee pcash-payee"
+            "pcash-particulars pcash-particulars pcash-particulars pcash-particulars"
+            "pcash-remarks pcash-remarks pcash-remarks pcash-remarks"
+            "pcash-amt pcash-amt pcash-amt pcash-amt"
+            "pcash-signatories pcash-signatories pcash-signatories pcash-signatories"; 
     }
-    &__subgrid-remarks {
-        display: grid;
-        border: solid thin lightgray;
-        grid-template-rows: 0.4fr 1.8fr;
-        gap: 0px 0px;
-        grid-template-areas: 
-        "remarks-header"
-        "remarks-body";
-        .remarks-header { grid-area: remarks-header; }
-        .remarks-body { grid-area: remarks-body; }
-        height: 100%;
-        .remarks-header { background-color: #80808042; }
-        .remarks-body { border-top: solid thin lightgrey; }
+    .pcash-header { grid-area: pcash-header; }
+    .pcash-hsub { grid-area: pcash-hsub; }
+    .pcash-payee { grid-area: pcash-payee; }
+    .pcash-particulars { grid-area: pcash-particulars; }
+    .pcash-remarks { grid-area: pcash-remarks; }
+    .pcash-amt { grid-area: pcash-amt; }
+    .pcash-signatories { grid-area: pcash-signatories; }
+
+    .pcash-header, .pcash-hsub, .pcash-payee, .pcash-particulars,
+    .pcash-remarks, .pcash-amt, .pcash-signatories { 
+        border-top: solid thin lightgray; 
+        border-right: solid thin lightgray;
+        border-left: solid thin lightgray;
     }
+    .pcash-signatories { border-bottom: solid thin lightgray; }
 }
-
-.pcash-header { 
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-    grid-area: pcash-header;
- }
-
-.pcash-header { grid-area: pcash-header; }
-.pcash-sysheader { grid-area: pcash-sysheader; }
-.pcash-payee { grid-area: pcash-payee; }
-.pcash-payee-entry { grid-area: pcash-payee-entry; }
-.pcash-table { grid-area: pcash-table; }
-.pcash-signatories { grid-area: pcash-signatories; }
-.pcash-date { grid-area: pcash-date; }
-.pcash-dateentry { grid-area: pcash-dateentry; }
-.pcash-refno { grid-area: pcash-refno; }
-.pcash-refnoentry { grid-area: pcash-refnoentry; }
-
-
-.pcash-date, .pcash-dateentry, .pcash-refnoentry, .pcash-refno,
-.pcash-payee, .pcash-payee-entry, .pcash-table { border-top: solid thin lightgrey; }
-.pcash-date, .pcash-dateentry, .pcash-refno, .pcash-refnoentry,
-.pcash-payee, .pcash-payee-entry { border-left: solid thin lightgray; }
-.pcash-refnoentry, .pcash-payee-entry { border-right: solid thin lightgrey; }
