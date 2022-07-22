@@ -1,17 +1,13 @@
 .fgcilogocont {
   padding: 0px 5px;
 }
-
 .fgcilogocont__lblfirst {
   font-weight: bold !important;
 }
-
 .fgcilogocont__lblfirst, .fgcilogocont__lblsecond {
-  font-family: 'Agency' !important;
+  font-family: "Agency" !important;
   font-size: 1.2rem;
 }
-
 .fgcilogocont__lblheader {
-  font-family: 'Theramin' !important;
-}
-/*# sourceMappingURL=docheaderlogo.styles.css.map */
+  font-family: "Theramin" !important;
+}/*# sourceMappingURL=docheaderlogo.styles.css.map */

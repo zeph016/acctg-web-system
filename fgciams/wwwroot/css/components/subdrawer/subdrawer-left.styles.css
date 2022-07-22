@@ -1,16 +1,27 @@
 .subdrawer-left {
   background-color: #fafafa !important;
 }
-
 .subdrawer-left .mud-navmenu {
   height: 100%;
 }
 
-.drawer-no-left .mud-drawer {
-  left: unset !important;
+.subdrawer-left {
+  width: 56px;
+}
+.subdrawer-left .mud-drawer .mud-drawer-content {
+  background-color: #3d2052;
+}
+.subdrawer-left .mud-drawer .mud-nav-link-text {
+  color: white;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.subdrawer-left .mud-drawer .mud-icon-root {
+  color: white !important;
 }
 
 .drawer-no-top .mud-drawer {
   top: unset !important;
-}
-/*# sourceMappingURL=subdrawer-left.styles.css.map */
+}/*# sourceMappingURL=subdrawer-left.styles.css.map */

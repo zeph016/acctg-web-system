@@ -1,9 +1,1 @@
-{
-    "version": 3,
-    "mappings": "AAAA,AACI,aADS,CACT,iBAAiB,EADN,wBAAwB,CACnC,iBAAiB,CAAC;EACd,gBAAgB,EAAE,OAAO;EACzB,KAAK,EAAC,KAAK;CAId;;AAPL,AAIQ,aAJK,CACT,iBAAiB,CAGb,eAAe,EAJR,wBAAwB,CACnC,iBAAiB,CAGb,eAAe,CAAC;EACZ,WAAW,EAAE,UAAU;CAC1B;;AAEJ,AAAD,gCAAoB,EAAnB,2CAAmB,CAAC;EACjB,SAAS,EAAE,IAAI;EACf,OAAO,EAAE,SAAS;CACrB;;AAEL,AACI,wBADoB,CACpB,mBAAmB,CAAC;EAChB,QAAQ,EAAE,MAAM;EAChB,OAAO,EAAE,cAAc;CAC1B",
-    "sources": [
-        "dialog.styles.scss"
-    ],
-    "names": [],
-    "file": "dialog.styles.css"
-}
+{"version":3,"sources":["dialog.styles.scss","dialog.styles.css"],"names":[],"mappings":"AACI;EACI,yBAAA;EACA,YAAA;ACAR;ADCQ;EACI,uBAAA;ACCZ;ADEI;EACI,eAAA;EACA,kBAAA;ACAR;;ADII;EACI,gBAAA;EACA,uBAAA;ACDR","file":"dialog.styles.css"}

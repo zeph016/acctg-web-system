@@ -1,8 +1,9 @@
 <MudDialog Class='customdialog'>
     <DialogContent>
-        <div Class='customdialog__content-container'>
+        <MudText Class='font18 pa-2'>
             @contentText
-        </div>
+        </MudText>
+        <MudText Class="font16 mud-text-secondary pa-2">@note</MudText>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
@@ -17,6 +18,7 @@
     [Parameter] public string buttonText { get; set; } = string.Empty;
     [Parameter] public Enums.ActionMode actionMode { get; set; }
     private Color color { get; set; }
+    private string note {get;set;} = string.Empty;
     private bool dataFetched;
 
     public override async Task SetParametersAsync(ParameterView parameters)
@@ -25,7 +27,7 @@
         await base.SetParametersAsync(parameters);
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         CheckActionsMode();
         CompletedFetch();
@@ -50,29 +52,54 @@
     private void CheckActionsMode()
     {
         if (actionMode == Enums.ActionMode.Create) {
-            contentText = $"Are you sure you want to Create {contentText}?";
+            contentText = $"Are you sure you want to create {contentText}?";
             buttonText = "Confirm";
             color = Color.Success;
         } else if (actionMode == Enums.ActionMode.Update) {
-            contentText = $"Are you sure you want to Update {contentText}?";
+            contentText = $"Are you sure you want to update {contentText}?";
             buttonText = "Update";
             color = Color.Info;
         } else if (actionMode == Enums.ActionMode.Approve) {
-            contentText = $"Are you sure you want to Approve {contentText}?";
+            contentText = $"Are you sure you want to approve {contentText}?";
             buttonText = "Approve";
             color = Color.Info;
         } else if (actionMode == Enums.ActionMode.Cancel) {
-            contentText = $"Are you sure you want to Cancel {contentText}?";
+            contentText = $"Are you sure you want to cancel {contentText}?";
             buttonText = "Cancel";
             color = Color.Info;
         } else if (actionMode == Enums.ActionMode.Receive) {
-            contentText = $"Are you sure you want to Receive {contentText}?";
+            contentText = $"Are you sure you want to receive {contentText}?";
             buttonText = "Receive";
             color = Color.Info;
         } else if(actionMode == Enums.ActionMode.Delete) {
-            contentText = $"Are you sure you want to Remove {contentText}?";
+            contentText = $"Are you sure you want to remove {contentText}?";
             buttonText = "Remove";
             color = Color.Info;
+        }
+        else if(actionMode == Enums.ActionMode.Void)
+        {
+            contentText = $"Are you sure you want to void {contentText}?";
+            buttonText = "Void";
+            color = Color.Info;
+        }
+        else if(actionMode == Enums.ActionMode.Released)
+        {
+            contentText = $"Are you sure you want to released this {contentText}?";
+            buttonText = "Release";
+            color = Color.Info;
+        }
+        else if(actionMode == Enums.ActionMode.Cleared)
+        {
+            contentText = $"Are you sure you want to cleared this {contentText}?";
+            buttonText = "Clear";
+            color = Color.Info;
+        }
+        else if(actionMode == Enums.ActionMode.Deactivate)
+        {
+            contentText = $"Are you sure you want to deactivate this {contentText}?";
+            note = "Note: This will remove the item from the list.";
+            buttonText = "Deactivate";
+            color = Color.Error;
         }
     }
 }

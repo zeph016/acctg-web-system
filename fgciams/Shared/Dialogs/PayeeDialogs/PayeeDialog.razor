@@ -1,6 +1,7 @@
 @inject IPayeeService payeeService
 @inject IPayeeCategoryService payeeCategoryService
 @inject ISnackbar snackBar
+@inject IDialogService dialogService
 
 <MudDialog Class="customdialog">
     <TitleContent>
@@ -20,10 +21,10 @@
         <div class='customdialog__content-container'>
             <MudGrid Spacing='1'>
                 <MudItem xs='10'>
-                    <MudTextField @bind-Value='@GlobalClass.payee.PayeeName' Label='Payee Name'/>
+                    <MudTextField @bind-Value='@GlobalClass.payee.PayeeName' Label='Payee Name' Error=@notValidPayee ErrorText="Required"/>
                 </MudItem>
                 <MudItem Class='d-flex align-center' xs='2'>
-                    <MudCheckBox @bind-Checked='@GlobalClass.payee.IsActive' Label='Active'/>
+                    <MudCheckBox @bind-Checked='@GlobalClass.payee.IsActive' Label='Active' ReadOnly=@isReadOnly/>
                 </MudItem>
                 <MudItem xs='6'>
                     <MudTextField @bind-Value='@GlobalClass.payee.ShortcutName' Label='Short Name' />
@@ -46,7 +47,7 @@
                 <MudItem xs='4'>
                     @if (GlobalClass.payee.Id != 0)
                     {
-                        <MudSelect @bind-Value='@GlobalClass.payee.PayeeCategoryId' Label='Category'>
+                        <MudSelect @bind-Value='@GlobalClass.payee.PayeeCategoryId' Label='Category' Error=@notValidCategory ErrorText="Required">
                             @foreach (var item in GlobalClassList.payeeCategoryList)
                             {
                                 <MudSelectItem Value="@item.Id">@item.CategoryName</MudSelectItem>
@@ -55,7 +56,7 @@
                     }
                     else
                     {
-                        <MudSelect @bind-Value='@GlobalClass.payee.PayeeCategory' Label='Category'>
+                        <MudSelect @bind-Value='@GlobalClass.payee.PayeeCategory' Label='Category' Error=@notValidCategory ErrorText="Required">
                             @foreach (var item in GlobalClassList.payeeCategoryList)
                             {
                                 <MudSelectItem Value="@item">@item.CategoryName</MudSelectItem>
@@ -77,11 +78,16 @@
     [Parameter] public Color color { get; set; }
     [Parameter] public string dialogTitle { get; set; } = string.Empty;
     [Parameter] public string buttonText { get; set; } = string.Empty;
-
+    private bool isReadOnly = false;
+    private Enums.ActionMode currentAction {get;set;}
+    private bool notValidPayee,notValidCategory = false;
     protected override async Task OnInitializedAsync()
     {
         if (GlobalClass.payee.Id == 0)
+        {
             GlobalClass.payee.IsActive = true;
+            isReadOnly = true;
+        }
         await Task.Delay(1);
     }
 
@@ -92,28 +98,81 @@
 
     private async Task Submit()
     {
-        try
+        if(GlobalClass.payee.IsActive == false)
         {
-            if (GlobalClass.payee.Id != 0)
-            {
-                foreach (var item in GlobalClassList.payeeCategoryList)
-                    if (item.Id == GlobalClass.payee.PayeeCategoryId) {
-                        GlobalClass.payee.PayeeCategory = item;
-                        break;
-                    }
-                GlobalClass.payee = await payeeService.UpdatePayee(GlobalClass.payee, GlobalClass.token);
-                MudDialog.Close(DialogResult.Ok(1));
-            }
-            else
-            {
-                GlobalClass.payee.PayeeCategoryId = GlobalClass.payee.PayeeCategory.Id;
-                GlobalClass.payee = await payeeService.AddPayee(GlobalClass.payee, GlobalClass.token);
-                MudDialog.Close(DialogResult.Ok(0));
-            }
-            await GlobalVariable.AMSHubConnection.InvokeAsync("SavePayee",GlobalClass.payee);
-        }catch(Exception ex)
+            currentAction = Enums.ActionMode.Deactivate;
+            await Prompt();
+        }
+        else 
         {
-            Extensions.ShowAlert(ex.Message,Variant.Filled,snackBar,Severity.Info);
+            if(IsValidated())
+            {
+                if(GlobalClass.payee.Id == 0)
+                    currentAction = Enums.ActionMode.Create;
+                else
+                    currentAction = Enums.ActionMode.Update;
+                await Prompt();
+            }
+            else 
+                Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" payee"+GlobalVariable.errorPromptText,Variant.Filled,snackBar,Severity.Error);
         }
     }
-} 
+    private async Task Prompt()
+    {
+        var parameters = new DialogParameters();
+        string contentText = " Payee";
+        string dialogTitle = currentAction + contentText;
+        parameters.Add("contentText", contentText);
+        parameters.Add("actionMode", currentAction);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled) 
+        {   
+            try
+            {
+                if (currentAction == Enums.ActionMode.Create) {
+                    GlobalClass.payee.PayeeCategoryId = GlobalClass.payee.PayeeCategory.Id;
+                    GlobalClass.payee = await payeeService.AddPayee(GlobalClass.payee, GlobalClass.token);
+                    MudDialog.Close(DialogResult.Ok(0));
+                } else {
+                    foreach (var item in GlobalClassList.payeeCategoryList)
+                        if (item.Id == GlobalClass.payee.PayeeCategoryId) {
+                            GlobalClass.payee.PayeeCategory = item;
+                            break;
+                        }
+                    GlobalClass.payee = await payeeService.UpdatePayee(GlobalClass.payee, GlobalClass.token);
+                    MudDialog.Close(DialogResult.Ok(1));
+                }
+                if(GlobalVariable.AMSHubConnection != null)
+                    await GlobalVariable.AMSHubConnection.InvokeAsync("SavePayee",GlobalClass.payee);
+            } catch(Exception ex) {
+                Extensions.ShowAlert(ex.Message,Variant.Filled,snackBar,Severity.Info);
+            }
+        }
+    }
+    private bool IsValidated()
+    {
+        ResetValidation();
+        if(String.IsNullOrEmpty(GlobalClass.payee.PayeeName))
+            notValidPayee = true;
+        if(GlobalClass.payee.PayeeCategory == null || String.IsNullOrEmpty(GlobalClass.payee.PayeeCategory.CategoryName))
+            notValidCategory = true;
+        if(notValidPayee || notValidCategory) {
+            GlobalVariable.errorPromptText = " incomplete field/s."; return false; }
+         if(GlobalClassList.payeeList.Any(x=>x.PayeeName == GlobalClass.payee.PayeeName && x.Id != GlobalClass.payee.Id)) {
+            GlobalVariable.errorPromptText = " duplicate entry found for payee name."; return false;}
+        return true;
+    }
+    private void ResetValidation()
+    {
+        notValidPayee = false;
+        notValidCategory = false;
+    }
+}

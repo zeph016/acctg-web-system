@@ -1,4 +1,5 @@
 @inject IBankService bankService
+@inject ISnackbar snackbarService
 
 <MudDialog Class="customdialog">
   <TitleContent>
@@ -19,18 +20,20 @@
       <MudGrid Spacing='1'>
         <MudItem xs='6'>
           <MudTextField @bind-Value='@GlobalClass.bank.BankName' Adornment='Adornment.Start'
-            AdornmentIcon='@Icons.Filled.AccountBalance' Label='Bank Name' />
+            AdornmentIcon='@Icons.Filled.AccountBalance' Label='Bank Name' Error=@reqBank ErrorText='Bank name is required'/>
         </MudItem>
         <MudItem xs='4'>
           <MudTextField @bind-Value='@GlobalClass.bank.ShortcutName' Adornment='Adornment.Start'
-            AdornmentIcon='@Icons.Filled.ShortText' Label="Short Name" />
+            AdornmentIcon='@Icons.Filled.ShortText' Label="Short Name" Error=@reqShrtCut ErrorText='Shortcut name is required'/>
         </MudItem>
+        @if(GlobalClass.bank.Id != 0) {
         <MudItem xs='2'>
           <MudCheckBox @bind-Checked='@GlobalClass.bank.IsActive' Label='Active' />
         </MudItem>
+        }
         <MudItem xs='6'>
           <MudTextField @bind-Value='@GlobalClass.bank.BankBranch' Adornment='Adornment.Start'
-            AdornmentIcon='@Icons.Filled.LocationCity' Label="Branch" />
+            AdornmentIcon='@Icons.Filled.LocationCity' Label="Branch" Error='@reqBranch' ErrorText='Branch name is required' />
         </MudItem>
         <MudItem xs='6'>
           <MudTextField @bind-Value='@GlobalClass.bank.AccountNo' Mask="@(new PatternMask("0000 0000 0000 0000"))"
@@ -38,11 +41,11 @@
         </MudItem>
         <MudItem xs='8'>
           <MudTextField @bind-Value='@GlobalClass.bank.ContactPerson' Adornment='Adornment.Start'
-            AdornmentIcon='@Icons.Filled.Person' Label="Contact Person" />
+            AdornmentIcon='@Icons.Filled.Person' Label="Contact Person" Error=@reqConPer ErrorText='Contact person is required' />
         </MudItem>
         <MudItem xs='4'>
           <MudTextField @bind-Value='@GlobalClass.bank.ContactNo' Adornment='Adornment.Start'
-            AdornmentIcon='@Icons.Filled.ContactPhone' Label="Contact No." />
+            AdornmentIcon='@Icons.Filled.ContactPhone' Label="Contact No." Error=@reqConNo ErrorText='Contact number is required'/>
         </MudItem>
         <MudItem xs='4'>
           <MudSelect @bind-Value='@GlobalClass.bank.CurrencyId' Label="Currency">
@@ -72,6 +75,7 @@
   [Parameter] public Color color { get; set; }
   [Parameter] public string dialogTitle { get; set; } = string.Empty;
   [Parameter] public string buttonText { get; set; } = string.Empty;
+  private bool reqBank, reqShrtCut, reqBranch, reqConPer, reqConNo, reqBegBal;
   protected override async Task OnInitializedAsync()
   {
     if (GlobalClass.bank.Id == 0)
@@ -89,22 +93,69 @@
     try
     {
       if (GlobalClass.bank.Id != 0)
-      { 
-        await bankService.UpdateBank(GlobalClass.bank, GlobalClass.token);
-        MudDialog.Close(DialogResult.Ok(1));
+      {
+        if(ValidateEntries()) {
+          
+          await bankService.UpdateBank(GlobalClass.bank, GlobalClass.token);
+          MudDialog.Close(DialogResult.Ok(1));
+
+        } else Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbarService, Severity.Error);
+
       }
       else
       {
-        GlobalClass.bank = await bankService.AddBank(GlobalClass.bank, GlobalClass.token);
-        GlobalClassList.banks.Add(GlobalClass.bank);
-        MudDialog.Close(DialogResult.Ok(0));
+        if(ValidateEntries()) {
+
+          GlobalClass.bank = await bankService.AddBank(GlobalClass.bank, GlobalClass.token);
+          GlobalClassList.banks.Add(GlobalClass.bank);
+          MudDialog.Close(DialogResult.Ok(0));
+
+        } else Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbarService, Severity.Error);
+  
       }
-    
-       await GlobalVariable.AMSHubConnection.InvokeAsync("SaveBank", GlobalClass.bank);     
+      if(GlobalVariable.AMSHubConnection != null && ValidateEntries())
+        await GlobalVariable.AMSHubConnection.InvokeAsync("SaveBank", GlobalClass.bank);     
     }
     catch (System.Exception ex)
     {
+      Console.WriteLine(ex.Message);
        // TODO
     }
+  }
+  private bool ValidateEntries()
+  {
+   bool valid = true;
+   if(string.IsNullOrEmpty(GlobalClass.bank.BankName)) {
+      reqBank = true;
+      valid = false;
+    } else {
+      reqBank = false;
+    }
+   if(string.IsNullOrEmpty(GlobalClass.bank.ShortcutName)) {
+      reqShrtCut = true;
+      valid = false;
+   } else {
+    reqShrtCut = false;
+   }
+   if(string.IsNullOrEmpty(GlobalClass.bank.BankBranch)) {
+      reqBranch = true;
+      valid = false;
+   } else {
+    reqBranch = false;
+   }
+   if(string.IsNullOrEmpty(GlobalClass.bank.ContactPerson)) {
+      reqConPer = true;
+      valid = false;
+   } else {
+     reqConPer = false;
+   }
+   if(string.IsNullOrEmpty(GlobalClass.bank.ContactNo)) {
+      reqConNo = true;
+      valid = false;
+   } else {
+     reqConNo = false;
+   }
+
+    return valid;
   }
 }

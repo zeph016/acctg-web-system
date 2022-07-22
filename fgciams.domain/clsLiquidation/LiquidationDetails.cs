@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using fgciams.domain.clsEnums;
 using fgciams.domain.clsPettyCash;
+using fgciams.domain.clsProject;
+using fgciams.domain.clsExpenseLine;
 
 namespace fgciams.domain.clsLiquidation
 {
@@ -50,23 +52,29 @@ namespace fgciams.domain.clsLiquidation
             ChargingName = "";
             TemporaryId = 0;
             StatusId = 0;
+            Remarks = "";
             ChargingCategoryId = Enums.ProjectCategory.Company;
         }
         public Int64 Id { get; set; }
         public bool IsActive { get; set; }
-        public Int64 PettyCashId { get; set; }
+        public Int64 PettyCashId { get; set; } 
         public Int64 LiquidationId { get; set; }
         public Int64 ExpenseLineId { get; set; }
         public string ExpenseName { get; set; }
         public Int64 ChargingId { get; set; }
         public string ChargingName { get; set; }
         public Enums.ProjectCategory ChargingCategoryId { get; set; }
+        public decimal ActualAmount { get; set; }
+        public string PettyCashRemarks { get; set; } = string.Empty;
+        public string Remarks { get; set; } = string.Empty;
         
         ////
         public bool ShowSubTable { get; set; }
         public int TemporaryId {get; set;}
         public bool ShowParticulars { get; set; }
         public bool ShowRemarks { get; set; }
+        public Project selCharge = new Project();
+        public ExpenseLineModel selExp = new ExpenseLineModel();
     }
     
 }

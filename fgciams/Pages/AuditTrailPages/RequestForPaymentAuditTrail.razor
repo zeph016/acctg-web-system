@@ -1,0 +1,137 @@
+@page "/requestforpayment/trail"
+@inject IRequestForPaymentService requestForPaymentService
+@inject IGlobalService globalService
+
+<div class="audittrail_container">
+       
+        <MudGrid>
+            <MudItem xs="8">
+                <MudPaper Elevation="3">
+                    <MudCard Elevation="2">
+                        <div style="display: flex; align-items: center;">
+                            <MudIcon Size="Size.Medium" style="margin-right: 10px;" Icon="@Icons.Filled.Timeline"></MudIcon>
+                             <MudText Typo="Typo.body1">Timeline</MudText>
+                        </div>
+                        <MudButton Size="Size.Small" StartIcon="@Icons.Filled.ArrowBackIos" title="Add" class="btn btn-primary" Href="/requestpayment/list"><MudText Typo="Typo.caption">Back</MudText></MudButton>
+                    </MudCard>
+                 
+                    <MudTimeline TimelinePosition="TimelinePosition.Start">
+                        @foreach (var item in auditTrails) 
+                        {
+                        <MudTimelineItem Color="Color.Success">
+                             <MudAlert Icon="@Icons.Filled.NoteAdd"  Severity="Severity.Success">
+                                  <MudText Typo="Typo.caption"><b>@item.LogDateTime</b></MudText>
+                                  <MudText Typo="Typo.subtitle2"><b>@item.Activity</b></MudText>
+                                  <MudText Typo="Typo.caption">by: &nbsp; @item.UserName</MudText>
+                             </MudAlert>
+                        </MudTimelineItem>
+                        }
+
+                    </MudTimeline>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="4">
+                <MudPaper Elevation="3">
+                  <MudCard Elevation="2">
+                      <div class="flex-gap">
+                          <MudIcon Size="Size.Medium" Icon="@Icons.Filled.Badge"></MudIcon>
+                          <MudText Typo="Typo.body1">Payee Details</MudText>
+                      </div>
+                    </MudCard>
+
+                    <div class="payee_details">
+                        <div class="payee_details-fields">
+                                <MudTextField Label="Date" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.CalendarToday" @bind-Value="@GlobalClass.requestForPayment.RequestDate" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                                <MudTextField Label="Control No." @bind-Value="@GlobalClass.requestForPayment.ControlNumber" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                          </div>
+
+                        <div style="margin-top: 15px">
+                          <MudTextField  Label="Payee Name" Adornment="Adornment.Start" AdornmentIcon="@Icons.Filled.AttachMoney" @bind-Value="@GlobalClass.requestForPayment.PayeeName" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                        </div>
+
+                        @* <div style="margin-top: 15px">
+                          <MudTextField Label="Total Amount" Adornment="Adornment.Start" AdornmentIcon="@Icons.Filled.AttachMoney" @bind-Value="@GlobalClass.requestForPayment.Amount" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                        </div> *@
+
+                        <div style="margin-top: 15px">
+                            <MudTextField Label="Remakrs" Lines="5" @bind-Value="@GlobalClass.requestForPayment.Remarks" Variant="Variant.Outlined" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                        </div>
+
+                          <div style="margin-top: 15px">
+                            <div  class="flex-gap">
+                                <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(preparedByImg)}")' />
+                                <div class="">
+                                        <MudText Typo="Typo.subtitle2">@GlobalClass.requestForPayment.PreparedByName</MudText>
+                                      <MudText Typo="Typo.caption">Prepared by</MudText>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 15px">
+                            <div  class="flex-gap">
+                                <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(requestedbyImg)}")' />
+                                <div class="">
+                                        <MudText Typo="Typo.subtitle2">@GlobalClass.requestForPayment.RequestedByName</MudText>
+                                      <MudText Typo="Typo.caption">Requested by</MudText>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 15px">
+                            <div  class="flex-gap">
+                                <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(recommendedbyImg)}")'/>
+                                <div class="">
+                                      <MudText Typo="Typo.subtitle2">@GlobalClass.requestForPayment.RecommendedByName</MudText>
+                                      <MudText Typo="Typo.caption">Recoomended by</MudText>
+                                </div>
+                            </div>
+                        </div>
+
+                         <div style="margin-top: 15px">
+                            <div  class="flex-gap">
+                                <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(approvedByImg)}")' />
+                                <div class="">
+                                        <MudText Typo="Typo.subtitle2">@GlobalClass.requestForPayment.ApprovedByName</MudText>
+                                      <MudText Typo="Typo.caption">Approved by</MudText>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </div>
+
+@code{
+  string text = "";
+  private byte[] preparedByImg = new byte[] { }, approvedByImg = new byte[] {}, requestedbyImg = new byte[] {}, recommendedbyImg = new byte[] {};
+  private List<RequestForPaymentAuditTrailModel> auditTrails = new List<RequestForPaymentAuditTrailModel>();
+
+  protected override async Task OnInitializedAsync()
+  {
+    GlobalClass.pageTitle = "RFP Audit Trail";
+    while(GlobalClass.currentUserAccount == null || GlobalClass.requestForPayment == null)
+    await Task.Delay(1);
+   
+    Task t = Task.WhenAll(LoadAuditTrails(), LoadImages());
+    await t;
+  }
+  private async Task LoadImages()
+  {
+    preparedByImg = await GetEmployeeImg(GlobalClass.requestForPayment.PreparedById);
+    requestedbyImg = await GetEmployeeImg(GlobalClass.requestForPayment.RequestedById);
+    recommendedbyImg = await GetEmployeeImg(GlobalClass.requestForPayment.RecommendedById);
+    approvedByImg = await GetEmployeeImg(GlobalClass.requestForPayment.ApprovedById);
+  }
+  private async Task LoadAuditTrails()
+  {
+    auditTrails = await requestForPaymentService.RFPAuditTrails(GlobalClass.requestForPayment.Id, GlobalClass.token);
+  }
+  private async Task<byte[]> GetEmployeeImg(long employeeId)
+  {
+    var employeeDetail = await globalService.GetEmployeeById(employeeId, GlobalClass.token);
+    return employeeDetail.Picture;
+  }
+
+}

@@ -1,5 +1,6 @@
 @inject IAccountTypeService accountTypeService
 @inject ISnackbar snackBar
+@inject IDialogService dialogService
 
 <MudDialog Class='customdialog'>
     <TitleContent>
@@ -19,7 +20,7 @@
         <div class='customdialog__content-container'>
             <MudGrid Spacing='1'>
                 <MudItem xs='12'>
-                    <MudTextField @bind-Value='@GlobalClass.accountTypeModel.TypeName' Label='Type name' />
+                    <MudTextField @bind-Value='@GlobalClass.accountTypeModel.TypeName' Label='Type name' Error=@notValidAccountType ErrorText="Required" />
                 </MudItem>
                 <MudItem xs='9'>
                     <MudTextField @bind-Value='@GlobalClass.accountTypeModel.Remarks' Label='Remarks' />
@@ -41,10 +42,16 @@
     [Parameter] public Color color { get; set; }
     [Parameter] public string dialogTitle { get; set; } = string.Empty;
     [Parameter] public string buttonText { get; set; } = string.Empty;
+    private bool isReadOnly = false;
+    private Enums.ActionMode currentAction {get;set;}
+    private bool notValidAccountType = false;
     protected override async Task OnInitializedAsync()
     {
         if (GlobalClass.accountTypeModel.Id == 0)
+        {
+            isReadOnly = true;
             GlobalClass.accountTypeModel.IsActive = true;
+        }
         await Task.Delay(1);
     }
     void Cancel() 
@@ -53,23 +60,74 @@
     }
     private async Task Submit()
     {
-        try
+        if(GlobalClass.accountTypeModel.IsActive == false)
         {
-            if (GlobalClass.accountTypeModel.Id == 0)
-            {
-                await accountTypeService.AddAccountType(GlobalClass.accountTypeModel, GlobalClass.token);
-                GlobalClassList.listOfAccountTypes.Insert(0,GlobalClass.accountTypeModel);
-                MudDialog.Close(DialogResult.Ok(0));
-            }
-            else
-            { 
-                GlobalClass.accountTypeModel = await accountTypeService.UpdateAccountType(GlobalClass.accountTypeModel, GlobalClass.token);
-                MudDialog.Close(DialogResult.Ok(1));
-            }
-            await GlobalVariable.AMSHubConnection.InvokeAsync("SaveAccountType",GlobalClass.accountTypeModel);
-        } catch (Exception ex)
-        {
-            Extensions.ShowAlert(ex.Message,Variant.Filled,snackBar,Severity.Info);
+            currentAction = Enums.ActionMode.Deactivate;
+            await Prompt();
         }
+        else 
+        {
+            if(IsValidated())
+            {
+                if(GlobalClass.accountTypeModel.Id == 0)
+                    currentAction = Enums.ActionMode.Create;
+                else
+                    currentAction = Enums.ActionMode.Update;
+                await Prompt();
+            }
+            else 
+                Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" account type"+GlobalVariable.errorPromptText,Variant.Filled,snackBar,Severity.Error);
+        }
+
+    }
+    private async Task Prompt()
+    {
+        var parameters = new DialogParameters();
+        string contentText = " Account Type";
+        string dialogTitle = currentAction + contentText;
+        parameters.Add("contentText", contentText);
+        parameters.Add("actionMode", currentAction);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled) 
+        {   
+            try
+            {
+                if (currentAction == Enums.ActionMode.Create) {
+                    GlobalClass.accountTypeModel = await accountTypeService.AddAccountType(GlobalClass.accountTypeModel, GlobalClass.token);
+                    GlobalClassList.listOfAccountTypes.Insert(0,GlobalClass.accountTypeModel);
+                    MudDialog.Close(DialogResult.Ok(0));
+                } else { 
+                    await accountTypeService.UpdateAccountType(GlobalClass.accountTypeModel, GlobalClass.token);
+                    MudDialog.Close(DialogResult.Ok(1));
+                }
+                if(GlobalVariable.AMSHubConnection != null)
+                    await GlobalVariable.AMSHubConnection.InvokeAsync("SaveAccountType",GlobalClass.accountTypeModel);
+            } catch (Exception ex) {
+                Extensions.ShowAlert(ex.Message,Variant.Filled,snackBar,Severity.Info);
+            }
+        }
+    }
+    private bool IsValidated()
+    {
+        ResetValidation();
+        if(String.IsNullOrEmpty(GlobalClass.accountTypeModel.TypeName))
+            notValidAccountType = true;
+        if(notValidAccountType) {
+            GlobalVariable.errorPromptText = " incomplete field/s."; return false; }
+        if(GlobalClassList.listOfAccountTypes.Any(x=>x.TypeName == GlobalClass.accountTypeModel.TypeName && x.Id != GlobalClass.accountTypeModel.Id)) {
+            GlobalVariable.errorPromptText = " duplicate entry found for account type."; return false; }
+        return true;
+    }
+    private void ResetValidation()
+    {
+        notValidAccountType = false;
     }
 }

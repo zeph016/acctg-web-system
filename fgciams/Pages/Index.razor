@@ -14,7 +14,7 @@ Welcome to your new app.
 <SurveyPrompt Title="How is Blazor working for you?" /> *@
 
 @code {
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         navigationManager.NavigateTo($"/dashboard");
     }

@@ -47,6 +47,6 @@ namespace fgciams.domain.clsPettyCash
         public Enums.AccountingStatusEnumCategory statusCategoryId { get; set; }
         public bool ShowReport {get; set;}
         ////response code
-        public HttpResponseMessage responseMessage { get; set; }
+        public HttpResponseMessage responseMessage { get; set; } = new();
     }
 }

@@ -10,6 +10,14 @@
   width: 50% !important;
 }
 
+.width40 {
+  width: 40% !important;
+}
+
+.width35 {
+  width: 35% !important;
+}
+
 .width30 {
   width: 30% !important;
 }
@@ -20,6 +28,26 @@
 
 .width20 {
   width: 20% !important;
+}
+
+.width15 {
+  width: 15% !important;
+}
+
+.width10 {
+  width: 10% !important;
+}
+
+.width5 {
+  width: 5% !important;
+}
+
+.width300px {
+  width: 300px;
+}
+
+.width75px {
+  width: 75px;
 }
 
 .width100px {
@@ -34,10 +62,6 @@
   width: 150px;
 }
 
-.width300px {
-  width: 300px;
-}
-
 .height100 {
   height: 100% !important;
 }
@@ -45,4 +69,59 @@
 .height50 {
   height: 50% !important;
 }
-/*# sourceMappingURL=heightwidth.styles.css.map */
+
+.height50px {
+  height: 50px !important;
+}
+
+.height36px {
+  height: 36px !important;
+}
+
+.height35px {
+  height: 35px !important;
+}
+
+.height18 {
+  height: 18px;
+}
+
+.min-width75 {
+  min-width: 75%;
+}
+
+.min-width50 {
+  min-width: 50%;
+}
+
+.min-width25 {
+  min-width: 25%;
+}
+
+.min-width20 {
+  min-width: 20%;
+}
+
+.max-width60 {
+  max-width: 60%;
+}
+
+.max-width50 {
+  max-width: 50%;
+}
+
+.min-width44px {
+  min-width: 44px;
+}
+
+.height2-45rem {
+  height: 2.45rem;
+}
+
+.height2-5rem {
+  height: 2.5rem;
+}
+
+.height2-05rem {
+  height: 2.05rem;
+}/*# sourceMappingURL=heightwidth.styles.css.map */

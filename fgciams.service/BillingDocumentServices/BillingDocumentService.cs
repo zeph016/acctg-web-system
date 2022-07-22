@@ -8,8 +8,8 @@ namespace fgciams.service.BillingDocumentServices
     {
         #region Properties
         HttpClient client;
-        BillingDocumentModel billingDocumentModel;
-        List<BillingDocumentModel> billingDocumentList;
+        BillingDocumentModel billingDocumentModel = new();
+        List<BillingDocumentModel> billingDocumentList = new();
         #endregion
         public BillingDocumentService(HttpClient _client)
         {

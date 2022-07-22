@@ -1,0 +1,117 @@
+@page "/voucher/batch/trail"
+@inject IVoucherRouteBatchService audiTrailVoucherRouteService
+@inject NavigationManager navigationManager
+@inject IGlobalService globalService
+
+<div class="audittrail_container">
+        <MudGrid>
+            <MudItem xs="8">
+                <MudPaper Elevation="3">
+                    <MudCard Elevation="2">
+                        <div style="display: flex; align-items: center;">
+                            <MudIcon Size="Size.Medium" style="margin-right: 10px;" Icon="@Icons.Filled.Timeline"></MudIcon>
+                             <MudText Typo="Typo.body1">Timeline</MudText>
+                        </div>
+                        <MudButton Size="Size.Small" StartIcon="@Icons.Filled.ArrowBackIos" title="Add" class="btn btn-primary" Href="/voucher/batch/list"><MudText Typo="Typo.caption">Back</MudText></MudButton>
+                    </MudCard>
+                 
+                    <MudTimeline TimelinePosition="TimelinePosition.Start">
+                        @foreach (var item in audiTrailVoucherRoute) 
+                        {
+                          Console.WriteLine(item.Activity);
+                          <style>
+                            .timeline-container-@AcctgModel(item).StatusName .mud-timeline-item-dot-inner
+                            {
+                                background-color: @AcctgModel(item).StatusColor !important;
+                                width:18px !important;
+                                height:18px !important;
+                            }
+                        </style>
+                        <div class="timeline-container-@AcctgModel(item).StatusName">
+                            <MudTimelineItem Variant="Variant.Filled">
+                                <MudAlert Severity="Severity.Success" Style="@($"border-left:10px {AcctgModel(item).StatusColor} solid;")" Icon="@Extensions.Icon(@AcctgModel(item).StatusIcon)">
+                                    <MudText Typo="Typo.caption"><b>@item.LogDateTime.ToString("MMMM dd, yyyy hh:mm tt")</b></MudText>
+                                    <MudText Typo="Typo.subtitle2"><b>@item.Activity</b></MudText>
+                                    <MudText Typo="Typo.caption">by: &nbsp; @item.UserName</MudText>
+                                </MudAlert>
+                            </MudTimelineItem>
+                        </div>
+                        }
+                    </MudTimeline>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="4">
+                <MudPaper Elevation="3">
+                  <MudCard Elevation="2">
+                      <div class="flex-gap">
+                          <MudIcon Size="Size.Medium" Icon="@Icons.Filled.Badge"></MudIcon>
+                          <MudText Typo="Typo.body1">Batch Details</MudText>
+                      </div>
+                    </MudCard>
+
+                    <div class="payee_details">
+                        <div class="payee_details-fields d-flex">
+                                <MudDatePicker @bind-Date='@BatchDate' ReadOnly Margin='Margin.Dense' Label='Batch Date'></MudDatePicker>
+                                <MudTextField Label="Control No." @bind-Value="@GlobalClass.voucherRouteBatch.ControlNumber" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                          </div>
+
+                        <div style="margin-top: 15px">
+                            <MudTextField Label="Remarks" Lines="5" @bind-Value="@GlobalClass.voucherRouteBatch.Remarks" Variant="Variant.Outlined" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                        </div>
+
+                    </div>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </div>
+
+@code{
+  [Parameter] public Int64 liquidationId {get; set;}
+
+  string text = "";
+  private byte[] preparedByImg = new byte[] { }, approvedByImg = new byte[] {};
+  private List<VoucherRouteBatchAuditTrailModel> audiTrailVoucherRoute = new();
+  private DateTime? BatchDate;
+  
+  protected override async Task OnInitializedAsync()
+  {
+    navigationManager.LocationChanged += OnLocationChanged;
+    while(GlobalClass.currentUserAccount == null || GlobalClassList.accountingStatusList == null)
+       await Task.Delay(1);
+    Task t = Task.WhenAll(LoadAuditTrail());
+    await t;
+  }
+  private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+  {
+    Dispose();
+  }
+  public void Dispose()
+  {
+     navigationManager.LocationChanged -= OnLocationChanged;
+  }
+  private async Task LoadAuditTrail()
+  {
+    BatchDate = GlobalClass.voucherRouteBatch.BatchDate;
+    audiTrailVoucherRoute = await audiTrailVoucherRouteService.GetVoucherRouteBatchAuditTrail(GlobalClass.voucherRouteBatch.Id, GlobalClass.token);
+
+  }
+  private AccountingStatusModel AcctgModel(VoucherRouteBatchAuditTrailModel auditTrail)
+  {
+     AccountingStatusModel accountingStatusModel = new();
+        accountingStatusModel.StatusName = "Update";
+        accountingStatusModel.StatusColor = "LIME";
+        accountingStatusModel.StatusIcon = Icons.Filled.CheckCircleOutline;
+        if(auditTrail.Activity.Equals("Save Voucher Route Batch"))
+            accountingStatusModel = GlobalClassList.accountingStatusList.Find(x=> x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.VG) ?? accountingStatusModel;
+        if(auditTrail.Activity.Equals("Update Voucher Route Batch"))
+            accountingStatusModel = GlobalClassList.accountingStatusList.Find(x=> x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.VA) ?? accountingStatusModel;
+        if(auditTrail.Activity.Equals("Cancel liquidation")) 
+            accountingStatusModel = GlobalClassList.accountingStatusList.Find(x=> x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.VC) ?? accountingStatusModel;
+        return accountingStatusModel;
+  }
+  private async Task<byte[]> GetEmployeeImg(long employeeId)
+  {
+    var employeeDetail = await globalService.GetEmployeeById(employeeId, GlobalClass.token);
+    return employeeDetail.Picture;
+  }
+}

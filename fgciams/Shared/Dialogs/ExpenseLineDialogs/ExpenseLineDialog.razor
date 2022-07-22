@@ -1,5 +1,7 @@
 @inject IExpenseLineService expenseLineService
 @inject ISnackbar snackBar
+@inject IDialogService dialogService
+
 <MudDialog Class='customdialog'>
     <TitleContent>
         <div class='d-flex align-center'>
@@ -18,13 +20,14 @@
         <div class='customdialog__content-container'>
             <MudGrid Spacing='1'>
                 <MudItem xs='9'>
-                    <MudTextField @bind-Value='@GlobalClass.expenseLine.ExpenseName' Label='Expense Line' />
+                    <MudTextField @bind-Value='@GlobalClass.expenseLine.ExpenseName' Label='Expense Line' Error=@notValidExpenseName ErrorText="Required"/>
                 </MudItem>
                 <MudItem Class='d-flex align-center' xs='3'>
                     <MudCheckBox @bind-Checked='@GlobalClass.expenseLine.WithLedger' Label='With Ledger' />
                 </MudItem>
                 <MudItem xs='12'>
-                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountTypeId" Text="@GlobalClass.expenseLine.AccountTypeName" Placeholder="Account Type" AnchorOrigin="Origin.BottomCenter">
+                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountTypeId" Text="@GlobalClass.expenseLine.AccountTypeName" Placeholder="Account Type" 
+                    AnchorOrigin="Origin.BottomCenter" Error=@notValidAccountType ErrorText="Required">
                         @foreach (var accountTypes in GlobalClassList.listOfAccountTypes)
                         {
                             <MudSelectItem Value="@accountTypes.Id">@accountTypes.TypeName</MudSelectItem>
@@ -32,7 +35,8 @@
                     </MudSelect>
                 </MudItem>
                 <MudItem xs='12'>
-                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountLineTypeId" Text="@GlobalClass.expenseLine.AccountLineTypeName" Placeholder="Account Line Type" AnchorOrigin="Origin.BottomCenter">
+                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountLineTypeId" Text="@GlobalClass.expenseLine.AccountLineTypeName" Placeholder="Account Line Type" 
+                    AnchorOrigin="Origin.BottomCenter" Error=@notValidAccountLineType ErrorText="Required">
                         @foreach (var accountLineType in GlobalClassList.accountLineTypes)
                         {
                             <MudSelectItem Value="@accountLineType.Id">@accountLineType.LineTypeName</MudSelectItem>
@@ -40,7 +44,8 @@
                     </MudSelect>
                 </MudItem>
                 <MudItem xs='12'>
-                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountLineGroupId" Text="@GlobalClass.expenseLine.AccountLineGroupName" Placeholder="Account Line Group" AnchorOrigin="Origin.BottomCenter">
+                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountLineGroupId" Text="@GlobalClass.expenseLine.AccountLineGroupName" Placeholder="Account Line Group" 
+                    AnchorOrigin="Origin.BottomCenter" Error=@notValidAccountLineGroup ErrorText="Required">
                         @foreach (var accountLineGroup in GlobalClassList.accountLineGroups)
                         {
                             <MudSelectItem Value="@accountLineGroup.Id">@accountLineGroup.LineGroupName</MudSelectItem>
@@ -67,7 +72,7 @@
                     <MudTextField @bind-Value='@GlobalClass.expenseLine.Remarks' Label='Remarks' />
                 </MudItem>
                 <MudItem Class='d-flex align-center' xs='3'>
-                    <MudCheckBox @bind-Checked='@GlobalClass.expenseLine.IsActive' Label='Active' />
+                    <MudCheckBox @bind-Checked='@GlobalClass.expenseLine.IsActive' Label='Active' ReadOnly=@isReadOnly/>
                 </MudItem>
             </MudGrid>
         </div>
@@ -82,10 +87,17 @@
     [Parameter] public Color color { get; set; }
     [Parameter] public string dialogTitle { get; set; } = string.Empty;
     [Parameter] public string buttonText { get; set; } = string.Empty;
+    private bool isReadOnly = false;
+    private Enums.ActionMode currentAction {get;set;}
+    private bool notValidExpenseName,notValidAccountType,notValidAccountLineType,notValidAccountLineGroup = false;
      protected override async Task OnInitializedAsync()
     {
         if (GlobalClass.expenseLine.Id == 0)
+        {
+            isReadOnly = true;
             GlobalClass.expenseLine.IsActive = true;
+        }
+        ResetValidation();
         await Task.Delay(1);
     }   
     void Cancel() 
@@ -94,12 +106,46 @@
     }
     private async Task Submit()
     {
-        try
+        if(GlobalClass.expenseLine.IsActive == false)
         {
-            if(isNotValidate()) {
-                Extensions.ShowAlert("Cannot add new expense line. Incomplete Fields", Variant.Filled, snackBar, Severity.Error);
-            } else {
-                if(GlobalClass.expenseLine.Id == 0) 
+            currentAction = Enums.ActionMode.Deactivate;
+            await Prompt();
+        }
+        else 
+        {
+            if(IsValidated())
+            {
+                if(GlobalClass.expenseLine.Id == 0)
+                    currentAction = Enums.ActionMode.Create;
+                else
+                    currentAction = Enums.ActionMode.Update;
+                await Prompt();
+            }
+            else 
+                Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" expense line"+GlobalVariable.errorPromptText,Variant.Filled,snackBar,Severity.Error);
+        }
+    }
+    private async Task Prompt()
+    {
+        var parameters = new DialogParameters();
+        string contentText = " Expense Line";
+        string dialogTitle = currentAction + contentText;
+        parameters.Add("contentText", contentText);
+        parameters.Add("actionMode", currentAction);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled) 
+        {   
+           try
+            {
+                if(currentAction == Enums.ActionMode.Create) 
                 {
                     GlobalClass.expenseLine = await expenseLineService.AddExpenseLine(GlobalClass.expenseLine, GlobalClass.token);
                     MudDialog.Close(DialogResult.Ok(0));
@@ -107,20 +153,36 @@
                     GlobalClass.expenseLine = await expenseLineService.UpdateExpenseLine(GlobalClass.expenseLine, GlobalClass.token);
                     MudDialog.Close(DialogResult.Ok(1));
                 }
-             await GlobalVariable.AMSHubConnection.InvokeAsync("SaveExpenseLine",GlobalClass.expenseLine);
+                if(GlobalVariable.AMSHubConnection != null)
+                    await GlobalVariable.AMSHubConnection.InvokeAsync("SaveExpenseLine",GlobalClass.expenseLine);
+            }catch(Exception ex)
+            {
+                Extensions.ShowAlert(ex.Message,Variant.Filled,snackBar,Severity.Info);
             }
-        }catch(Exception ex)
-        {
-            Extensions.ShowAlert(ex.Message,Variant.Filled,snackBar,Severity.Info);
         }
     }
-    private bool isNotValidate()
+    private bool IsValidated()
     {
-        return 
-        String.IsNullOrEmpty(GlobalClass.expenseLine.ExpenseName) ||
-        GlobalClass.expenseLine.AccountTypeId == 0 ||
-        GlobalClass.expenseLine.AccountLineTypeId == 0 || 
-        GlobalClass.expenseLine.AccountLineGroupId == 0
-        ;
+        ResetValidation();
+        if(String.IsNullOrEmpty(GlobalClass.expenseLine.ExpenseName))
+            notValidExpenseName = true;
+        if(GlobalClass.expenseLine.AccountTypeId == 0)
+            notValidAccountType = true;
+        if(GlobalClass.expenseLine.AccountLineTypeId == 0)
+            notValidAccountLineType = true;
+        if(GlobalClass.expenseLine.AccountLineGroupId == 0)
+            notValidAccountLineGroup = true;
+        if(notValidExpenseName || notValidAccountType || notValidAccountLineType || notValidAccountLineGroup) {
+            GlobalVariable.errorPromptText = " incomplete field/s."; return false; }
+        if(GlobalClassList.expenseLineList.Any(x=>x.ExpenseName == GlobalClass.expenseLine.ExpenseName && x.Id != GlobalClass.expenseLine.Id)) {
+            GlobalVariable.errorPromptText = " duplicate entry found for expense name."; return false; }
+        return true;
+    }
+    private void ResetValidation()
+    {
+        notValidExpenseName = false;
+        notValidAccountType = false;
+        notValidAccountLineType = false;
+        notValidAccountLineGroup = false;
     }
 }

@@ -26,6 +26,8 @@
 @inject IAccountLineTypeService accountLineTypeService
 @inject IConfiguration config
 @inject ISnackbar Snackbar
+@inject ICheckService checkService
+@implements IDisposable
 
 <MudThemeProvider/>
 <MudDialogProvider/>
@@ -66,7 +68,7 @@
                     <ChildContent>
                         <div><hr class='horizline'></div>
                         <MudContainer Class='d-flex usercp__btncontainer' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
-                            <MudButton Class='usercp__btnsettings' Variant='Variant.Text' StartIcon='@Icons.Filled.Settings' Size='Size.Medium'>Settings</MudButton>
+                            <MudButton Class='usercp__btnsettings' Href='/configurations' Variant='Variant.Text' StartIcon='@Icons.Filled.Settings' Size='Size.Medium'>Settings</MudButton>
                             <MudSpacer/>
                             <MudButton Class='usercp__btntohub' OnClick='() => LogOut(false)' Variant='Variant.Text' StartIcon='@Icons.Filled.ExitToApp' Size='Size.Medium'>Back to Hub</MudButton>
                         </MudContainer>
@@ -77,28 +79,39 @@
             </MudExpansionPanels>
         </div>
     </MudAppBar>
-    <MudDrawer Class='main-drawer' @bind-Open="GlobalVariable.drawerOpen" Fixed='true' Elevation='0' Variant='@DrawerVariant.Mini' OpenMiniOnHover='false'>
+    <MudDrawer Class='main-drawer' @bind-Open="_drawerOpen" Fixed='true' Elevation='0' Variant='@DrawerVariant.Mini' OpenMiniOnHover='false'>
         <MudDrawerHeader Class='drawer-header'>
             <MudIconButton OnClick="@((e) => DrawerToggle())" Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" />
-            <MudText Class='drawer-header__header-text'>ACCTG MGMT SYSTEM</MudText>
+            <MudText Class='drawer-header__header-text'>ACCOUNTING INTEGRATED SYSTEM</MudText>
         </MudDrawerHeader>
         <MudNavMenu style='@drawerStyleStr'>
-            <MudNavLink Href='/dashboard' Match="NavLinkMatch.All" Icon="@Icons.Filled.Dashboard">DASHBOARD</MudNavLink>    
+            <MudNavLink Href='/dashboard' Match="NavLinkMatch.All" Icon="@Icons.Filled.Dashboard">
+                <MudText Class='fweight500 fontpad-t-2px' Typo='Typo.body2'>DASHBOARD</MudText>
+            </MudNavLink>    
             <MudNavGroup Title='PETTY CASH' Icon='fa-solid fa-coins' HideExpandIcon='true' style='@HidePettyCash'>
                 <MudNavLink Href='/pettycash/create' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck" style='@HideEntry'>PETTY CASH ENTRY</MudNavLink>
                 <MudNavLink Href='/pettycash-list' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList" >PETTY CASH LIST</MudNavLink>
             </MudNavGroup>
             <MudNavGroup Title='LIQUIDATION' Icon='@Icons.Filled.ReceiptLong' HideExpandIcon='true' style='@HideLiquidation'>
-                <MudNavLink Href='/liquidation' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck" style='@HideEntry'>LIQUIDATION ENTRY</MudNavLink>
-                <MudNavLink Href='/liquidationlist' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList">LIQUIDATION LIST</MudNavLink>
+                <MudNavLink Href='/liquidation/create' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck" style='@HideEntry'>LIQUIDATION ENTRY</MudNavLink>
+                <MudNavLink Href='/liquidation/list' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList">LIQUIDATION LIST</MudNavLink>
             </MudNavGroup>
             <MudNavGroup Title='REQUEST FOR PAYMENT' Icon='@Icons.Filled.Payments' HideExpandIcon='true' style='@HideRFP'>
                 <MudNavLink Href='/requestpayment/create' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck"style='@HideEntry'>RFP ENTRY</MudNavLink>
-                <MudNavLink Href='/requestpaymentlist' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList">RFP LIST</MudNavLink>
+                <MudNavLink Href='/requestpayment/list' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList">RFP LIST</MudNavLink>
             </MudNavGroup>
-            <MudNavGroup Title='VOUCHER' Icon='@Icons.Filled.ReceiptLong' HideExpandIcon='true' style='@HideVoucher'>
+            <MudNavGroup Title='VOUCHER' Icon='fa-solid fa-receipt' HideExpandIcon='true' style='@HideVoucher'>
                 <MudNavLink Href='/voucher/create' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck" style='@HideEntry'>VOUCHER ENTRY</MudNavLink>
                 <MudNavLink Href='/voucher/list' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList" >VOUCHER LIST</MudNavLink>
+            </MudNavGroup>
+            <MudNavGroup Title='CHECK WRITER' Icon='@Icons.Filled.CreditScore' HideExpandIcon='true' style='@HideVoucher'>
+                <MudNavLink Href='/check/create' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck" style='@HideEntry'>CHECK ENTRY</MudNavLink>
+                <MudNavLink Href='/check/list' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList" style='@HideEntry'>CHECK LIST</MudNavLink>
+            </MudNavGroup>
+            <MudNavGroup Title='VOUCHER ROUTE' Icon='fa-solid fa-route' HideExpandIcon='true' style='@HideVoucher'>
+                <MudNavLink Href='/voucher/route/list' Match="NavLinkMatch.All" Icon="@Icons.Filled.Route" style='@HideEntry'>VOUCHER ROUTING</MudNavLink>
+                <MudNavLink Href='/voucher/batch' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck">BATCH ENTRY</MudNavLink>
+                <MudNavLink Href='/voucher/batch/list' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList" >BATCH LIST</MudNavLink>
             </MudNavGroup>
             <MudNavGroup Class='expandheight-navgroup' Title='CONFIGURATION' Icon='@Icons.Filled.Settings' HideExpandIcon='true' style='@HideConfiguration'>
                 <MudNavLink Href='/accounting-status' Match="NavLinkMatch.All" Icon="@Icons.Filled.FactCheck">ACCOUNTING STATUS</MudNavLink>
@@ -124,11 +137,16 @@
             </MudNavGroup>
         </MudNavMenu>
         <MudSpacer />
-        <MudImage Class='drawer-system-icon' Src='@systemIconSource' style='@drawerStyleStr' />
+        <MudNavMenu Class='pb-2'>
+            <MudNavLink OnClick='NavigateToConfig' Match='NavLinkMatch.All' Icon='@Icons.Filled.Settings'>
+                <MudText Class='fweight500 fontpad-t-2px' Typo='Typo.body2'>SETTINGS</MudText>
+            </MudNavLink>
+        </MudNavMenu>
+        <MudImage @onclick='(() => navigationManager.NavigateTo($"/test"))' Class='drawer-system-icon' Src='@systemIconSource' style='@drawerStyleStr' />
     </MudDrawer>
     <MudMainContent>
         @* <MudContainer Class='main-body' Fixed='true'>
-            @Body
+            @Body@
         </MudContainer> *@
          <div Class='main-body overflow-hidden'>
             @Body
@@ -151,18 +169,33 @@
 
 @code {
     #region Properties
-    private HubConnection signalHubConnection;
+    private HubConnection signalHubConnection = default!;
     private string? systemIconSource = $"images/icons/file-invoice.svg", drawerStyleStr = "display: none;", 
     userCPExpPanelStyleStr = "background-color: #fafafa;", userCPInfoStyleStr = "width: 250px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;",
     currentUrl, HideRFP = "", HidePC = "", HideLiquidation="", HideVoucher = "", HideConfiguration = "", HidePettyCash = "", HideEntry;
-    private bool _isFullScreen, _hideExpandDrawerIcon, dataFetched, showLoadingOverlay = true, 
-    userCPOpen, userCPborderVal;
+    private bool _drawerOpen, _isFullScreen, _hideExpandDrawerIcon, dataFetched, showLoadingOverlay = true, 
+    userCPOpen, userCPborderVal, isConfigPage;
     private int userCPElevationVal = 0;
     ElementReference timeElement;
     #endregion
 
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        if(navigationManager.Uri.Contains("configurations"))
+        {
+            Console.WriteLine(navigationManager.Uri);
+            isConfigPage = true;
+            _drawerOpen = false;
+        }
+        else
+        {
+            _drawerOpen = true;
+        }
+        await base.SetParametersAsync(parameters);
+    }
     protected override async Task OnInitializedAsync()
     {
+        navigationManager.LocationChanged += OnLocationChanged;
         currentUrl = navigationManager.Uri;
         Console.WriteLine(navigationManager.Uri);
         GlobalClass.isUserAuth = await Extensions.ValidateToken(userAccountService, localStorageService, jsRuntimeService);
@@ -201,8 +234,12 @@
         LoadBillingDocs(), LoadBanks(), LoadRequestTypes(),
         LoadPayees(), LoadPayeeCategories(), LoadChargingLines(),
         LoadSubContractors(), LoadSubConGenInfos(), LoadSubConPositions(), LoadNotRFPLiquidation(),
-        LoadExpenseLine(), LoadAccountLineGroup(),LoadAccountType(),LoadAccountLineType(),SignalRHubConnection());
+        LoadExpenseLine(), LoadAccountLineGroup(),LoadAccountType(),LoadAccountLineType(),SignalRHubConnection(),LoadCheck());
         await t;
+    }
+    private async Task LoadCheck()
+    {
+      GlobalClassList.listOfChecks = await checkService.LoadCheck(new FilterParameter(){isActive=true}, GlobalClass.token);
     }
     private async Task LoadAccountType()
     {
@@ -332,7 +369,7 @@
     }
     private void DrawerToggle()
     {
-        GlobalVariable.drawerOpen = !GlobalVariable.drawerOpen;
+        _drawerOpen = !_drawerOpen;
         GlobalVariable.hideExpandIcon = !GlobalVariable.hideExpandIcon;
     }
 
@@ -374,21 +411,16 @@
     {
         drawerStyleStr = "display: block;";
     }
-    private void NavigateToAccountingStatus(){
-        navigationManager.NavigateTo("/accountingStatusPage");
-    }
-    private void NavigateToModeOfPayment(){
-        navigationManager.NavigateTo("/modeOfPaymentPage");
-    }
-    private void NavigateToDivision(){
-        navigationManager.NavigateTo("/divisionPage");
-    }
-    private void NavigateToPayeeCategory(){
-        navigationManager.NavigateTo("/payeeCategoryPage");
-    }
     private void NavigateToPage(string location)
     {
         navigationManager.NavigateTo($"{location}");
+    }
+
+    private void NavigateToConfig()
+    {
+        _drawerOpen = false;
+        isConfigPage = true;
+        navigationManager.NavigateTo($"/configurations");
     }
 
     private void PageTitle(string pageTitle)
@@ -426,5 +458,17 @@
         HideConfiguration = "";
         break;
       }
+    }
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        if (isConfigPage) {
+            isConfigPage = !isConfigPage;
+            _drawerOpen = false;
+        }
+    }
+    
+    void IDisposable.Dispose()
+    {
+        navigationManager.LocationChanged -= OnLocationChanged;
     }
 }

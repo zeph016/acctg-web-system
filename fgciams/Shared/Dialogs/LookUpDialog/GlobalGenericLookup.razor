@@ -183,7 +183,8 @@
     private async Task<IEnumerable<DivisionModel>> SearchDivision(string searchText)
     {
       var division = GlobalClassList.divisionList;
-      return await Task.FromResult(division.Where(x=>x.shortcutName.Contains(searchText, StringComparison.InvariantCultureIgnoreCase)).ToList());
+      return await Task.FromResult(division.Where(x=>x.divisionName.Contains(searchText, StringComparison.InvariantCultureIgnoreCase) 
+      || x.shortcutName.Contains(searchText, StringComparison.InvariantCultureIgnoreCase)).ToList());
     }
     private async Task<IEnumerable<Project>> SearchCharging(string chargingName)
     {

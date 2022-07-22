@@ -98,7 +98,7 @@
     </DialogContent>
 </MudDialog>
 @code{
-    [CascadingParameter] MudDialogInstance dialogInstance { get; set; }
+    [CascadingParameter] MudDialogInstance? dialogInstance { get; set; }
     [Parameter] public Int64 pettyCashId { get; set; }
     private Project Payee {get;set;} = new Project();
     private PettyCashReport report {get;set;} = new PettyCashReport();
@@ -121,12 +121,12 @@
     {
         return await globalService.LoadAllEmployee(new FilterParameter(){IsLookUp=true,Name=employeeName}, GlobalClass.token);
     }
-    private async Task SavePettyCash()
-    { 
+    private void SavePettyCash()
+    {
         if(isValidated()){
             MapProperties();
             NavigationManager.NavigateTo($"/pettyCashReport/{pettyCashId}");
-            dialogInstance.Close(DialogResult.Ok(GlobalClass.pettyCash));
+            dialogInstance?.Close(DialogResult.Ok(GlobalClass.pettyCash));
         }else{
             Extensions.ShowAlert("All Fields are required!" ,Variant.Filled,Snackbar,Severity.Error);
         }
@@ -167,7 +167,7 @@
     private void Cancel()
     {
         GlobalClass.pettyCash = new();
-        dialogInstance.Cancel();
+        dialogInstance?.Cancel();
     }
     bool isValidated()
     {

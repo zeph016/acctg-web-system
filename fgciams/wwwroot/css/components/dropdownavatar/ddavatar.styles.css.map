@@ -1,9 +1,1 @@
-{
-    "version": 3,
-    "mappings": "AAAA,AAAA,SAAS,CAAC;EACN,WAAW,EAAE,MAAM;EACnB,OAAO,EAAE,IAAI;EACb,GAAG,EAAE,IAAI;CACZ",
-    "sources": [
-        "ddavatar.styles.scss"
-    ],
-    "names": [],
-    "file": "ddavatar.styles.css"
-}
+{"version":3,"sources":["ddavatar.styles.scss","ddavatar.styles.css"],"names":[],"mappings":"AAAA;EACI,mBAAA;EACA,aAAA;EACA,SAAA;ACCJ","file":"ddavatar.styles.css"}

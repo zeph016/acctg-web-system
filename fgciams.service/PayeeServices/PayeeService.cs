@@ -6,8 +6,8 @@ using System.Net.Http.Headers;
 namespace fgciams.service.PayeeServices{
     public class PayeeService: IPayeeService
     {
-        List<PayeeModel> payeeList;
-        PayeeModel payeeModel;
+        List<PayeeModel> payeeList = new();
+        PayeeModel payeeModel = new();
         HttpClient client;
         public PayeeService(HttpClient _client)
         {

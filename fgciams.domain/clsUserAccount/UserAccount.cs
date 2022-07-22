@@ -36,7 +36,7 @@ namespace fgciams.domain.clsUserAccount
         public string StatusName { get; set; } = string.Empty;
         public DateTime DateHired { get; set; } 
         public string Address { get; set; } = string.Empty;
-        public byte[] Picture { get; set; } = default!;
+        public byte[] Picture { get; set; } = new byte[]{};
         public string EmployeeName
         {
             get

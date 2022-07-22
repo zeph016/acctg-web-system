@@ -1,35 +1,20 @@
 .dashboardpage .mud-paper {
   height: 100%;
 }
-
 .dashboardpage__grid {
   height: calc(100vh - 110px);
-  display: -ms-grid;
   display: grid;
-  -ms-grid-columns: 1fr 0.25fr;
-      grid-template-columns: 1fr 0.25fr;
-  -ms-grid-rows: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
-  gap: .5rem;
-      grid-template-areas: 'topleft side' 'bottomleft side';
+  grid-template-columns: 1fr 0.25fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 0.5rem;
+  grid-template-areas: "topleft side" "bottomleft side";
 }
-
 .dashboardpage .topleft {
-  -ms-grid-row: 1;
-  -ms-grid-column: 1;
   grid-area: topleft;
 }
-
 .dashboardpage .bottomleft {
-  -ms-grid-row: 2;
-  -ms-grid-column: 1;
   grid-area: bottomleft;
 }
-
 .dashboardpage .side {
-  -ms-grid-row: 1;
-  -ms-grid-row-span: 2;
-  -ms-grid-column: 2;
   grid-area: side;
-}
-/*# sourceMappingURL=dashboard.styles.css.map */
+}/*# sourceMappingURL=dashboard.styles.css.map */

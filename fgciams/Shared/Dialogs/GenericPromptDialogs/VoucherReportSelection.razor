@@ -1,0 +1,47 @@
+<MudDialog Class='customdialog'>
+    <DialogContent>
+        <div Class='customdialog__content-container'>
+          <MudText>Show Report</MudText>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
+        <MudButton OnClick="Submit" Variant='Variant.Filled' Color="@color">@buttonText</MudButton>
+    </DialogActions>
+</MudDialog>
+@code{
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = new MudDialogInstance();
+    [Parameter] public string dialogTitle { get; set; } = string.Empty;
+    [Parameter] public string contentText { get; set; } = string.Empty;
+    [Parameter] public string buttonText { get; set; } = string.Empty;
+    [Parameter] public Enums.ActionMode actionMode { get; set; }
+    private Color color { get; set; }
+    private bool dataFetched;
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+
+        await base.SetParametersAsync(parameters);
+    }
+
+    protected override void OnInitialized()
+    {
+        CompletedFetch();
+    }
+
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        Task.Run(StateHasChanged);
+    }
+
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

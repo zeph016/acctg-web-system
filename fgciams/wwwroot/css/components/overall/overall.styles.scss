@@ -1,20 +1,24 @@
 .text-search {
-    .mud-input-control-input-container { width: 50%; }
-    .mud-input { margin-top: 0px !important; }
+  .mud-input-control-input-container {
+    width: 50%;
+  }
+  .mud-input {
+    margin-top: 0px !important;
+  }
 }
 
 .childnavgroup {
-    button { padding: 8px 16px !important; }
+  button {
+    padding: 8px 16px !important;
+  }
 }
 
-.min-toolbar { padding: 0px 5px; }
+.min-toolbar {
+  padding: 0px 5px;
+}
 
 .txtlbl-bold {
-    .mud-input-label { font-weight: bold !important; }
-}
-
-.txt-overflow-ellipsis {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .mud-input-label {
+    font-weight: bold !important;
+  }
 }

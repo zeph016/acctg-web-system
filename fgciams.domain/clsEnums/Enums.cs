@@ -91,7 +91,15 @@ namespace fgciams.domain.clsEnums
             [Description("Voucher Approved")]
             VA = 12,
             [Description("Voucher Cancelled")]
-            VC = 13
+            VC = 13,
+            [Description("Check Issued")]
+            CI = 14,
+            [Description("Check Released")]
+            CR = 15,
+            [Description("Check Cleared")]
+            CCLRD = 16,
+            [Description("Check Cancelled")]
+            CC = 17,
         }
         public enum RFPDetailTypeId
         {
@@ -125,7 +133,9 @@ namespace fgciams.domain.clsEnums
             [Description("PO")]
             PO = 8,
             [Description("RFP Voucher")]
-            RFPVoucher = 9
+            RFPVoucher = 9,
+            [Description("Voucher")]
+            Voucher = 10
 
         }
         public enum ActionMode : byte
@@ -141,7 +151,17 @@ namespace fgciams.domain.clsEnums
             [Description("Delete")]
             Delete = 4,
             [Description("Receive")]
-            Receive = 5
+            Receive = 5,
+            [Description("Void")]
+            Void = 6,
+            [Description("Issue")]
+            Issued = 6,
+            [Description("Release")]
+            Released = 7,
+            [Description("Clear")]
+            Cleared = 8,
+            [Description("Deactivate")]
+            Deactivate = 9,
         }
         public enum AccountReportGroup : byte
         {

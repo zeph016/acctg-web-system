@@ -1,58 +1,63 @@
 .voucherpage {
-    &__grid {
-        display: grid; 
-        grid-template-columns: 1fr 1fr 1fr 1fr; 
-        grid-template-rows: 40px 40px 40px 40px 20vh 20vh 40px 0.5fr; 
-        gap: 0px 0px; 
-        grid-template-areas: 
-          "voucher-header voucher-header voucher-header voucher-date"
-          "voucher-payee voucher-payee voucher-payee voucher-status"
-          "voucher-rfp voucher-rfp voucher-rfp voucher-rfp"
-          "voucher-desc voucher-desc voucher-remarks voucher-remarks"
-          "voucher-details voucher-details voucher-details voucher-details"
-          "voucher-details voucher-details voucher-details voucher-details"
-          "voucher-totalamt voucher-totalamt voucher-totalamt voucher-totalamt"
-          "voucher-signatories voucher-signatories voucher-signatories voucher-signatories"; 
-    }
-    .voucher-header { grid-area: voucher-header; }
-    .voucher-date { grid-area: voucher-date; }
-    .voucher-payee { grid-area: voucher-payee; }
-    .voucher-status { grid-area: voucher-status; }
-    .voucher-rfp { grid-area: voucher-rfp; }
-    .voucher-desc { grid-area: voucher-desc; }
-    .voucher-remarks { grid-area: voucher-remarks; }
-    .voucher-details { grid-area: voucher-details; }
-    .voucher-totalamt { grid-area: voucher-totalamt; }
-    .voucher-signatories { grid-area: voucher-signatories; }
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 130px 1fr;
+    grid-template-rows: 40px 50px 40px 40px calc(100vh - 290px);
+    gap: 0px 0px;
+    grid-template-areas:
+      "voucher-header voucher-header voucher-header voucher-header voucher-header"
+      "voucher-payee voucher-payee voucher-payee voucher-status voucher-status"
+      "voucher-rfp voucher-rfp voucher-rfp voucher-rfp voucher-rfp"
+      "voucher-desc voucher-desc voucher-remarks voucher-remarks voucher-remarks"
+      "voucher-details voucher-details voucher-details voucher-details voucher-details";
+  }
+  .voucher-header {
+    grid-area: voucher-header;
+  }
+  .voucher-payee {
+    grid-area: voucher-payee;
+  }
+  .voucher-status {
+    grid-area: voucher-status;
+  }
+  .voucher-rfp {
+    grid-area: voucher-rfp;
+  }
+  .voucher-desc {
+    grid-area: voucher-desc;
+  }
+  .voucher-remarks {
+    grid-area: voucher-remarks;
+  }
+  .voucher-details {
+    grid-area: voucher-details;
+  }
 
-    .voucher-header, .voucher-date, .voucher-payee, .voucher-status, .voucher-rfp,
-    .voucher-desc, .voucher-remarks, .voucher-details, .voucher-totalamt,
-    .voucher-signatories { border-top: solid thin lightgray; }
+  .voucher-header,
+  .voucher-payee,
+  .voucher-status,
+  .voucher-rfp,
+  .voucher-desc,
+  .voucher-remarks,
+  .voucher-details {
+    border-top: solid thin lightgray;
+  }
 
-    .voucher-header, .voucher-payee, .voucher-rfp, .voucher-desc, .voucher-details,
-    .voucher-totalamt ,.voucher-signatories { 
-        border-right: solid thin lightgray;
-        border-left: solid thin lightgray; 
-    }
+  .voucher-header,
+  .voucher-payee,
+  .voucher-rfp,
+  .voucher-desc,
+  .voucher-details {
+    border-right: solid thin lightgray;
+    border-left: solid thin lightgray;
+  }
 
-    .voucher-date, .voucher-status, .voucher-remarks { border-right: solid thin lightgray; }
-    .voucher-signatories { border-bottom: solid thin lightgray; }
+  .voucher-status,
+  .voucher-remarks {
+    border-right: solid thin lightgray;
+  }
 
-    &__vdetailgrid {
-        display: grid; 
-        grid-template-columns: 100px 1fr; 
-        grid-template-rows: 40px 1fr 40px; 
-        gap: 0px 0px; 
-        grid-template-areas: 
-          "vdetail-lblcharge vdetail-charge"
-          "vdetail-lbldesc vdetail-desc"
-          "vdetail-lblamt vdetail-amt";
-    }
-    .vdetail-lblcharge { grid-area: vdetail-lblcharge; }
-    .vdetail-charge { grid-area: vdetail-charge; }
-    .vdetail-lbldesc { grid-area: vdetail-lbldesc; }
-    .vdetail-desc { grid-area: vdetail-desc; }
-    .vdetail-lblamt { grid-area: vdetail-lblamt; }
-    .vdetail-amt { grid-area: vdetail-amt; }
+  .voucher-details {
+    border-bottom: solid thin lightgray;
+  }
 }
-

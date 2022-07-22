@@ -1,11 +1,9 @@
 .txtdate-noline .mud-input-slot {
   text-align: right !important;
 }
-
 .txtdate-noline .mud-input.mud-input-underline::before {
   border-bottom: 0px !important;
 }
-
 .txtdate-noline .mud-input.mud-input-underline::after {
   border-bottom: 0px !important;
 }
@@ -33,8 +31,13 @@
 .txt-top-0 {
   margin-top: 0px !important;
 }
-
-.txt-top-0 .mud-input-control, .txt-top-0 .mud-input {
+.txt-top-0 .mud-input-control,
+.txt-top-0 .mud-input {
   margin-top: 0px !important;
 }
-/*# sourceMappingURL=textfieldmods.styles.css.map */
+
+.txt-oflow-el {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}/*# sourceMappingURL=textfieldmods.styles.css.map */

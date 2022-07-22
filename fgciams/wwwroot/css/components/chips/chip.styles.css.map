@@ -1,9 +1,1 @@
-{
-    "version": 3,
-    "mappings": "AAAA,AAAA,cAAc,CAAC;EAAE,aAAa,EAAE,cAAc;CAAI;;AAClD,AAAA,cAAc,CAAC;EAAE,aAAa,EAAE,cAAc;CAAI;;AAClD,AAEQ,eAFO,CACX,SAAS,CACL,iBAAiB,CAAC;EAAE,cAAc,EAAE,SAAS;CAAI",
-    "sources": [
-        "chip.styles.scss"
-    ],
-    "names": [],
-    "file": "chip.styles.css"
-}
+{"version":3,"sources":["chip.styles.scss","chip.styles.css"],"names":[],"mappings":"AAAA;EAAiB,6BAAA;ACEjB;;ADDA;EAAiB,6BAAA;ACKjB;;ADFQ;EAAoB,yBAAA;ACM5B","file":"chip.styles.css"}

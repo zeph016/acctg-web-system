@@ -23,27 +23,36 @@
                 case 0:
                     <MudGrid Spacing='1'>
                         <MudItem xs='12'>
-                            <MudTextField @bind-Value='@GlobalClass.accountLineGroup.LineGroupName' Label='Group Name' />
+                            <MudTextField @bind-Value='@GlobalClass.accountLineGroup.LineGroupName' Label='Group Name' Error=@reqGName ErrorText='Group name is required' />
                         </MudItem>
                         <MudItem xs='9'>
                             <MudTextField @bind-Value='@GlobalClass.accountLineGroup.Remarks' Label='Remarks' />
                         </MudItem>
+                        @if(GlobalClass.accountLineGroup.Id != 0) {
+
                         <MudItem Class='d-flex align-center' xs='3'>
                             <MudCheckBox @bind-Checked='@GlobalClass.accountLineGroup.IsActive' Label='Active' />
                         </MudItem>
+
+                        }
+ 
                     </MudGrid>
                     break;
                 case 1:
                     <MudGrid Spacing='1'>
                         <MudItem xs='12'>
-                            <MudTextField @bind-Value='@GlobalClass.accountLineType.LineTypeName' Label='Type Name' />
+                            <MudTextField @bind-Value='@GlobalClass.accountLineType.LineTypeName' Label='Type Name'  Error=@reqTName ErrorText='Type name is required'/>
                         </MudItem>
                         <MudItem xs='9'>
                             <MudTextField @bind-Value='@GlobalClass.accountLineType.Remarks' Label='Remarks' />
                         </MudItem>
+                        @if(GlobalClass.accountLineType.Id != 0) {
+
                         <MudItem Class='d-flex align-center' xs='3'>
                             <MudCheckBox @bind-Checked='@GlobalClass.accountLineType.IsActive' Label='Active' />
                         </MudItem>
+                        
+                        }
                     </MudGrid>
                     break;
             }
@@ -62,6 +71,7 @@
     [Parameter] public string dialogTitle { get; set; } = string.Empty;
     [Parameter] public string buttonText { get; set; } = string.Empty;
     [Parameter] public int accountLine { get; set; } = 0;
+    private bool reqGName , reqTName;
     protected override async Task OnInitializedAsync()
     {
         if (GlobalClass.accountLineType.Id == 0 || GlobalClass.accountLineGroup.Id == 0)
@@ -86,8 +96,13 @@
                 {
                     try
                     {
+                      if(ValidateEntries()) {
+
                         GlobalClass.accountLineGroup = await accountLineService.UpdateAccountLineGroup(GlobalClass.accountLineGroup, GlobalClass.token);
                         MudDialog.Close(DialogResult.Ok(1));
+
+                      } else Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbar, Severity.Error);
+  
                     }
                     catch (System.Exception ex)
                     {
@@ -99,9 +114,13 @@
                 {
                     try
                     {
+                       if(ValidateEntries()) {
+
                         GlobalClass.accountLineGroup = await accountLineService.AddAccountLineGroup(GlobalClass.accountLineGroup, GlobalClass.token);
-                        GlobalClassList.accountLineGroups.Add(GlobalClass.accountLineGroup);
                         MudDialog.Close(DialogResult.Ok(0));
+
+                       } else Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbar, Severity.Error);
+ 
                     }
                     catch (System.Exception ex)
                     {
@@ -109,8 +128,8 @@
                         MudDialog.Close();
                     }
                 }
-
-                await GlobalVariable.AMSHubConnection.InvokeAsync("SaveAccountLineGroup", GlobalClass.accountLineGroup);
+                if(GlobalVariable.AMSHubConnection != null && ValidateEntries())
+                    await GlobalVariable.AMSHubConnection.InvokeAsync("SaveAccountLineGroup", GlobalClass.accountLineGroup);
 
                 break;
             case 1:
@@ -118,8 +137,13 @@
                 {
                     try
                     {
+                      if(ValidateEntries()) {
+                        
                         GlobalClass.accountLineType = await accountLineTypeService.UpdateAccountLineType(GlobalClass.accountLineType, GlobalClass.token);
                         MudDialog.Close(DialogResult.Ok(1));
+
+                      } else Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbar, Severity.Error);
+ 
                     }
                     catch (System.Exception ex)
                     {
@@ -133,9 +157,13 @@
                 {
                     try
                     {
+                      if(ValidateEntries()) {
+
                         GlobalClass.accountLineType = await accountLineTypeService.AddAccountLineType(GlobalClass.accountLineType, GlobalClass.token);
                         GlobalClassList.accountLineTypes.Add(GlobalClass.accountLineType);
                         MudDialog.Close(DialogResult.Ok(0));
+
+                      } else Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbar, Severity.Error);
                     }
                     catch (System.Exception ex)
                     {
@@ -144,10 +172,29 @@
                         MudDialog.Close();
                     }
                 }
-
-                await GlobalVariable.AMSHubConnection.InvokeAsync("SaveAccountLineType", GlobalClass.accountLineGroup);
+                if(GlobalVariable.AMSHubConnection != null)
+                    await GlobalVariable.AMSHubConnection.InvokeAsync("SaveAccountLineType", GlobalClass.accountLineGroup);
 
                 break;
         }
+    }
+    private bool ValidateEntries()
+    {
+      bool valid = true;
+      switch(accountLine) {
+        case 0 : 
+             if(string.IsNullOrEmpty(GlobalClass.accountLineGroup.LineGroupName)) {
+                reqGName = true;
+                valid = false;
+              } else reqGName = false;
+              break;
+              case 1 :
+                if(string.IsNullOrEmpty(GlobalClass.accountLineType.LineTypeName)) {
+                  reqTName = true;
+                  valid = false;
+                } else reqTName = false;
+                break;
+      }
+      return valid;
     }
 }

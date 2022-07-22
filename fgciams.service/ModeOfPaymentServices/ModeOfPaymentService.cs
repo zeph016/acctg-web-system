@@ -14,8 +14,8 @@ namespace fgciams.service.ModeOfPaymentServices
     public class ModeOfPaymentService : IModeOfPaymentService
     {
         #region Properties
-        List<ModeOfPaymentModel> modeOfPaymentList;
-        ModeOfPaymentModel modeOfPaymentModel;
+        List<ModeOfPaymentModel> modeOfPaymentList = new();
+        ModeOfPaymentModel modeOfPaymentModel = new();
         HttpClient client;
         #endregion
         #region Constructor
@@ -36,7 +36,7 @@ namespace fgciams.service.ModeOfPaymentServices
                 {
                     modeOfPaymentList = await httpResponse.Content.ReadAsAsync<List<ModeOfPaymentModel>>();
                 }
-                return modeOfPaymentList.OrderBy(x => x.ModeName).ToList();
+                return modeOfPaymentList;
             }
             catch (Exception ex)
             {

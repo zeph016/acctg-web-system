@@ -12,7 +12,11 @@
 @using Blazored.TextEditor
 @using System.Reflection
 @using Microsoft.AspNetCore.SignalR.Client
-@using fgciams.Pages.AccountingStatusPage;
+@using fgciams.Pages.ModulePages
+@using fgciams.Pages.ModulePages.PettyCashPage
+@using fgciams.Pages.ModulePages.CheckWriterPage
+@using fgciams.Pages.ConfigurationPages.AccountingStatusPage
+@using fgciams.Pages.ConfigurationPages.AccountingLinePage
 
 @using Blazored.Typeahead
 @using fgciams  
@@ -52,6 +56,9 @@
 @using fgciams.domain.clsAccountType
 @using fgciams.domain.clsAccountingLine
 @using fgciams.domain.common
+@using fgciams.Components.CheckListComponents
+@using fgciams.domain.clsCheck
+@using fgciams.domain.clsVoucherRouteBatch
 
 @using fgciams.service.UserAccountServices
 @using fgciams.service.AccountingStatusServices
@@ -76,3 +83,6 @@
 @using fgciams.service.AccountTypeServices
 @using fgciams.service.AccountingLineServices
 @using fgciams.service.AccountLineTypeServices
+@using fgciams.service.CheckServices
+@using fgciams.service.VoucherRouteBatchServices
+

@@ -30,11 +30,20 @@ namespace fgciams.domain.clsFilterParameter
         public bool IsPreparedBy { get; set; }
         public Int64 PreparedById { get; set; }
         public bool IsRequestCategory { get; set; }
-        public string RequestCategoryId { get; set; }
+        public string RequestCategoryId { get; set; } = string.Empty;
         public bool IsRequestType{ get; set; }
-        public string RequestTypeId { get; set; }
+        public string RequestTypeId { get; set; } = string.Empty;
         public bool IsModeOfPayment { get; set; }
-        public string ModeOfPaymentId { get; set; }
+        public string ModeOfPaymentId { get; set; } = string.Empty;
+        public bool IsLiqudationControlNumber { get; set; }
+        public string LiquidationControlNumber { get; set; } = string.Empty;
+        public bool IsPOControlNumber { get; set; }
+        public string POControlNumber { get; set; } = string.Empty;
+        public bool IsPOBillingControlNumber { get; set; }
+        public string POBillingControlNumber { get; set; } = string.Empty;
+        public bool IsPeriodDate { get; set; }
+        public DateTime PeriodDateFrom { get; set; }
+        public DateTime PeriodToFrom { get; set; }
         //Others
         public int PageSize { get; set; }
         public int PageNo { get; set; }
@@ -45,13 +54,17 @@ namespace fgciams.domain.clsFilterParameter
                 return PageSize * PageNo;
             }
         }
-        public string SortColumnName { get; set; }
-        public string SortDirection { get; set; }
+        public string SortColumnName { get; set; } = string.Empty;
+        public string SortDirection { get; set; } = string.Empty;
         //Accounting
         public Enums.AccountingAccessLevel AccountingAccessLevel { get; set; }
         public bool IsVoid { get; set; }
         public bool IsRequestor { get; set; }
         public Int64 RequestorId { get; set; }
+        public bool IsBank { get; set; }
+        public string BankId { get; set; }
+        public bool IsCheckNumber { get; set; }
+        public string CheckNumber { get; set; }
         public FilterParameter()
         {
             isActive = true;
@@ -72,6 +85,10 @@ namespace fgciams.domain.clsFilterParameter
             AccountingStatusId = string.Empty;
             RequestorId = 0;
             IsControlNumber = false;
+            IsBank = false;
+            BankId = string.Empty;
+            IsCheckNumber = false;
+            CheckNumber = "";
         }
     }
 }

@@ -1,9 +1,1 @@
-{
-    "version": 3,
-    "mappings": "AACA,AAAA,eAAe,CAAC;EACZ,UAAU,EAAE,MAAM;CAIrB;;AALD,AAEI,eAFW,CAEX,cAAc,CAAC;EACX,UAAU,EAAE,MAAM;CACrB",
-    "sources": [
-        "fa-styles.scss"
-    ],
-    "names": [],
-    "file": "fa-styles.css"
-}
+{"version":3,"sources":["fa-styles.scss","fa-styles.css"],"names":[],"mappings":"AACA;EACI,kBAAA;ACAJ;ADCI;EACI,kBAAA;ACCR","file":"fa-styles.css"}

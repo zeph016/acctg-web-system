@@ -97,6 +97,7 @@ namespace fgciams.service.RequestTypeServices
        }
        catch (System.Exception ex)
        {
+          Console.WriteLine(ex.Message);
           throw;
        }
     }

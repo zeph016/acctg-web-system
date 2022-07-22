@@ -190,6 +190,7 @@ namespace fgciams.service.LiquidationServices
             }
             catch (System.Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 throw;
             }
         }
@@ -210,6 +211,7 @@ namespace fgciams.service.LiquidationServices
             }
             catch (System.Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 throw;
             }
         }
@@ -230,6 +232,7 @@ namespace fgciams.service.LiquidationServices
             }
             catch (System.Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 throw;
             }
         }

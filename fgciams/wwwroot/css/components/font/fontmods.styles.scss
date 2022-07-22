@@ -1,46 +1,137 @@
-.text-center { text-align: center !important; }
-.text-right { text-align: right !important; }
-.text-left { text-align: left !important; }
+.text-center {
+  text-align: center !important;
+}
+.text-right {
+  text-align: right !important;
+}
+.text-left {
+  text-align: left !important;
+}
 
-.font-bold { font-weight: bold !important; }
+.font-bold {
+  font-weight: bold !important;
+}
 
-.font10 { font-size: 10px !important; }
-.font12 { font-size: 12px !important; }
-.font14 { font-size: 14px !important; }
-.font16 { font-size: 16px !important; }
+.font8 {
+  font-size: 8px !important;
+}
+.font10 {
+  font-size: 10px !important;
+}
+.font12 {
+  font-size: 12px !important;
+}
+.font14 {
+  font-size: 14px !important;
+}
+.font16 {
+  font-size: 16px !important;
+}
+.font20 {
+  font-size: 20px !important;
+}
 
-.font12-txtfield { .mud-input { font-size: 12px; } }
-.font14-txtfield { .mud-input { font-size: 14px; } }
+.font-1-1rem {
+  font-size: 1.1rem !important;
+}
+.font-1-2rem {
+  font-size: 1.2rem !important;
+}
+.font10-txtfield {
+  .mud-input {
+    font-size: 10px;
+  }
+}
+.font12-txtfield {
+  .mud-input {
+    font-size: 12px;
+  }
+}
+.font14-txtfield {
+  .mud-input {
+    font-size: 14px;
+  }
+}
+.font16-txtfield {
+  .mud-input {
+    font-size: 16px;
+  }
+}
+
+.txtbold {
+  .mud-input {
+    font-weight: bold !important;
+  }
+}
+.txtem {
+  .mud-input {
+    font-style: italic !important;
+  }
+}
 
 .txtfield-75 {
-    .mud-input { height: 35px; }
-    .mud-input-slot, .mud-input-label { font-size: .75rem !important; }
+  .mud-input {
+    height: 35px;
+  }
+  .mud-input-slot,
+  .mud-input-label {
+    font-size: 0.75rem !important;
+  }
 }
 .selectparent-75 {
-    .mud-input {
-        font-size: .75rem;
-        height: 35px;
-        text-align: left;
-    }
+  .mud-input {
+    font-size: 0.75rem;
+    height: 35px;
+    text-align: left;
+  }
 }
 .selectitem-75 {
-    .mud-typography { 
-        font-size: .75rem !important;
-    }
+  .mud-typography {
+    font-size: 0.75rem !important;
+  }
 }
-.title875 { 
-    font-size: .875rem; 
-    font-weight: bold; 
-    text-transform: uppercase; 
+.title875 {
+  font-size: 0.875rem;
+  font-weight: bold;
+  text-transform: uppercase;
 }
-.lbl75 { 
-    font-size: .775rem !important; 
-    font-weight: bold !important;
-    text-transform: uppercase !important;
+.lbl75 {
+  font-size: 0.775rem !important;
+  font-weight: bold !important;
+  text-transform: uppercase !important;
 }
-.lbl70 { font-size: .7rem !important; }
+.lbl70 {
+  font-size: 0.7rem !important;
+}
 
-.txt-uppercase { text-transform: uppercase !important; }
+.txt-uppercase {
+  text-transform: uppercase !important;
+}
+.fweight500 {
+  font-weight: 500 !important;
+}
+.chkbxfont10 {
+  .mud-typography {
+    font-size: 10px;
+  }
+}
+.chkbxtxbold {
+  .mud-typography {
+    font-weight: bold;
+  }
+}
 
-.chkbxfont10 { .mud-typography { font-size: 10px; } }
-.chkbxtxbold { .mud-typography { font-weight: bold; } }
+.toolbar-sm-font12 {
+  .mud-table-pagination-information,
+  .mud-table-page-number-information {
+    font-size: 12px !important;
+  }
+}
+
+.fontpad-t-2px {
+  padding-top: 2px;
+}
+
+.ff-theramin {
+  font-family: "Theramin" !important;
+}

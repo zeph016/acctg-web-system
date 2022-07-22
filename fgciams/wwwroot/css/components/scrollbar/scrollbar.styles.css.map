@@ -1,9 +1,1 @@
-{
-    "version": 3,
-    "mappings": "AAAA,AAAA,kBAAkB,CAAC;EAAE,eAAe,EAAE,IAAI;CAAI;;AAE9C,AAAA,mBAAmB,CAAC;EAAE,eAAe,EAAE,oBAAoB;CAAI",
-    "sources": [
-        "scrollbar.styles.scss"
-    ],
-    "names": [],
-    "file": "scrollbar.styles.css"
-}
+{"version":3,"sources":["scrollbar.styles.scss","scrollbar.styles.css"],"names":[],"mappings":"AAAA;EAAqB,qBAAA;ACErB;;ADAA;EAAsB,qCAAA;ACItB","file":"scrollbar.styles.css"}

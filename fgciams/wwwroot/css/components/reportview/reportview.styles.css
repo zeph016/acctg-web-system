@@ -7,9 +7,7 @@
 }
 
 .default-report-view {
-  -webkit-transform-origin: 0px 0px 0px;
-          transform-origin: 0px 0px 0px;
+  transform-origin: 0px 0px 0px;
   width: 1200px;
   height: 500px;
-}
-/*# sourceMappingURL=reportview.styles.css.map */
+}/*# sourceMappingURL=reportview.styles.css.map */

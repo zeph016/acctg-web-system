@@ -1,33 +1,53 @@
 .configtables {
-    .mud-table-container {
-        height: calc(100vh - 190px);
-        min-width: 75vh;
-    }
-    .mud-table-pagination-caption {
-        font-size: 12px;
-    }
-    .mud-toolbar-gutters {
-        height: 2.5rem;
-    }
-    .mud-table-head {
-        white-space: nowrap;    
-    }
+  .mud-table-container {
+    height: calc(100vh - 190px);
+    min-width: 75vh;
+  }
+  .mud-table-pagination-caption {
+    font-size: 12px;
+  }
+  .mud-toolbar-gutters {
+    height: 2.5rem;
+  }
+  .mud-table-head {
+    white-space: nowrap;
+  }
 }
 
 .customheader-1 {
-    border-bottom: solid thick #7E57C2 !important;
-    border-radius: 0px !important;
-    font-size: .775rem !important;
-    text-transform: uppercase;
+  // border-bottom: solid thick #7e57c2 !important;
+  border-radius: 0px !important;
+  font-size: 0.775rem !important;
+  text-transform: uppercase;
+}
+.customheader-2 {
+  border-radius: 0px !important;
+  font-size: 0.775rem !important;
+  text-transform: uppercase;
 }
 
 .small-toolbar-gutter {
-    .mud-toolbar-gutters {
-        height: 2.5rem;
-    }
+  .mud-toolbar-gutters {
+    height: 2.45rem;
+  }
+}
+.small-toolbar-gutter2 {
+  .mud-toolbar-gutters {
+    height: 2rem;
+  }
+}
+.small-toolbar-gutter3 {
+  .mud-toolbar-gutters {
+    height: 2.75rem;
+  }
+}
+.small-toolbar-gutter4 {
+  .mud-toolbar-gutters {
+    height: 2.1rem;
+  }
 }
 .toolbar-pad-0 {
-    .mud-toolbar-gutters {
-        padding: 0px;
-    }
+  .mud-toolbar-gutters {
+    padding: 0px;
+  }
 }

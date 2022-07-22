@@ -70,6 +70,7 @@ namespace fgciams.service.VoucherServices
       }
       catch (System.Exception ex)
       {
+         Console.WriteLine(ex.Message);
          throw;
       }
     }
@@ -87,6 +88,7 @@ namespace fgciams.service.VoucherServices
       }
       catch (System.Exception ex)
       {
+        Console.WriteLine(ex.Message);
          throw;
       }
     }
@@ -105,6 +107,7 @@ namespace fgciams.service.VoucherServices
       catch (System.Exception ex)
       {
          // TODO
+         Console.WriteLine(ex.Message);
          throw;
       }
     }
@@ -132,10 +135,28 @@ namespace fgciams.service.VoucherServices
       catch (System.Exception ex)
       {
          // TODO
+         Console.WriteLine(ex.Message);
          throw;
       }
     }
 
-    #endregion
-  }
+        public async Task<List<VoucherModel>> VoucherNotInCheck(FilterParameter parameter, string token)
+        {
+          try
+          {
+            List<VoucherModel> voucherModel = new();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+              HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("/voucher-list/not-in-check",parameter);
+              if(responseMessage.IsSuccessStatusCode)
+                voucherModel = await responseMessage.Content.ReadAsAsync<List<VoucherModel>>();
+              return voucherModel;
+          }
+          catch(System.Exception ee)
+          {
+            Console.WriteLine(ee.Message);
+            throw;
+          }
+        }
+        #endregion
+    }
 }

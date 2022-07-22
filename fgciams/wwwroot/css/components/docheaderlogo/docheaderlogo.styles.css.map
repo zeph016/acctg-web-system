@@ -1,9 +1,1 @@
-{
-    "version": 3,
-    "mappings": "AAAA,AAAA,aAAa,CAAC;EACV,OAAO,EAAE,OAAO;CASnB;;AARI,AAAD,uBAAW,CAAC;EACR,WAAW,EAAE,eAAe;CAC/B;;AACA,AAAD,uBAAW,EAAG,wBAAW,CAAC;EACtB,WAAW,EAAE,mBAAmB;EAChC,SAAS,EAAE,MAAM;CACpB;;AACA,AAAD,wBAAY,CAAC;EAAE,WAAW,EAAE,qBAAqB;CAAI",
-    "sources": [
-        "docheaderlogo.styles.scss"
-    ],
-    "names": [],
-    "file": "docheaderlogo.styles.css"
-}
+{"version":3,"sources":["docheaderlogo.styles.scss","docheaderlogo.styles.css"],"names":[],"mappings":"AAAA;EACI,gBAAA;ACCJ;ADAI;EACI,4BAAA;ACER;ADAI;EACI,gCAAA;EACA,iBAAA;ACER;ADAI;EAAe,kCAAA;ACGnB","file":"docheaderlogo.styles.css"}

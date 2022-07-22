@@ -42,6 +42,7 @@ namespace fgciams.service.RequestForPaymentService
         }
         catch (System.Exception ex)
         {
+           Console.WriteLine(ex.Message);
            throw;
         }     
       }
@@ -60,6 +61,7 @@ namespace fgciams.service.RequestForPaymentService
         }
         catch(Exception ex)
         {
+          Console.WriteLine(ex.Message);
           throw;
         }
       }
@@ -78,6 +80,7 @@ namespace fgciams.service.RequestForPaymentService
             }
             catch (System.Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 throw;
             }
         }
@@ -98,6 +101,7 @@ namespace fgciams.service.RequestForPaymentService
             }
             catch (System.Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 throw;
             }
         }
@@ -117,6 +121,7 @@ namespace fgciams.service.RequestForPaymentService
             }
             catch(Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 throw;
             }
         }
@@ -164,6 +169,7 @@ namespace fgciams.service.RequestForPaymentService
       }
       catch (System.Exception ex)
       {
+         Console.WriteLine(ex.Message);
          throw;
       }
     }

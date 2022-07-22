@@ -8,15 +8,20 @@ using System.Reflection;
 using fgciams.Common;
 using Microsoft.JSInterop;
 using Blazored.LocalStorage;
+using fgciams.domain.clsEnums;
 using fgciams.domain.clsUserAccount;
 using fgciams.domain.clsAccountingStatus;
+using fgciams.domain.clsFilterParameter;
 using fgciams.service.UserAccountServices;
+using fgciams.service.GlobalServices;
 using System.IdentityModel.Tokens.Jwt;
 using MudBlazor;
 using System.Net;
 using Microsoft.AspNetCore.SignalR.Client;
-using fgciams.domain.clsEnums;
+
 using Microsoft.AspNetCore.Components;
+
+
 
 public static class Extensions
 {
@@ -182,5 +187,17 @@ public static class Extensions
     public static ValueTask FocusAsync(this IJSRuntime jSRuntimeService, string className)
     {
         return jSRuntimeService.InvokeVoidAsync("AutoFocusElement", className);
+    }
+
+    public static async Task<IEnumerable<UserAccount>> LoadEmployeesExt(IGlobalService globalService, string employeeName)
+    {
+        var filterParameter = new FilterParameter()
+        {
+            IsName = true,
+            Name = employeeName,
+            IsLookUp = true
+        };
+        var employee = await globalService.LoadAllEmployee(filterParameter, GlobalClass.token);
+        return employee;
     }
 }

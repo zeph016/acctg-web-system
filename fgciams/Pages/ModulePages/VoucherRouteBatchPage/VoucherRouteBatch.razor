@@ -1,0 +1,462 @@
+@page "/voucher/batch"
+@inject IVoucherService voucherService
+@inject IVoucherRouteBatchService voucherBatchRouteService
+@inject ISnackbar snackbarService
+@inject IGlobalService globalService
+@inject NavigationManager navigationManager
+@inject IDialogService dialogService
+
+<div class='page-cont d-flex'>
+  <MudContainer Class='vroutebatchpage d-flex pt-2 pr-2 pb-4 pl-2' Fixed='false' MaxWidth='MaxWidth.ExtraLarge'>
+    @if (!dataFetched)
+    {
+      <MudPaper Class='d-flex flex-1 flex-column pa-2' style="height: calc(100vh - 125px);">
+        <MudSkeleton SkeletonType='SkeletonType.Text' Height='100px' Animation='Animation.Wave' />
+        <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='71vh' Animation='Animation.Wave' />
+      </MudPaper>
+    }
+    else
+    {
+      <div class='d-flex flex-1 flex-column align-center gap-2'>
+        <div class='d-flex flex-1 gap-2'>
+          <MudTable Class='small-toolbar-gutter3 toolbar-sm-font12' ServerData='@(new Func<TableState, Task<TableData<VoucherModel>>>(LoadVoucherServer))' 
+            Height='calc(100% - 90px)' FixedHeader FixdFooter Hover Dense  @ref='tableVariable'>
+            <ToolBarContent>
+              <div class='d-flex flex-1 align-center'>
+                <MudText Typo='Typo.caption'>
+                  @showSelectedVouchers.Count() 
+                  @(showSelectedVouchers.Count() == 1 ? "item" : "items") 
+                  in total
+                </MudText>
+                <MudSpacer />
+                <MudIconButton Icon="@Icons.Material.Filled.Refresh" OnClick='(()=> tableVariable!.ReloadServerData())'/>
+                <MudTextField Class='txtfield-75 width5' T='string' ValueChanged='@(s=>OnSearch(s))' Placeholder='Control Number' Margin='Margin.Dense'
+                Adornment='Adornment.Start' AdornmentIcon='@Icons.Material.Filled.Search' IconSize='Size.Small'
+                Clearable='true' Variant='Variant.Outlined' />
+              </div>
+            </ToolBarContent>
+            <ColGroup>
+              <col style="width:10px"/>
+              <col style="width:10px"/>
+              <col style="width:10px"/>
+              <col style="width:10px"/>
+              <col />
+              <col style="width:10px"/>
+            </ColGroup>
+            <HeaderContent>
+                <MudTh Class='customheader-2'></MudTh>
+                <MudTh Class='customheader-2'>Date</MudTh>
+                <MudTh Class='customheader-2 text-center wspace-nowrap'>Control No.</MudTh>
+                <MudTh Class='customheader-2 text-center'>Status</MudTh>
+                <MudTh Class='customheader-2 text-center'></MudTh>
+                <MudTh Class='customheader-2 text-right'>Amount</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd Class='text-center'>
+                  <MudTooltip Text='Select'>
+                    <MudCheckBox @bind-Checked='@context.IsSelected'  Size='Size.Small' Color='Color.Info' Dense />
+                  </MudTooltip>
+                </MudTd>
+                <MudTd DataLabel="Date">
+                  <MudText Class='font12'>@context.VoucherDate.ToShortDateString()</MudText>
+                </MudTd>
+                <MudTd Class='text-center' DataLabel="Ctrl #">
+                  <MudChip Class='chip-radius-5 font-bold font10' Color='Color.Error' Variant='Variant.Filled' Size='Size.Small'>
+                   @context.ControlNumber
+                  </MudChip>
+                </MudTd>
+                <MudTd Class='text-center' DataLabel="Status">
+                  <MudChip Class='chip-radius-5 font-bold font10' Color='Color.Info' Variant='Variant.Filled' Size='Size.Small'>
+                    @context.StatusName
+                  </MudChip>
+                </MudTd>
+                <MudTd Class='text-center' DataLabel="Desc">
+                  <MudToggleIconButton @bind-Toggled='@context.ShowDesc' Size='Size.Small' ToggledSize='Size.Small'
+                     Icon="@Icons.Filled.Description" Color="@Color.Default" Title="Show Description"
+                     ToggledIcon="@Icons.Filled.Description" ToggledColor="@Color.Info" ToggledTitle="Show Description"/>
+                </MudTd>
+                <MudTd DataLabel="Amt">
+                  <div class='d-flex align-center wspace-nowrap text-right gap-2'>
+                    @if (context.TotalAmount > 0)
+                    {
+                      <MudText Class='font-bold color-green font12'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) </MudText>
+                      <MudSpacer />
+                      <MudText Class='font-bold color-green font12'>@context.TotalAmount.ToString("N2")</MudText>
+                    }
+                    else
+                    {
+                      <MudText Class='font-bold font12' Color='Color.Error'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
+                      <MudSpacer />
+                      <MudText Class='font-bold font12' Color='Color.Error'>@context.TotalAmount.ToString("N2")</MudText>
+                    }
+                  </div>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+              <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No records found</MudText>
+            </NoRecordsContent>
+            <ChildRowContent>
+              @if (context.ShowDesc)
+              {
+                <MudTr>
+                    <td colspan='3'></td>
+                    <td colspan='3'>
+                      <MudPaper Class='ma-2 pa-2'>
+                        <MudText Typo='Typo.body2'>@context.Description</MudText> 
+                      </MudPaper>
+                    </td>
+                </MudTr>
+              }
+            </ChildRowContent>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+          </MudTable>
+          <MudTable Class='small-toolbar-gutter3 toolbar-sm-font12' Items='GlobalClassList.VoucherBatchList' Height='calc(100% - 90px)' 
+           FixedHeader FixedFooter Hover Dense>
+            <ToolBarContent>
+              <div class='d-flex flex-1 align-center pa-2'>
+                <MudGrid Spacing='1'>
+                  <MudItem Class='d-flex align-center gap-2' xs=4>
+                    <MudText Class='wspace-nowrap txt-uppercase font-bold font10'>date :</MudText>
+                    <MudDatePicker Class='txt-top-0 font14-txtfield txtfield-right ' @bind-Date='BatchDate' IconSize='Size.Small' Margin='Margin.Dense' />
+                  </MudItem>
+                  <MudItem Class='d-flex align-center gap-2' xs=8>
+                    <MudText Class='wspace-nowrap txt-uppercase font-bold font10'>remarks :</MudText>
+                    <MudTextField Class='txtfield-overflow-ellipsis txtfield-75' @bind-Value='voucherBatchRoute.Remarks' Variant='Variant.Outlined' Margin='Margin.Dense' Placeholder='Remarks' Clearable/>
+                  </MudItem>
+                </MudGrid>
+              </div>
+            </ToolBarContent>
+            <ColGroup>
+              <col style="width:10px"/>
+              <col style="width:10px"/>
+              <col style="width:10px"/>
+              <col />
+              @* <col style="width:10px"/> *@
+              <col style="width:10px"/>
+            </ColGroup>
+            <HeaderContent>
+                <MudTh Class='customheader-2'></MudTh>
+                <MudTh Class='customheader-2'>Date</MudTh>
+                <MudTh Class='customheader-2 text-center wspace-nowrap'>Control No.</MudTh>
+                <MudTh Class='customheader-2 text-center'>Status</MudTh>
+                @* <MudTh Class='customheader-2 text-center'></MudTh> *@
+                <MudTh Class='customheader-2 text-right'>Amount</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd Class='text-center'>
+                  <MudTooltip Text='Remove'>
+                    <MudIconButton OnClick='(()=>RemoveBatch(context))' Icon='@Icons.Filled.RemoveCircle' Size='Size.Small' Color='Color.Error' />
+                  </MudTooltip>
+                </MudTd>
+                <MudTd DataLabel="Voucher Date">
+                  <MudText Class='font12'>@context.VoucherDate.ToShortDateString()</MudText>
+                </MudTd>
+                <MudTd Class='text-center' DataLabel="Control Number">
+                    <MudChip Class='chip-radius-5 font-bold font10' Color='Color.Error' Variant='Variant.Filled' Size='Size.Small'>
+                       @context.ControlNumber
+                    </MudChip>
+                </MudTd>
+                <MudTd Class='text-center' DataLabel="Status">
+                  <MudChip Class='chip-radius-5 font-bold font10' Color='Color.Info' Variant='Variant.Filled' Size='Size.Small'>
+                    @context.StatusName
+                  </MudChip>
+                </MudTd>
+                @* <MudTd Class='text-center' DataLabel="Description">
+                  <MudToggleIconButton @bind-Toggled='@context.ShowDesc' Size='Size.Small' ToggledSize='Size.Small'
+                      Icon="@Icons.Filled.Description" Color="@Color.Default" Title="Show Description"
+                      ToggledIcon="@Icons.Filled.Description" ToggledColor="@Color.Info" ToggledTitle="Show Description"/>
+                </MudTd> *@
+                <MudTd DataLabel="Amt">
+                  <div class='d-flex align-center wspace-nowrap text-right gap-2'>
+                    @if (context.TotalAmount > 0)
+                    {
+                      <MudText Class='font-bold color-green font12'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) </MudText>
+                      <MudSpacer />
+                      <MudText Class='font-bold color-green font12'>@context.TotalAmount.ToString("N2")</MudText>
+                    }
+                    else
+                    {
+                      <MudText Class='font-bold font12' Color='Color.Error'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
+                      <MudSpacer />
+                      <MudText Class='font-bold font12' Color='Color.Error'>@context.TotalAmount.ToString("N2")</MudText>
+                    }
+                  </div>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+              <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No records found</MudText>
+            </NoRecordsContent>
+            <ChildRowContent>
+              @if (context.ShowDesc)
+              {
+                <MudTr>
+                    <td colspan='3'></td>
+                    <td colspan='3'>
+                      <MudPaper Class='ma-2 pa-2'>
+                        <MudText Typo='Typo.body2'>@context.Description</MudText> 
+                      </MudPaper>
+                    </td>
+                </MudTr>
+              }
+            </ChildRowContent>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+          </MudTable>
+        </div>
+
+        
+      
+        <MudPaper Class='d-flex align-center justify-center pa-2 gap-2' Width='700px'>
+          <div class='d-flex justify-start min-width25 gap-1'>
+            @if(preparedBy.Picture.Count() == 0) {
+            <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
+            } else {
+            <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(preparedBy.Picture)}")' Size='Size.Medium' />
+            }
+            <div class='d-flex flex-grow-1 flex-column'>
+              <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear placeholder='Prepared By'
+                @bind-Value='preparedBy' Debounce='500' MaximumSuggestions='5'>
+                  <SelectedTemplate>
+                      <div class='overflow-hidden wspace-nowrap'>
+                          @if (context.EmployeeId != 0) {
+                            <MudText Class='font12'>@context.EmployeeName</MudText>
+                            } else {
+                            <MudText Class='font12'> - </MudText>
+                            }
+                      </div>
+                  </SelectedTemplate>
+                    <ResultTemplate>
+                      <div class='ddavatar'>
+                        <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@context.Picture)}")' Size='Size.Small'/>
+                        @context.EmployeeName | @context.Designation
+                      </div>
+                    </ResultTemplate>
+              </BlazoredTypeahead>
+              <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
+                Prepared By
+                <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+              </MudText>
+            </div>
+          </div>
+          <MudSpacer />
+          <MudButton OnClick='(()=> navigationManager.NavigateTo($"/voucher/batch/list"))' Variant='Variant.Text' Color='Color.Transparent'>Cancel</MudButton>
+          <MudButton OnClick='MoveToBatch' Variant='Variant.Filled' Color='Color.Info' Size='Size.Medium' DisableElevation>Move</MudButton>
+          <MudText>&#x2192;</MudText>
+          <MudButton OnClick='SaveVoucherRouteBatch' Disabled=isDisableSave Variant='Variant.Filled' Color='Color.Primary' DisableElevation>Save</MudButton>  
+        </MudPaper>
+      </div>
+    }
+  </MudContainer>
+</div>
+
+@code{
+  private bool isDisableSave = true, dataFetched, isSelectAll;
+  private VoucherRouteBatchModel voucherBatchRoute = new();
+  private IEnumerable<VoucherModel> pageData = new List<VoucherModel>();
+  private List<VoucherModel> selectedVoucher = new List<VoucherModel>();
+  private List<VoucherModel> showSelectedVouchers = new List<VoucherModel>();
+  private UserAccount preparedBy = new UserAccount();
+  private DateTime? BatchDate = DateTime.Now;
+  private FilterParameter filterParameter = new();
+  private string searchTerm = string.Empty;
+  private MudTable<VoucherModel> tableVariable = new MudTable<VoucherModel>();
+  protected override async Task OnInitializedAsync()
+  {
+    while(GlobalClass.currentUserAccount == null)
+     await Task.Delay(1);
+
+    Task t = Task.WhenAll(InitializeComponent());
+    await t;
+    if(t.Status == TaskStatus.RanToCompletion)
+      CompletedFetch();
+  }
+  private async Task InitializeComponent()
+  {
+    Console.WriteLine("Initialized Component");
+    navigationManager.LocationChanged += OnLocationChanged;
+    GlobalClass.pageTitle = "voucher batch entry";
+    GlobalClassList.BatchVouchers = new List<VoucherModel>();
+
+    if(GlobalClass.voucherRouteBatch != null) {
+      await DisplayProperties();
+      isDisableSave = false;
+    } else {
+      GlobalClassList.VoucherBatchList = new();
+      preparedBy = GlobalClass.currentUserAccount;
+    }
+  }
+
+  private void CompletedFetch()
+  {
+    dataFetched = true;
+    StateHasChanged();
+  }
+  private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+  {
+    GlobalClass.voucherRouteBatch = default!;
+    Dispose();
+  }
+  public void Dispose()
+  {
+    navigationManager.LocationChanged -= OnLocationChanged;
+  }
+  private async Task DisplayProperties()
+  {
+    voucherBatchRoute = GlobalClass.voucherRouteBatch;
+    GlobalClassList.VoucherBatchList = await voucherBatchRouteService.GetVoucherRouteBatchDetails(GlobalClass.voucherRouteBatch.Id, GlobalClass.token);
+    BatchDate = GlobalClass.voucherRouteBatch.BatchDate;
+    preparedBy = await GetEmployeeDetails(voucherBatchRoute.PreparedById);
+    StateHasChanged();
+  }
+  private async Task<UserAccount> GetEmployeeDetails(long employeeId)
+  {
+    var employeeDetail = await globalService.GetEmployeeById(employeeId, GlobalClass.token);
+    return employeeDetail;
+  }
+  private void MoveToBatch()
+  {
+      foreach (var item in showSelectedVouchers.Where(x=>x.IsSelected))
+      {
+        if(!GlobalClassList.VoucherBatchList.Any(x=>x.VoucherId == item.Id)) {
+          var routeBatch = new VoucherRouteBatchDetailModel();
+          routeBatch.VoucherId = item.Id;
+          routeBatch.VoucherDate = item.VoucherDate;
+          routeBatch.ControlNumber = item.ControlNumber;
+          routeBatch.Description = item.Description;
+          routeBatch.StatusName = item.StatusName;
+          routeBatch.TotalAmount = item.TotalAmount;
+          routeBatch.IsActive = true;
+          routeBatch.IsFiled = true;
+          GlobalClassList.VoucherBatchList.Add(routeBatch);
+        }
+      }
+      Task.Run(async()=> await tableVariable!.ReloadServerData());
+
+    if(GlobalClassList.VoucherBatchList.Count > 0)
+      isDisableSave = false;
+  }
+  private VoucherRouteBatchModel MapProperties()
+  {
+    voucherBatchRoute.BatchDate = BatchDate.GetValueOrDefault();
+    voucherBatchRoute.VoucherRouteBatchDetails = GlobalClassList.VoucherBatchList;
+    voucherBatchRoute.IsActive = true;
+    voucherBatchRoute.UserId = GlobalClass.currentUserAccount.EmployeeId;
+    voucherBatchRoute.PreparedById = preparedBy.EmployeeId;
+    voucherBatchRoute.PreparedByName = preparedBy.EmployeeName;
+    voucherBatchRoute.Activity = GlobalClass.voucherRouteBatch == null ? "Save Voucher Route Batch" : "Update Voucher Route Batch";
+
+    return voucherBatchRoute;
+  }
+  private async Task SaveVoucherRouteBatch()
+  {
+    var parameters = new DialogParameters();
+    string contentText = "Voucher Route Batch ";
+    string dialogTitle = GlobalClass.voucherRouteBatch == null ? "Create " + contentText : "Update " + contentText;
+    parameters.Add("contentText", contentText);
+    parameters.Add("actionMode", GlobalClass.voucherRouteBatch == null ? Enums.ActionMode.Create : Enums.ActionMode.Update);
+    var options = new DialogOptions()
+    {
+        CloseButton = false,
+        MaxWidth = MaxWidth.ExtraSmall,
+        FullWidth = true,
+        NoHeader = false,
+        DisableBackdropClick = true
+    };
+    var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+
+    if (!resultDialog.Cancelled) {
+
+      if(GlobalClass.voucherRouteBatch != null) {
+        await voucherBatchRouteService.UpdateVoucherRouteBatch(MapProperties(), GlobalClass.token);
+        Extensions.ShowAlert("Successfully updated", Variant.Filled, snackbarService,Severity.Success);
+        navigationManager.NavigateTo($"/voucher/batch/list");
+      } else {
+        await voucherBatchRouteService.AddVoucherRouteBatch(MapProperties(), GlobalClass.token);
+        Extensions.ShowAlert("Successfully added", Variant.Filled, snackbarService,Severity.Success);
+        navigationManager.NavigateTo($"/voucher/batch/list");
+      }
+
+    }
+    GlobalClass.voucherRouteBatch = default!;
+  }
+  private void RemoveBatch(VoucherRouteBatchDetailModel voucherRouteBatchDetail)
+  {
+    var voucher = new VoucherModel();
+
+    GlobalClassList.VoucherBatchList.Remove(voucherRouteBatchDetail);
+    if(voucherBatchRoute.Id != 0) {
+
+      voucherRouteBatchDetail.IsActive = false;
+      voucherBatchRoute.RemovedVoucherRouteBatchDetails.Add(voucherRouteBatchDetail);
+      Task.Run(async()=> await tableVariable!.ReloadServerData());
+    }
+
+    voucher.VoucherDate = voucherRouteBatchDetail.VoucherDate;
+    voucher.ControlNumber = voucherRouteBatchDetail.ControlNumber;
+    voucher.Description = voucherRouteBatchDetail.Description;
+    voucher.StatusName = voucherRouteBatchDetail.StatusName;
+    voucher.TotalAmount = voucherRouteBatchDetail.TotalAmount;
+    voucher.IsActive = voucherRouteBatchDetail.IsActive;
+    selectedVoucher = new();
+    Task.Run(async()=> await tableVariable!.ReloadServerData());
+
+    if(GlobalClassList.VoucherBatchList.Count <= 0) {
+       isDisableSave = true;
+    }
+  }
+  private async Task<TableData<VoucherModel>> LoadVoucherServer(TableState state)
+  {
+    if(GlobalClass.currentUserAccount == null)
+    await Task.Delay(1);
+
+    IEnumerable<VoucherModel> data = await voucherBatchRouteService.VoucherList(filterParameter, GlobalClass.token);
+    data = data.Where(VoucherModel =>
+    {
+      if (string.IsNullOrWhiteSpace(searchTerm))
+        return true;
+      if(VoucherModel.ControlNumber.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+        return true;
+      return false;      
+    }).ToArray();
+
+    GlobalClassList.BatchVouchers = data.Union(selectedVoucher).OrderByDescending(x=>x.IsSelected).ToList();
+    
+    showSelectedVouchers = GlobalClassList.BatchVouchers.ToList();
+
+    foreach (var item in GlobalClassList.VoucherBatchList) {
+      showSelectedVouchers.RemoveAll(x=>x.Id == item.VoucherId);
+    }
+    
+    pageData = showSelectedVouchers.Skip(state.Page * state.PageSize).Take(state.PageSize).ToList();
+    return new TableData<VoucherModel>() {TotalItems = showSelectedVouchers.Count(), Items = pageData};
+  }
+   
+  private async Task<IEnumerable<UserAccount>> LoadEmployee(string employeeName)
+  {
+      var filterParameter = new FilterParameter()
+      {
+        IsName = true,
+        Name = employeeName,
+        IsLookUp = true
+      };
+      var employee = await globalService.LoadAllEmployee(filterParameter, GlobalClass.token);
+      return employee;
+  }
+
+  private void OnSearch(string text)
+  {
+    searchTerm = text;
+    selectedVoucher = GlobalClassList.BatchVouchers.Where(x=>x.IsSelected).ToList();
+
+    tableVariable.ReloadServerData();
+  }
+
+  private void SelectAllVoucher()
+  {
+    Console.WriteLine("Selected all");
+    isSelectAll = !isSelectAll;
+  }
+}

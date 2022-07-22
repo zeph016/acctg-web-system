@@ -1,0 +1,105 @@
+@page "/configurations"
+
+@implements IDisposable
+@inject NavigationManager navigationManager
+
+<div class='page-cont d-flex'>
+    <MudPaper Class='subdrawer-left'Style="position:relative;">
+        <MudDrawerContainer Class="mud-height-full">
+            <MudDrawer @bind-Open='open' Fixed='false' Anchor='Anchor.Left' Elevation='0' Variant="@DrawerVariant.Mini" OpenMiniOnHover='true'>
+                <MudNavMenu MudNavMenu>
+                    <MudNavLink Href='/accounting-status' Match="NavLinkMatch.All" Icon="@Icons.Filled.FactCheck">ACCOUNTING STATUS</MudNavLink>
+                    <MudNavLink Href='/bank' Match="NavLinkMatch.All" Icon="@Icons.Filled.AccountBalance">BANK</MudNavLink>
+                    <MudNavLink Class='fa-icon-center' Href='/billingdocument' Match="NavLinkMatch.All" Icon="fa-solid fa-receipt">BILLING DOCUMENT</MudNavLink>
+                    <MudNavLink Class='fa-icon-center' Href='/division' Match="NavLinkMatch.All" Icon="fa-solid fa-bars-staggered">DIVISION</MudNavLink>
+                    <MudNavLink Href='/modeofpayment' Match="NavLinkMatch.All" Icon="@Icons.Filled.Payment">MODE OF PAYMENT</MudNavLink>
+                    <MudNavLink Class='fa-icon-center' Href='/payee' Match="NavLinkMatch.All" Icon="fa-solid fa-person">PAYEE</MudNavLink>
+                    <MudNavLink Href='/payeecategory' Match="NavLinkMatch.All" Icon='@Icons.Filled.Group'>PAYEE CATEGORY</MudNavLink>
+                    <MudNavLink Href='/projectcharging' Match="NavLinkMatch.All" Icon="@Icons.Filled.CreditScore">PROJECT CHARGING LINE</MudNavLink>
+                    <MudNavLink Class='fa-icon-center' Href='/requesttype' Match="NavLinkMatch.All" Icon='fa-solid fa-clipboard-check'>REQUEST TYPES</MudNavLink>
+                    <MudNavGroup Class='childnavgroup expandheight-group fa-icon-center' Title='SUBCON' Icon='fa-solid fa-industry' HideExpandIcon='true'>
+                        <MudNavLink Class='fa-icon-center' Href='/subcontractor-company' Match="NavLinkMatch.All" Icon='fa-solid fa-building'>SUB CON COMPANY</MudNavLink>
+                        <MudNavLink Href='/subcontractor-generalinfo' Match="NavLinkMatch.All" Icon="@Icons.Filled.Info">SUB CON GENERAL INFO.</MudNavLink>
+                        <MudNavLink Href='/subcontractor-position' Match="NavLinkMatch.All" Icon='@Icons.Filled.Engineering'>SUB CON POSITION</MudNavLink>
+                    </MudNavGroup>
+                    <MudNavGroup Class='childnavgroup expandheight-group fa-icon-center' Title='CHART OF ACCOUNTS' Icon='@Icons.Filled.AddChart' HideExpandIcon='true'>
+                        <MudNavLink Class='fa-icon-center' Href='/expenseline-list' Match="NavLinkMatch.All" Icon='fa-solid fa-file-invoice-dollar'>EXPENSE LINE</MudNavLink>
+                        <MudNavLink Class='fa-icon-center' Href='/account-line' Match="NavLinkMatch.All" Icon="fa-solid fa-business-time">ACCOUNT LINE GROUP</MudNavLink>
+                        <MudNavLink Class='fa-icon-center' Href='/account-type/list' Match="NavLinkMatch.All" Icon='fa-solid fa-money-check'>ACCOUNT TYPE</MudNavLink>
+                        <MudNavLink Class='fa-icon-center' Href='/account-line-type' Match="NavLinkMatch.All" Icon="fa-solid fa-house-laptop">ACCOUNT LINE TYPE</MudNavLink>
+                    </MudNavGroup>
+                </MudNavMenu>
+            </MudDrawer>
+        </MudDrawerContainer>
+    </MudPaper>
+    <MudContainer Class='pa-0' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+        @* <MudGrid Spacing='1'>
+            <MudItem Class='d-flex flex-column'xs=12>
+                <MudText Class='mud-text-secondary' Typo='Typo.body2'>Accounting configurations</MudText>
+            </MudItem>
+            <MudItem xs=2>
+                <MudPaper Elevation='1'>
+                    <MudCardHeader Class='d-flex align-center pa-2'>
+                        <MudText Class='font12'>Accounting Status</MudText>
+                        <MudSpacer />
+                        <MudIcon Icon='@Icons.Filled.FactCheck' Size='Size.Small' />
+                    </MudCardHeader>
+                    <MudDivider />
+                    <MudCardContent Class='d-flex align-center pa-2'>
+                        <MudButton Variant='Variant.Filled' FullWidth Size='Size.Small' Color='Color.Default'>View Config</MudButton>
+                    </MudCardContent>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs=2>
+                 <MudPaper Elevation='1'>
+                    <MudCardHeader Class='d-flex align-center pa-2'>
+                        <MudText Class='font12'>Bank</MudText>
+                        <MudSpacer />
+                        <MudIcon Icon='@Icons.Filled.AccountBalance' Size='Size.Small' />
+                    </MudCardHeader>
+                    <MudDivider />
+                    <MudCardContent Class='d-flex align-center pa-2'>
+                        <MudButton Variant='Variant.Filled' FullWidth Size='Size.Small' Color='Color.Default'>View Config</MudButton>
+                    </MudCardContent>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs=2>
+                <MudPaper>placeholder</MudPaper>
+            </MudItem>
+            <MudItem xs=2>
+                <MudPaper>placeholder</MudPaper>
+            </MudItem>
+            <MudItem xs=2>
+                <MudPaper>placeholder</MudPaper>
+            </MudItem>
+            <MudItem xs=2>
+                <MudPaper>placeholder</MudPaper>
+            </MudItem>
+        </MudGrid> *@
+        <AccountingStatus />
+    </MudContainer>
+</div>
+
+@code {
+    bool open = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        GlobalClass.pageTitle = "Configuration Settings";
+        navigationManager.LocationChanged += OnLocationChanged;
+        if (GlobalClass.currentUserAccount == null)
+            await Task.Delay(1);
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        
+        
+    }
+
+    void IDisposable.Dispose()
+    {
+        navigationManager.LocationChanged -= OnLocationChanged;
+    }
+}
+

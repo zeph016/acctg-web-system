@@ -15,8 +15,8 @@ namespace fgciams.service.AccountTypeServices
         #endregion
         #region Properties
         private readonly HttpClient _client;
-        private AccountTypeModel accountTypeModel;
-        private List<AccountTypeModel> listOfAccountType;
+        private AccountTypeModel accountTypeModel = new();
+        private List<AccountTypeModel> listOfAccountType = new();
         #endregion
         #region Methods
         #region Add

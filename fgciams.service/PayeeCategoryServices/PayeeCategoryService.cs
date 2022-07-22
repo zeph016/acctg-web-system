@@ -9,8 +9,8 @@ namespace fgciams.service.PayeeCategoryServices
     {
         #region Properties
         HttpClient client;
-        List<PayeeCategoryModel> payeeCategoryModelList;
-        PayeeCategoryModel payeeCategoryModel;
+        List<PayeeCategoryModel> payeeCategoryModelList = new();
+        PayeeCategoryModel payeeCategoryModel = new();
         #endregion
         #region Constructor
         public PayeeCategoryService(HttpClient _client){
@@ -24,7 +24,7 @@ namespace fgciams.service.PayeeCategoryServices
             if(responseMessage.IsSuccessStatusCode){
                 payeeCategoryModelList = await responseMessage.Content.ReadAsAsync<List<PayeeCategoryModel>>();
             }
-            return payeeCategoryModelList.OrderBy(x=> x.CategoryName).ToList();
+            return payeeCategoryModelList.OrderBy(x=> x.CategoryName).Reverse().ToList();
             }catch(Exception ee){
                 Console.WriteLine(ee.Message);
                 throw ee;

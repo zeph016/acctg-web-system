@@ -29,6 +29,8 @@ using fgciams.domain.clsVoucher;
 using fgciams.domain.clsAccountType;
 using fgciams.domain.clsAccountingLine;
 using Microsoft.AspNetCore.SignalR.Client;
+using fgciams.domain.clsCheck;
+using fgciams.domain.clsVoucherRouteBatch;
 
 namespace fgciams.Common
 {
@@ -63,6 +65,11 @@ namespace fgciams.Common
         public static AccountTypeModel accountTypeModel {get; set;} = default!;
         public static AccountLineGroupModel accountLineGroup {get; set;} = default!;
         public static AccountLineTypeModel accountLineType {get; set;} = default!;
+        public static LiquidationModel liquidationAudit {get; set;} = default!;
+        public static CheckModel checkModel {get;set;} = new();
+        public static CheckVoucherModel checkVouher {get;set;} = new();
+        public static VoucherRouteBatchModel voucherRouteBatch {get; set; } = default!;
+        public static VoucherRouteModel voucherRoute {get;set;} = new();
     }
     public static class GlobalClassList
     {
@@ -92,10 +99,18 @@ namespace fgciams.Common
          public static List<RequestForPaymentAuditTrailModel> rfpAuditTrailList {get; set;} = default!;
         public static List<LiquidationModel> LiquidationNotInRFP {get;set;} = default!;
         public static List<AccountingPOBillingModel> POBillingList {get; set;} = default!;
-        public static List<VoucherModel> Vouchers {get; set;} = default!;
+        public static List<VoucherModel> Vouchers {get; set;} = new();
         public static List<AccountTypeModel> listOfAccountTypes {get;set;} = default!;
         public static List<AccountLineGroupModel> accountLineGroups {get; set;} = default!;
         public static List<AccountLineTypeModel> accountLineTypes {get; set;} = default!;
+        public static List<CheckModel> listOfChecks {get; set;} = default!;
+        public static List<CheckVoucherModel> listOfCheckVouchers {get; set;} =  default!;
+        public static List<VoucherModel> BatchVouchers {get; set;} = default!;
+        public static List<VoucherRouteBatchDetailModel> VoucherBatchList {get; set;} = default!;
+        public static List<VoucherRouteBatchModel> VoucherBatches {get; set;} = default!;
+        public static List<VoucherRouteModel> currentVoucherRoutes {get; set;} =  new();
+        public static List<VoucherRouteAuditTrailModel> voucherRouteAuditTrail {get;set;} = default!;
+        public static HashSet<VoucherModel> selectedVoucherToRoute {get;set;} = default!;
     }
 
     public static class GlobalVariable
@@ -103,6 +118,7 @@ namespace fgciams.Common
         public static bool drawerOpen { get; set; } = true;
         public static bool hideExpandIcon { get; set; }
         public static Enums.ActionMode CRUDMode {get; set;}
-        public static HubConnection AMSHubConnection {get; set;}
+        public static HubConnection? AMSHubConnection {get; set;}
+        public static string errorPromptText {get;set;} = string.Empty;
     }
 }

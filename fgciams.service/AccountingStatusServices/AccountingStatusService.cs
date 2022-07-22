@@ -8,8 +8,8 @@ namespace fgciams.service.AccountingStatusServices
     public class AccountingStatusService : IAccountingStatusService
     {
         #region Properties
-        List<AccountingStatusModel> accountingStatusList;
-        AccountingStatusModel accountingStatusModel;
+        List<AccountingStatusModel> accountingStatusList = new();
+        AccountingStatusModel accountingStatusModel = new();
         HttpClient client;
         #endregion
         #region Constuctor
@@ -30,7 +30,7 @@ namespace fgciams.service.AccountingStatusServices
                 {
                     accountingStatusList = await httpResponse.Content.ReadAsAsync<List<AccountingStatusModel>>();
                 }
-                return accountingStatusList.OrderBy(x => x.StatusName).ToList();
+                return accountingStatusList;
             }
             catch (Exception ex)
             {

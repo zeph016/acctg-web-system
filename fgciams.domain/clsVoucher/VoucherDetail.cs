@@ -1,4 +1,7 @@
 ﻿using fgciams.domain.clsEnums;
+using fgciams.domain.clsProject;
+using fgciams.domain.clsExpenseLine;
+using fgciams.domain.clsDivision;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,5 +31,8 @@ namespace fgciams.domain.clsVoucher
         public int TemporaryId {get; set;}
         ///
         public bool showDesc { get; set; }
+        public Project selProj = new Project();
+        public ExpenseLineModel selExp = new ExpenseLineModel();
+        public DivisionModel selDiv = new DivisionModel();
     }
 }

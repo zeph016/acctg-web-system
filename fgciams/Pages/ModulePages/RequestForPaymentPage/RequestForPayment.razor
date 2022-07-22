@@ -1,0 +1,1494 @@
+@page "/requestpayment/create"
+@page "/requestpayment"
+
+@inject IAccountingStatusService accountingStatusService
+@inject IGlobalService globalService
+@inject IRequestForPaymentService requestForPaymentService
+@inject IModeOfPaymentService modeOfPaymentService
+@inject IBillingDocumentService billingDocumentService
+@inject IBankService bankService
+@inject IDivisionService divisionService
+@inject IRequestTypeService requestTypeService
+@inject IDialogService dialogService
+@inject ISnackbar snackbarService
+@inject NavigationManager navigationManager
+
+<div class='page-cont'>
+    <div class='drawer-no-left drawer-no-top'>
+        <MudDrawer Class='border-radius-5' @bind-Open="@openEditDrawer" Width='50%' Height="auto" Anchor='Anchor.Right' Elevation="3"
+                   Variant="@DrawerVariant.Temporary" DisableOverlay='true' Style='@editDrawerMargin'>
+            <MudDrawerHeader Class='d-flex align-center gap-1 bgc-542d6f' Dense='true'>
+                <MudIcon Class='color-white' Icon='@Icons.Filled.EditNote' Size='Size.Medium' />
+                <MudText Class='color-white font-bold' Typo="Typo.h6">RFP Details</MudText>
+            </MudDrawerHeader>
+            <MudNavMenu>
+                <div class='d-flex align-center pa-2 ma-2'>
+                    <div class='flex-1 justify-start'>
+                        <MudGrid Spacing='1'>
+                            @if (GlobalClass.requestForPayment?.RFPDetailTypeId == Enums.RFPDetailTypeId.Liquidation)
+                            {
+                                <MudItem Class='d-flex align-center gap-1' xs='12'>
+                                    <MudText Class='font-bold font-12'>Liquidation Control No:</MudText>
+                                    <MudChip Class='chip-radius-5 txt-uppercase font-bold font14' Color='Color.Info' Size='Size.Small'>
+                                        @selectedRFPDModelEdit.LiquidationControlNumber
+                                    </MudChip>
+                                </MudItem>
+                            }
+                            @if (GlobalClass.requestForPayment?.RFPDetailTypeId == Enums.RFPDetailTypeId.POBilling)
+                            {
+                                <MudItem Class='d-flex align-center gap-1' xs='12'>
+                                    <MudText Class='font-bold font-12'>PO Billing Control No:</MudText>
+                                    <MudChip Class='chip-radius-5 txt-uppercase font-bold font14' Color='Color.Info' Size='Size.Small'>
+                                        @selectedRFPDModelEdit.POBControlNumber
+                                    </MudChip>
+                                </MudItem>
+                            }
+                            @if (GlobalClass.requestForPayment?.RFPDetailTypeId == Enums.RFPDetailTypeId.PO)
+                            {
+                                <MudItem Class='d-flex align-center gap-1' xs='12'>
+                                    <MudText Class='font-bold font-12'>PO No:</MudText>
+                                    <MudChip Class='chip-radius-5 txt-uppercase font-bold font14' Color='Color.Info' Size='Size.Small'>
+                                        @selectedRFPDModelEdit.PONumber
+                                    </MudChip>
+                                </MudItem>
+                            }
+                            <MudItem xs='12'>
+                                <MudTextField @bind-Value='selectedRFPDModelEdit.Particulars' Variant='Variant.Outlined' Lines='2' Label='Description' AutoFocus Clearable />
+                            </MudItem>
+                            <MudItem xs='8'>
+                                <MudTextField Class='txt-search-overflow' @bind-Value="@selectedRFPDModelEdit.ChargedName" AdornmentIcon='@Icons.Filled.Search' Label='Project Id / Name / Charging'
+                                              IconSize='Size.Small' Required='reqCharging' Error='reqCharging' @onclick='(()=> ProjectChargingLookUp(selectedRFPDModelEdit))' ReadOnly AutoFocus></MudTextField>
+                            </MudItem>
+                            <MudItem Class='text-right d-flex align-center gap-1' xs='4'>
+                                <MudText Class='pt-6 font-bold font12'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
+                                <MudNumericField Class='txt-search-overflow font12 txtfield-right' @bind-Value='selectedRFPDModelEdit.Amount' HideSpinButtons='true'
+                                                 Format="N2" Error='reqAmount'
+                                                 ReadOnly='@(GlobalClass.requestForPayment?.RFPDetailTypeId != Enums.RFPDetailTypeId.None ? true : false)' />
+                            </MudItem>
+                            <MudItem xs='6'>
+                                <MudTextField @bind-Value='@selectedRFPDModelEdit.ExpenseLineName' AdornmentIcon='@Icons.Filled.Search' Label='Expense'
+                                              IconSize='Size.Small' Required='reqExpense' Error='reqExpense' @onclick='(()=> ExpenseLookUp(selectedRFPDModelEdit))' AutoFocus></MudTextField>
+                            </MudItem>
+                            <MudItem xs='6'>
+                                <MudTextField @bind-Value="@selectedRFPDModelEdit.DivisionShortcutName" AdornmentIcon='@Icons.Filled.Search' Label='Division'
+                                              IconSize='Size.Small' Required='reqDivision' Error='reqDivision' @onclick='(()=> DivisionLookUp(selectedRFPDModelEdit))' ReadOnly AutoFocus></MudTextField>
+                            </MudItem>
+                            <MudItem xs='12'>
+                                <MudTextField @bind-Value='@selectedRFPDModelEdit.InvoiceNo' Label='Invoice No.' AutoFocus Clearable />
+                            </MudItem>
+                            <MudItem xs='12'>
+                                <MudTextField @bind-Value="@selectedRFPDModelEdit.Remarks" Variant='Variant.Outlined' Lines='3' Label='Remarks' AutoFocus Clearable />
+                            </MudItem>
+                        </MudGrid>
+                    </div>
+                </div>
+                <div class='d-flex align-center gap-1 pa-2'>
+                    <MudSpacer />
+                    <MudButton OnClick='ClearChanges' Variant='Variant.Text' Size='Size.Small'>Cancel</MudButton>
+                    <MudButton OnClick='SaveChanges' StartIcon="@Icons.Material.Filled.DoneAll" Variant='Variant.Filled' Color='Color.Success' Size='Size.Small'>Done</MudButton>
+                </div>
+            </MudNavMenu>
+        </MudDrawer>
+    </div>
+    <MudContainer Class='requestpayment' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+        @if (!dataFetched)
+        {
+            <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
+                <MudSkeleton SkeletonType='SkeletonType.Text' Height='100px' Animation='Animation.Wave' />
+                <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='71vh' Animation='Animation.Wave' />
+            </MudPaper>
+        }
+        else
+        {
+            <MudCard Class='flex-1' Square>
+                <MudCardContent Class='pa-2'>
+                    <div class='requestpayment__entryform overflow-auto scroll-width-auto'>
+                        <div class="d-flex align-center justify-start rpheader">
+                            <div class='d-flex gap-1 align-center fgcilogocont'>
+                                <MudImage Class='fgcilogocont__imglogo' Src='images/fglogo/fgci1.png' Alt='fgci logo' Height='30' Width='30' />
+                                <MudText Class='fgcilogocont__lblfirst'>F. GURREA</MudText>
+                                <MudText Class='fgcilogocont__lblsecond'>Construction, Inc.</MudText>
+                            </div>
+                            <MudSpacer />
+                            <div class='d-flex gap-1 align-center'>
+                                <MudText Class='requestpayment__entryformtitle'>@GlobalClass.pageTitle</MudText>
+                            </div>
+                            <MudSpacer />
+                        </div>
+                        <div class="d-flex align-center rpheadmid">
+                            <div class='d-flex align-center gap-2 rpheadmid__cont1'>
+                                <MudText Class='font-bold font10 txt-uppercase'>name/payee:</MudText>
+                                <MudTextField Class='requestpayment__txtinputs' @bind-Value='payee.ProjectName' @onclick='LookUpDialog' T='string' Margin='Margin.Dense'
+                                              Error='reqNamePayee' ErrorText='' DisableUnderLine='false' ReadOnly='true' />
+                            </div>
+                            <div class='d-flex align-center gap-2 rpheadmid__cont2'>
+                                <MudText Class='font-bold font10 txt-uppercase'>request date:</MudText>
+                                <MudDatePicker Class='requestpayment__txtinputs' @bind-Date='dateReq' IconSize='Size.Small' Adornment='Adornment.None' />
+                            </div>
+                            <div class='d-flex align-center gap-2 rpheadmid__cont3'>
+                                <MudText Class='font-bold font10 txt-uppercase'>date needed:</MudText>
+                                <MudDatePicker Class='requestpayment__txtinputs' @bind-Date='dateReq' IconSize='Size.Small' Adornment='Adornment.None' />
+                            </div>
+                        </div>
+                        <div class="rptbbody">
+                            <MudTable Class='requestpayment__table' Items="GlobalClassList.requestForPayments" Bordered=true Striped=true ReadOnly=false CanCancelEdit=true
+                                      Dense=true Elevation='0' OnCommitEditClick='@(()=> TotalAmount())' IsEditRowSwitchingBlocked=true Height='auto'>
+                                <ToolBarContent>
+                                    <div class='d-flex align-center gap-2'>
+                                        <MudText Class='font-bold font10 txt-uppercase'>Request Category:</MudText>
+                                        <MudSelect Class='requestpayment__txtinputs' @bind-Value='GlobalClass.requestForPayment.RFPDetailTypeId' Dense='true' style='margin-top: 3px; width: 200px;' Disabled='disableRequestCategory'>
+                                            @foreach (Enums.RFPDetailTypeId item in Enum.GetValues(typeof(Enums.RFPDetailTypeId)))
+                                            {
+                                                <MudSelectItem Class='requestpayment__select' Value='@item'>@Extensions.GetEnumDescription(item)</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </div>
+                                    <div class='d-flex align-center gap-2 ml-2'>
+                                        <MudText Class='font-bold font10 txt-uppercase'>Request Type:</MudText>
+                                        @if (GlobalClass.requestForPayment == null || GlobalClass.requestForPayment.Id == 0)
+                                        {
+                                            <MudSelect Class='requestpayment__txtinputs' @bind-Value='selectedRequestType' Dense='true' style='margin-top: 3px; width: 200px;'>
+                                                @foreach (var item in GlobalClassList.requestTypes)
+                                                    {
+                                                    <MudSelectItem Class='requestpayment__select' Value='@item'>@item.TypeName</MudSelectItem>
+                                                    }
+                                            </MudSelect>
+                                        }
+                                        else
+                                        {
+                                            <MudSelect Class='requestpayment__txtinputs' @bind-Value='selectedRequestType.Id' Dense='true' style='margin-top: 3px; width: 200px;'>
+                                                @foreach (var item in GlobalClassList.requestTypes)
+                                                    {
+                                                    <MudSelectItem Class='requestpayment__select' Value='@item.Id'>@item.TypeName</MudSelectItem>
+                                                    }
+                                            </MudSelect>
+                                        }
+                                    </div>
+                                    <MudSpacer />
+                                    @if(GlobalClass.requestForPayment?.RFPDetailTypeId != Enums.RFPDetailTypeId.None)
+                                    {
+                                    <MudTooltip Text='Add details' style="">
+                                        <MudButton Class='wspace-nowrap' OnClick='AddReversal' StartIcon="@Icons.Filled.Add" aria-label="add" Color='Color.Error' Variant='Variant.Text' Size='Size.Small'>
+                                            Add Reversal
+                                        </MudButton>
+                                    </MudTooltip>
+                                    }
+                                    <MudTooltip Text='Add details'>
+                                        <MudButton Class='wspace-nowrap' OnClick='AddNew' StartIcon="@Icons.Filled.Add" aria-label="add" Color='Color.Info' Variant='Variant.Text' Size='Size.Small'>
+                                            Add details
+                                        </MudButton>
+                                    </MudTooltip>
+                                    <MudTooltip Text='Reset Details'>
+                                        <MudButton OnClick='RefreshTable' StartIcon="@Icons.Filled.Refresh" aria-label="add" Color='Color.Warning' Variant='Variant.Text' Size='Size.Small'>
+                                            Reset
+                                        </MudButton>
+                                    </MudTooltip>
+                                </ToolBarContent>
+                                <ColGroup>
+                                    <col style='width: 10px' />
+                                    <col />
+                                    <col />
+                                    <col style='width: 20px' />
+                                    @if (GlobalClass.requestForPayment.RFPDetailTypeId != Enums.RFPDetailTypeId.None)
+                                        {
+                                        <col style='width: 20px' />
+                                        }
+                                    <col style='width:20px' />
+                                    <col />
+                                    <col />
+                                    <col style='width: 1%' />
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh></MudTh>
+                                    <MudTh Class='lbl70'>description</MudTh>
+                                    <MudTh Class='lbl70'>project id / name / charging</MudTh>
+                                    <MudTh Class='lbl70'>division</MudTh>
+                                    <MudTh Class='lbl70'>expense</MudTh>
+                                    @if (GlobalClass.requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.Liquidation)
+                                        {
+                                        <MudTd Class='lbl70'>liq. control no.</MudTd>
+                                        }
+                                    @if (GlobalClass.requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.POBilling)
+                                        {
+                                        <MudTd Class='lbl70'>po-b control no.</MudTd>
+                                        }
+                                    @if (GlobalClass.requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.PO)
+                                        {
+                                        <MudTd Class='lbl70'>po no.</MudTd>
+                                        }
+                                    <MudTh Class='lbl70'>invoice</MudTh>
+                                    <MudTh Class='lbl70'>remarks</MudTh>
+                                    <MudTh Class='lbl70 text-right'>amount</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd Class='text-center pa-0' DataLabel='Actions'>
+                                        <div class='d-flex gap-2 pl-2 pr-2'>
+                                            <MudTooltip Text='Add Details'>
+                                                <MudIconButton OnClick='(() => EditRow(context))' Icon='@Icons.Filled.Edit' Color='Color.Tertiary' Size='Size.Small' />
+                                            </MudTooltip>
+                                            <MudTooltip Text='Remove Detail'>
+                                                <MudIconButton OnClick='(()=> RemovedRequestForPaymentDetails(context))' Icon='@Icons.Filled.RemoveCircle' Color='Color.Error' Size='Size.Small' />
+                                            </MudTooltip>
+                                        </div>
+                                    </MudTd>
+                                    <MudTd Class='font12 txt-oflow-el' DataLabel='Particulars' Style='max-width: 200px'>
+                                        @context.Particulars
+                                    </MudTd>
+                                    <MudTd Class='font12' DataLabel='Charged To'> @context.ChargedName</MudTd>
+                                    <MudTd Class='text-center' DataLabel='Division'>
+                                        <MudChip Class='chip-radius-5 txt-uppercase font-bold font12' Size='Size.Small'>
+                                            @context.DivisionShortcutName
+                                        </MudChip>
+                                    </MudTd>
+                                    <MudTd DataLabel='Expense'>
+                                        <MudChip Class='chip-radius-5 txt-uppercase font-bold font12' Size='Size.Small'>
+                                            @context.ExpenseLineName
+                                        </MudChip>
+                                    </MudTd>
+                                    @if (GlobalClass.requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.Liquidation)
+                                        {
+                                        <MudTd Class='text-center' DataLabel='PO Billing'>
+                                            <MudChip Class='chip-radius-5 txt-uppercase font-bold font12' Color='Color.Info' Size='Size.Small'>
+                                                @context.LiquidationControlNumber
+                                            </MudChip>
+                                        </MudTd>
+                                        }
+                                    @if (GlobalClass.requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.POBilling)
+                                        {
+                                        <MudTd Class='text-center' DataLabel='PO Billing'>
+                                            <MudChip Class='chip-radius-5 txt-uppercase font-bold font12' Color='Color.Info' Size='Size.Small'>
+                                                @context.POBControlNumber
+                                            </MudChip>
+
+                                        </MudTd>
+                                        }
+                                    @if (GlobalClass.requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.PO)
+                                        {
+                                        <MudTd Class='text-center' DataLabel='PO'>
+                                            <MudChip Class='chip-radius-5 txt-uppercase font-bold font12' Color='Color.Info' Size='Size.Small'>
+                                                @context.PONumber
+                                            </MudChip>
+                                        </MudTd>
+                                        }
+                                    <MudTd Class='font12 font12 txt-oflow-el text-center' DataLabel='Invoice' Style='max-width: 150px'>@context.InvoiceNo</MudTd>
+                                    <MudTd Class='font12 font12 txt-oflow-el' DataLabel='Remarks' Style='max-width: 150px'>@context.Remarks</MudTd>
+                                    <MudTd Class='wspace-nowrap text-right font-bold font12' DataLabel='Amount'>
+                                        @if (context.Amount > 0)
+                                            {
+                                            <MudText Class='font-bold color-green' Typo='Typo.body2'>
+                                                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @Math.Round(context.Amount, 2).ToString("N2")
+                                            </MudText>
+                                            }
+                                            else
+                                            {
+                                            <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
+                                                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @Math.Round(context.Amount, 2).ToString("N2")
+                                            </MudText>
+                                            }
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                        <div class="d-flex align-center rptbfooter">
+                            <div class='d-flex align-center gap-2 rptbfooter__cont1'>
+                                <MudText Class='requestpayment__lblinput2'>for labor requests:</MudText>
+                                <MudTextField Class='requestpayment__txtinputs' T='string' Margin='Margin.Dense' DisableUnderLine='false'></MudTextField>
+                            </div>
+                            <div class='d-flex align-center gap-2 rptbfooter__cont1'>
+                                <MudText Class='requestpayment__lblinput2'>A/R: Php:</MudText>
+                                <MudTextField Class='requestpayment__txtinputs' @bind-Value='GlobalClass.requestForPayment.ARPhp' Margin='Margin.Dense' DisableUnderLine='false' Format='#0.0'></MudTextField>
+                            </div>
+                            <div class='d-flex align-center gap-2 rptbfooter__cont1'>
+                                <MudText Class='requestpayment__lblinput2'>Retention: Php:</MudText>
+                                <MudTextField Class='requestpayment__txtinputs' @bind-Value='GlobalClass.requestForPayment.RetentionPhp' Margin='Margin.Dense' DisableUnderLine='false' Format='#0.0'></MudTextField>
+                            </div>
+                            <div class='d-flex align-center gap-2 rptbfooter__cont1'>
+                                <MudText Class='font-bold font14'>TOTAL: </MudText>
+                                <MudSpacer />
+                                <MudText Class='wspace-nowrap font-bold font16'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)  @totalAmount.ToString("N2")</MudText>
+                                @* <MudTextField Class='requestpayment__txtinputs text-right' @bind-Value='@totalAmount' Margin='Margin.Dense' DisableUnderLine='true' ReadOnly Style='font-size: 18px' /> *@
+                            </div>
+                        </div>
+                        <div class="dflex-space-around rptbleft">
+                            <MudText Class='requestpayment__lblside rotate270'>particulars</MudText>
+                        </div>
+                        <div class="dflex-space-around rpfooterhead">
+                            <MudText Class='requestpayment__lblside'>mode of payment</MudText>
+                        </div>
+                        <div class="rpfooterbody overflow-hidden">
+                            <div class='d-flex flex-wrap border-thin-right pa-1 overflow-auto scroll-width-auto scroll-color-dgray'>
+                                @if (GlobalClass.requestForPayment == null || GlobalClass.requestForPayment.Id == 0)
+                                {
+                                    switch (GlobalClass.forPrintingOrSaveRFP)
+                                    {
+                                        case null:
+
+                                            <MudRadioGroup @bind-SelectedOption='selectedPaymentMode'>
+                                                @foreach (var item in GlobalClassList.modeOfPaymentList)
+                                                                {
+                                                    <MudRadio Option='@item' Dense='true' Size='Size.Small'>
+                                                        <MudText Class='font10 font-bold txt-uppercase'>@item.ModeName</MudText>
+                                                    </MudRadio>
+                                                                }
+                                            </MudRadioGroup>
+
+                                            break;
+
+                                        default:
+
+                                            <MudRadioGroup @bind-SelectedOption='selectedPaymentMode.Id'>
+                                                @foreach (var item in GlobalClassList.modeOfPaymentList)
+                                                                {
+                                                    <MudRadio Option='@item.Id' Dense='true' Size='Size.Small'>
+                                                        <MudText Class='font10 font-bold txt-uppercase'>@item.ModeName</MudText>
+                                                    </MudRadio>
+                                                                }
+                                            </MudRadioGroup>
+
+                                            break;
+                                    }
+                                }
+                                else
+                                {
+                                    <MudRadioGroup @bind-SelectedOption='selectedPaymentMode.Id'>
+                                        @foreach (var item in GlobalClassList.modeOfPaymentList)
+                                                {
+                                            <MudRadio Option='@item.Id' Dense='true' Size='Size.Small'>
+                                                <MudText Class='font10 font-bold txt-uppercase'>@item.ModeName</MudText>
+                                            </MudRadio>
+                                                }
+                                    </MudRadioGroup>
+                                }
+                            </div>
+                            <div class='d-flex flex-column border-thin-right pa-2 overflow-auto'>
+                                <div class='d-flex gap-1'>
+                                    <div class='flex-1'>
+                                        <MudText Class='requestpayment__lblinput2'>Account No:</MudText>
+                                        <MudTextField Class='txt-top-0 pt-2' @bind-Value='GlobalClass.requestForPayment.BankAccountNo' Margin='Margin.Dense' DisableUnderLine='false' />
+                                    </div>
+                                    <div class='flex-1'>
+                                        <MudText Class='requestpayment__lblinput2'>bank & account no.:</MudText>
+                                        <BlazoredTypeahead SearchMethod=SearchBank
+                                                           @bind-Value='bank' Debounce="500" placeholder='BANK & ACCOUNT NO.'>
+                                            <SelectedTemplate>
+                                                @context.BankName | @context.AccountNo
+                                            </SelectedTemplate>
+                                            <ResultTemplate>
+                                                @context.BankName | @context.AccountNo
+                                            </ResultTemplate>
+                                        </BlazoredTypeahead>
+                                    </div>
+                                </div>
+                                <MudText Class='requestpayment__lblinput2'>remarks:</MudText>
+                                <MudTextField Class='txt-top-0' T='string' Margin='Margin.Dense' DisableUnderLine='false' />
+                            </div>
+                            <div class='d-flex flex-column overflow-auto'>
+                                <div class='d-flex align-center justify-center pa-2 border-thin-bottom bgc-beige scroll-color-dgray'>
+                                    <MudText Class='font10 font-bold txt-uppercase'>billing requirements for payment</MudText>
+                                </div>
+                                <div class='d-flex flex-wrap overflow-auto scroll-width-auto'>
+                                    @foreach (var items in billingDocCB)
+                                    {
+                                        <MudCheckBox @bind-Checked='items.IsChecked' Dense='true' Size='Size.Small'>
+                                            <MudText Class='font10 font-bold txt-uppercase'>@items.selectedBillingDoc.DocumentName : <h6><u>Attach File</u></h6></MudText>
+                                        </MudCheckBox>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="rpfooterfoot d-flex align-center justify-space-around pa-2">
+                            <div class='d-flex align-center gap-1 width20'>
+                                @if (preparedByImg.Count() == 0)
+                                {
+                                    <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
+                                }
+                                else
+                                {
+                                    <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(preparedByImg)}")' Size='Size.Medium' />
+                                }
+                                <MudTextField Class='txt-search-overflow txt-top-0 font14-txtfield' @bind-Value=_employeeName HelperText="Prepared by"
+                                              @onclick='(()=> LookUpPreparedBy())' ReadOnly></MudTextField>
+                            </div>
+                            <div class='d-flex align-center gap-1 width20'>
+                                @if (requestorImg.Count() == 0)
+                                {
+                                    <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
+                                }
+                                else
+                                {
+                                    <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(requestorImg)}")' Size='Size.Medium' />
+                                }
+                                <MudTextField Class='txt-search-overflow txt-top-0 font14-txtfield' @bind-Value=_requestedby HelperText="Requested by" Error='requiredrequest' ErrorText='This field is required'
+                                              @onclick='(()=> LookUpRequestedBy())' ReadOnly></MudTextField>
+                            </div>
+                            <div class='d-flex align-center gap-1 width20'>
+                                @if (recommendByImg.Count() == 0)
+                                {
+                                    <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
+                                }
+                                else
+                                {
+                                    <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(recommendByImg)}")' Size='Size.Medium' />
+                                }
+                                <MudTextField Class='txt-search-overflow txt-top-0 font14-txtfield' @bind-Value=_recommendby HelperText="Recommended by" Error='requiredRecommend' ErrorText='This field is required'
+                                              @onclick='(()=> LookUpRecommendBy())' ReadOnly></MudTextField>
+
+                            </div>
+                            <div class='d-flex align-center gap-1 width20'>
+                                @if (approvedByImg.Count() == 0)
+                                {
+                                    <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
+                                }
+                                else
+                                {
+                                    <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(approvedByImg)}")' Size='Size.Medium' />
+                                }
+                                <MudTextField Class='txt-search-overflow txt-top-0 font14-txtfield' @bind-Value=_approvedby HelperText="Approved by" Error='requiredApprover' ErrorText='This field is required'
+                                              @onclick='(()=> LookUpApprovedBy())' ReadOnly></MudTextField>
+                            </div>
+                        </div>
+                    </div>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudSpacer />
+                    <MudTooltip Text='Save Request/Disbursement'>
+                        <MudButton OnClick='(()=> navigationManager.NavigateTo($"/requestpayment/list"))' aria-label="Cancel" Variant='Variant.Text' Size='Size.Small'>
+                            Cancel
+                        </MudButton>
+                    </MudTooltip>
+                    <MudTooltip Text='Save Request/Disbursement'>
+                        <MudButton OnClick='AddRequest' aria-label="add" Color='Color.Primary' Variant='Variant.Filled' Size='Size.Small'>
+                            Save Request
+                        </MudButton>
+                    </MudTooltip>
+                </MudCardActions>
+            </MudCard>
+        }
+    </MudContainer>
+</div>
+
+
+
+@code {
+
+    #region Properties
+
+    private string _employeeName = default!, _requestedby = default!,
+     _recommendby = default!, _approvedby = default!, editDrawerMargin = string.Empty;
+    private bool disableRequestCategory, openEditDrawer;
+    RequestTypeModel selectedRequestType = new RequestTypeModel();
+    AccountingPOBillingModel accountingPOBilling = new AccountingPOBillingModel();
+    BankModel selectedBank = new BankModel();
+    BankModel bank = new BankModel();
+    UserAccount preparedBy = new UserAccount();
+    UserAccount recommendBy = new UserAccount();
+    UserAccount approvedBy = new UserAccount();
+    UserAccount requestedBy = new UserAccount();
+    Project rowEditChargeTo = new Project();
+    Project payee = new Project();
+    DivisionModel selectedDivision = new DivisionModel();
+    ExpenseLineModel selectedExpense = new ExpenseLineModel();
+    ModeOfPaymentModel selectedPaymentMode = new ModeOfPaymentModel();
+    BillingDocumentModel selectedBillingDoc = new BillingDocumentModel();
+    Project selectedCharge = new Project();
+    List<BillingDocumentModelCB> billingDocCB = new List<BillingDocumentModelCB>();
+    List<RequestForPaymentDetailModel> removedRFPDetails = new List<RequestForPaymentDetailModel>();
+    RequestForPaymentDetailModel selectedRFPDModelEdit = new RequestForPaymentDetailModel();
+    private bool dataFetched, requiredApprover, requiredrequest, requiredRecommend, reqCharging, reqAmount, reqDivision, reqExpense, reqNamePayee;
+    private decimal totalAmount;
+    private DateTime? dateReq = DateTime.Now, dateNeed = DateTime.Now;
+    public EventCallback<ChangeEventArgs> ValueChanged { get; set; }
+    public EventCallback<ChangeEventArgs> OnInput { get; set; }
+    private byte[] preparedByImg = new byte[] { }, requestorImg = new byte[] { }, recommendByImg = new byte[] { }, approvedByImg = new byte[] { };
+    bool txt1;
+    #endregion
+
+    #region Methods
+
+    protected override async Task OnInitializedAsync()
+    {
+        GlobalClass.pageTitle = "REQUEST FOR PAYMENT/DISBURSEMENT";
+        while (GlobalClass.currentUserAccount == null
+        || GlobalClassList.modeOfPaymentList == null
+        || GlobalClassList.billingDocumentList == null
+        || GlobalClassList.requestTypes == null)
+            await Task.Delay(1);
+        await InitializedComponents();
+    }
+    void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+
+    #region Add New RFP Details
+    private void AddNew()
+    {
+        if (GlobalClass.requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.None)
+        {
+            var temp = 1;
+            GlobalClassList.requestForPayments.Add(new RequestForPaymentDetailModel());
+            rowEditChargeTo = new();
+            selectedDivision = new();
+            accountingPOBilling = new();
+            foreach (var item in GlobalClassList.requestForPayments)
+            {
+                item.TemporaryId = temp++;
+            }
+        }
+        if (GlobalClass.requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.Liquidation)
+            AddLiquidation();
+        if (GlobalClass.requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.POBilling)
+            AddPOBilling();
+        if (GlobalClass.requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.PO)
+            AddPO();
+    }
+    #endregion
+
+    #region Add Reversal
+    private void AddReversal()
+    {
+      GlobalClassList.requestForPayments.Add(new RequestForPaymentDetailModel());
+    }
+
+    #endregion
+
+    #region Add PO
+    private async void AddPO()
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = "PO";
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", "Select");
+        parameters.Add("color", Color.Success);
+        parameters.Add("lookUpType", Enums.LookUpType.PO);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GlobalRFPLiquidationLookUp.GlobalRFPLiquidationLookUp>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            StateHasChanged();
+            TotalAmount();
+        }
+    }
+    #endregion
+
+    #region Add Liquidation Lookup
+    async void AddLiquidation()
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = "Liquidations";
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", "Select");
+        parameters.Add("color", Color.Success);
+        parameters.Add("lookUpType", Enums.LookUpType.Liquidation);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GlobalRFPLiquidationLookUp.GlobalRFPLiquidationLookUp>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            StateHasChanged();
+            TotalAmount();
+        }
+    }
+    #endregion
+
+    #region Add PO Billing Lookup
+    private async void AddPOBilling()
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = "PO Billings";
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", "Select");
+        parameters.Add("color", Color.Success);
+        parameters.Add("lookUpType", Enums.LookUpType.POBilling);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GlobalRFPLiquidationLookUp.GlobalRFPLiquidationLookUp>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            StateHasChanged();
+            TotalAmount();
+        }
+    }
+    #endregion
+
+    #region Prepared By LookUp
+    private async void LookUpPreparedBy()
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = "Employee Look up";
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", "Select");
+        parameters.Add("color", Color.Success);
+        parameters.Add("lookUpType", Enums.LookUpType.Employee);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            var prepared = (UserAccount)resultDialog.Data;
+            preparedBy = prepared;
+            _employeeName = prepared.EmployeeName;
+            preparedByImg = prepared.Picture;
+            StateHasChanged();
+        }
+    }
+    #endregion
+
+    #region Requested By LookUp
+    private async void LookUpRequestedBy()
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = "Employee Look up";
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", "Select");
+        parameters.Add("color", Color.Success);
+        parameters.Add("lookUpType", Enums.LookUpType.Employee);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            var requested = (UserAccount)resultDialog.Data;
+            requestedBy = requested;
+            _requestedby = requested.EmployeeName;
+            requestorImg = requested.Picture;
+            StateHasChanged();
+        }
+    }
+    #endregion
+
+    #region Recommend By LookUp
+    private async void LookUpRecommendBy()
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = "Employee Look up";
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", "Select");
+        parameters.Add("color", Color.Success);
+        parameters.Add("lookUpType", Enums.LookUpType.Employee);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            var recom = (UserAccount)resultDialog.Data;
+            recommendBy = recom;
+            _recommendby = recom.EmployeeName;
+            recommendByImg = recom.Picture;
+            StateHasChanged();
+        }
+    }
+    #endregion
+
+    #region Approved By LookUp
+    private async void LookUpApprovedBy()
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = "Employee Look up";
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", "Select");
+        parameters.Add("color", Color.Success);
+        parameters.Add("lookUpType", Enums.LookUpType.Employee);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            var approve = (UserAccount)resultDialog.Data;
+            approvedBy = approve;
+            _approvedby = approve.EmployeeName;
+            approvedByImg = approve.Picture;
+            StateHasChanged();
+        }
+    }
+    #endregion
+
+    #region Initialize Components
+
+    private async Task InitializedComponents()
+    {
+        PopulateBillDocCB();
+        navigationManager.LocationChanged += OnLocationChanged;
+        var firstValue = GlobalClassList.requestTypes.Where(x => x.Id == 1).FirstOrDefault();
+        if (firstValue != null)
+            selectedRequestType = firstValue;
+        if (GlobalClass.requestForPayment == null
+        || GlobalClass.requestForPayment.Id == 0)
+        {
+            switch (Extensions.CheckUrlType(navigationManager.Uri))
+            {
+                case true:
+
+                    requestedBy = new();
+                    recommendBy = new();
+                    approvedBy = new();
+                    payee = new();
+                    bank = new();
+                    requestorImg = new byte[] { };
+                    recommendByImg = new byte[] { };
+                    approvedByImg = new byte[] { };
+
+                    dateNeed = DateTime.Now;
+                    dateReq = DateTime.Now;
+                    disableRequestCategory = false;
+                    preparedBy = GlobalClass.currentUserAccount;
+                    _employeeName = GlobalClass.currentUserAccount.EmployeeName;
+                    preparedByImg = GlobalClass.currentUserAccount.Picture;
+
+                    GlobalClass.requestForPayment = new RequestForPaymentModel();
+                    GlobalClassList.requestForPayments = new List<RequestForPaymentDetailModel>();
+
+                    break;
+
+                default:
+
+                    if (GlobalClass.forPrintingOrSaveRFP == null)
+                        navigationManager.NavigateTo("/requestpayment/list");
+                    else
+                        RemappedProperties();
+
+                    break;
+            }
+        }
+        else
+        {
+            disableRequestCategory = true;
+            await DisplayProperties();
+            TotalAmount();
+        }
+
+        CompletedFetch();
+    }
+
+    #endregion
+
+    #region Remapping Properties
+
+    async void RemappedProperties()
+    {
+        preparedBy.EmployeeId = GlobalClass.forPrintingOrSaveRFP.PreparedById;
+        _employeeName = GlobalClass.forPrintingOrSaveRFP.PreparedByName;
+        requestedBy.EmployeeId = GlobalClass.forPrintingOrSaveRFP.RequestedById;
+        _requestedby = GlobalClass.forPrintingOrSaveRFP.RequestedByName;
+        recommendBy.EmployeeId = GlobalClass.forPrintingOrSaveRFP.RecommendedById;
+        _recommendby = GlobalClass.forPrintingOrSaveRFP.RecommendedByName;
+        approvedBy.EmployeeId = GlobalClass.forPrintingOrSaveRFP.ApprovedById;
+        _approvedby = GlobalClass.forPrintingOrSaveRFP.ApprovedByName;
+        payee.ProjectId = GlobalClass.forPrintingOrSaveRFP.PayeeId;
+        payee.ProjectCategoryId = GlobalClass.forPrintingOrSaveRFP.PayeeCategoryId;
+        payee.ProjectName = GlobalClass.forPrintingOrSaveRFP.PayeeName;
+
+        preparedByImg = GlobalClass.forPrintingOrSaveRFP.PreparedByPicture;
+        requestorImg = GlobalClass.forPrintingOrSaveRFP.RequestedByPicture;
+        recommendByImg = GlobalClass.forPrintingOrSaveRFP.RecommendedByPicture;
+        approvedByImg = GlobalClass.forPrintingOrSaveRFP.ApprovedByPicture;
+
+        dateNeed = GlobalClass.forPrintingOrSaveRFP.DateNeeded;
+        dateReq = GlobalClass.forPrintingOrSaveRFP.RequestDate;
+
+        selectedPaymentMode = await modeOfPaymentService.GetModeOfPaymentSingleValue(GlobalClass.forPrintingOrSaveRFP.ModeOfPaymentId, GlobalClass.token);
+        bank = await bankService.GetBank(GlobalClass.forPrintingOrSaveRFP.BankId, GlobalClass.token);
+
+        requestedBy = await globalService.GetEmployeeById(GlobalClass.forPrintingOrSaveRFP.RequestedById, GlobalClass.token);
+        recommendBy = await globalService.GetEmployeeById(GlobalClass.forPrintingOrSaveRFP.RecommendedById, GlobalClass.token);
+        approvedBy = await globalService.GetEmployeeById(GlobalClass.forPrintingOrSaveRFP.ApprovedById, GlobalClass.token);
+        preparedBy = await globalService.GetEmployeeById(GlobalClass.forPrintingOrSaveRFP.PreparedById, GlobalClass.token);
+
+        GlobalClass.requestForPayment.RFPBillingDocuments.ForEach(billdocs =>
+        {
+            billingDocCB.Where(x => x.Id == billdocs.BillingDocumentId).ToList().ForEach(x =>
+              {
+                  x.IsChecked = true;
+                  x.BillingDocumentId = billdocs.Id;
+              });
+        });
+        StateHasChanged();
+    }
+
+    #endregion
+
+    #region Location Changed
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        GlobalClass.requestForPayment = new();
+        GlobalClassList.requestForPayments = new();
+
+        Dispose();
+    }
+
+
+    public void Dispose()
+    {
+        navigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+    #endregion
+
+    #region Saving/Print RFP
+
+    private void AddRequest()
+    {
+        if (Validation())
+        {
+            GlobalClass.forPrintingOrSaveRFP = MapProperties();
+            navigationManager.NavigateTo($"rfpreport/print");
+        }
+        else
+            Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbarService, Severity.Error);
+
+    }
+
+    #endregion
+
+    #region Refresh Table
+
+    private void RefreshTable()
+    {
+        GlobalClassList.requestForPayments = new List<RequestForPaymentDetailModel>();
+    }
+
+    #endregion
+
+    #region Display Properties
+
+    async Task DisplayProperties()
+    {
+        await GetByIdDisplayProperties();
+        GlobalClass.requestForPayment.RFPBillingDocuments.ForEach(billdocs =>
+        {
+            billingDocCB.Where(x => x.Id == billdocs.BillingDocumentId).ToList().ForEach(x =>
+        {
+              x.IsChecked = true;
+              x.BillingDocumentId = billdocs.Id;
+          });
+        });
+
+        payee.ProjectName = GlobalClass.requestForPayment.PayeeName;
+        payee.ProjectId = GlobalClass.requestForPayment.PayeeId;
+        payee.ProjectCategoryId = GlobalClass.requestForPayment.PayeeCategoryId;
+        dateNeed = GlobalClass.requestForPayment.DateNeeded;
+        dateReq = GlobalClass.requestForPayment.RequestDate;
+
+        _employeeName = GlobalClass.requestForPayment.PreparedByName;
+        _requestedby = GlobalClass.requestForPayment.RequestedByName;
+        _recommendby = GlobalClass.requestForPayment.RecommendedByName;
+        _approvedby = GlobalClass.requestForPayment.ApprovedByName;
+    }
+    async Task GetByIdDisplayProperties()
+    {
+        if (GlobalClass.forPrintingOrSaveRFP == null)
+            GlobalClass.requestForPayment.RFPBillingDocuments = await billingDocumentService.GetBillingDocument(GlobalClass.requestForPayment.Id, GlobalClass.token);
+
+        bank = await bankService.GetBank(GlobalClass.requestForPayment.BankId, GlobalClass.token);
+        selectedPaymentMode = await modeOfPaymentService.GetModeOfPaymentSingleValue(GlobalClass.requestForPayment.ModeOfPaymentId, GlobalClass.token);
+        selectedRequestType = await requestTypeService.GetRequestType(GlobalClass.requestForPayment.RequestTypeId, GlobalClass.token);
+        requestedBy = await globalService.GetEmployeeById(GlobalClass.requestForPayment.RequestedById, GlobalClass.token);
+        recommendBy = await globalService.GetEmployeeById(GlobalClass.requestForPayment.RecommendedById, GlobalClass.token);
+        approvedBy = await globalService.GetEmployeeById(GlobalClass.requestForPayment.ApprovedById, GlobalClass.token);
+        preparedBy = await globalService.GetEmployeeById(GlobalClass.requestForPayment.PreparedById, GlobalClass.token);
+        GlobalClassList.requestForPayments = await requestForPaymentService.LoadRequestPaymentDetail(GlobalClass.requestForPayment.Id, GlobalClass.token);
+
+        preparedByImg = await GetEmployeeImg(GlobalClass.requestForPayment.PreparedById);
+        requestorImg = await GetEmployeeImg(GlobalClass.requestForPayment.RequestedById);
+        recommendByImg = await GetEmployeeImg(GlobalClass.requestForPayment.RecommendedById);
+        approvedByImg = await GetEmployeeImg(GlobalClass.requestForPayment.ApprovedById);
+    }
+
+    #endregion
+
+    #region Mapping RFP
+
+    RequestForPaymentModel MapProperties()
+    {
+        MapBillingDocs();
+
+        GlobalClass.requestForPayment.PayeeId = payee.ProjectId;
+        GlobalClass.requestForPayment.PayeeName = payee.ProjectName;
+        GlobalClass.requestForPayment.PayeeCategoryId = payee.ProjectCategoryId;
+        GlobalClass.requestForPayment.RequestDate = dateReq;
+        GlobalClass.requestForPayment.DateNeeded = dateNeed;
+        GlobalClass.requestForPayment.Remarks = "";
+
+        GlobalClass.requestForPayment.AccountingStatusId = GlobalClassList.accountingStatusList
+        .Where(x => x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.RFPG)
+        .Select(x => x.Id)
+        .FirstOrDefault();
+
+        GlobalClass.requestForPayment.PreparedById = preparedBy.EmployeeId;
+        GlobalClass.requestForPayment.PreparedByName = preparedBy.EmployeeName;
+        GlobalClass.requestForPayment.RequestTypeId = selectedRequestType.Id;
+        GlobalClass.requestForPayment.ModeOfPaymentId = selectedPaymentMode.Id;
+        GlobalClass.requestForPayment.ModeOfPayment = selectedPaymentMode.ModeName;
+        GlobalClass.requestForPayment.BankName = bank.BankName;
+        GlobalClass.requestForPayment.ApprovedById = approvedBy.EmployeeId;
+        GlobalClass.requestForPayment.ApprovedByName = approvedBy.EmployeeName;
+        GlobalClass.requestForPayment.RecommendedById = recommendBy.EmployeeId;
+        GlobalClass.requestForPayment.RecommendedByName = recommendBy.EmployeeName;
+        GlobalClass.requestForPayment.RequestedById = requestedBy.EmployeeId;
+        GlobalClass.requestForPayment.RequestedByName = requestedBy.EmployeeName;
+        GlobalClass.requestForPayment.RequestForPaymentDetails = GlobalClassList.requestForPayments;
+        GlobalClass.requestForPayment.BankId = bank.Id;
+
+        GlobalClass.requestForPayment.Activity = GlobalClass.requestForPayment.Id == 0
+        ? "New request for payment created" : "Request for payment updated";
+
+        GlobalClass.requestForPayment.UserId = GlobalClass.currentUserAccount.EmployeeId;
+        GlobalClass.requestForPayment.LogDateTime = DateTime.Now;
+        GlobalClass.requestForPayment.RemovedRequestForPaymentDetails = removedRFPDetails.Count() == 0
+        ? new List<RequestForPaymentDetailModel>() : removedRFPDetails.ToList();
+
+        GlobalClass.requestForPayment.PreparedByPicture = preparedByImg;
+        GlobalClass.requestForPayment.RequestedByPicture = requestorImg;
+        GlobalClass.requestForPayment.RecommendedByPicture = recommendByImg;
+        GlobalClass.requestForPayment.ApprovedByPicture = approvedByImg;
+
+        return GlobalClass.requestForPayment;
+    }
+
+    void MapBillingDocs()
+    {
+        var billDocs = new List<RFPBillingDocumentModel>();
+        billDocs = billingDocCB.Where(x => x.IsChecked == true).Select(bd => new RFPBillingDocumentModel()
+        {
+            Id = bd.BillingDocumentId,
+            BillingDocumentId = bd.Id,
+            DocumentName = bd.selectedBillingDoc.DocumentName,
+            IsActive = true
+
+        }).ToList();
+
+        GlobalClass.requestForPayment.RFPBillingDocuments = billDocs.ToList();
+
+        RemovedRFPBillingDocuments();
+    }
+
+    void RemovedRFPBillingDocuments()
+    {
+        var removedDocs = new List<RFPBillingDocumentModel>();
+        removedDocs = billingDocCB.Where(x => x.IsChecked == false && x.BillingDocumentId != 0).Select(bd => new RFPBillingDocumentModel()
+        {
+
+            Id = bd.BillingDocumentId,
+            BillingDocumentId = bd.Id,
+            RequestForPaymentId = GlobalClass.requestForPayment.Id,
+            IsActive = false
+
+        }).ToList();
+
+        GlobalClass.requestForPayment.RemovedRFPBillingDocuments = removedDocs;
+    }
+
+    #endregion
+
+    #region Load Employee
+    async Task<IEnumerable<UserAccount>> LoadEmployee(string employeeName)
+    {
+        var filterParameter = new FilterParameter()
+        {
+            IsName = true,
+            Name = employeeName,
+            IsLookUp = true
+        };
+        return await globalService.LoadAllEmployee(filterParameter, GlobalClass.token);
+    }
+
+    #endregion
+
+    #region Lookup Charging line
+    private async void ProjectChargingLookUp(RequestForPaymentDetailModel RFP)
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = "Project Id / Name / Charging";
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", "Select");
+        parameters.Add("color", Color.Success);
+        parameters.Add("lookUpType", Enums.LookUpType.ChargeLine);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = false
+        };
+        Console.WriteLine(RFP.TemporaryId);
+        var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            selectedCharge = (Project)resultDialog.Data;
+            if (RFP.Id == 0)
+            {
+                GlobalClassList.requestForPayments.Where(x => x.TemporaryId == RFP.TemporaryId).ToList().ForEach(x =>
+                  {
+                      x.ChargedId = selectedCharge.ProjectId;
+                      x.ChargedName = selectedCharge.ProjectName;
+                      x.ChargedCategoryId = selectedCharge.ProjectCategoryId;
+                  });
+            }
+            else
+            {
+                GlobalClassList.requestForPayments.Where(x => x.Id == RFP.Id).ToList().ForEach(x =>
+                {
+                    x.ChargedId = selectedCharge.ProjectId;
+                    x.ChargedName = selectedCharge.ProjectName;
+                    x.ChargedCategoryId = selectedCharge.ProjectCategoryId;
+                });
+            }
+            StateHasChanged();
+        }
+    }
+    #endregion
+
+    #region Division Lookup
+    private async void DivisionLookUp(RequestForPaymentDetailModel RFP)
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = "Division";
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", "Select");
+        parameters.Add("color", Color.Success);
+        parameters.Add("lookUpType", Enums.LookUpType.Division);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = false
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            selectedDivision = (DivisionModel)resultDialog.Data;
+            if (RFP.Id == 0)
+            {
+                GlobalClassList.requestForPayments.Where(x => x.TemporaryId == RFP.TemporaryId).ToList().ForEach(x =>
+                 {
+                     x.DivisionId = selectedDivision.Id;
+                     x.DivisionName = selectedDivision.divisionName;
+                     x.DivisionShortcutName = selectedDivision.shortcutName;
+                 });
+            }
+            else
+            {
+                GlobalClassList.requestForPayments.Where(x => x.Id == RFP.Id).ToList().ForEach(x =>
+               {
+                   x.DivisionId = selectedDivision.Id;
+                   x.DivisionName = selectedDivision.divisionName;
+                   x.DivisionShortcutName = selectedDivision.shortcutName;
+               });
+            }
+            StateHasChanged();
+        }
+    }
+    #endregion
+
+    #region Expense Lookup
+    private async void ExpenseLookUp(RequestForPaymentDetailModel RFP)
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = "Expense Type";
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", "Select");
+        parameters.Add("color", Color.Success);
+        parameters.Add("lookUpType", Enums.LookUpType.ExpLine);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = false
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            selectedExpense = (ExpenseLineModel)resultDialog.Data;
+            if (RFP.Id == 0)
+            {
+                GlobalClassList.requestForPayments.Where(x => x.TemporaryId == RFP.TemporaryId).ToList().ForEach(x =>
+                  {
+                      x.ExpenseLineId = selectedExpense.Id;
+                      x.ExpenseLineName = selectedExpense.ExpenseName;
+                  });
+            }
+            else
+            {
+                GlobalClassList.requestForPayments.Where(x => x.Id == RFP.Id).ToList().ForEach(x =>
+                {
+                    x.ExpenseLineId = selectedExpense.Id;
+                    x.ExpenseLineName = selectedExpense.ExpenseName;
+                });
+            }
+            StateHasChanged();
+        }
+    }
+    #endregion
+
+    #region Lookup Payee
+    private async void LookUpDialog()
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = "Payee Look Up";
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", "Select");
+        parameters.Add("color", Color.Success);
+        parameters.Add("lookUpType", Enums.LookUpType.Project);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = false
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            payee = (Project)resultDialog.Data;
+            StateHasChanged();
+        }
+    }
+    #endregion
+
+    #region Lookup PO Billing
+    private async void LookUpPOBillingDialog()
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = "PO Billing Lookup";
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", "Select");
+        parameters.Add("color", Color.Success);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = false
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.AccountingPOBillingLookup.AccountingPOBillingLookupDialog>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            accountingPOBilling = (AccountingPOBillingModel)resultDialog.Data;
+            StateHasChanged();
+        }
+    }
+    #endregion
+
+    #region Populate Billing Documents
+    private void PopulateBillDocCB()
+    {
+        foreach (var item in GlobalClassList.billingDocumentList)
+        {
+            BillingDocumentModelCB cbValue = new BillingDocumentModelCB();
+            cbValue.Id = item.Id;
+            cbValue.IsChecked = false;
+            cbValue.selectedBillingDoc = item;
+            billingDocCB.Add(cbValue);
+        }
+    }
+    #endregion
+
+    #region Total Amount
+
+    void TotalAmount()
+    {
+        var total = GlobalClassList.requestForPayments.Select(x => x.Amount).Sum();
+        totalAmount = decimal.Round(total, 2);
+    }
+
+    #endregion
+
+    #region Search Bank
+
+    async Task<IEnumerable<BankModel>> SearchBank(string bankAccount)
+    {
+        var banks = GlobalClassList.banks;
+        return await Task.FromResult(banks.Where(x => x.AccountNo.Contains(bankAccount, StringComparison.OrdinalIgnoreCase)
+        || x.BankName.Contains(bankAccount, StringComparison.OrdinalIgnoreCase)).ToList());
+    }
+
+    #endregion
+
+    #region Remove RFP
+
+    private async void RemovedRequestForPaymentDetails(RequestForPaymentDetailModel RFPremoved)
+    {
+        if (openEditDrawer)
+        {
+            openEditDrawer = !openEditDrawer;
+            MarginToDrawer();
+        }
+
+        if (RFPremoved.Id != 0)
+        {
+            var parameters = new DialogParameters();
+            string contentText = "Request for payment details ";
+            string dialogTitle = "Remove " + contentText;
+            parameters.Add("contentText", contentText);
+            parameters.Add("actionMode", Enums.ActionMode.Delete);
+            var options = new DialogOptions()
+            {
+                CloseButton = false,
+                MaxWidth = MaxWidth.ExtraSmall,
+                FullWidth = true,
+                NoHeader = false,
+                DisableBackdropClick = true
+            };
+            var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+            if (!resultDialog.Cancelled)
+            {
+                RFPremoved.IsActive = false;
+                removedRFPDetails.Add(RFPremoved);
+                GlobalClassList.requestForPayments.Remove(RFPremoved);
+            }
+        }
+        else
+        {
+            GlobalClassList.requestForPayments.Remove(RFPremoved);
+            GlobalClass.requestForPayment.RemovedRequestForPaymentDetails = removedRFPDetails.ToList();
+        }
+        StateHasChanged();
+    }
+
+    #endregion
+
+    #region Validation
+
+    private bool Validation()
+    {
+        bool validated = false;
+        if (requestedBy.EmployeeId == 0 || requestedBy == null
+        || approvedBy.EmployeeId == 0 || recommendBy == null
+        || recommendBy.EmployeeId == 0 || recommendBy == null
+        || payee.ProjectId == 0)
+        {
+            requiredApprover = true;
+            requiredrequest = true;
+            requiredRecommend = true;
+            reqNamePayee = true;
+            validated = false;
+        }
+        else
+        {
+            requiredApprover = false;
+            requiredrequest = false;
+            requiredRecommend = false;
+            validated = true;
+        }
+        if (selectedPaymentMode.Id == 0)
+        {
+            validated = false;
+        }
+        else if (selectedRequestType == null)
+        {
+            validated = false;
+        }
+        else if (payee.ProjectId == 0)
+        {
+            validated = false;
+        }
+        else if (bank.Id == 0)
+        {
+            validated = false;
+        }
+
+        else if (GlobalClassList.requestForPayments.Count == 0)
+        {
+            validated = false;
+        }
+        else
+        {
+            validated = true;
+        }
+
+        if (GlobalClassList.requestForPayments.Count() > 0)
+        {
+            bool valid = true;
+            GlobalClassList.requestForPayments.ForEach(req =>
+            {
+                if (req.ChargedId == 0)
+                {
+                    EditRow(req);
+                    SaveChanges();
+                    valid = false;
+                }
+            });
+            validated = valid;
+            return validated;
+        }
+
+        return validated;
+    }
+
+    #endregion
+
+    private void Submit()
+    {
+        ValidateEntries();
+    }
+
+    private void ValidateEntries()
+    {
+        Console.WriteLine(selectedPaymentMode.ModeName);
+        bool isBillingDocs = billingDocCB.Where(x => x.IsChecked).ToList().Count() > 1 ? true : false;
+        if (isBillingDocs)
+            Console.WriteLine("Multiple Docs");
+    }
+
+    private async Task<byte[]> GetEmployeeImg(long employeeId)
+    {
+        var employeeDetail = await globalService.GetEmployeeById(employeeId, GlobalClass.token);
+        return employeeDetail.Picture;
+    }
+
+    private void EditRow(RequestForPaymentDetailModel model)
+    {
+        selectedRFPDModelEdit = new RequestForPaymentDetailModel();
+        selectedRFPDModelEdit = model;
+        if (!openEditDrawer)
+        {
+            openEditDrawer = !openEditDrawer;
+            MarginToDrawer();
+        }
+    }
+
+    private void ClearChanges()
+    {
+        @* selectedRFPDModelEdit.Particulars = string.Empty;
+            selectedRFPDModelEdit.ChargedId = 0;
+            selectedRFPDModelEdit.ChargedName = string.Empty;
+            selectedRFPDModelEdit.DivisionId = 0;
+            selectedRFPDModelEdit.DivisionName = string.Empty;
+            selectedRFPDModelEdit.DivisionShortcutName = string.Empty;
+            selectedRFPDModelEdit.ExpenseLineId = 0;
+            selectedRFPDModelEdit.ExpenseLineName = string.Empty;
+            if (GlobalClass.requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.None)
+                selectedRFPDModelEdit.Amount = 0;
+            selectedRFPDModelEdit.InvoiceNo = string.Empty;
+            selectedRFPDModelEdit.Remarks = string.Empty; *@
+        openEditDrawer = !openEditDrawer;
+        MarginToDrawer();
+        ResetValidations();
+    }
+
+    private void SaveChanges()
+    {
+        if (!ValidateEditedEntries())
+        {
+            Extensions.ShowAlert("Please complete required fields", Variant.Filled, snackbarService, Severity.Error);
+            return;
+        }
+
+        foreach (var item in GlobalClassList.requestForPayments)
+        {
+            if (item.TemporaryId == selectedRFPDModelEdit.TemporaryId)
+            {
+                item.Particulars = selectedRFPDModelEdit.Particulars;
+                item.Amount = selectedRFPDModelEdit.Amount;
+                selectedRFPDModelEdit.InvoiceNo = string.IsNullOrEmpty(selectedRFPDModelEdit.InvoiceNo) ? "None" : (selectedRFPDModelEdit.InvoiceNo);
+                selectedRFPDModelEdit.Remarks = string.IsNullOrEmpty(selectedRFPDModelEdit.Remarks) ? "None" : (selectedRFPDModelEdit.Remarks);
+            }
+            break;
+        }
+        openEditDrawer = !openEditDrawer;
+        totalAmount = GlobalClassList.requestForPayments.Sum(x => x.Amount);
+        MarginToDrawer();
+    }
+
+    private void MarginToDrawer()
+    {
+        if (openEditDrawer)
+            editDrawerMargin = "margin-top: 5% !important; margin-right: 20% !important";
+        else if (!openEditDrawer)
+            editDrawerMargin = "margin-top: 5% !important; margin-right: 0 !important";
+    }
+
+    private bool ValidateEditedEntries()
+    {
+        ResetValidations();
+        if (selectedRFPDModelEdit.ChargedId == 0)
+        {
+            reqCharging = true;
+        }
+        if (selectedRFPDModelEdit.Amount == 0)
+        {
+            reqAmount = true;
+        }
+        if (selectedRFPDModelEdit.DivisionId == 0)
+        {
+            reqDivision = true;
+        }
+        if (selectedRFPDModelEdit.ExpenseLineId == 0)
+        {
+            reqExpense = true;
+        }
+        if (reqCharging || reqAmount || reqDivision || reqExpense)
+            return false;
+        return true;
+    }
+
+    private void ResetValidations()
+    {
+        reqCharging = false;
+        reqAmount = false;
+        reqDivision = false;
+        reqExpense = false;
+    }
+    #endregion
+
+    #region New Entry
+    private void New()
+    {
+        GlobalClass.requestForPayment = new RequestForPaymentModel();
+        GlobalClassList.requestForPayments = new List<RequestForPaymentDetailModel>();
+        navigationManager.NavigateTo("/requestpayment/list");
+    }
+    #endregion
+}

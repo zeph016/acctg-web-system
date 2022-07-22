@@ -1,0 +1,598 @@
+@page "/voucher/route"
+
+@inject NavigationManager navigationManager
+@inject IGlobalService globalService
+@inject ISnackbar snackbarService
+@inject IVoucherRouteService voucherRouteService
+@inject IDialogService dialogService
+
+<div class='page-cont'>
+    <MudContainer Class='vroutepage overflow-auto pa-2' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+        @if (!dataFetched)
+        {
+            <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
+                <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='calc(100vh - 135px)' Animation='Animation.Wave' />
+            </MudPaper>
+        }
+        else
+        {
+            <MudGrid Spacing='1'>
+                <MudItem Class='d-flex flex-column gap-2' xs=9>
+                    <MudPaper Class='overflow-hidden' Height='calc(100vh - 125px)'>
+                        <MudPaper Class='d-flex align-center pa-2 mt-2 mr-2 ml-2 rounded-br-0 rounded-bl-0 gap-2'>
+                            <MudIcon Icon="@Icons.Filled.Route" Size='Size.Small' />
+                            <MudText Class='wspace-nowrap font-bold txt-uppercase' Typo="Typo.body2">Voucher Routing</MudText>
+                            <hr class='horizline2'>
+                            <MudButton Class='btn-ios-d pa-1 font12' Href="/voucher/route/list" Size="Size.Medium" Variant='Variant.Filled' Color='Color.Error' DisableElevation>
+                                Return
+                            </MudButton>
+                        </MudPaper>
+                        <MudGrid Class='pa-2' Spacing='1'>
+                            <MudItem Class='d-flex align-center gap-2' xs=8>
+                                <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>
+                                    Route To:
+                                    <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                                </MudText>
+                                <BlazoredTypeahead SearchMethod='LoadRoutes' DisableClear placeholder='Route to Location'
+                                    @bind-Value='locationRoute' Debounce='500' MaximumSuggestions='5'>
+                                    <SelectedTemplate>
+                                        @if (locationRoute.ProjectCategoryId != 0) {
+                                            <MudText Class='font12'>@context.ProjectName</MudText>
+                                        } else {
+                                            <MudText Class='font12'> - </MudText>
+                                        }
+                                    </SelectedTemplate>
+                                    <ResultTemplate>
+                                        <MudText Class='font12'>@context.ProjectName | @context.Location</MudText>
+                                    </ResultTemplate>
+                                </BlazoredTypeahead>
+                            </MudItem>
+                            <MudItem xs=4>
+                                <div class='d-flex align-center justify-center pa-2 gap-2'>
+                                    <MudText Class='wspace-nowrap txt-uppercase font-bold font10'>date :</MudText>
+                                    <MudDatePicker Class='txt-top-0 font14-txtfield txtfield-right ' @bind-Date='GlobalClass.voucherRoute.RouteDate' IconSize='Size.Small' />
+                               </div>
+                            </MudItem>
+                            <MudItem Class='d-flex align-center gap-2' xs=6>
+                                <MudText Class='txt-uppercase font-bold font10'>Remarks:</MudText>
+                                <MudTextField Class='txtfield-overflow-ellipsis font14-txtfield txt-top-0' @bind-Value='@GlobalClass.voucherRoute.Remarks' />
+                            </MudItem>
+                            <MudItem Class='d-flex align-center gap-2' xs=6>
+                                <MudText Class='txt-uppercase font-bold font10'>Reason:</MudText>
+                                <MudTextField Class='txtfield-overflow-ellipsis font14-txtfield txt-top-0' @bind-Value='@GlobalClass.voucherRoute.Reason' />
+                            </MudItem>
+                            <MudItem Class='d-flex align-center overflow-auto' xs=12>
+                                <MudTable Class='configtables small-toolbar-gutter flex-1 ma-2' ServerData='new Func<TableState, Task<TableData<VoucherRouteModel>>>(LoadRouteLocations)' Hover="true" 
+                                    Breakpoint="Breakpoint.Sm" FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
+                                    RowsPerPage='30' Striped='true' @ref='tableVariable' Height='calc(100vh - 420px)'>
+                                    <ToolBarContent>
+                                        <MudText Typo='Typo.caption'>
+                                            @GlobalClassList.currentVoucherRoutes.Count() 
+                                            @(GlobalClassList.currentVoucherRoutes.Count() == 1 ? "item" : "items") 
+                                            in Total
+                                        </MudText>
+                                        <MudSpacer/>
+                                    </ToolBarContent>
+                                    <ColGroup>
+                                        <col style='width: 1%'/>
+                                        <col style='width: 1%' />
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col style='width: 20px' />
+                                    </ColGroup>
+                                    <HeaderContent>
+                                        <MudTh Class='customheader-1 pa-2'>Control No.</MudTh>
+                                        <MudTh Class='customheader-1 text-center pa-2'>Date</MudTh>
+                                        <MudTh Class='customheader-1 pa-2'>Location</MudTh>
+                                        <MudTh Class='customheader-1 text-center pa-2'>Remarks</MudTh>
+                                        <MudTh Class='customheader-1 text-center pa-2'>Reasons</MudTh>
+                                        <MudTh Class='customheader-1 text-center pa-2'>Action</MudTh>
+                                    </HeaderContent>
+                                    <RowTemplate>
+                                        <MudTd Class='pa-2' DataLabel="Control Number">
+                                            <div class='d-flex align-center justify-center'>
+                                                <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'>
+                                                    @context.VoucherControlNumber
+                                                </MudChip>
+                                            </div>
+                                        </MudTd>
+                                        <MudTd Class='pa-2' DataLabel="Date">
+                                            <MudText Class='font12'>@(context.RouteDate?.ToString("MM/dd/yyyy"))</MudText>
+                                        </MudTd> 
+                                        <MudTd Class='pa-2' DataLabel="Location Name">
+                                            <MudText Class='wspace-breakword font12'>@context.LocationName</MudText>
+                                        </MudTd>
+                                        <MudTd Class='pa-2' DataLabel="Remarks">
+                                            <MudText Class='wspace-breakword font12'>
+                                                @context.Remarks
+                                            </MudText>
+                                        </MudTd>
+                                        <MudTd Class='pa-2' DataLabel="Reason">
+                                            <MudText Class='wspace-breakword font12'>
+                                                @context.Reason
+                                            </MudText>
+                                        </MudTd>
+                                        <MudTd Class='text-center pa-2' DataLabel='Actions'>
+                                            <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
+                                            TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
+                                                <MudMenuItem OnClick='(()=>EditRoute(context))'>
+                                                    <div class='d-flex align-center gap-2'>
+                                                        <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Medium' />
+                                                        <MudText Typo='Typo.body2'>Edit</MudText>
+                                                    </div>
+                                                </MudMenuItem>
+                                                <MudMenuItem OnClick='(()=>RemoveRoute(context))'>
+                                                    <div class='d-flex align-center gap-2'>
+                                                        <MudIcon Icon='@Icons.Filled.DeleteForever' Size='Size.Medium' />
+                                                        <MudText Typo='Typo.body2'>Remove</MudText>
+                                                    </div>
+                                                </MudMenuItem>
+                                                    <MudMenuItem OnClick='(() => NavigateToAuditTrail(context))'>
+                                                    <a class='d-flex align-center gap-2'>
+                                                    <MudIcon Icon='@Icons.Filled.ListAlt' Size='Size.Small' />
+                                                    <MudText Typo='Typo.body2'>Audit Trail</MudText>
+                                                    </a>
+                                                </MudMenuItem>
+                                            </MudMenu>
+                                        </MudTd>
+                                    </RowTemplate>
+                                    <NoRecordsContent>
+                                        <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No details added</MudText>
+                                    </NoRecordsContent>
+                                    <PagerContent>
+                                        <MudTablePager PageSizeOptions='@pageSize' />
+                                    </PagerContent>
+                                </MudTable>
+                            </MudItem>
+                            <MudItem Class='d-flex align-center justify-end'xs='12'>
+                                <MudButton Class='btn-ios-d pa-1 font12' OnClick="(()=> SaveVoucherRoute())" Variant="Variant.Filled" Color="Color.Primary">@buttonText</MudButton>
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                </MudItem>
+                <MudItem Class='d-flex flex-column gap-2' xs=3>
+                    <MudPaper Class='overflow-hidden'>
+                        <MudPaper Class='d-flex align-center pa-2 mt-2 mr-2 ml-2 rounded-br-0 rounded-bl-0 gap-2'>
+                            <MudIcon  Icon="@Icons.Filled.CommentBank" Size="Size.Small" />
+                            <MudText Class='wspace-nowrap font-bold txt-uppercase' Typo="Typo.body2">Voucher Details</MudText>
+                            <hr class='horizline2'>
+                        </MudPaper>
+                        <div Class='pa-2'>
+                            <MudGrid Spacing='1'>
+                                <MudItem Class='pa-2 gap-2' xs=4>
+                                    <MudText Class='txt-uppercase wspace-nowrap font10'>Control Number:</MudText>
+                                    <MudText Class='txt-uppercase wspace-nowrap font-bold font14 pa-1'>@GlobalClass.voucher.ControlNumber</MudText>
+                                </MudItem>
+                                <MudItem Class='pa-2 gap-2' xs=4>
+                                    <MudText Class='txt-uppercase wspace-nowrap font10'>Status:</MudText>
+                                    <MudChip Class='chip-radius-5 font-bold font10' Color='Color.Info' Variant='Variant.Filled' Size='Size.Small'>
+                                        @GlobalClass.voucher.StatusName
+                                    </MudChip>
+                                </MudItem>
+                                <MudItem Class='pa-2 gap-2' xs=4>
+                                    <MudText Class='txt-uppercase wspace-nowrap font10'>Date:</MudText>
+                                    <MudText Class='txt-uppercase wspace-nowrap font14 pa-1'>@GlobalClass.voucher.VoucherDate.ToShortDateString()</MudText>
+                                </MudItem>
+                                <MudItem Class='pa-2 gap-2' xs=12>
+                                    <MudText Class='txt-uppercase wspace-nowrap font10'>Payee:</MudText>
+                                    <div class='d-flex align-center pa-1 gap-4'>
+                                        <MudIcon Icon='fa-solid fa-users-rectangle' Size='Size.Small' />
+                                        <MudText Class='txt-uppercase wspace-nowrap font-bold font12'>@GlobalClass.voucher.PayeeName</MudText>
+                                    </div>
+                                </MudItem>
+                                <MudItem Class='pa-2 gap-2' xs=12>
+                                    <MudText Class='txt-uppercase wspace-nowrap font10'>Amount:</MudText>
+                                    @if (GlobalClass.voucher.TotalAmount > 0)
+                                    {
+                                        <MudText Class='pl-2 txt-uppercase wspace-nowrap font-bold font16 gap-2 color-green'>
+                                            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                                            @GlobalClass.voucher.TotalAmount.ToString("N2")
+                                        </MudText>
+                                    }
+                                    else
+                                    {
+                                        <MudText Class='pl-2 txt-uppercase wspace-nowrap font-bold font16 gap-2' Color='Color.Error'>
+                                            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                                            @GlobalClass.voucher.TotalAmount.ToString("N2")
+                                        </MudText>
+                                    }
+                                </MudItem>
+                                <MudItem Class='pa-2' xs=12>
+                                    <MudTextField Class="xs-12" Label="Description" Lines="3" @bind-Value="@GlobalClass.voucher.Description" Variant="Variant.Outlined" ReadOnly="true" Margin="Margin.Dense" />
+                                </MudItem>
+                                <MudItem Class='d-flex flex-column rounded ma-1' xs=12>
+                                    <MudPaper Class='d-flex align-center rounded-br-0 rounded-bl-0 pa-2 gap-2'>
+                                        <MudIcon  Icon="@Icons.Filled.Badge" Size="Size.Small" />
+                                        <MudText Class='txt-uppercase wspace-nowrap font10'>Signatories</MudText>
+                                        <hr class='horizline2'>
+                                    </MudPaper>
+                                    <div class='d-flex flex-column rounded mr-1 mb-1 ml-1 pa-2 gap-2 bgc-b2a7b82e overflow-auto'>
+                                        <div class="d-flex align-center gap-2">
+                                            <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(preparedByImg)}")' />
+                                            <div class="gap-2">
+                                                <MudText Class='wspace-nowrap' Typo="Typo.subtitle2">@GlobalClass.voucher.PreparedByName</MudText>
+                                                <MudText Typo="Typo.caption">Requested by</MudText>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-center gap-2">
+                                            <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(verifiedByImg)}")' />
+                                            <div class="gap-2">
+                                                <MudText Class='wspace-nowrap' Typo="Typo.subtitle2">@GlobalClass.voucher.VerifiedByName</MudText>
+                                                <MudText Typo="Typo.caption">Verified by</MudText>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-center gap-2">
+                                            <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(approvedByImg)}")' />
+                                            <div class="gap-2">
+                                                <MudText Class='wspace-nowrap' Typo="Typo.subtitle2">@GlobalClass.voucher.ApprovedByName</MudText>
+                                                <MudText Typo="Typo.caption">Approved by</MudText>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </MudItem>
+                            </MudGrid>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        }
+    </MudContainer>
+</div>
+
+<div class="audittrail_container" style='display: none !important'>
+    <MudGrid>
+        <MudItem xs="8">
+            <MudPaper Elevation="3">
+                <MudCard Elevation="2">
+                    <div style="display: flex; align-items: center;">  
+                        <MudText Typo="Typo.body1">Voucher route</MudText>
+                    </div>
+                    <MudButton Size="Size.Small" StartIcon="@Icons.Filled.ArrowBackIos" title="Add" class="btn btn-primary" Href="/voucher/route/list"><MudText Typo="Typo.caption">Back</MudText></MudButton>
+                </MudCard>
+                <MudGrid style="margin-top: 10px;">
+                    <MudItem xs="3">
+                        <BlazoredTypeahead SearchMethod='LoadRoutes' DisableClear placeholder='Route to' aria-placeholder="Location"
+                        @bind-Value='locationRoute' Debounce='500' MaximumSuggestions='5'>
+                            <SelectedTemplate>
+                                <MudText Class='font12'>@context.ProjectName</MudText>
+                            </SelectedTemplate>
+                            <ResultTemplate>
+                                @context.ProjectName | @context.Location    
+                            </ResultTemplate>
+                        </BlazoredTypeahead>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudTextField @bind-Value="@GlobalClass.voucherRoute.Remarks"  Label="Remarks" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudTextField @bind-Value="@GlobalClass.voucherRoute.Reason"  Label="Reason" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudText Class='txt-uppercase font-bold font10'>Date</MudText>
+                        <MudDatePicker Class='txt-top-0 font14-txtfield txtfield-right' @bind-Date='GlobalClass.voucherRoute.RouteDate' IconSize='Size.Small' />
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudButton OnClick="(()=> SaveVoucherRoute())" Variant="Variant.Filled" Color="Color.Primary">@buttonText</MudButton>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTable Class='configtables' ServerData='new Func<TableState, Task<TableData<VoucherRouteModel>>>(LoadRouteLocations)' Hover="true" 
+                            Breakpoint="Breakpoint.Sm" FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
+                            RowsPerPage='30' Striped='true' @ref='tableVariable'>
+                                <ToolBarContent>
+                                    <MudText Typo='Typo.caption'>
+                                        @GlobalClassList.currentVoucherRoutes.Count() 
+                                        @(GlobalClassList.currentVoucherRoutes.Count() == 1 ? "item" : "items") 
+                                        in Total
+                                    </MudText>
+                                    <MudSpacer/>
+                                </ToolBarContent>
+                                <ColGroup>
+                                    <col />
+                                    <col style='width: 5%' />
+                                    <col />
+                                    <col style='width: 5%' />
+                                    <col style='width: 5%' />
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh Class='customheader-1'>Control Number</MudTh>
+                                    <MudTh Class='customheader-1'>Date</MudTh>
+                                    <MudTh Class='customheader-1'>Location</MudTh>
+                                    <MudTh Class='customheader-1 text-center'>Remarks</MudTh>
+                                    <MudTh Class='customheader-1 text-center'>Reasons</MudTh>
+                                    <MudTh Class='customheader-1 text-center'>Action</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                        <MudTd DataLabel="Contro Number">@context.VoucherControlNumber</MudTd>
+                                        <MudTd DataLabel="Contro Number">@(context.RouteDate?.ToString("MM/dd/yyyy"))</MudTd> 
+                                        <MudTd DataLabel="Location Name">@context.LocationName</MudTd>
+                                        <MudTd DataLabel="Remarks">@context.Remarks</MudTd>
+                                        <MudTd DataLabel="Reason">@context.Reason</MudTd>
+                                        <MudTd Class='text-center'>
+                                            <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'
+                                            TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small'>
+                                                <MudMenuItem OnClick='(()=>EditRoute(context))'>
+                                                    <div class='d-flex align-center gap-2'>
+                                                        <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Medium' />
+                                                        <MudText Typo='Typo.body2'>Edit</MudText>
+                                                    </div>
+                                                </MudMenuItem>
+                                                <MudMenuItem OnClick='(()=>RemoveRoute(context))'>
+                                                    <div class='d-flex align-center gap-2'>
+                                                        <MudIcon Icon='@Icons.Filled.DeleteForever' Size='Size.Medium' />
+                                                        <MudText Typo='Typo.body2'>Remove</MudText>
+                                                    </div>
+                                                </MudMenuItem>
+                                                    <MudMenuItem OnClick='(() => NavigateToAuditTrail(context))'>
+                                                    <a class='d-flex align-center gap-2'>
+                                                    <MudIcon Icon='@Icons.Filled.ListAlt' Size='Size.Small' />
+                                                    <MudText Typo='Typo.body2'>Audit Trail</MudText>
+                                                    </a>
+                                                </MudMenuItem>
+                                            </MudMenu>
+                                        </MudTd>
+                                </RowTemplate>
+                                <NoRecordsContent>
+                                    <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No details added</MudText>
+                                </NoRecordsContent>
+                                <PagerContent>
+                                    <MudTablePager PageSizeOptions='@pageSize' />
+                                </PagerContent>
+                        </MudTable>
+                    </MudItem>
+            </MudGrid>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="4">
+            <MudPaper Elevation="3">
+            <MudCard Elevation="2">
+                <div class="flex-gap">
+                    <MudText Typo="Typo.body1">Voucher Details</MudText>
+                </div>
+                </MudCard>
+                @if(dataFetched)
+                {
+                    //voucher details
+                    <div style="margin-top: 15px">
+                    <MudTextField Label="Control Number" Adornment="Adornment.Start" @bind-Value="@GlobalClass.voucher.ControlNumber" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense">
+                    </MudTextField>
+                    <MudChip Class='chip-radius-5 font-bold font10' Color='Color.Info' Variant='Variant.Filled' Size='Size.Small'>
+                        @GlobalClass.voucher.StatusName
+                    </MudChip>
+                    </div>
+                    <div style="margin-top: 15px">
+                    <MudTextField Label="Date" Adornment="Adornment.Start" @bind-Value="@GlobalClass.voucher.VoucherDate" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                    </div>
+                    <div style="margin-top: 15px">
+                    <MudTextField Label="Payee" Adornment="Adornment.Start" @bind-Value="@GlobalClass.voucher.PayeeName" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                    </div>
+                    <div style="margin-top: 15px">
+                    <MudTextField Label="Description" Adornment="Adornment.Start" @bind-Value="@GlobalClass.voucher.Description" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                    </div>
+                    <div style="margin-top: 15px">
+                    <MudTextField Label="Amount" Adornment="Adornment.Start" @bind-Value="@GlobalClass.voucher.TotalAmount" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                    </div>
+                    <div style="margin-top: 15px">
+                    <span>Signatories</span>
+                        <div>
+                            Prepared by:<MudTextField Adornment="Adornment.Start" @bind-Value="@GlobalClass.voucher.PreparedByName" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                        </div>
+                        <div>
+                            Verified by:<MudTextField Adornment="Adornment.Start" @bind-Value="@GlobalClass.voucher.VerifiedByName" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                        </div>
+                        <div>
+                            Approved by:<MudTextField Adornment="Adornment.Start" @bind-Value="@GlobalClass.voucher.ApprovedByName" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                        </div>
+                    </div>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</div>
+
+@code{
+    private int[] pageSize = new int[] {30, 50, 100, 500, 1000 };
+    private bool dataFetched = false;
+    private List<Project> locationRoutesList = new();
+    private Project locationRoute = new();
+    private string buttonText ="Route";
+    private IEnumerable<VoucherRouteModel>? pageData;
+    private MudTable<VoucherRouteModel> tableVariable = new();
+    private byte[] preparedByImg = new byte[]{}, verifiedByImg = new byte[]{}, approvedByImg = new byte[]{};
+    protected override async Task OnInitializedAsync()
+    {
+        GlobalClass.pageTitle = "Voucher Routing";
+        
+        if(GlobalClass.voucher == null)
+            navigationManager.NavigateTo($"/voucher/route/list");
+        else
+        {
+            Task t = Task.WhenAll(LoadCurrentVoucherRoutes(),LocationRouteList());
+            await t;
+            if(t.Status == TaskStatus.RanToCompletion) {
+                await LoadEmployeeDetails();
+                CompletedFetch();
+            }
+            SignalR();
+        }
+    }
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+    private async Task LoadCurrentVoucherRoutes()
+    {
+        GlobalClassList.currentVoucherRoutes = await voucherRouteService.GetVoucherRoutes(GlobalClass.voucher.Id,GlobalClass.token);
+    }
+    private async Task<IEnumerable<Project>> LoadRoutes(string employeeName)
+    {
+        var filterParameter = new FilterParameter()
+        {
+            IsName = true,
+            Name = employeeName,
+            IsLookUp = true
+        };
+        locationRoutesList = await globalService.LoadLocationRoutes(new FilterParameter(){isActive=true},GlobalClass.token);
+        return locationRoutesList;
+    }
+    private void MapProperties(Enums.ActionMode actionMode)
+    {
+        GlobalClass.voucherRoute.VoucherId = GlobalClass.voucher.Id;
+        GlobalClass.voucherRoute.VoucherDate = GlobalClass.voucher.VoucherDate;
+        GlobalClass.voucherRoute.VoucherControlNumber = GlobalClass.voucher.ControlNumber;
+        GlobalClass.voucherRoute.LocationId = locationRoute.ProjectId;
+        GlobalClass.voucherRoute.LocationCategoryId = locationRoute.ProjectCategoryId;
+        
+        //Audit Trail
+        GlobalClass.voucherRoute.VoucherRouteId = GlobalClass.voucherRoute.Id;
+        GlobalClass.voucherRoute.UserId = GlobalClass.currentUserAccount.EmployeeId;
+        GlobalClass.voucherRoute.Activity = actionMode == Enums.ActionMode.Create? "Add Route":"Update Route("+GlobalClass.voucherRoute.VoucherControlNumber+")";
+    }
+    private async Task LocationRouteList()
+    {
+        locationRoutesList = await globalService.LoadLocationRoutes(new FilterParameter(){isActive=true},GlobalClass.token);
+    }
+    private async Task SaveVoucherRoute()
+    {
+        var returnedModel = new VoucherRouteModel();
+        if(isValidated())
+        {
+            if(GlobalClass.voucherRoute.Id == 0)
+            {
+                MapProperties(Enums.ActionMode.Create);
+                returnedModel = await voucherRouteService.AddVoucherRoute(GlobalClass.voucherRoute,GlobalClass.token);
+                Extensions.ShowAlert("New route location added!",Variant.Filled,snackbarService,Severity.Success);
+            }
+            else
+            {
+                MapProperties(Enums.ActionMode.Update);
+                returnedModel = await voucherRouteService.UpdateVoucherRoute(GlobalClass.voucherRoute,GlobalClass.token);
+                Extensions.ShowAlert("Route has been changed!",Variant.Filled,snackbarService,Severity.Success);
+            }
+            ClearFields();
+            buttonText ="Route";
+            //Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(returnedModel,Newtonsoft.Json.Formatting.Indented));
+            if(GlobalVariable.AMSHubConnection != null)
+                await GlobalVariable.AMSHubConnection.InvokeAsync("SaveVoucherRoute",returnedModel);
+        }
+        else
+        {
+            Extensions.ShowAlert("Cannot Route Voucher, INCOMPLETE Fields.",Variant.Filled,snackbarService,Severity.Error);
+        }
+    }
+    private bool isValidated()
+    {
+        if(locationRoute.ProjectId == 0)
+            return false;
+        if(String.IsNullOrEmpty(GlobalClass.voucherRoute.Remarks))
+            return false;
+        if(String.IsNullOrEmpty(GlobalClass.voucherRoute.Reason))
+            return false;
+        return true;
+    }
+    private void ClearFields()
+    {
+        locationRoute = new();
+        GlobalClass.voucherRoute = new();
+    }
+    private void EditRoute(VoucherRouteModel voucherRoute)
+    {
+        buttonText = "Update";
+        GlobalClass.voucherRoute = voucherRoute;
+        GlobalClass.voucherRoute.Activity = "Update Voucher Route";
+        GlobalClass.voucherRoute.UserId = GlobalClass.currentUserAccount.EmployeeId;
+        var route = locationRoutesList.Where(x=>x.ProjectId==voucherRoute.LocationId).FirstOrDefault();
+        if(route != null)
+            locationRoute = route;
+        StateHasChanged();
+    }
+    private async Task RemoveRoute(VoucherRouteModel voucherRoute)
+    {
+        //Prompt confirmation
+        var parameters = new DialogParameters();
+        string contentText = "Route";
+        string dialogTitle = "Remove Route";
+        parameters.Add("contentText", contentText);
+        parameters.Add("actionMode", Enums.ActionMode.Delete);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled) 
+        {
+            //Audit Trail
+            voucherRoute.Activity = "Removed Route";
+            voucherRoute.UserId = GlobalClass.currentUserAccount.EmployeeId;
+            voucherRoute.IsActive = false;
+            await voucherRouteService.UpdateVoucherRoute(voucherRoute,GlobalClass.token);
+            if(GlobalVariable.AMSHubConnection != null)
+                await GlobalVariable.AMSHubConnection.InvokeAsync("SaveVoucherRoute",voucherRoute);
+            Extensions.ShowAlert("Route has been removed.",Variant.Filled,snackbarService,Severity.Success);
+
+        }
+    }
+    private void NavigateToAuditTrail(VoucherRouteModel voucherRoute)
+    {
+      GlobalClass.voucherRoute = voucherRoute;
+      navigationManager.NavigateTo($"voucher/route/audittrail");
+    }
+    private void SignalR()
+    {
+        try
+        {
+            if(GlobalVariable.AMSHubConnection != null)
+                GlobalVariable.AMSHubConnection.On<VoucherRouteModel>("SaveVoucherRoute",(routeModel) => 
+                {
+                    if(GlobalClassList.currentVoucherRoutes.Any(x=>x.Id == routeModel.Id))
+                        tableVariable.ReloadServerData();
+                    else
+                        GlobalClassList.currentVoucherRoutes.Insert(0,routeModel);
+                    StateHasChanged();
+                });
+        }catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            throw;
+        }
+    }
+    private async Task<TableData<VoucherRouteModel>> LoadRouteLocations(TableState tableState)
+    {
+        IEnumerable<VoucherRouteModel> data = await voucherRouteService.GetVoucherRoutes(GlobalClass.voucher.Id, GlobalClass.token);
+        switch (tableState.SortLabel)
+        {
+            case "SortControlNumber":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.Id);
+                break;
+            case "SortDate":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.DateLastFollowUp);
+                break;
+        }
+
+        GlobalClassList.currentVoucherRoutes = data.ToList();
+        pageData = GlobalClassList.currentVoucherRoutes.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
+        var total = GlobalClassList.currentVoucherRoutes.Count();
+        return new TableData<VoucherRouteModel>()
+        {
+            TotalItems = total,
+            Items = pageData
+        };
+    }
+
+    private async Task LoadEmployeeDetails()
+    {
+        preparedByImg = await GetEmployeeDetails(GlobalClass.voucher.PreparedById);
+        verifiedByImg = await GetEmployeeDetails(GlobalClass.voucher.VerifiedById);
+        approvedByImg = await GetEmployeeDetails(GlobalClass.voucher.ApprovedById);
+    }
+    private async Task<byte[]> GetEmployeeDetails(long employeeId)
+    {
+        var employeeDetail = await globalService.GetEmployeeById(employeeId, GlobalClass.token);
+        return employeeDetail.Picture;
+    }
+}

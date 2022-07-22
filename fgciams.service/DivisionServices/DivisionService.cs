@@ -13,8 +13,8 @@ namespace fgciams.service.DivisionServices
     public class DivisionService : IDivisionService
     {
         #region Properties
-        List<DivisionModel> divisionModelList;
-        DivisionModel divisionModel;
+        List<DivisionModel> divisionModelList = new();
+        DivisionModel divisionModel = new();
         HttpClient client;
         #endregion
         #region  Constructor
@@ -32,7 +32,7 @@ namespace fgciams.service.DivisionServices
                 if(responseMessage.IsSuccessStatusCode){
                     divisionModelList = await responseMessage.Content.ReadAsAsync<List<DivisionModel>>();
                 }
-                return divisionModelList.OrderBy(x => x.divisionName).ToList();
+                return divisionModelList;
             }catch(Exception ee){
                   Console.WriteLine(ee.Message);
                   throw ee;

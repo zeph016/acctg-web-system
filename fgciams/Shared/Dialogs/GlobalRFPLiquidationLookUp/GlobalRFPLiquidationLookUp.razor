@@ -6,6 +6,9 @@
 @inject IRequestForPaymentService requestForPaymentService
 @inject IVoucherService voucherService
 @inject NavigationManager navigationManager
+@inject ISnackbar snackbarService
+@inject IDialogService dialogService
+@inject ICheckService checkService
 
 <MudDialog Class="customdialog-table-only">
   <TitleContent>
@@ -31,8 +34,11 @@
           ToggledIcon='@Icons.Filled.Close' ToggledColor="Color.Error" Size='Size.Small' />
         </div>
         <div class='d-flex flex-column gap-2'>
-          <MudTextField @bind-Value='controlNumber' Placeholder='Control Number'></MudTextField>
-          @if(lookUpType != Enums.LookUpType.POBilling)
+          @if(lookUpType != Enums.LookUpType.Voucher)
+          {
+            <MudTextField @bind-Value='controlNumber' Placeholder='Control Number'></MudTextField>
+          }
+          @if(lookUpType != Enums.LookUpType.POBilling && lookUpType != Enums.LookUpType.Voucher)
           {
             <BlazoredTypeahead SearchMethod=LoadProject 
             @bind-Value='payee' Debounce="500" placeholder='Payee' >
@@ -49,7 +55,50 @@
               <MudDatePicker @bind-Date='dateTo' Label='Date From' PickerVariant="PickerVariant.Dialog" Disabled='!IsDate' />
             </div>
           }
-          <MudButton OnClick='(()=> ApplyFilter())' Variant='Variant.Filled' Color='Color.Secondary'>Apply Filter</MudButton>
+          @if(lookUpType == Enums.LookUpType.Voucher)
+          {
+            <div class='d-flex align-center gap-2'>
+              <MudCheckBox Class='pt-1' @bind-Checked="@filterParameter.IsControlNumber" Dense Size='Size.Small'/>
+              <MudTextField Class='txtfield-75' Immediate=true @bind-Value='filterParameter.ControlNumber' Placeholder='Control Number'
+              Clearable='true' Disabled="@(!filterParameter.IsControlNumber)" Variant='Variant.Outlined' />
+            </div>
+            <div class='d-flex align-center gap-2'>
+                <MudCheckBox Class='pt-1' @bind-Checked="@filterParameter.IsDate" Dense Size='Size.Small' />
+                <MudDateRangePicker Class='txtfield-75' @bind-DateRange=@dateRangeFilter IconSize='Size.Small'
+                Placeholder="Date Range" Disabled="@(!filterParameter.IsDate)" Variant='Variant.Outlined' />
+            </div>
+            <div class='d-flex align-center gap-2'>
+                <MudCheckBox Class='pt-1' @bind-Checked="@filterParameter.IsRequestor" Dense Size='Size.Small' />
+                <MudTextField Class='txtfield-75' @bind-Value='requestor.EmployeeName' Placeholder='Requested By' ReadOnly='true'
+                    @onclick='(() => LookUp(Enums.LookUpType.Employee, "Requestor"))' IconSize='Size.Small' Disabled="@(!filterParameter.IsRequestor)" Variant='Variant.Outlined'>
+                  </MudTextField>
+            </div>
+            <div class='d-flex align-center gap-2'>
+                <MudCheckBox Class='pt-1' @bind-Checked="@filterParameter.IsPayee" Dense Size='Size.Small' />
+                <MudTextField Class='txtfield-75' @bind-Value='payee.ProjectName' Placeholder='Payee' ReadOnly='true'
+                    @onclick='(() => LookUp(Enums.LookUpType.Project, "Payee"))' IconSize='Size.Small' Disabled="@(!filterParameter.IsPayee)" Variant='Variant.Outlined' >
+                    </MudTextField>
+            </div>
+            <div class='d-flex align-center gap-2'>
+              <MudCheckBox Class='pt-1' @bind-Checked="@filterParameter.IsAccountingStatus" Dense Size='Size.Small' />
+              <MudSelect Class='txtfield-75' MultiSelectionTextFunc='@(new Func<List<string>, string>(AccountingStatus))' @bind-SelectedValues='hasAccountingStatus' IconSize='Size.Small'
+              @bind-Value="selectedStatus" Dense="true" MultiSelection=true Disabled='!filterParameter.IsAccountingStatus' Placeholder='Accounting Status' Variant='Variant.Outlined'>
+                @if(GlobalClassList.accountingStatusList != null)
+                {
+                    foreach (var item in GlobalClassList.accountingStatusList.Where(x=> 
+                    (int)x.StatusEnumCategoryId == 11 || 
+                    (int)x.StatusEnumCategoryId == 12 || 
+                    (int)x.StatusEnumCategoryId == 13 ))
+                    {
+                    <MudSelectItem Value="@item">@item.StatusName</MudSelectItem>
+                    }
+                }
+              </MudSelect>
+            </div>
+          }
+          <div class='d-flex align-center justify-end pt-1'>
+            <MudButton OnClick='(()=> ApplyFilter())' Variant='Variant.Filled' Color='Color.Secondary'>Apply Filter</MudButton>
+          </div>
         </div>
       </MudDrawer>
     </div>
@@ -354,7 +403,7 @@
               @context.POStatusView
             </MudChip>
           </MudTd>
-          <MudTd Class='wspace-nowrap text-right' DataLabel='Total Amount'>
+          <MudTd Class='wspace-nowrap text-right' DataLabel='Check Amount'>
             @if (context.Amount > 0)
             {
               <MudText Class='font-bold color-green' Typo='Typo.body2'>
@@ -458,7 +507,114 @@
         </RowTemplate>
         </MudTable>
       }
-     }
+      @if(lookUpType == Enums.LookUpType.Voucher)
+      {
+        <MudTable Class='configtables overflow-auto' Items="voucherNotInCheck" Bordered Striped ReadOnly=false 
+        Dense Elevation='0' Height='calc(100vh - 350px)' Square FixedHeader>
+        <ColGroup>
+          <col style='width: 1%' />
+          <col style='width: 1%' />
+          <col style='width: 30%' />
+          <col style='width: 1%' />
+          <col style='width: 15%' />
+          <col style='width: 15%' />
+          <col style='width: 15%' />
+        </ColGroup>
+        <HeaderContent>
+            <MudTh Class='customheader-1 text-center pa-2'>Select </MudTh>
+            <MudTh Class='customheader-1'>
+              <MudTableSortLabel Class='text-center' InitialDirection='SortDirection.Ascending'
+                SortBy='new Func<RequestForPaymentModel, object>(x=>x.ControlNumber)'>
+                  Control No.
+              </MudTableSortLabel>
+            </MudTh>
+            <MudTh Class='customheader-1'>Payee</MudTh>
+            <MudTh Class='customheader-1 text-center'>Status</MudTh>
+            <MudTh Class='customheader-1 text-center'>Amount</MudTh>
+            <MudTh Class='customheader-1 text-center'>Balance</MudTh>
+            <MudTh Class='customheader-1 text-right'>
+                <MudTableSortLabel InitialDirection='SortDirection.None'
+                SortBy='new Func<RequestForPaymentModel, object>(x=>x.Amount)'>
+                Check Amount
+              </MudTableSortLabel>
+            </MudTh>
+        </HeaderContent>
+        <RowTemplate>
+          <MudTd Class='text-center pa-2'>
+            <MudTooltip Text='Select Detail'>
+                <MudIconButton OnClick="(()=>SelectVoucher(context))" Icon='@Icons.Filled.AddCircle' Color='Color.Success' Size='Size.Small' />
+            </MudTooltip>
+          </MudTd> 
+          <MudTd Class='wbreak-breakword font12' DataLabel='Payee Name'>
+            <div class='d-flex align-center justify-center '>
+              <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'>
+                @context.ControlNumber
+              </MudChip>
+            </div>
+          </MudTd>
+          <MudTd Class='wbreak-breakword font12' DataLabel='Requestor Name'>@context.PayeeName</MudTd>
+          <MudTd Class='wspace-nowrap' DataLabel='Status'>
+            <div class='d-flex align-center justify-center '>
+              <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Info' Size='Size.Small'>
+                @context.StatusName
+              </MudChip>
+            </div>
+          </MudTd>
+          <MudTd Class='wspace-nowrap' DataLabel='Amount'>
+              @if (context.TotalAmount > 0)
+            {
+              <div Class='d-flex align-center'>
+                <MudText Class="font-bold color-green" Typo='Typo.body2'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
+                <MudSpacer />
+                <MudText Class="font-bold color-green" Typo='Typo.body2'>@context.TotalAmount.ToString("N2")</MudText>
+              </div>
+            }
+            else
+            {
+              <div Class='d-flex align-center'>
+                <MudText Class="font-bold" Typo='Typo.body2' Color='Color.Error' >@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
+                <MudSpacer />
+                <MudText Class="font-bold" Typo='Typo.body2' Color='Color.Error' >@context.TotalAmount.ToString("N2")</MudText>
+              </div>
+            }
+          </MudTd>
+          <MudTd Class='wspace-nowrap' DataLabel='Check Balance'>
+            @if (context.CheckBalance > 0)
+            {
+              <div Class='d-flex align-center'>
+                <MudText Class="font-bold color-green" Typo='Typo.body2'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
+                <MudSpacer />
+                <MudText Class="font-bold color-green" Typo='Typo.body2'>@context.CheckBalance.ToString("N2")</MudText>
+              </div>
+            }
+            else
+            {
+              <div Class='d-flex align-center font-bold'>
+                <MudText Class="font-bold" Typo='Typo.body2' Color='Color.Error'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
+                <MudSpacer />
+                <MudText Class="font-bold" Typo='Typo.body2' Color='Color.Error'>@context.CheckBalance.ToString("N2")</MudText>
+              </div>
+            }
+          </MudTd>
+          <MudTd Class='wspace-nowrap' DataLabel='Check Amount'>
+              <div class='d-flex align-center gap-2'>
+                @if (context.currentCheckAmount > 0) {
+                  <MudText Class="font-bold color-green" Typo='Typo.body2'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
+                  <MudSpacer />
+                  <MudNumericField Class='txt-search-overflow txt-top-0 txtfield-right tfield-color-green' @bind-Value="@context.currentCheckAmount"  Culture='CultureInfo.GetCultureInfo("en-PH")'
+                  Format='N2' Variant='Variant.Text' Margin='Margin.Dense' HideSpinButtons ErrorText=''/>
+                } else {
+                  <MudText Class="font-bold" Typo='Typo.body2' Color='Color.Error'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
+                  <MudSpacer />
+                  <MudNumericField Class='txt-search-overflow txt-top-0 txtfield-right tfield-color-red' @bind-Value="@context.currentCheckAmount"  Culture='CultureInfo.GetCultureInfo("en-PH")'
+                  Format='N2' Variant='Variant.Text' Margin='Margin.Dense' HideSpinButtons ErrorText=''/>
+                }
+              </div>
+          </MudTd>
+        </RowTemplate>
+        </MudTable>
+      }
+    }
   </DialogContent>
   <DialogActions>
     @if (lookUpType == Enums.LookUpType.PettyCash)  
@@ -495,7 +651,7 @@
     <MudText Class='pl-1 font-bold' Typo='Typo.overline'>
       Total Amount Selected:
     </MudText>
-    <MudText Class='pl-1 font-bold' Typo='Typo.overline' Color='Color.Success'>
+    <MudText Class='pl-1 font-bold color-green' Typo='Typo.overline'>
       @if(lookUpType != Enums.LookUpType.RFPVoucher)
       {
         if(GlobalClassList.requestForPayments != null)
@@ -510,6 +666,10 @@
       else if (lookUpType == Enums.LookUpType.RFPVoucher)
       {
         @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.voucher.TotalAmount.ToString("N2")
+      }
+      else if (lookUpType == Enums.LookUpType.Voucher)
+      {
+        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @totalAmounts.ToString("N2")
       }
       else
       {
@@ -527,6 +687,7 @@
   [Parameter] public string dialogTitle { get; set; } = string.Empty;
   [Parameter] public string buttonText { get; set; } = string.Empty;
   [Parameter] public Enums.LookUpType lookUpType {get; init;}
+  [Parameter] public DateRange pettyCashRange {get; set;} = new DateRange();
   private bool dataFetched, openSideFilter, IsDate, isSubTableCollaped;
   private DateTime? dateFrom , dateTo;
   private string payeeName = default!, controlNumber = string.Empty, searchTerm = string.Empty;
@@ -535,12 +696,23 @@
   private List<RequestForPaymentModel> noVoucherRFP = new List<RequestForPaymentModel>();
   private List<string> listRFP = new List<string>();
   private Project payee = new();
-  private decimal totalAmounts;
+  private decimal totalAmounts = 0;
+  
+
+  #region Check Properties Filter
+  private List<VoucherModel> voucherNotInCheck = new();
+  private CheckVoucherModel selectedVouchers = new();
+  private DateRange dateRangeFilter = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
+  private AccountingStatusModel selectedStatus = new();
+  private IEnumerable<AccountingStatusModel> hasAccountingStatus {get; set;} = new HashSet<AccountingStatusModel>();
+  private UserAccount requestor  = new();
+  #endregion
 
   protected override async Task OnInitializedAsync()
   {
     GlobalClassList.POBillingList = new();
-    totalAmounts = 0;
+    if(lookUpType == Enums.LookUpType.Voucher)
+      totalAmounts = GlobalClass.checkModel.Amount;
     Task t = Task.WhenAll(InitializeLists());
     await t;
     if (t.Status == TaskStatus.RanToCompletion)
@@ -564,14 +736,50 @@
       await LoadPOs();
     if(lookUpType == Enums.LookUpType.RFPVoucher)
       await LoadNotInVoucher();
+    if(lookUpType == Enums.LookUpType.Liquidation)
+      await LoadNotInRFPLiquidation();
+    if(lookUpType == Enums.LookUpType.Voucher)
+      await VoucherNotInCheck(new FilterParameter(){isActive = true});
+  }
+  private async Task VoucherNotInCheck(FilterParameter filterParameter)
+  {
+      voucherNotInCheck = await voucherService.VoucherNotInCheck(filterParameter,GlobalClass.token);
+      GlobalClass.checkModel.CheckVouchers.ForEach( x => {
+        voucherNotInCheck.RemoveAll(voucher => voucher.Id == x.VoucherId);
+      });
+  }
+  private async Task SearchVoucher()
+  {
+    filterParameter.DateFrom = dateRangeFilter.Start.GetValueOrDefault();
+    filterParameter.DateTo = dateRangeFilter.End.GetValueOrDefault();
+    filterParameter.AccountingAccessLevel = GlobalClass.currentUserAccount.AccessLevel;
+    filterParameter.AccountingStatusId = string.Join(",", hasAccountingStatus.Select(x => x.Id));
+    Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(filterParameter,Newtonsoft.Json.Formatting.Indented));
+    await VoucherNotInCheck(filterParameter);
+    StateHasChanged();
   }
   private async Task LoadNotLiquidatedPettyCash()
   {
-     var notLiquidated = await liquidationService.GetPettyCashNotLiquidated(filterParameter, GlobalClass.token);
-     GlobalClass.liquidation.LiquidationDetails.ForEach(x=>{
+    filterParameter = new FilterParameter()
+    {
+      IsDate = true,
+      DateFrom = pettyCashRange.Start.GetValueOrDefault(),
+      DateTo = pettyCashRange.End.GetValueOrDefault()
+    };
+    var notLiquidated = await liquidationService.GetPettyCashNotLiquidated(filterParameter, GlobalClass.token);
+    GlobalClass.liquidation.LiquidationDetails.ForEach(x=>{
        notLiquidated.RemoveAll(p=>p.Id == x.PettyCashId);
-     });
-     GlobalClassList.notLiquidatedPettyCashList = notLiquidated;
+    });
+    GlobalClassList.notLiquidatedPettyCashList = notLiquidated;
+  }
+  private async Task LoadNotInRFPLiquidation()
+  {
+    var notInRFP = await liquidationService.LiquidationNotRFP(GlobalClass.token);
+    GlobalClassList.requestForPayments.ForEach(req=>{
+      notInRFP.RemoveAll(x=>x.Id == req.LiquidationId);
+    });
+    GlobalClassList.LiquidationNotInRFP = notInRFP.ToList();
+
   }
   private async Task SearchPOBilling()
   {
@@ -593,7 +801,11 @@
   {
     var filterParameter = new FilterParameter()
     {
-
+      IsControlNumber = controlNumber == "" ? false : true,
+      ControlNumber = controlNumber,
+      IsDate = IsDate,
+      DateFrom = dateFrom.GetValueOrDefault(),
+      DateTo = dateTo.GetValueOrDefault()
     };
     POList = await globalService.LoadPOs(filterParameter, GlobalClass.token);
 
@@ -603,7 +815,11 @@
   }
   private async Task LoadNotInVoucher()
   {
-    noVoucherRFP = await voucherService.NotInVoucher(GlobalClass.token);
+    var RFP = await voucherService.NotInVoucher(GlobalClass.token);
+    GlobalClass.voucher.VoucherRFP.ForEach(rf=> {
+      RFP.RemoveAll(x=>x.Id == rf.RequestForPaymentId);
+    });
+    noVoucherRFP = RFP.OrderByDescending(x=>x.ControlNumber).ThenByDescending(x=>x.RequestDate).ToList();
   }
   private void SelectPettyCash(PettyCashModel pettyCash)
   {
@@ -617,6 +833,9 @@
       liquidationDetail.PayeeName = pettyCash.PayeeName;
       liquidationDetail.Particular = pettyCash.Particular;
       liquidationDetail.Amount = pettyCash.Amount;
+      liquidationDetail.ActualAmount = pettyCash.Amount;
+      liquidationDetail.PettyCashRemarks = pettyCash.Remarks;
+      liquidationDetail.PettyCashRemarks = pettyCash.Remarks;
       liquidationDetail.RequestedByName = pettyCash.RequestedByName;
       liquidationDetail.StatusId = pettyCash.StatusId;
       liquidationDetail.StatusName = pettyCash.StatusName;
@@ -639,6 +858,7 @@
     RFPDetails.Amount = poModel.Amount;
     RFPDetails.POId = poModel.POId;
     RFPDetails.PONumber = poModel.PONumber;
+    RFPDetails.Particulars = poModel.PONumber;
 
     POList = POList.Where(x=>x.POId != poModel.POId).ToList();
     GlobalClassList.requestForPayments.Add(RFPDetails);
@@ -655,10 +875,13 @@
       RFPDetails.LiquidationId = liquidation.Id;
       RFPDetails.Amount = liquidation.TotalAmount;
       RFPDetails.LiquidationControlNumber = liquidation.ControlNumber;
+      RFPDetails.Particulars = liquidation.ControlNumber;
       RFPDetails.Remarks = liquidation.Remarks;
 
-      GlobalClassList.LiquidationNotInRFP = GlobalClassList.LiquidationNotInRFP.Where(x=>x.Id != liquidation.Id).ToList();
+      GlobalClassList.LiquidationNotInRFP.Remove(liquidation);
       GlobalClassList.requestForPayments.Add(RFPDetails);
+      
+      GlobalClassList.requestForPayments.OrderByDescending(x=>x.LiquidationControlNumber);
 
       foreach (var item in GlobalClassList.requestForPayments)
       {
@@ -672,6 +895,7 @@
       RFPDetails.POBillingId = poBilling.POBillingId;
       RFPDetails.Amount = poBilling.TotalAmount;
       RFPDetails.POBControlNumber = poBilling.ControlNumber;
+      RFPDetails.Particulars = poBilling.ControlNumber;
 
       GlobalClassList.POBillingList = GlobalClassList.POBillingList.Where(x=>x.POBillingId != poBilling.POBillingId).ToList();
       GlobalClassList.requestForPayments.Add(RFPDetails);
@@ -691,6 +915,7 @@
     voucherRFP.RFPControlNumber = requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.POBilling ?requestForPayment.RFP : requestForPayment.ControlNumber;
     voucherRFP.IsActive = true;
     voucherRFP.payeeCategory = requestForPayment.PayeeCategoryId;
+    noVoucherRFP.Remove(requestForPayment);
     GlobalClass.voucher.VoucherRFP.Add(voucherRFP);
     
     GlobalClass.voucher.TotalAmount = totalAmount;
@@ -755,8 +980,12 @@
       await SearchPettyCash();
     if (lookUpType == Enums.LookUpType.POBilling)
       await SearchPOBilling();
+    if(lookUpType == Enums.LookUpType.PO)
+      await LoadPOs();
+    if(lookUpType == Enums.LookUpType.Voucher)
+      await SearchVoucher();
   }
-
+  
   private void TableCollapse(Enums.LookUpType lookUpType)
   {
     isSubTableCollaped = !isSubTableCollaped;
@@ -767,5 +996,67 @@
      foreach (var item in GlobalClassList.LiquidationNotInRFP)
         item.ShowSubTable = false;
   }
- 
+  private void SelectVoucher(VoucherModel voucher)
+  {
+    if(isValidatedVoucher(voucher))
+    {
+      selectedVouchers = new();
+      GlobalClass.checkModel.Amount = totalAmounts += voucher.currentCheckAmount;
+      GlobalClass.checkModel.AmountInWords = Common.AmountToWords.DecimalToWords(GlobalClass.checkModel.Amount);
+      voucherNotInCheck.Remove(voucher);
+      selectedVouchers.CheckId = GlobalClass.checkModel.Id;
+      selectedVouchers.VoucherId = voucher.Id;
+      selectedVouchers.Amount = voucher.currentCheckAmount;
+      GlobalClass.checkModel.CheckVouchers.Add(selectedVouchers);
+    }
+    else
+    {
+      Extensions.ShowAlert("Check Amount should not be greater the current balance or equal to zero!",Variant.Filled,snackbarService,Severity.Error);
+    }
+  }
+  private bool isValidatedVoucher(VoucherModel voucher)
+  {
+      return  voucher.currentCheckAmount != 0 && voucher.currentCheckAmount < voucher.CheckBalance;
+  }
+  private string AccountingStatus(List<string> selectedStatus)
+  {
+      var status = "";
+      foreach (var item in hasAccountingStatus)
+      {
+      status = string.Join(", ", hasAccountingStatus.Select(x => x.StatusName));      
+      }
+      return $"{status}";
+  }
+  private async void LookUp(Enums.LookUpType type, string lookFor)
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = string.Empty;
+        string searchPlaceholderText = string.Empty;
+        dialogTitle = lookFor+" Look Up";
+        searchPlaceholderText = lookFor;
+        parameters.Add("lookUpType", type);
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", "Select");
+        parameters.Add("searchPlaceholderText", searchPlaceholderText);
+        parameters.Add("color", Color.Success);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = false
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled) {
+            if(type == Enums.LookUpType.Employee)
+                requestor = (UserAccount) resultDialog.Data;
+            else if (type == Enums.LookUpType.Project)
+                payee = (Project) resultDialog.Data;
+            filterParameter.RequestorId = requestor.EmployeeId;
+            filterParameter.PayeeId = payee.ProjectId;
+            filterParameter.PayeeCategoryId = payee.ProjectCategoryId;
+        }
+        StateHasChanged();
+    }
 }

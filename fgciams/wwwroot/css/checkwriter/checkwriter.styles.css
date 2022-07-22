@@ -1,0 +1,49 @@
+.checkwriterpage__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 130px 1fr;
+  grid-template-rows: 40px 50px 40px 40px 1fr;
+  gap: 0px 0px;
+  grid-template-areas: "chkw-header chkw-header chkw-header chkw-header chkw-header" "chkw-payee chkw-payee chkw-banks chkw-banks chkw-checkno" "chkw-voucher chkw-voucher chkw-voucher chkw-voucher chkw-voucher" "chkw-desc chkw-desc chkw-remarks chkw-remarks chkw-remarks" "chkw-details chkw-details chkw-details chkw-details chkw-details";
+}
+.checkwriterpage .chkw-header {
+  grid-area: chkw-header;
+}
+.checkwriterpage .chkw-payee {
+  grid-area: chkw-payee;
+}
+.checkwriterpage .chkw-banks {
+  grid-area: chkw-banks;
+}
+.checkwriterpage .chkw-checkno {
+  grid-area: chkw-checkno;
+}
+.checkwriterpage .chkw-voucher {
+  grid-area: chkw-voucher;
+}
+.checkwriterpage .chkw-desc {
+  grid-area: chkw-desc;
+}
+.checkwriterpage .chkw-remarks {
+  grid-area: chkw-remarks;
+}
+.checkwriterpage .chkw-details {
+  grid-area: chkw-details;
+}
+.checkwriterpage .chkw-header,
+.checkwriterpage .chkw-voucher,
+.checkwriterpage .chkw-details {
+  border-top: solid thin lightgray;
+  border-bottom: solid thin lightgray;
+}
+.checkwriterpage .chkw-header,
+.checkwriterpage .chkw-payee,
+.checkwriterpage .chkw-checkno,
+.checkwriterpage .chkw-voucher,
+.checkwriterpage .chkw-desc,
+.checkwriterpage .chkw-details {
+  border-right: solid thin lightgray;
+  border-left: solid thin lightgray;
+}
+.checkwriterpage .chkw-remarks {
+  border-right: solid thin lightgray;
+}/*# sourceMappingURL=checkwriter.styles.css.map */

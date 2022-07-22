@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /*!
  * Quill Editor v1.3.6
  * https://quilljs.com/
@@ -5,8 +6,7 @@
  * Copyright (c) 2013, salesforce.com
  */
 .ql-container {
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   font-family: Helvetica, Arial, sans-serif;
   font-size: 13px;
   height: 100%;
@@ -36,8 +36,7 @@
 }
 
 .ql-editor {
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   line-height: 1.42;
   height: 100%;
   outline: none;
@@ -82,7 +81,7 @@
 }
 
 .ql-editor ul > li::before {
-  content: '\2022';
+  content: "•";
 }
 
 .ql-editor ul[data-checked=true],
@@ -103,11 +102,11 @@
 }
 
 .ql-editor ul[data-checked=true] > li::before {
-  content: '\2611';
+  content: "☑";
 }
 
 .ql-editor ul[data-checked=false] > li::before {
-  content: '\2610';
+  content: "☐";
 }
 
 .ql-editor li::before {
@@ -513,7 +512,7 @@
 .ql-snow.ql-toolbar:after,
 .ql-snow .ql-toolbar:after {
   clear: both;
-  content: '';
+  content: "";
   display: table;
 }
 
@@ -626,31 +625,28 @@
 
 @media (pointer: coarse) {
   .ql-snow.ql-toolbar button:hover:not(.ql-active),
-  .ql-snow .ql-toolbar button:hover:not(.ql-active) {
+.ql-snow .ql-toolbar button:hover:not(.ql-active) {
     color: #444;
   }
   .ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-fill,
-  .ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-fill,
-  .ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill,
-  .ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill {
+.ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-fill,
+.ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill,
+.ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill {
     fill: #444;
   }
   .ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke,
-  .ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke,
-  .ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter,
-  .ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter {
+.ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke,
+.ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter,
+.ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter {
     stroke: #444;
   }
 }
-
 .ql-snow {
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 .ql-snow * {
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 .ql-snow .ql-hidden {
@@ -664,8 +660,7 @@
 
 .ql-snow .ql-tooltip {
   position: absolute;
-  -webkit-transform: translateY(10px);
-          transform: translateY(10px);
+  transform: translateY(10px);
 }
 
 .ql-snow .ql-tooltip a {
@@ -674,8 +669,7 @@
 }
 
 .ql-snow .ql-tooltip.ql-flip {
-  -webkit-transform: translateY(-10px);
-          transform: translateY(-10px);
+  transform: translateY(-10px);
 }
 
 .ql-snow .ql-formats {
@@ -685,7 +679,7 @@
 
 .ql-snow .ql-formats:after {
   clear: both;
-  content: '';
+  content: "";
   display: table;
 }
 
@@ -910,12 +904,12 @@
   width: 18px;
 }
 
-.ql-snow .ql-picker.ql-header .ql-picker-label[data-label]:not([data-label=''])::before,
-.ql-snow .ql-picker.ql-font .ql-picker-label[data-label]:not([data-label=''])::before,
-.ql-snow .ql-picker.ql-size .ql-picker-label[data-label]:not([data-label=''])::before,
-.ql-snow .ql-picker.ql-header .ql-picker-item[data-label]:not([data-label=''])::before,
-.ql-snow .ql-picker.ql-font .ql-picker-item[data-label]:not([data-label=''])::before,
-.ql-snow .ql-picker.ql-size .ql-picker-item[data-label]:not([data-label=''])::before {
+.ql-snow .ql-picker.ql-header .ql-picker-label[data-label]:not([data-label=""])::before,
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-label]:not([data-label=""])::before,
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-label]:not([data-label=""])::before,
+.ql-snow .ql-picker.ql-header .ql-picker-item[data-label]:not([data-label=""])::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-label]:not([data-label=""])::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-label]:not([data-label=""])::before {
   content: attr(data-label);
 }
 
@@ -925,37 +919,37 @@
 
 .ql-snow .ql-picker.ql-header .ql-picker-label::before,
 .ql-snow .ql-picker.ql-header .ql-picker-item::before {
-  content: 'Normal';
+  content: "Normal";
 }
 
 .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="1"]::before,
 .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="1"]::before {
-  content: 'Heading 1';
+  content: "Heading 1";
 }
 
 .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="2"]::before,
 .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="2"]::before {
-  content: 'Heading 2';
+  content: "Heading 2";
 }
 
 .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="3"]::before,
 .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="3"]::before {
-  content: 'Heading 3';
+  content: "Heading 3";
 }
 
 .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="4"]::before,
 .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="4"]::before {
-  content: 'Heading 4';
+  content: "Heading 4";
 }
 
 .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="5"]::before,
 .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="5"]::before {
-  content: 'Heading 5';
+  content: "Heading 5";
 }
 
 .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="6"]::before,
 .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="6"]::before {
-  content: 'Heading 6';
+  content: "Heading 6";
 }
 
 .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="1"]::before {
@@ -988,17 +982,17 @@
 
 .ql-snow .ql-picker.ql-font .ql-picker-label::before,
 .ql-snow .ql-picker.ql-font .ql-picker-item::before {
-  content: 'Sans Serif';
+  content: "Sans Serif";
 }
 
 .ql-snow .ql-picker.ql-font .ql-picker-label[data-value=serif]::before,
 .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=serif]::before {
-  content: 'Serif';
+  content: "Serif";
 }
 
 .ql-snow .ql-picker.ql-font .ql-picker-label[data-value=monospace]::before,
 .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=monospace]::before {
-  content: 'Monospace';
+  content: "Monospace";
 }
 
 .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=serif]::before {
@@ -1015,22 +1009,22 @@
 
 .ql-snow .ql-picker.ql-size .ql-picker-label::before,
 .ql-snow .ql-picker.ql-size .ql-picker-item::before {
-  content: 'Normal';
+  content: "Normal";
 }
 
 .ql-snow .ql-picker.ql-size .ql-picker-label[data-value=small]::before,
 .ql-snow .ql-picker.ql-size .ql-picker-item[data-value=small]::before {
-  content: 'Small';
+  content: "Small";
 }
 
 .ql-snow .ql-picker.ql-size .ql-picker-label[data-value=large]::before,
 .ql-snow .ql-picker.ql-size .ql-picker-item[data-value=large]::before {
-  content: 'Large';
+  content: "Large";
 }
 
 .ql-snow .ql-picker.ql-size .ql-picker-label[data-value=huge]::before,
 .ql-snow .ql-picker.ql-size .ql-picker-item[data-value=huge]::before {
-  content: 'Huge';
+  content: "Huge";
 }
 
 .ql-snow .ql-picker.ql-size .ql-picker-item[data-value=small]::before {
@@ -1055,9 +1049,8 @@
 
 .ql-toolbar.ql-snow {
   border: 1px solid #ccc;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
-  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  box-sizing: border-box;
+  font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
   padding: 8px;
 }
 
@@ -1071,8 +1064,7 @@
 
 .ql-toolbar.ql-snow .ql-picker-options {
   border: 1px solid transparent;
-  -webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 2px 8px;
-          box-shadow: rgba(0, 0, 0, 0.2) 0 2px 8px;
+  box-shadow: rgba(0, 0, 0, 0.2) 0 2px 8px;
 }
 
 .ql-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-label {
@@ -1095,8 +1087,7 @@
 .ql-snow .ql-tooltip {
   background-color: #fff;
   border: 1px solid #ccc;
-  -webkit-box-shadow: 0px 0px 5px #ddd;
-          box-shadow: 0px 0px 5px #ddd;
+  box-shadow: 0px 0px 5px #ddd;
   color: #444;
   padding: 5px 12px;
   white-space: nowrap;
@@ -1128,13 +1119,13 @@
 
 .ql-snow .ql-tooltip a.ql-action::after {
   border-right: 1px solid #ccc;
-  content: 'Edit';
+  content: "Edit";
   margin-left: 16px;
   padding-right: 8px;
 }
 
 .ql-snow .ql-tooltip a.ql-remove::before {
-  content: 'Remove';
+  content: "Remove";
   margin-left: 8px;
 }
 
@@ -1153,7 +1144,7 @@
 
 .ql-snow .ql-tooltip.ql-editing a.ql-action::after {
   border-right: 0px;
-  content: 'Save';
+  content: "Save";
   padding-right: 0px;
 }
 
@@ -1175,5 +1166,4 @@
 
 .ql-container.ql-snow {
   border: 1px solid #ccc;
-}
-/*# sourceMappingURL=quill.snow.styles.css.map */
+}/*# sourceMappingURL=quill.snow.styles.css.map */

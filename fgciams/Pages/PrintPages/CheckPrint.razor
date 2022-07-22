@@ -1,0 +1,78 @@
+@page "/check/print"
+
+@inject ICheckService checkService
+@inject NavigationManager navigationManager
+@inject IDialogService dialogService
+@inject ISnackbar snackBarService
+
+     <div class='d-flex flex-1 pa-2 ma-2'>
+        <MudPaper Class='d-flex flex-1 flex-column pa-2' Elevation='1' Height='calc(100vh - 120px)' Width='100%'>
+            <div class='d-flex align-stretch justify-center default-report-viewscreen'>
+                @if (string.IsNullOrWhiteSpace(PDFContent))
+                {
+                    <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
+                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                    </MudOverlay>
+                }
+                else
+                {
+                    <iframe src='@PDFContent' />
+                }
+            </div>
+            <MudCardActions Class='d-flex align-center pa-0 gap-2'>
+                <div class='flex-1 height100'></div>
+                <div class='d-flex align-center pa-2 gap-2'>
+                    <MudButton Class='width100px' OnClick="(() => Back())"  Variant='Variant.Text' Size='Size.Small'>CANCEL</MudButton>
+                    <MudButton Class='width100px' OnClick="(() => Prompt())"  Variant='Variant.Filled' Color='Color.Success' Size='Size.Small'>SAVE</MudButton>
+                </div>
+            </MudCardActions>
+        </MudPaper>
+    </div>
+@code
+{
+    private string PDFContent = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        PDFContent = await checkService.GetCheckReport(GlobalClass.checkModel);
+        StateHasChanged();
+    }
+    private void Back()
+    {
+        navigationManager.NavigateTo($"/check/create");
+    }
+    private async Task Prompt()
+    {
+        var returnedModel = new CheckModel();
+        var parameters = new DialogParameters();
+        string contentText = "Check ";
+        string dialogTitle = CheckWriter.currentActionMode + contentText;
+        parameters.Add("contentText", contentText);
+        parameters.Add("actionMode", CheckWriter.currentActionMode);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {   
+            if (CheckWriter.currentActionMode == Enums.ActionMode.Create)
+            {
+                returnedModel =  await checkService.AddCheck(GlobalClass.checkModel,GlobalClass.token);
+                Extensions.ShowAlert("Check has been CREATED",Variant.Filled,snackBarService,Severity.Error);
+            }
+            else if (CheckWriter.currentActionMode == Enums.ActionMode.Update)
+            {
+                returnedModel = await checkService.UpdateCheck(GlobalClass.checkModel,GlobalClass.token);
+                Extensions.ShowAlert("Check has been UPDATED",Variant.Filled,snackBarService,Severity.Error);
+            }
+            if(GlobalVariable.AMSHubConnection != null)
+                await GlobalVariable.AMSHubConnection.InvokeAsync("SaveCheck",returnedModel);
+            navigationManager.NavigateTo($"/check/list");
+        }
+    }
+}

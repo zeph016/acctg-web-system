@@ -39,7 +39,7 @@ namespace fgciams.domain.clsLiquidation
         public int ControlCount { get; set; }
         public decimal TotalAmount { get; set; }
         public Int64 PreparedById { get; set; }
-        public string PreparedByName { get; set; }
+        public string PreparedByName { get; set; } = string.Empty;
         public string PreparedByDesignation { get; set; }
         public Int64 PayeeId { get; set; }
         public string PayeeName { get; set; }
@@ -55,12 +55,14 @@ namespace fgciams.domain.clsLiquidation
 
         //extras
         public bool ShowReport {get; set;}
-        public string StatusColor { get; set; }
+        public string StatusColor { get; set; } = "#d3d3d3";
         public bool ShowSubTable { get; set; }
+        public bool ShowRemarks { get; set; }
         public DateTime PeriodFrom { get; set; }
         public DateTime PeriodTo { get; set; }
-        public byte[] PreparedByPicture {get; set;}
-        public byte[] ApprovedByPicture {get; set;}
+        public byte[] PreparedByPicture {get; set;} = new byte[]{};
+        public byte[] ApprovedByPicture {get; set;} = new byte[]{};
+        public Enums.AccountingStatusEnumCategory StatusEnumCategoryId {get;set;}
     }
 
 }

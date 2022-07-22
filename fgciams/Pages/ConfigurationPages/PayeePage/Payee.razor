@@ -1,0 +1,233 @@
+@page "/payee"
+
+@inject IPayeeService payeeService
+@inject IDialogService dialogService
+@inject ISnackbar snackBarService
+
+<div class='page-cont'>
+    <div class='drawer-right'>
+        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <div class='drawer-right__filtercont'>
+                <div class='icon-area d-flex align-center'>
+                    <MudIconButton OnClick='OpenSideFilter' Icon="@Icons.Filled.FilterList" aria-label="Filter" Size='Size.Medium' />
+                </div>
+                <div class='filter-title d-flex align-center'>
+                    <p class='title875'>Filter</p>
+                    <MudSpacer />
+                    <MudIconButton OnClick='OpenSideFilter' Icon="@Icons.Filled.Close" aria-label="Close Filter" Size='Size.Medium' />
+                </div>
+                <div class='filter-content d-flex flex-column pl-4 pr-4 gap-1 @visibility'>
+                    <MudTextField Class='txtfield-75' @bind-Value='searchTerm' Placeholder='Payee Name'
+                    Adornment='Adornment.Start' AdornmentIcon='@Icons.Material.Filled.Search' IconSize='Size.Small'
+                    Clearable='true' Variant='Variant.Outlined' />
+                    <MudButton Variant='Variant.Filled' Color='Color.Secondary'>Apply Filter</MudButton>
+                </div>
+            </div>
+        </MudDrawer>
+    </div>
+    <MudContainer Class='payeepage' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+            @if (!dataFetched)
+            {
+                <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
+                    <MudSkeleton SkeletonType='SkeletonType.Text' Height='100px' Animation='Animation.Wave' />
+                    <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='71vh' Animation='Animation.Wave' />
+                </MudPaper>
+             }
+            else
+            {
+                <MudTable Class='configtables' Items="@GlobalClassList.payeeList" Hover="true" 
+                Breakpoint="Breakpoint.Sm" FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
+                RowsPerPage='30' Striped='true' Filter='new Func<PayeeModel, bool>(FilterItems)'>
+                    <ToolBarContent>
+                        <MudText Typo='Typo.caption'>
+                            @GlobalClassList.payeeList.Count() 
+                            @(GlobalClassList.payeeList.Count() == 1 ? "item" : "items") 
+                            in Total
+                        </MudText>
+                        <MudSpacer/>
+                        <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                            TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
+                            <MudMenuItem OnClick='(() => PayeeDialog(new PayeeModel()))'>
+                                <div class='d-flex align-center gap-2'>
+                                    <MudIcon Icon='@Icons.Filled.Add' Size='Size.Medium' />
+                                    <MudText Typo='Typo.body2'>Add</MudText>
+                                </div>
+                            </MudMenuItem>
+                             <MudMenuItem OnClick='OpenSideFilter'>
+                                <div class='d-flex align-center gap-2'>
+                                    <MudIcon Icon='@Icons.Filled.FilterList' />
+                                    <MudText Typo='Typo.body2'>Filter</MudText>
+                                </div>
+                            </MudMenuItem>
+                        </MudMenu>
+                    </ToolBarContent>
+                    <ColGroup>
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                    <col style='width: 5%;'/>
+                    <col style='width: 5%;'/>
+                    <col style='width: 5%;'/>
+                    </ColGroup>
+                    <HeaderContent>
+                        <MudTh Class='customheader-1'>Payee Name</MudTh>
+                        <MudTh Class='customheader-1'></MudTh>
+                        <MudTh Class='customheader-1'>Category</MudTh>
+                        <MudTh Class='customheader-1'>TIN No</MudTh>
+                        <MudTh Class='customheader-1 text-center'>Details</MudTh>
+                        <MudTh Class='customheader-1 text-center'>Invoice</MudTh>
+                        <MudTh Class="customheader-1 text-center">Action</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>    
+                        <MudTd>@context.PayeeName</MudTd>
+                        <MudTd>@context.ShortcutName</MudTd>
+                        <MudTd>@context.PayeeCategory.CategoryName</MudTd>
+                        <MudTd>@context.TINNo</MudTd>
+                        <MudTd Class='text-center'>
+                            <MudIconButton OnClick='(() => context.subTable = ShowSubTable(context.subTable))' Icon="@Icons.Filled.ArrowDropDown" aria-label="Details"
+                                Size='Size.Small'/>
+                        </MudTd>
+                        <MudTd Class="text-center"><MudCheckBox Checked="@context.HasInvoice" ReadOnly="true" Size='Size.Small' /></MudTd>
+                        <MudTd Class="text-center">
+                            <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                            TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
+                                <MudMenuItem OnClick='(() => PayeeDialog(context))'>
+                                    <div class='d-flex align-center gap-2'>
+                                        <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Medium' />
+                                        <MudText Typo='Typo.body2'>Edit</MudText>
+                                    </div>
+                                </MudMenuItem>
+                            </MudMenu>
+                        </MudTd>
+                    </RowTemplate>
+                    <ChildRowContent>
+                        @if (context.subTable)
+                        {
+                            <td colspan='8'>
+                                <MudTr Class='d-flex justify-end align-center'>
+                                    <MudCard Class='pa-2 ma-2 d-flex align-center gap-6'>
+                                        <div class='d-flex align-center gap-2'>
+                                            <MudIcon Icon='@Icons.Filled.LocationOn' Title='Address'/>
+                                            <MudText Typo='Typo.body2'>@context.PayeeAddress</MudText>
+                                        </div>
+                                         <div class='d-flex align-center gap-2'>
+                                            <MudIcon Icon='@Icons.Filled.ContactPhone' Title='Contact Phone'/>
+                                            <MudText Typo='Typo.body2'>@context.PayeeContactNo</MudText>
+                                        </div>
+                                        <div class='d-flex align-center gap-2'>
+                                            <MudIcon Icon='@Icons.Filled.Message' Title='Remarks'/>
+                                            <MudText Typo='Typo.body2'>@context.Remarks</MudText>
+                                        </div>
+                                    </MudCard>
+                                </MudTr>
+                            </td>
+                        }
+                    </ChildRowContent>
+                    <PagerContent>
+                        <MudTablePager PageSizeOptions="@pageSize" />
+                    </PagerContent>
+                </MudTable>
+            }
+    </MudContainer>
+ 
+</div>
+@code{
+    private bool dataFetched, openSideFilter;
+    private int[] pageSize = new int[] { 30, 50, 100, 500, 1000 };
+    private string searchTerm = string.Empty, visibility = "visibility-animation-hide";
+    
+
+    protected override async Task OnInitializedAsync()
+    {
+        GlobalClass.pageTitle = "PAYEE";
+        while (GlobalClass.currentUserAccount == null || GlobalClassList.payeeList == null || GlobalClassList.payeeCategoryList == null)
+            await Task.Delay(1);
+        CompletedFetch();
+        SignalR();
+    }
+
+    void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+
+    private async Task PayeeDialog(PayeeModel payee)
+    {
+        var parameters = new DialogParameters();
+        GlobalClass.payee = payee;
+        payee.IsActive = true;
+        string dialogTitle = GlobalClass.payee.Id != 0 ? "Edit Payee" : "Add Payee";
+        string buttonText = GlobalClass.payee.Id != 0 ? "Update" : "Add";
+        Color color = GlobalClass.payee.Id != 0 ? Color.Info : Color.Success;
+        parameters.Add("color", color);
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", buttonText);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = false
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.PayeeDialogs.PayeeDialog>("", parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            if ((int)resultDialog.Data == 0)
+                ShowAlert("Added new payee", Variant.Filled, Severity.Success);
+            else if ((int)resultDialog.Data == 1)
+                ShowAlert("Updated payee", Variant.Filled, Severity.Info);
+        }
+    }
+
+    private bool FilterItems(PayeeModel items)
+    {
+        if (string.IsNullOrEmpty(searchTerm))
+            return true;
+        if (items.PayeeName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase))
+            return true;
+        return false;
+    }
+
+    private void ShowAlert(string message, Variant variant, Severity severity)
+    {
+        snackBarService.Clear();
+        snackBarService.Configuration.PositionClass = Defaults.Classes.Position.BottomCenter;
+        snackBarService.Configuration.SnackbarVariant = variant;
+        snackBarService.Configuration.MaxDisplayedSnackbars = 10;
+        snackBarService.Add($"{message}", severity);
+    }
+
+    private bool ShowSubTable(bool isShow)
+    {
+        return isShow = !isShow;
+    }
+    private void OpenSideFilter()
+    {
+        openSideFilter = !openSideFilter;
+        if(openSideFilter)
+        visibility = "visibility-animation-show";
+        if(!openSideFilter)
+        visibility = "visibility-animation-hide";
+    }
+    private void SignalR()
+    {
+        try
+        {
+            if(GlobalVariable.AMSHubConnection != null)
+                GlobalVariable.AMSHubConnection.On<PayeeModel>("SavePayee",(payee) => 
+                {
+                    GlobalClassList.payeeList.RemoveAll(model => model.Id == payee.Id);
+                    if(payee.IsActive == true)
+                        GlobalClassList.payeeList.Insert(0,payee); 
+                    StateHasChanged();
+                });
+        }catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            throw;
+        }
+    }
+}

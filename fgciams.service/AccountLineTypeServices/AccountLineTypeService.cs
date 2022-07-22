@@ -73,6 +73,7 @@ namespace fgciams.service.AccountLineTypeServices
             catch (System.Exception ex)
             {
                // TODO
+               Console.WriteLine(ex.Message);
                throw;
             }
         }
@@ -89,6 +90,7 @@ namespace fgciams.service.AccountLineTypeServices
             catch (System.Exception ex)
             {
                // TODO
+               Console.WriteLine(ex.Message);
                throw;
             }
         }

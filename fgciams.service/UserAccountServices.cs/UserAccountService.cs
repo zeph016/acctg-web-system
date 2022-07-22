@@ -19,7 +19,7 @@ namespace fgciams.service.UserAccountServices
             this.client = _client;
         }
         #region Properties
-       private IConfiguration configuration;
+       private IConfiguration? configuration;
         private HttpClient client;
         #endregion
 
@@ -43,6 +43,7 @@ namespace fgciams.service.UserAccountServices
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 throw;
             }
         }

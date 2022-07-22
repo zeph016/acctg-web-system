@@ -1,7 +1,6 @@
 .text-search .mud-input-control-input-container {
   width: 50%;
 }
-
 .text-search .mud-input {
   margin-top: 0px !important;
 }
@@ -16,11 +15,4 @@
 
 .txtlbl-bold .mud-input-label {
   font-weight: bold !important;
-}
-
-.txt-overflow-ellipsis {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-/*# sourceMappingURL=overall.styles.css.map */
+}/*# sourceMappingURL=overall.styles.css.map */

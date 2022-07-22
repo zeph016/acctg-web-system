@@ -1,9 +1,5 @@
-.page-cont {
-  background-color: #eeeff2;
-  height: 100%;
-}
-
-.dashboardpage, .pettycashpage-entry,
+.dashboardpage,
+.pettycashpage-entry,
 .liquidationpage-entry {
   padding: 8px 8px !important;
 }
@@ -13,14 +9,23 @@
   height: 100%;
 }
 
-.acctgstatuspage, .bankpage,
-.billingdocpage, .divisionpage,
-.modeofpaymentpage, .payeepage,
-.requesttypelist, .payeecategory,
-.projchargingpage, .requesttype,
-.subconcompage, .subcongeninfopage,
-.subconpospage, .pettycashlist-page,
-.liquidationlist-page, .voucherlist {
+.acctgstatuspage,
+.bankpage,
+.billingdocpage,
+.divisionpage,
+.modeofpaymentpage,
+.payeepage,
+.requesttypelist,
+.payeecategory,
+.projchargingpage,
+.requesttype,
+.subconcompage,
+.subcongeninfopage,
+.subconpospage,
+.pettycashlist-page,
+.liquidationlist-page,
+.voucherlist,
+.vbatchlistpage,
+.checklistpage {
   padding: 10px 72px 10px 16px !important;
-}
-/*# sourceMappingURL=pages.styles.css.map */
+}/*# sourceMappingURL=pages.styles.css.map */

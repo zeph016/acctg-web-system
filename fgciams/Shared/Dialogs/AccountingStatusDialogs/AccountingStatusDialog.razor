@@ -7,11 +7,11 @@
         <div class='d-flex align-center'>
             @if (GlobalClass.acctgStatus.Id != 0)
             {
-                <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3 mb-n1ank" />
+                <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3" />
             }
             else
             {
-                <MudIcon Icon="@Icons.Filled.Add" Class="mr-3 mb-n1" />
+                <MudIcon Icon="@Icons.Filled.Add" Class="mr-3" />
             }
             <MudText Typo='Typo.h6'>@dialogTitle</MudText>
         </div>
@@ -20,26 +20,28 @@
         <div class='customdialog__content-container'>
             <MudGrid Spacing='1'>
                 <MudItem xs='9'>
-                    <MudTextField @bind-Value='@GlobalClass.acctgStatus.StatusName' Label='Accounting Status' />
+                    <MudTextField @bind-Value='@GlobalClass.acctgStatus.StatusName' HelperText="Required*" Label='Accounting Status' ErrorText="Required*" Error=@notValidStatus/>
                 </MudItem>
                 <MudItem Class='d-flex align-center' xs='3'>
-                    <MudCheckBox @bind-Checked="@GlobalClass.acctgStatus.IsActive" Label='Active' />
+                    <MudCheckBox @bind-Checked='@GlobalClass.acctgStatus.IsActive' Label='Active' ReadOnly=@isReadOnly/>
                 </MudItem>
                 <MudItem xs='9'>
-                    <div class='smallColorBox' style='@($"background-color:{GlobalClass.acctgStatus.StatusColor};")'>
+                    <div class='smallColorBox text-left' style='@($"background-color:{GlobalClass.acctgStatus.StatusColor};")'>
                     </div>
                     <MudColorPicker Label='Color' ColorPickerView='ColorPickerView.Grid' ColorPickerMode='ColorPickerMode.HEX' Value="GlobalClass.acctgStatus.StatusColor" ValueChanged='UpdateSelectedColor' />
                 </MudItem>
                 <MudItem xs='9'>
-                    <MudIcon Icon="@GlobalClass.selectedIcon" Color="Color.Primary" />
-                    <MudTextField @bind-Value="@GlobalClass.acctgStatus.StatusIcon" class="mud-grid-item mud-grid-item-xs-9" Label="Icon" Variant="Variant.Text"
-                        Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.InsertEmoticon" OnAdornmentClick="(() => ShowIcons())"></MudTextField>
+                    <div class="text-center">
+                        <MudIcon  Icon="@GlobalClass.selectedIcon" Color="Color.Primary"/>
+                    </div>
+                    <MudTextField @bind-Value="@GlobalClass.acctgStatus.StatusIcon" HelperText="Required*" class="mud-grid-item mud-grid-item-xs-9" Label="Icon" Variant="Variant.Text"
+                        Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.InsertEmoticon" OnAdornmentClick="(() => ShowIcons())" Error=@notValidStatusIcon ErrorText="Required*"></MudTextField>
                 </MudItem>
                 <MudItem xs='9'>
-                    <MudSelect @bind-Value="GlobalClass.acctgStatus.StatusEnumCategoryId" AnchorOrigin="Origin.BottomCenter">
-                        @foreach (Enums.AccountingStatusEnumCategory enums in Enum.GetValues(typeof(Enums.AccountingStatusEnumCategory)))
+                    <MudSelect Label="Category" @bind-Value="GlobalClass.acctgStatus.StatusEnumCategoryId" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var items in SortedCategory())
                         {
-                            <MudSelectItem Value="enums">@Extensions.GetEnumDescription(enums)</MudSelectItem>
+                            <MudSelectItem Value="@items">@Extensions.GetEnumDescription(items)</MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
@@ -57,43 +59,48 @@
     [Parameter] public Color color { get; set; }
     [Parameter] public string dialogTitle { get; set; } = string.Empty;
     [Parameter] public string buttonText { get; set; } = string.Empty;
+    private bool isReadOnly = false;
+    private Enums.ActionMode currentAction {get;set;}
+    private bool notValidStatus,notValidStatusIcon = false;
     protected override async Task OnInitializedAsync()
     {
         if (GlobalClass.acctgStatus.Id == 0) {
+            isReadOnly = true;
             GlobalClass.acctgStatus.IsActive = true;
             GlobalClass.acctgStatus.StatusColor = "#FFFF00";
             GlobalClass.selectedIcon = Icons.Filled.NotInterested;
-            GlobalClass.acctgStatus.StatusIcon = "Icons.Filled.NotInterested";
+            GlobalClass.acctgStatus.StatusIcon = string.Empty;
+            GlobalClass.acctgStatus.StatusEnumCategoryId = SortedCategory()[0];//Get the first item of sorted category
         } else {
             GlobalClass.selectedIcon = Extensions.Icon(GlobalClass.acctgStatus.StatusIcon);
         }
+        ResetValidation();
         await Task.Delay(1);
     }
     void Cancel()
     {
-        MudDialog.Cancel();
+        MudDialog.Close(DialogResult.Ok(2));
     }
 
     private async Task Submit()
     {
-        try
+        if(GlobalClass.acctgStatus.IsActive == false)
         {
-            if (GlobalClass.acctgStatus.Id != 0)
+            currentAction = Enums.ActionMode.Deactivate;
+            await Prompt();
+        }
+        else
+        {
+            if(IsValidated()) 
             {
-                await accountingStatusService.UpdateAccountingStatus(GlobalClass.acctgStatus, GlobalClass.token);
-                MudDialog.Close(DialogResult.Ok(1));
+                if(GlobalClass.acctgStatus.Id == 0)
+                    currentAction = Enums.ActionMode.Create;
+                else
+                    currentAction = Enums.ActionMode.Update;
+                await Prompt();
             }
             else
-            {
-                GlobalClass.acctgStatus = await accountingStatusService.AddAccountingStatus(GlobalClass.acctgStatus, GlobalClass.token);
-                GlobalClassList.accountingStatusList.Add(GlobalClass.acctgStatus);
-                MudDialog.Close(DialogResult.Ok(0));
-            }
-            await GlobalVariable.AMSHubConnection.InvokeAsync("SaveAccountingStatus",GlobalClass.acctgStatus);
-        }
-        catch(System.Exception ex)
-        {
-            Extensions.ShowAlert(ex.Message, Variant.Filled, snackbar, Severity.Info);
+                Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" acounting status"+GlobalVariable.errorPromptText,Variant.Filled,snackbar,Severity.Error);
         }
     }
     private void UpdateSelectedColor(MudColor colorValue)
@@ -103,9 +110,78 @@
     private async Task ShowIcons()
     {
         //NavigationManager.NavigateTo($"/iconpage");
-        var resultDialog = await dialogService.Show<Shared.Dialogs.IconsDialogs.IconsDialog>("").Result;
+        var parameters = new DialogParameters();
+        var options = new DialogOptions()
+        {
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.IconsDialogs.IconsDialog>("",options).Result;
         if(resultDialog.Cancelled)
             if(resultDialog.Data.Equals(101))
                 Console.WriteLine(GlobalClass.acctgStatus.StatusIcon);
+    }
+    private async Task Prompt()
+    {
+        var parameters = new DialogParameters();
+        string contentText = " Accounting Status";
+        string dialogTitle = currentAction + contentText;
+        parameters.Add("contentText", contentText);
+        parameters.Add("actionMode", currentAction);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled) 
+        {   
+            try
+            {
+                if (currentAction == Enums.ActionMode.Create) {
+                    GlobalClass.acctgStatus = await accountingStatusService.AddAccountingStatus(GlobalClass.acctgStatus, GlobalClass.token);
+                    GlobalClassList.accountingStatusList.Add(GlobalClass.acctgStatus);
+                    MudDialog.Close(DialogResult.Ok(0));
+                } else {
+                    await accountingStatusService.UpdateAccountingStatus(GlobalClass.acctgStatus, GlobalClass.token);
+                    if(currentAction == Enums.ActionMode.Deactivate)
+                        MudDialog.Close(DialogResult.Ok(2));
+                    else
+                        MudDialog.Close(DialogResult.Ok(1));
+                } 
+                if(GlobalVariable.AMSHubConnection != null)
+                    await GlobalVariable.AMSHubConnection.InvokeAsync("SaveAccountingStatus",GlobalClass.acctgStatus);
+            } catch(System.Exception ex) {
+                Extensions.ShowAlert(ex.Message, Variant.Filled, snackbar, Severity.Info);
+            }
+        }
+    }
+    private bool IsValidated()
+    {
+        ResetValidation();
+        if(String.IsNullOrEmpty(GlobalClass.acctgStatus.StatusName))
+            notValidStatus = true;
+        if(String.IsNullOrEmpty(GlobalClass.acctgStatus.StatusIcon))
+            notValidStatusIcon = true;  
+        if(notValidStatus || notValidStatusIcon) {
+            GlobalVariable.errorPromptText = " incomplete field/s."; return false; }
+        if(GlobalClassList.accountingStatusList.Any(x=>x.StatusName == GlobalClass.acctgStatus.StatusName && x.Id != GlobalClass.acctgStatus.Id)) {
+            GlobalVariable.errorPromptText = " duplicate entry found for Accounting Status."; return false; }
+        if(GlobalClassList.accountingStatusList.Any(x=>x.StatusEnumCategoryId == GlobalClass.acctgStatus.StatusEnumCategoryId && x.Id != GlobalClass.acctgStatus.Id)) {
+            GlobalVariable.errorPromptText = " duplicate entry found for category."; return false; }
+        return true;
+    }
+    private void ResetValidation()
+    {
+        notValidStatus = false;
+        notValidStatusIcon = false;
+    }
+    //Sorting Enums ASC
+    private List<Enums.AccountingStatusEnumCategory> SortedCategory()
+    {
+        var sorted = Enum.GetValues(typeof(Enums.AccountingStatusEnumCategory)) as Enums.AccountingStatusEnumCategory[];
+        return sorted?.OrderBy(x=>x.ToString()).ToList()?? new List<Enums.AccountingStatusEnumCategory>();
     }
 }

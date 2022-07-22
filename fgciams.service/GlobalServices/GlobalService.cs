@@ -98,6 +98,7 @@ namespace fgciams.service.GlobalServices
             }
             catch (System.Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 throw;
             }
         }
@@ -118,6 +119,7 @@ namespace fgciams.service.GlobalServices
             }
             catch (System.Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 throw;
             }
         }
@@ -134,6 +136,25 @@ namespace fgciams.service.GlobalServices
                 responseMessage.EnsureSuccessStatusCode();
 
                 return await responseMessage.Content.ReadAsAsync<List<POModel>>();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+        #endregion
+
+        #region PO 
+        public async Task<List<Project>> LoadLocationRoutes(FilterParameter filterParameter, string token)
+        {
+            try
+            {
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("accounting-global/location-list", filterParameter);
+                responseMessage.EnsureSuccessStatusCode();
+
+                return await responseMessage.Content.ReadAsAsync<List<Project>>();
             }
             catch (Exception)
             {

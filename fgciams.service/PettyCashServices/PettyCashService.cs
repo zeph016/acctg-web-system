@@ -11,8 +11,8 @@ namespace fgciams.service.PettyCashServices
     {
         private readonly HttpClient client;
         private readonly IConfiguration configuration;
-        PettyCashModel pettyCash;
-        List<PettyCashModel> listOfPettyCash;
+        PettyCashModel pettyCash = new();
+        List<PettyCashModel> listOfPettyCash = new();
         public PettyCashService(HttpClient _client,IConfiguration _config)
         {
             client = _client;

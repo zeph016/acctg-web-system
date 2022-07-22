@@ -1,4 +1,5 @@
 @inject IBillingDocumentService billingDocumentService
+@inject ISnackbar snackbarService
 
 <MudDialog class="customdialog">
     <TitleContent>
@@ -18,11 +19,14 @@
         <div class='customdialog__content-container'>
             <MudGrid Spacing='1'>
                 <MudItem xs='9'>
-                    <MudTextField @bind-Value='@GlobalClass.billingDoc.DocumentName' Label='Billing Document' />
+                    <MudTextField @bind-Value='@GlobalClass.billingDoc.DocumentName' Label='Billing Document' Error=@reqBildoc ErrorText='Document name is required'/>
                 </MudItem>
+                @if(GlobalClass.billingDoc.Id != 0) {
                 <MudItem Class='d-flex align-center' xs='3'>
                     <MudCheckBox @bind-Checked="@GlobalClass.billingDoc.IsActive" Label='Active' />
                 </MudItem>
+                }
+
                 <MudItem xs='12'>
                     <MudTextField @bind-Value='@GlobalClass.billingDoc.Remarks' Label='Remarks' Lines='2' />
                 </MudItem>
@@ -39,7 +43,7 @@
     [Parameter] public Color color { get; set; }
     [Parameter] public string dialogTitle { get; set; } = string.Empty;
     [Parameter] public string buttonText { get; set; } = string.Empty;
-
+    private bool reqBildoc;
     protected override async Task OnInitializedAsync()
     {
         if (GlobalClass.billingDoc.Id == 0)
@@ -56,16 +60,37 @@
     {
         if (GlobalClass.billingDoc.Id != 0)
         {
+          if(ValidateEntries()) {
+
             await billingDocumentService.UpdateBillingDocument(GlobalClass.billingDoc, GlobalClass.token);
             MudDialog.Close(DialogResult.Ok(1));
+
+          } else Extensions.ShowAlert("Please complete all required fields",Variant.Filled, snackbarService, Severity.Error);
+ 
         }
         else
         {
+          if(ValidateEntries()) {
+
             GlobalClass.billingDoc = await billingDocumentService.AddBillingDocument(GlobalClass.billingDoc, GlobalClass.token);
             GlobalClassList.billingDocumentList.Add(GlobalClass.billingDoc);
             MudDialog.Close(DialogResult.Ok(0));
+            
+          } else Extensions.ShowAlert("Please complete all required fields",Variant.Filled, snackbarService, Severity.Error);
+ 
         }
-
-        await GlobalVariable.AMSHubConnection.InvokeAsync("SaveBillingDocument", GlobalClass.billingDoc);
+        if(GlobalVariable.AMSHubConnection != null && ValidateEntries())
+            await GlobalVariable.AMSHubConnection.InvokeAsync("SaveBillingDocument", GlobalClass.billingDoc);
+    }
+    private bool ValidateEntries()
+    {
+      bool valid = true;
+      if(string.IsNullOrEmpty(GlobalClass.billingDoc.DocumentName)) {
+        reqBildoc = true;
+        valid = false;
+      } else {
+        reqBildoc = false;
+      }
+      return valid;
     }
 }

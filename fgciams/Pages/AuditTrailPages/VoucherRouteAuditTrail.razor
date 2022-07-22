@@ -1,0 +1,123 @@
+@page "/voucher/route/audittrail"
+
+@inject IVoucherRouteService voucherRouteService
+@inject NavigationManager navigationManager;
+<div class="audittrail_container">
+        @if(dataFetched)
+        {
+        <MudGrid>
+            <MudItem xs="8">
+                <MudPaper Elevation="3">
+                    <MudCard Elevation="2">
+                        <div style="display: flex; align-items: center;">
+                            <MudIcon Size="Size.Medium" style="margin-right: 10px;" Icon="@Icons.Filled.Timeline"></MudIcon>
+                             <MudText Typo="Typo.body1">Timeline</MudText>
+                        </div>
+                        <MudButton Size="Size.Small" StartIcon="@Icons.Filled.ArrowBackIos" title="Back" class="btn btn-primary" OnClick="(() => BackToList())"><MudText Typo="Typo.caption">Back</MudText></MudButton>
+                    </MudCard>
+                    <MudTimeline TimelinePosition="TimelinePosition.Start">            
+                            @foreach(var auditTrail in GlobalClassList.voucherRouteAuditTrail)
+                            {
+                                <style>
+                                    .timeline-container-@AcctgModel(auditTrail).StatusName .mud-timeline-item-dot-inner
+                                    {
+                                        background-color: @AcctgModel(auditTrail).StatusColor !important;
+                                        width:18px !important;
+                                        height:18px !important;
+                                    }
+                                </style>
+                                <div class="timeline-container-@AcctgModel(auditTrail).StatusName">
+                                    <MudTimelineItem Variant="Variant.Filled">
+                                        <MudAlert Severity="Severity.Success" Style="@($"border-left:10px {AcctgModel(auditTrail).StatusColor} solid;")" Icon="@Extensions.Icon(@AcctgModel(auditTrail).StatusIcon)">
+                                            <MudText Typo="Typo.caption"><b>@auditTrail.LogDateTime.ToString("MMMM dd, yyyy hh:mm tt")</b></MudText>
+                                            <MudText Typo="Typo.subtitle2"><b>@auditTrail.Activity</b></MudText>
+                                            <MudText Typo="Typo.caption">by: &nbsp; @auditTrail.UserName</MudText>
+                                        </MudAlert>
+                                    </MudTimelineItem>
+                                </div>
+                            }
+                    </MudTimeline>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="4">
+                    <MudPaper Elevation="3">
+                  <MudCard Elevation="2">
+                      <div class="flex-gap">
+                          <MudText Typo="Typo.body1">Voucher Details</MudText>
+                      </div>
+                    </MudCard>
+                    @if(dataFetched)
+                    {
+                        //voucher details
+                        <div style="margin-top: 15px">
+                          <MudTextField Label="Control Number" Adornment="Adornment.Start" @bind-Value="@GlobalClass.voucher.ControlNumber" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense">
+                          </MudTextField>
+                          <MudChip Class='chip-radius-5 font-bold font10' Color='Color.Info' Variant='Variant.Filled' Size='Size.Small'>
+                               @GlobalClass.voucher.StatusName
+                        </MudChip>
+                        </div>
+                        <div style="margin-top: 15px">
+                          <MudTextField Label="Date" Adornment="Adornment.Start" @bind-Value="@GlobalClass.voucher.VoucherDate" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                        </div>
+                        <div style="margin-top: 15px">
+                          <MudTextField Label="Payee" Adornment="Adornment.Start" @bind-Value="@GlobalClass.voucher.PayeeName" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                        </div>
+                        <div style="margin-top: 15px">
+                          <MudTextField Label="Description" Adornment="Adornment.Start" @bind-Value="@GlobalClass.voucher.Description" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                        </div>
+                        <div style="margin-top: 15px">
+                          <MudTextField Label="Amount" Adornment="Adornment.Start" @bind-Value="@GlobalClass.voucher.TotalAmount" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                        </div>
+                        <div style="margin-top: 15px">
+                          <span>Signatories</span>
+                            <div>
+                                Prepared by:<MudTextField Adornment="Adornment.Start" @bind-Value="@GlobalClass.voucher.PreparedByName" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                            </div>
+                            <div>
+                                Verified by:<MudTextField Adornment="Adornment.Start" @bind-Value="@GlobalClass.voucher.VerifiedByName" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                            </div>
+                            <div>
+                                Approved by:<MudTextField Adornment="Adornment.Start" @bind-Value="@GlobalClass.voucher.ApprovedByName" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                            </div>
+                        </div>
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+        }
+    </div>
+
+@code
+{
+    private bool dataFetched = false;
+    protected override async Task OnInitializedAsync()
+    {
+        GlobalClass.pageTitle = "Voucher Route Audit Trail";
+        if(GlobalClass.voucherRoute != null || GlobalClassList.voucherRouteAuditTrail != null)
+        {
+            Task t = Task.WhenAll(AuditTrail());
+            await t;
+            if(t.Status == TaskStatus.RanToCompletion)
+                dataFetched = true;
+        }
+        else
+            navigationManager.NavigateTo($"/voucher/route/list");
+        
+    }
+    private async Task AuditTrail()
+    {
+        GlobalClassList.voucherRouteAuditTrail = await voucherRouteService.GetAuditTrail(GlobalClass.voucherRoute.Id,GlobalClass.token);
+    }
+    private void BackToList()
+    {
+        navigationManager.NavigateTo($"/voucher/route");
+    }
+    private AccountingStatusModel AcctgModel(VoucherRouteAuditTrailModel auditTrail)
+    {
+        AccountingStatusModel accountingStatusModel = new();
+        accountingStatusModel.StatusName = "Update";
+        accountingStatusModel.StatusColor = "LIME";
+        accountingStatusModel.StatusIcon = Icons.Filled.CheckCircleOutline;
+        return accountingStatusModel;
+    }
+}

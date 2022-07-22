@@ -19,11 +19,16 @@
       <div class='customdialog__content-conainer'>
         <MudGrid Spacing='1'>
           <MudItem xs='9'>
-            <MudTextField @bind-Value='@GlobalClass.projectChargingLine.ProjectName' Label='Project Name'/>
+            <MudTextField @bind-Value='@GlobalClass.projectChargingLine.ProjectName' Label='Project Name' Error=@reqProjectName ErrorText='Project name is required'/>
           </MudItem>
+          @if(GlobalClass.projectChargingLine.Id != 0) {
+
           <MudItem Class='d-flex align-center' xs='3'>
             <MudCheckBox @bind-Checked='@GlobalClass.projectChargingLine.IsActive' Label='Active' />
           </MudItem>
+          
+          }
+
           <MudItem xs='12'>
             <MudTextField @bind-Value='@GlobalClass.projectChargingLine.Remarks' Variant='Variant.Filled' Lines='3' Label='Remarks' />
           </MudItem>
@@ -41,7 +46,7 @@
   [Parameter] public Color color { get; set; }
   [Parameter] public string dialogTitle { get; set; } = string.Empty;
   [Parameter] public string buttonText { get; set; } = string.Empty;
-
+  private bool reqProjectName;
   protected override async Task OnInitializedAsync()
   {
     if (GlobalClass.projectChargingLine.Id == 0)
@@ -58,8 +63,12 @@
     {
       try
       {
-        await projectChargingLineService.UpdateProjectChargingLine(GlobalClass.projectChargingLine, GlobalClass.token);
-        MudDialog.Close(DialogResult.Ok(1));
+        if(ValidateEntries()) {
+
+          await projectChargingLineService.UpdateProjectChargingLine(GlobalClass.projectChargingLine, GlobalClass.token);
+          MudDialog.Close(DialogResult.Ok(1));
+
+        } else Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbar, Severity.Error);
       }
       catch (System.Exception ex)
       {
@@ -71,9 +80,13 @@
     {
       try
       {
-        GlobalClass.projectChargingLine = await projectChargingLineService.AddProjectChargingLine(GlobalClass.projectChargingLine, GlobalClass.token);
-        GlobalClassList.projectChargingLines.Add(GlobalClass.projectChargingLine);
-        MudDialog.Close(DialogResult.Ok(0));
+        if(ValidateEntries()) {
+
+          GlobalClass.projectChargingLine = await projectChargingLineService.AddProjectChargingLine(GlobalClass.projectChargingLine, GlobalClass.token);
+          GlobalClassList.projectChargingLines.Add(GlobalClass.projectChargingLine);
+          MudDialog.Close(DialogResult.Ok(0));
+
+        } else Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbar, Severity.Error);
       }
       catch (System.Exception ex)
       {
@@ -81,5 +94,17 @@
           Extensions.ShowAlert(ex.Message, Variant.Filled, snackbar, Severity.Normal);
       }
     }
+  }
+  private bool ValidateEntries()
+  {
+    bool valid = true;
+    if(string.IsNullOrEmpty(GlobalClass.projectChargingLine.ProjectName)) {
+
+      reqProjectName = true;
+      valid = false;
+
+    } else reqProjectName = false;
+
+    return valid;
   }
 }

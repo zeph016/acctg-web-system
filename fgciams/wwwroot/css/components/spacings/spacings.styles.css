@@ -35,14 +35,9 @@
 }
 
 .align-self-start {
-  -ms-flex-item-align: start;
-      -ms-grid-row-align: start;
-      align-self: start;
+  align-self: start;
 }
 
 .align-self-end {
-  -ms-flex-item-align: end;
-      -ms-grid-row-align: end;
-      align-self: end;
-}
-/*# sourceMappingURL=spacings.styles.css.map */
+  align-self: end;
+}/*# sourceMappingURL=spacings.styles.css.map */

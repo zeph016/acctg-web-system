@@ -12,9 +12,9 @@ namespace fgciams.domain.clsLiquidation
         public Int64 LiquidationId { get; set; }
         public DateTime LogDateTime { get; set; }
         public Int64 UserId { get; set; }
-        public string Activity { get; set; }
-        public string UserName { get; set; }
-        public string Department { get; set; }
-        public string Position { get; set; }
+        public string Activity { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
+        public string Department { get; set; } = string.Empty;
+        public string Position { get; set; } = string.Empty;
     }
 }

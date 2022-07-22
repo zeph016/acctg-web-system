@@ -35,12 +35,8 @@
   color: #d7d7d7;
   border-radius: 4px;
   height: 3rem;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
+  align-items: center;
   line-height: 3rem;
 }
 
@@ -62,5 +58,4 @@
     /* Never collapse the sidebar for wide screens */
     display: block;
   }
-}
-/*# sourceMappingURL=navmenu.styles.css.map */
+}/*# sourceMappingURL=navmenu.styles.css.map */

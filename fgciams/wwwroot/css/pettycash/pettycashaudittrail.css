@@ -1,62 +1,41 @@
 .audittrail_container {
   margin: 20px;
 }
-
 .audittrail_container .flex-gap {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
+  align-items: center;
   gap: 10px;
 }
-
 .audittrail_container .mud-paper {
   height: 80vh;
   padding: 20px;
   overflow: scroll;
   border-bottom: solid 6px #542d6f;
 }
-
 .audittrail_container .mud-paper .mud-card {
   height: 60px;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -webkit-box-pack: justify;
-      -ms-flex-pack: justify;
-          justify-content: space-between;
+  align-items: center;
+  justify-content: space-between;
   overflow: hidden;
   border: none;
 }
-
 .audittrail_container .mud-paper .mud-card .mud-typography-body1 {
   color: #7d7d7d;
   font-family: "Theramin", sans-serif !important;
   font-size: 1.4rem;
   color: #542d6f;
 }
-
 .audittrail_container .mud-paper .mud-card .mud-icon-root {
   fill: #542d6f;
 }
-
 .audittrail_container .mud-paper .payee_details {
   margin-top: 30px;
 }
-
 .audittrail_container .mud-paper .payee_details .mud-icon-root {
   fill: #542d6f;
 }
-
 .audittrail_container .mud-paper .payee_details-fields {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
   gap: 10px;
-}
-/*# sourceMappingURL=pettycashaudittrail.css.map */
+}/*# sourceMappingURL=pettycashaudittrail.css.map */

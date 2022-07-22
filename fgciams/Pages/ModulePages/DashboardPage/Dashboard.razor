@@ -1,0 +1,120 @@
+@page "/dashboard"
+
+<div class='page-cont'>
+    <MudContainer Class='dashboardpage' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+        @if(!dataFetched)
+        {
+
+        
+        }
+        else
+        {
+            @* <div class='dashboardpage__grid'>
+                <div class='topleft'>
+                    <MudPaper Class='d-flex align-center justify-center'>
+                        <MudChart ChartType="ChartType.Line" Width="80%" Height="295px" ChartSeries="@Series" @bind-SelectedIndex="Index" XAxisLabels="@XAxisLabels" ChartOptions="chartOptions"></MudChart>
+                    </MudPaper>
+                </div>
+                <div class='bottomleft'>
+                   <MudPaper Class='d-flex align-center justify-center'>
+                       <MudChart ChartType="ChartType.Bar" Width="80%" Height="295px" ChartSeries="@Series" @bind-SelectedIndex="Index" XAxisLabels="@XAxisLabels"></MudChart>
+                   </MudPaper>
+                </div>
+                <div class='side'>
+                    <MudPaper Class='d-flex align-center justify-center'>
+                        <MudChart ChartType="ChartType.Donut" Width="80%" Height="300px" InputData="@data" InputLabels="@labels">
+                            <CustomGraphics>
+                                <text class="donut-inner-text" x="47%" y="35%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="2">Total</text>
+                                <text class="donut-inner-text" x="47%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="5">@data.Sum().ToString()</text>
+                            </CustomGraphics>
+                        </MudChart>
+                    </MudPaper>
+                </div>
+            </div> *@
+            @* <MudGrid Spacing='1'>
+                <MudItem xs=4 sm=2>
+                    <MudPaper Height='15vh'>1</MudPaper>
+                </MudItem>
+                <MudItem xs=4 sm=2>
+                    <MudPaper Height='15vh'>1</MudPaper>
+                </MudItem>
+
+                <MudItem xs=4 sm=2>
+                    <MudPaper Height='15vh'>2</MudPaper>
+                </MudItem>
+                <MudItem xs=4 sm=2>
+                    <MudPaper Height='15vh'>2</MudPaper>
+                </MudItem>
+
+                <MudItem xs=4 sm=2>
+                    <MudPaper Height='15vh'>3</MudPaper>
+                </MudItem>
+                <MudItem xs=4 sm=2>
+                    <MudPaper Height='15vh'>3</MudPaper>
+                </MudItem>
+
+                <MudItem xs=12>
+                    <MudPaper Height='50vh'>5</MudPaper>
+                </MudItem>
+
+                <MudItem xs=6>
+                    <MudPaper Height='20vh'>6</MudPaper>
+                </MudItem>
+                <MudItem xs=6>
+                    <MudPaper Height='20vh'>6</MudPaper>
+                </MudItem>
+            </MudGrid> *@
+        }
+    </MudContainer>
+</div>
+
+@code{
+    private int Index = -1;
+    private bool dataFetched;
+   
+    public ChartOptions chartOptions = new ChartOptions();
+
+    public List<ChartSeries> Series = new List<ChartSeries>()
+    {
+        new ChartSeries() { Name = "Series 1", Data = new double[] { 90, 79, 72, 69, 62, 62, 55, 65, 70 } },
+        new ChartSeries() { Name = "Series 2", Data = new double[] { 10, 41, 35, 51, 49, 62, 69, 91, 148 } },
+    };
+    public string[] XAxisLabels = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep" };
+    public double[] data = { 25, 77, 28, 5 };
+    public string[] labels = { "Oil", "Coal", "Gas", "Biomass" };
+    Random random = new Random();
+
+    protected override void OnInitialized()
+    {
+        GlobalClass.pageTitle = "dashboard";
+        CompletedFetch();
+    }
+    void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+    public void RandomizeData()
+    {
+        var new_series = new List<ChartSeries>()
+        {
+            new ChartSeries() { Name = "Series 1", Data = new double[9] },
+            new ChartSeries() { Name = "Series 2", Data = new double[9] },
+        };
+        for (int i = 0; i < 9; i++)
+        {
+            new_series[0].Data[i] = random.NextDouble() * 100;
+            new_series[1].Data[i] = random.NextDouble() * 100;
+        }
+        Series = new_series;
+        StateHasChanged();
+    }
+
+    public void RandomizeLineWidths()
+    {
+        chartOptions.LineStrokeWidth = random.NextInt64(1, 10);
+        StateHasChanged();
+    }
+    
+    
+}

@@ -1,0 +1,59 @@
+.checkwriterpage {
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 130px 1fr;
+    grid-template-rows: 40px 50px 40px 40px 1fr;
+    gap: 0px 0px;
+    grid-template-areas:
+      "chkw-header chkw-header chkw-header chkw-header chkw-header"
+      "chkw-payee chkw-payee chkw-banks chkw-banks chkw-checkno"
+      "chkw-voucher chkw-voucher chkw-voucher chkw-voucher chkw-voucher"
+      "chkw-desc chkw-desc chkw-remarks chkw-remarks chkw-remarks"
+      "chkw-details chkw-details chkw-details chkw-details chkw-details";
+  }
+  .chkw-header {
+    grid-area: chkw-header;
+  }
+  .chkw-payee {
+    grid-area: chkw-payee;
+  }
+  .chkw-banks {
+    grid-area: chkw-banks;
+  }
+  .chkw-checkno {
+    grid-area: chkw-checkno;
+  }
+  .chkw-voucher {
+    grid-area: chkw-voucher;
+  }
+  .chkw-desc {
+    grid-area: chkw-desc;
+  }
+  .chkw-remarks {
+    grid-area: chkw-remarks;
+  }
+  .chkw-details {
+    grid-area: chkw-details;
+  }
+
+  .chkw-header,
+  .chkw-voucher,
+  .chkw-details {
+    border-top: solid thin lightgray;
+    border-bottom: solid thin lightgray;
+  }
+
+  .chkw-header,
+  .chkw-payee,
+  .chkw-checkno,
+  .chkw-voucher,
+  .chkw-desc,
+  .chkw-details {
+    border-right: solid thin lightgray;
+    border-left: solid thin lightgray;
+  }
+
+  .chkw-remarks {
+    border-right: solid thin lightgray;
+  }
+}

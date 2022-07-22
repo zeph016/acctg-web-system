@@ -22,5 +22,6 @@ namespace fgciams.service.GlobalServices
         Task<List<Project>> LoadChargeProjectLine(FilterParameter filterParameter, string token);
         Task<List<ProjectChargingLineModel>> projectChargingLine(FilterParameter filterParameter, string token);
         Task<List<POModel>> LoadPOs(FilterParameter filterParameter, string token);
+        Task<List<Project>> LoadLocationRoutes(FilterParameter filterParameter, string token);
     }
 }

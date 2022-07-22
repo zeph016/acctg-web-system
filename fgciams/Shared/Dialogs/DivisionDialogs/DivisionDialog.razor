@@ -1,15 +1,17 @@
 @inject IDivisionService divisionService
 @inject ISnackbar snackbar
+@inject IDialogService dialogService
+
 <MudDialog Class='customdialog'>
     <TitleContent>
         <div class='d-flex align-center'>
             @if (GlobalClass.division.Id != 0)
             {
-                <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3 mb-n1" />
+                <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3" />
             }
             else
             {
-                <MudIcon Icon="@Icons.Filled.Add" Class="mr-3 mb-n1" />
+                <MudIcon Icon="@Icons.Filled.Add" Class="mr-3" />
             }
             <MudText Typo='Typo.h6'>@dialogTitle</MudText>
         </div>
@@ -18,13 +20,15 @@
         <div class='customdialog__content-container'>
             <MudGrid Spacing='1'>
                 <MudItem xs='12'>
-                    <MudTextField @bind-Value='@GlobalClass.division.divisionName' Label='Division Name' />
+                    <MudTextField @bind-Value='@GlobalClass.division.divisionName' Label='Division Name' Error=@notValidDivisionName ErrorText="Required*"
+                    HelperText="Required*"/>
                 </MudItem>
                 <MudItem xs='9'>
-                    <MudTextField @bind-Value='@GlobalClass.division.shortcutName' Label='Short Name' />
+                    <MudTextField @bind-Value='@GlobalClass.division.shortcutName' Label='Short Name' Error=@notValidShortName ErrorText="Required*"
+                    HelperText="Required*"/>
                 </MudItem>
                 <MudItem Class='d-flex align-center' xs='3'>
-                    <MudCheckBox @bind-Checked='@GlobalClass.division.IsActive' Label='Active' />
+                    <MudCheckBox @bind-Checked='@GlobalClass.division.IsActive' Label='Active' ReadOnly=@isReadOnly/>
                 </MudItem>
             </MudGrid>
         </div>
@@ -39,10 +43,17 @@
     [Parameter] public Color color { get; set; }
     [Parameter] public string dialogTitle { get; set; } = string.Empty;
     [Parameter] public string buttonText { get; set; } = string.Empty;
+    private bool isReadOnly = false;
+    private bool notValidDivisionName,notValidShortName;
+    private Enums.ActionMode currentAction {get;set;}
      protected override async Task OnInitializedAsync()
     {
         if (GlobalClass.division.Id == 0)
+        {
+            isReadOnly = true;
             GlobalClass.division.IsActive = true;
+        }
+        ResetValidation();
         await Task.Delay(1);
     }   
     void Cancel() 
@@ -52,22 +63,79 @@
 
     private async Task Submit()
     {
-        try
+        if(GlobalClass.division.IsActive == false)
         {
-            if (GlobalClass.division.Id != 0)
-            {
-                await divisionService.UpdateDivision(GlobalClass.division, GlobalClass.token);
-                MudDialog.Close(DialogResult.Ok(1));
-            }
-            else
-            {
-                GlobalClass.division = await divisionService.AddDivision(GlobalClass.division, GlobalClass.token);
-                GlobalClassList.divisionList.Add(GlobalClass.division);
-                MudDialog.Close(DialogResult.Ok(0));
-            }
-            await GlobalVariable.AMSHubConnection.InvokeAsync("SaveDivision",GlobalClass.division);
-        } catch (Exception ex) {
-            Extensions.ShowAlert(ex.Message,Variant.Filled,snackbar,Severity.Info);
+            currentAction = Enums.ActionMode.Deactivate;
+            await Prompt();
         }
+        else 
+        {
+            if(IsValidated())
+            {
+                if(GlobalClass.division.Id == 0)
+                    currentAction = Enums.ActionMode.Create;
+                else
+                    currentAction = Enums.ActionMode.Update;
+                await Prompt();
+            }
+            else 
+                Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" division"+GlobalVariable.errorPromptText,Variant.Filled,snackbar,Severity.Error);
+        }
+    }
+    private async Task Prompt()
+    {
+        var parameters = new DialogParameters();
+        string contentText = " Division";
+        string dialogTitle = currentAction+ contentText;
+        parameters.Add("contentText", contentText);
+        parameters.Add("actionMode", currentAction);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled) 
+        {   
+            try
+            {
+                if (currentAction == Enums.ActionMode.Create) {
+                    GlobalClass.division = await divisionService.AddDivision(GlobalClass.division, GlobalClass.token);
+                    GlobalClassList.divisionList.Add(GlobalClass.division);
+                    MudDialog.Close(DialogResult.Ok(0));
+                } else {
+                    await divisionService.UpdateDivision(GlobalClass.division, GlobalClass.token);
+                    if(currentAction == Enums.ActionMode.Deactivate)
+                        MudDialog.Close(DialogResult.Ok(2));
+                    else
+                        MudDialog.Close(DialogResult.Ok(1));
+                }
+                if(GlobalVariable.AMSHubConnection != null)
+                    await GlobalVariable.AMSHubConnection.InvokeAsync("SaveDivision",GlobalClass.division);
+            } catch (Exception ex) {
+                Extensions.ShowAlert(ex.Message,Variant.Filled,snackbar,Severity.Info);
+            }
+        }
+    }
+    private bool IsValidated()
+    {   
+        ResetValidation();
+        if(String.IsNullOrEmpty(GlobalClass.division.divisionName))
+            notValidDivisionName = true;
+        if(String.IsNullOrEmpty(GlobalClass.division.shortcutName))
+            notValidShortName = true;
+        if(notValidDivisionName || notValidShortName) {
+            GlobalVariable.errorPromptText = " incomplete field/s."; return false; }
+        if(GlobalClassList.divisionList.Any(x=>x.divisionName==GlobalClass.division.divisionName && x.Id != GlobalClass.division.Id)) {
+            GlobalVariable.errorPromptText = " duplicate entry found for division name."; return false; }
+        return true;
+    }
+    private void ResetValidation()
+    {
+        notValidDivisionName = false;
+        notValidShortName = false;
     }
 }

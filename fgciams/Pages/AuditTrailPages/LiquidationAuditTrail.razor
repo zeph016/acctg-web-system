@@ -1,0 +1,153 @@
+@page "/liquidation-audit"
+@inject ILiquidationService auditLiquidationService
+@inject NavigationManager navigationManager
+@inject IGlobalService globalService
+
+<div class="audittrail_container">
+        <MudGrid>
+            <MudItem xs="8">
+                <MudPaper Elevation="3">
+                    <MudCard Elevation="2">
+                        <div style="display: flex; align-items: center;">
+                            <MudIcon Size="Size.Medium" style="margin-right: 10px;" Icon="@Icons.Filled.Timeline"></MudIcon>
+                             <MudText Typo="Typo.body1">Timeline</MudText>
+                        </div>
+                        <MudButton Size="Size.Small" StartIcon="@Icons.Filled.ArrowBackIos" title="Add" class="btn btn-primary" Href="/liquidationlist"><MudText Typo="Typo.caption">Back</MudText></MudButton>
+                    </MudCard>
+                 
+                    <MudTimeline TimelinePosition="TimelinePosition.Start">
+                        @foreach (var item in audiTrailLiquidation) 
+                        {
+                          Console.WriteLine(item.Activity);
+                          <style>
+                            .timeline-container-@AcctgModel(item).StatusName .mud-timeline-item-dot-inner
+                            {
+                                background-color: @AcctgModel(item).StatusColor !important;
+                                width:18px !important;
+                                height:18px !important;
+                            }
+                        </style>
+                        <div class="timeline-container-@AcctgModel(item).StatusName">
+                            <MudTimelineItem Variant="Variant.Filled">
+                                <MudAlert Severity="Severity.Success" Style="@($"border-left:10px {AcctgModel(item).StatusColor} solid;")" Icon="@Extensions.Icon(@AcctgModel(item).StatusIcon)">
+                                    <MudText Typo="Typo.caption"><b>@item.LogDateTime.ToString("MMMM dd, yyyy hh:mm tt")</b></MudText>
+                                    <MudText Typo="Typo.subtitle2"><b>@item.Activity</b></MudText>
+                                    <MudText Typo="Typo.caption">by: &nbsp; @item.UserName</MudText>
+                                </MudAlert>
+                            </MudTimelineItem>
+                        </div>
+                        }
+                    </MudTimeline>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="4">
+                <MudPaper Elevation="3">
+                  <MudCard Elevation="2">
+                      <div class="flex-gap">
+                          <MudIcon Size="Size.Medium" Icon="@Icons.Filled.Badge"></MudIcon>
+                          <MudText Typo="Typo.body1">Liquidation Details</MudText>
+                      </div>
+                    </MudCard>
+
+                    <div class="payee_details">
+                        <div class="payee_details-fields d-flex">
+                                <MudDatePicker @bind-Date='@LiquidationDate' ReadOnly Margin='Margin.Dense' Label='Liquidation Date'></MudDatePicker>
+                                <MudTextField Label="Control No." @bind-Value="@GlobalClass.liquidationAudit.ControlNumber" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                          </div>
+
+                        <div style="margin-top: 15px">
+                         <MudDateRangePicker @bind-DateRange='dateRange' Label='Period' ReadOnly></MudDateRangePicker>
+                        </div>
+
+                        <div style="margin-top: 15px">
+                          <MudTextField Label="Total Amount" Adornment="Adornment.Start" AdornmentIcon="@Icons.Filled.AttachMoney" @bind-Value='@GlobalClass.liquidationAudit.TotalAmount' Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense" ></MudTextField>
+                        </div>
+
+                        <div style="margin-top: 15px">
+                            <MudTextField Label="Remakrs" Lines="5" @bind-Value="@GlobalClass.liquidationAudit.Remarks" Variant="Variant.Outlined" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                        </div>
+
+                        <div style="margin-top: 15px">
+                            <div  class="flex-gap">
+                                <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(preparedByImg)}")' />
+                                <div class="">
+                                        <MudText Typo="Typo.subtitle2">@GlobalClass.liquidationAudit.PreparedByName</MudText>
+                                      <MudText Typo="Typo.caption">Prepared by</MudText>
+                                </div>
+                            </div>
+                        </div>
+
+                         <div style="margin-top: 15px">
+                            <div  class="flex-gap">
+                                <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(approvedByImg)}")'/>
+                                <div class="">
+                                        <MudText Typo="Typo.subtitle2">@GlobalClass.liquidationAudit.ApprovedByName</MudText>
+                                      <MudText Typo="Typo.caption">Approved by</MudText>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </div>
+
+@code{
+  [Parameter] public Int64 liquidationId {get; set;}
+
+  string text = "";
+  private byte[] preparedByImg = new byte[] { }, approvedByImg = new byte[] {};
+  private List<LiquidationAuditTrailModel> audiTrailLiquidation = new();
+  private DateRange dateRange = new DateRange(DateTime.Now, DateTime.Now);
+  private DateTime? LiquidationDate ;
+  
+  protected override async Task OnInitializedAsync()
+  {
+    navigationManager.LocationChanged += OnLocationChanged;
+    while(GlobalClass.currentUserAccount == null || GlobalClass.liquidationAudit == null)
+       await Task.Delay(1);
+    Task t = Task.WhenAll(LoadAuditTrail(), LoadUserImages());
+    await t;
+  }
+  private async Task LoadUserImages()
+  {
+    preparedByImg = await GetEmployeeImg(GlobalClass.liquidationAudit.PreparedById);
+    approvedByImg = await GetEmployeeImg(GlobalClass.liquidationAudit.ApprovedById);
+  }
+  private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+  {
+    GlobalClass.liquidationAudit = new();
+    Dispose();
+  }
+  public void Dispose()
+  {
+     navigationManager.LocationChanged -= OnLocationChanged;
+  }
+  private async Task LoadAuditTrail()
+  {
+    LiquidationDate = GlobalClass.liquidationAudit.LiquidationDate;
+    dateRange = new DateRange(GlobalClass.liquidationAudit.PeriodFrom, GlobalClass.liquidationAudit.PeriodTo);
+    audiTrailLiquidation = await auditLiquidationService.LiquidationAuditTrail(GlobalClass.liquidationAudit.Id, GlobalClass.token);
+
+  }
+  private AccountingStatusModel AcctgModel(LiquidationAuditTrailModel auditTrail)
+  {
+     AccountingStatusModel accountingStatusModel = new();
+        accountingStatusModel.StatusName = "Update";
+        accountingStatusModel.StatusColor = "LIME";
+        accountingStatusModel.StatusIcon = Icons.Filled.CheckCircleOutline;
+        if(auditTrail.Activity.Equals("Add liquidation"))
+            accountingStatusModel = GlobalClassList.accountingStatusList.Find(x=> x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.LG) ?? accountingStatusModel;
+        if(auditTrail.Activity.Equals("Approved Status"))
+            accountingStatusModel = GlobalClassList.accountingStatusList.Find(x=> x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.LA) ?? accountingStatusModel;
+        if(auditTrail.Activity.Equals("Cancel liquidation")) 
+            accountingStatusModel = GlobalClassList.accountingStatusList.Find(x=> x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.LC) ?? accountingStatusModel;
+        return accountingStatusModel;
+  }
+  private async Task<byte[]> GetEmployeeImg(long employeeId)
+  {
+    var employeeDetail = await globalService.GetEmployeeById(employeeId, GlobalClass.token);
+    return employeeDetail.Picture;
+  }
+}

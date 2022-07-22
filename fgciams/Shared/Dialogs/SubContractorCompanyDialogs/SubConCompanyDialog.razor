@@ -1,4 +1,5 @@
 @inject ISubContractorCompanyService subContractorCompanyService
+@inject ISnackbar snackbarService
 
 <MudDialog Class="customdialog">
   <TitleContent>
@@ -18,14 +19,19 @@
       <div class='customdialog__content-container'>
         <MudGrid Spacing='1'>
           <MudItem xs='12'>
-            <MudTextField @bind-Value='@GlobalClass.subContractorCompany.CompanyName' Label='Company Name'/>
+            <MudTextField @bind-Value='@GlobalClass.subContractorCompany.CompanyName' Label='Company Name' Error=@reqSubCom ErrorText='Company name is required'/>
           </MudItem>
           <MudItem xs='9'>
-            <MudTextField @bind-Value='@GlobalClass.subContractorCompany.ShortcutName' Label='Short Name'/>
+            <MudTextField @bind-Value='@GlobalClass.subContractorCompany.ShortcutName' Label='Short Name' Error=@reqSubComShrt ErrorText='Shortcut name is required'/>
           </MudItem>
+          @if(GlobalClass.subContractorCompany.Id != 0) {
+
           <MudItem Class='d-flex align-center' xs='3'>
             <MudCheckBox @bind-Checked='@GlobalClass.subContractorCompany.IsActive' Label='Active' />
           </MudItem>
+
+          }
+  
           <MudItem xs='12'>
             <MudTextField @bind-Value='@GlobalClass.subContractorCompany.Remarks' Label='Remarks' />
           </MudItem>
@@ -42,7 +48,7 @@
   [Parameter] public Color color { get; set; }
   [Parameter] public string dialogTitle { get; set; } = string.Empty;
   [Parameter] public string buttonText { get; set; } = string.Empty;
-
+  private bool reqSubCom, reqSubComShrt;
   protected override async Task OnInitializedAsync()
   {
       if (GlobalClass.subContractorCompany.Id == 0)
@@ -58,14 +64,41 @@
   {
     if (GlobalClass.subContractorCompany.Id != 0)
     {
-      await subContractorCompanyService.UpdateSubContractorCompany(GlobalClass.subContractorCompany, GlobalClass.token);
-      MudDialog.Close(DialogResult.Ok(1));
+      if(ValidateEntries()) {
+        GlobalClass.subContractorCompany = await subContractorCompanyService.UpdateSubContractorCompany(GlobalClass.subContractorCompany, GlobalClass.token);
+        MudDialog.Close(DialogResult.Ok(1));
+      } else Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbarService, Severity.Error);
+
     }
     else
     {
-      GlobalClass.subContractorCompany = await subContractorCompanyService.AddSubContractorCompany(GlobalClass.subContractorCompany, GlobalClass.token);
-      GlobalClassList.subContractorCompanies.Add(GlobalClass.subContractorCompany);
-      MudDialog.Close(DialogResult.Ok(0));
+      if(ValidateEntries()) {
+        GlobalClass.subContractorCompany = await subContractorCompanyService.AddSubContractorCompany(GlobalClass.subContractorCompany, GlobalClass.token);
+        GlobalClassList.subContractorCompanies.Add(GlobalClass.subContractorCompany);
+        MudDialog.Close(DialogResult.Ok(0));
+      } else Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbarService, Severity.Error);
+      
     }
+      if(GlobalVariable.AMSHubConnection != null && ValidateEntries())
+        await GlobalVariable.AMSHubConnection.InvokeAsync("SaveSubContractorCompany", GlobalClass.subContractorCompany);
+  }
+  private bool ValidateEntries()
+  {
+    bool valid = true;
+    if(string.IsNullOrEmpty(GlobalClass.subContractorCompany.CompanyName)) {
+
+      reqSubCom = true;
+      valid = false;
+
+    } else reqSubCom = false;
+
+    if(string.IsNullOrEmpty(GlobalClass.subContractorCompany.ShortcutName)) {
+
+      reqSubComShrt = true;
+      valid = false;
+
+    } else reqSubComShrt = false;
+
+    return valid;
   }
 }

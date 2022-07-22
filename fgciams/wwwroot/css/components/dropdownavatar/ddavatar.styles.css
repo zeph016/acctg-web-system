@@ -1,10 +1,5 @@
 .ddavatar {
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  display: -webkit-box;
-  display: -ms-flexbox;
+  align-items: center;
   display: flex;
   gap: 1rem;
-}
-/*# sourceMappingURL=ddavatar.styles.css.map */
+}/*# sourceMappingURL=ddavatar.styles.css.map */

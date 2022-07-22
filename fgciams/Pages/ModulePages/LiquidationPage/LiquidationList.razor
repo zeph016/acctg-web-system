@@ -1,0 +1,514 @@
+@page "/liquidation/list"
+@inject ILiquidationService liquidationService
+@inject NavigationManager navigationManager
+@inject ISnackbar snackBar
+@inject IDialogService dialogService
+@inject IConfiguration config
+
+<div class='page-cont'>
+    <div class='drawer-right'>
+        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <div class='drawer-right__filtercont'>
+                <div class='icon-area d-flex align-center'>
+                    <MudIconButton OnClick='OpenSideFilter' Icon='@Icons.Filled.FilterList' arial-label='Close Filter' Size='Size.Medium' />
+                </div>
+                <div class='filter-title d-flex align-center'>
+                    <p class='title875'>Filter</p>
+                    <MudSpacer />
+                    <MudIconButton OnClick='OpenSideFilter' Icon='@Icons.Filled.Close' aria-label='Close Filter' Size='Size.Medium' />
+                </div>
+                 <div class='filter-content d-flex flex-column pl-4 pr-4 gap-2 @visibility'>
+                  <div class='d-flex align-center gap-2 @visibility'>
+                    <MudCheckBox Class='pt-1' @bind-Checked='filterParameter.IsControlNumber' Dense Size='Size.Small' />
+                    <MudTextField Class='txtfield-75' @bind-Value='filterParameter.ControlNumber' Placeholder='Control Number'
+                    Immediate Clearable='true' Variant='Variant.Outlined' Disabled='!filterParameter.IsControlNumber'/>
+                  </div>
+                  <div class='d-flex align-center gap-2 @visibility'>
+                    <MudCheckBox Class='pt-1' @bind-Checked='filterParameter.IsAccountingStatus' Dense Size='Size.Small' />
+                    <MudSelect Class='txtfield-75' MultiSelectionTextFunc='@(new Func<List<string>, string>(AccountingStatus))' @bind-SelectedValues='hasAccountingStatus' 
+                      @bind-Value="selectedStatus" Dense="true" MultiSelection=true Disabled='!filterParameter.IsAccountingStatus' Placeholder='Accounting Status' Variant='Variant.Outlined'>
+                        @foreach (var item in statusList.Where(x=> (int)x.StatusEnumCategoryId == 4 || (int)x.StatusEnumCategoryId == 5 || (int)x.StatusEnumCategoryId == 6))
+                        {
+                          <MudSelectItem Value="@item">@item.StatusName</MudSelectItem>
+                        }
+                    </MudSelect>
+                  </div>
+                  <div class='d-flex align-center gap-2 @visibility'>
+                    <MudCheckBox Class='pt-1' @bind-Checked='filterParameter.IsDate' Dense Size='Size.Small' />
+                    <MudDateRangePicker Class='txtfield-75' @bind-DateRange='dateRange' Disabled='!filterParameter.IsDate' Placeholder='Filter Date' Variant='Variant.Outlined'></MudDateRangePicker>
+                  </div>
+                  <div class='d-flex align-center justify-end'>
+                    <MudButton Class='wspace-nowrap' Variant='Variant.Filled' Color='Color.Secondary' OnClick='(()=> ClearSearch())'>Clear filter</MudButton> 
+                    &nbsp;
+                    <MudButton Class='wspace-nowrap' Variant='Variant.Filled' Color='Color.Secondary' OnClick='(()=> FilteredItems())'>Apply Filter</MudButton>
+                  </div>
+                </div>
+            </div>
+        </MudDrawer>
+    </div>
+
+    <MudContainer Class='liquidationlist-page' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+    @if (!dataFetched)
+    {
+      <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
+        <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='calc(100vh - 135px)' Animation='Animation.Wave' />
+      </MudPaper>
+    }
+    else
+    {
+      <MudTable Class='configtables' ServerData='new Func<TableState, Task<TableData<LiquidationModel>>>(LoadLiquidationFromServer)' Hover='true' Virtualize=true 
+      Breakpoint='Breakpoint.Sm' FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'  LoadingProgressColor='Color.Primary'
+      RowsPerPage='10' Striped='true' Filter='new Func<LiquidationModel,bool>(FilterItems)' @ref='tableVariable'> 
+        <ToolBarContent>
+          <MudText Typo='Typo.caption'>
+            @totalItems
+            @(totalItems == 1 ? "item" : "items")
+            in Total
+          </MudText>
+          <MudSpacer />
+           <MudIconButton Icon="@Icons.Material.Filled.Refresh" OnClick='ClearSearch'/>
+            <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'
+                TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small' Label='More'>
+              @if(AccessLevelAddmin() || AccessLevelRequestors())
+                {
+                  <MudMenuItem OnClick='(()=> navigationManager.NavigateTo($"/liquidation"))'>
+                    <div class='d-flex align-center gap-2'>
+                        <MudIcon Icon='@Icons.Filled.Add' Size='Size.Medium' />
+                        <MudText Typo='Typo.body2'>Add</MudText>
+                    </div>
+                  </MudMenuItem>                        
+                }
+                <MudMenuItem OnClick='OpenSideFilter'>
+                  <div class='d-flex align-center gap-2'>
+                    <MudIcon Icon='@Icons.Filled.FilterList' />
+                    <MudText Typo='Typo.body2'>Filter</MudText>
+                  </div>
+                </MudMenuItem>
+            </MudMenu>
+        </ToolBarContent>
+        <ColGroup>
+          <col style='width: 1%' />
+          <col style='width: 40px'/>
+          <col />
+          <col />
+          <col style='width: 20px' />
+          <col style='width: 10px' />
+          <col style='width: 20px' />
+        </ColGroup>
+        <HeaderContent>
+          <MudTh Class='customheader-1 text-center'>
+            <div class='d-flex align-center justify-start'>
+              <MudTableSortLabel SortLabel='SortControlNumber' T='LiquidationModel'
+              InitialDirection='SortDirection.None'>
+                Control No.
+              </MudTableSortLabel>
+              <MudSpacer />
+              <MudTableSortLabel SortLabel='SortDate' T='LiquidationModel' InitialDirection='SortDirection.Descending'>
+                Date
+              </MudTableSortLabel>
+            </div>
+          </MudTh>
+          <MudTh Class='customheader-1 text-center'>Period</MudTh>
+          <MudTh Class='customheader-1'>Prepared by</MudTh>
+          <MudTh Class='customheader-1'>Approver</MudTh>
+          <MudTh Class='customheader-1'></MudTh>
+          <MudTh Class='customheader-1 text-center'>Amount</MudTh>
+          <MudTh Class='customheader-1 text-center'>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+          <MudTd Class='text-center'>
+            <div class='d-flex align-center'>
+              <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'> @context.ControlNumber</MudChip>
+              <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Text' Icon='@Icons.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
+                  @Convert.ToDateTime(context.LiquidationDate).ToShortDateString()
+              </MudChip>
+            </div>
+          </MudTd>
+          <MudTd Class='wspace-nowrap font12 text-center'>@context.PeriodFrom.ToString("MM/dd/yy") &#x2192; @context.PeriodTo.ToString("MM/dd/yy")</MudTd>
+          <MudTd Class='wspace-nowrap font12'>@context.PreparedByName</MudTd>
+          <MudTd Class='wspace-nowrap font12'>@context.ApprovedByName</MudTd>
+          <MudTd Class='wspace-nowrap text-center'>
+              <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@Extensions.GetAcctgStatusColor(context.StatusId)'>@context.StatusName</MudChip>
+          </MudTd>
+          <MudTd Class='wspace-nowrap text-right font-bold'>
+            @if (context.TotalAmount > 0)
+            {
+              <MudText Class='font-bold color-green' Typo='Typo.body2'>
+                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.TotalAmount.ToString("N2")
+              </MudText>
+            }
+            else
+            {
+              <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
+                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.TotalAmount.ToString("N2")
+              </MudText>
+            }
+          </MudTd>
+          <MudTd Class='text-center pa-1'>
+            <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
+            TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
+                @if((!EnableEditApproved(context) && AccessLevelAddmin()) 
+                || (!EnableEditApproved(context) && AccessLevelRequestors()))
+                {
+                  <MudMenuItem OnClick='(()=> EditLiquidation(context))' Disabled='EnableEditApproved(context)'>
+                    <a class='d-flex align-center gap-2'>
+                      <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small'/>
+                      <MudText Typo='Typo.body2'>Edit</MudText>
+                    </a>
+                  </MudMenuItem>
+
+                  if(AccessLevelAddmin())
+                  {
+                    <MudMenuItem OnClick='(()=> ApproveLiquidation(context))'>
+                      <div class='d-flex align-center gap-2'>
+                        <MudIcon Icon='@Icons.Filled.CheckCircle' Size='Size.Small'/>
+                        <MudText Typo='Typo.body2'>Approve</MudText>
+                      </div>
+                    </MudMenuItem>
+                    <MudMenuItem OnClick='(()=> CancelLiquidation(context))'>
+                      <div class='d-flex align-center gap-2'>
+                        <MudIcon Icon='@Icons.Filled.Cancel' Size='Size.Small'/>
+                        <MudText Typo='Typo.body2'>Cancel</MudText>
+                      </div>
+                    </MudMenuItem>
+                  }
+
+                }
+                else if(AccountingStatus(Enums.ActionMode.Approve).Id == context.StatusId && AccessLevelAddmin())
+                {
+                  <MudMenuItem OnClick='(()=> VoidLiquidation(context))'>
+                    <a class='d-flex align-center gap-2'>
+                      <MudIcon Icon='@Icons.Filled.CancelPresentation' Size='Size.Small'/>
+                      <MudText Typo='Typo.body2'>Generated (Void)</MudText>
+                    </a>
+                  </MudMenuItem>
+                }
+                <MudMenuItem OnClick='(()=> navigateAuditTrail(context))'>
+                  <a class='d-flex align-center gap-2' >
+                    <MudIcon Icon='@Icons.Filled.ListAlt' Size='Size.Small' />
+                    <MudText Typo='Typo.body2'>Audit Trail</MudText>
+                  </a>
+                </MudMenuItem>
+                <MudMenuItem OnClick='(()=> context.ShowReport = ShowReport(context.ShowReport, context))'>
+                    <div class='d-flex align-center gap-2'>
+                        <MudIcon Icon='@Icons.Filled.PictureAsPdf' Size='Size.Small' />
+                        <MudText Typo='Typo.body2'> @(context.ShowReport ? "Close" : "Show") Report</MudText>
+                    </div>
+                </MudMenuItem>
+            </MudMenu>
+          </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+          <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No records found</MudText>
+        </NoRecordsContent>
+        <ChildRowContent>
+            @if (context.ShowReport)
+            {
+              <td colspan="8">
+                <div class='d-flex align-center pa-2 bgc-f2f2f2'>
+                    <MudSpacer />
+                    <MudButton OnClick='(() => context.ShowReport = ShowReport(context.ShowReport, context))' EndIcon="@Icons.Rounded.Close" IconColor='Color.Error' Size='Size.Small' >
+                        Close Report
+                    </MudButton>
+                </div>
+                <MudTr Class='d-flex align-stretch justify-center default-report-container'>
+                    @if (string.IsNullOrWhiteSpace(PDFContent))
+                    {
+                    <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
+                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                    </MudOverlay>
+                    }
+                    else
+                    {
+                    <iframe src='@PDFContent' />
+                    }
+                </MudTr>
+              </td>
+            }
+        </ChildRowContent>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="new int[]{50, 100}" />
+        </PagerContent>
+        </MudTable>
+    }
+</MudContainer>
+</div>
+
+@code{
+
+  private bool dataFetched, openSideFilter, showLoadingOverlay;
+  private string PDFContent = default!;
+  private string searchTerm = string.Empty, visibility = "visibility-animation-hide";
+  private int totalItems;
+  private FilterParameter filterParameter = new();
+  private IEnumerable<LiquidationModel>? pageData;
+  private MudTable<LiquidationModel>? tableVariable;
+  private DateRange dateRange = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
+  private AccountingStatusModel selectedStatus = new();
+  private IEnumerable<AccountingStatusModel> hasAccountingStatus {get; set;} = new HashSet<AccountingStatusModel>();
+  private List<AccountingStatusModel> statusList = new();
+  protected override async Task OnInitializedAsync()
+  {
+    GlobalClass.pageTitle = "Liquidation List";
+    while (GlobalClass.currentUserAccount == null || string.IsNullOrEmpty(GlobalClass.token) 
+    || GlobalClassList.accountingStatusList == null)
+        await Task.Delay(1);
+    
+    SignalRHubConnection();
+    CompletedFetch();
+
+    statusList = GlobalClassList.accountingStatusList;
+  }
+  void CompletedFetch()
+  {
+    dataFetched = true;
+    StateHasChanged();
+  }
+  private async void EditLiquidation(LiquidationModel liquidation)
+  {
+    GlobalClass.liquidation = await Task.Run(()=> liquidation);
+    navigationManager.NavigateTo($"/liquidation");
+  }
+  private bool ShowReport(bool isShow, LiquidationModel liquidationModel)
+  {
+    Task.Run(()=> LoadLiquidationDetails(liquidationModel));
+    return isShow = !isShow;
+  }
+  private async Task LoadLiquidationDetails(LiquidationModel liquidationDetail)
+  {
+    var liquidationDetails = await liquidationService.LiquidationDetails(liquidationDetail.Id, GlobalClass.token);
+    liquidationDetail.LiquidationDetails = liquidationDetails.Select(details=> new LiquidationDetailModel()
+    {
+      Id = details.Id,
+      PettyCashId = details.PettyCashId,
+      ControlNumber = details.ControlNumber,
+      PayeeId = details.PayeeId,
+      PayeeName = details.PayeeName,
+      PayeeCategoryId = details.PayeeCategoryId,
+      Particular = details.Particular,
+      RequestedById = details.RequestedById,
+      RequestedByName = details.RequestedByName,
+      LiquidationId = liquidationDetail.Id,
+      IsActive = details.IsActive,
+      StatusId = details.StatusId,
+      StatusName = details.StatusName,
+      ExpenseLineId = details.ExpenseLineId,
+      ExpenseName = details.ExpenseName,
+      ChargingCategoryId = details.ChargingCategoryId,
+      ChargingId = details.ChargingId,
+      ChargingName = details.ChargingName,
+      Amount = details.Amount,
+      Remarks = details.Remarks
+
+      }).ToList();
+
+      PDFContent = await liquidationService.PrintSaveLiquidation(liquidationDetail);
+      StateHasChanged();
+  }
+  private async Task VoidLiquidation(LiquidationModel liquidation)
+  {
+    if(await PromptMessage(Enums.ActionMode.Void))
+    {
+      liquidation.StatusId = GlobalClassList.accountingStatusList.Where(x => x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.LG).Select(x => x.Id).FirstOrDefault();
+      liquidation.Activity = "Update liquidation status to generated (void)";
+      liquidation.UserId = GlobalClass.currentUserAccount.EmployeeId;
+      var updatedStatus = await liquidationService.UpdateLiquidationStatus(liquidation, GlobalClass.token);
+      Extensions.ShowAlert("Liquidation Voided", Variant.Filled, snackBar, Severity.Info);
+      if(GlobalVariable.AMSHubConnection != null)
+        await GlobalVariable.AMSHubConnection.InvokeAsync("SaveLiquidation", updatedStatus);
+    }
+    else
+       Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackBar, Severity.Normal);
+  }
+  private async Task ApproveLiquidation(LiquidationModel liquidation)
+  {
+    if (await PromptMessage(Enums.ActionMode.Approve))
+    {
+      liquidation.StatusId = GlobalClassList.accountingStatusList.Where(x => x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.LA).Select(x => x.Id).FirstOrDefault();
+      liquidation.Activity = "Approved Status";
+      liquidation.UserId = GlobalClass.currentUserAccount.EmployeeId;
+      var updatedStatus = await liquidationService.UpdateLiquidationStatus(liquidation, GlobalClass.token);
+      Extensions.ShowAlert("Liquidation approved", Variant.Filled, snackBar, Severity.Info);
+      if(GlobalVariable.AMSHubConnection != null)
+        await GlobalVariable.AMSHubConnection.InvokeAsync("SaveLiquidation", updatedStatus);
+    }
+    else
+      Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackBar, Severity.Normal);
+
+  }
+  private async Task CancelLiquidation(LiquidationModel liquidation)
+  {
+    if (await PromptMessage(Enums.ActionMode.Cancel))
+    {
+      liquidation.StatusId = GlobalClassList.accountingStatusList.Where(x => x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.LC).Select(x => x.Id).FirstOrDefault();
+      liquidation.Activity = "Cancelled Status";
+      liquidation.UserId = GlobalClass.currentUserAccount.EmployeeId;
+      var cancelLiquidation = await liquidationService.UpdateLiquidationStatus(liquidation, GlobalClass.token);
+      GlobalClassList.liquidations = GlobalClassList.liquidations.Where(x => x.StatusId != liquidation.StatusId).OrderByDescending(x => x.ControlNumber).ToList();
+      Extensions.ShowAlert("Liquidation cancelled", Variant.Filled, snackBar, Severity.Info);
+      if(GlobalVariable.AMSHubConnection != null)
+        await GlobalVariable.AMSHubConnection.InvokeAsync("SaveLiquidation", cancelLiquidation);
+    }
+    else
+      Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackBar, Severity.Normal);
+  }
+  private bool EnableEditApproved(LiquidationModel liquidation)
+  {
+    var accountingStatusList = new AccountingStatusModel();
+    accountingStatusList = GlobalClassList.accountingStatusList.Where(x => x.Id == liquidation.StatusId).FirstOrDefault();
+    return accountingStatusList?.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.LA;
+  }
+  private async Task<TableData<LiquidationModel>> LoadLiquidationFromServer(TableState tableState)
+  {
+    IEnumerable<LiquidationModel> data = await liquidationService.LiquidationList(filterParameter, GlobalClass.token);
+    switch (tableState.SortLabel)
+    {
+      case "SortControlNumber":
+        data = data.OrderByDirection(tableState.SortDirection, x=>x.Id);
+        break;
+      case "SortDate":
+        data = data.OrderByDirection(tableState.SortDirection, x=>x.LiquidationDate);
+        break;
+    }
+
+    GlobalClassList.liquidations = data.ToList();
+    pageData = GlobalClassList.liquidations.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
+
+    await Task.Delay(3);
+    totalItems = GlobalClassList.liquidations.Count();
+
+    return new TableData<LiquidationModel>()
+    {
+      TotalItems = totalItems,
+      Items = pageData
+    };
+  }
+  private async void FilteredItems()
+  {
+    filterParameter.DateFrom = (DateTime)dateRange.Start.GetValueOrDefault();
+    filterParameter.DateTo = (DateTime)dateRange.End.GetValueOrDefault();
+    filterParameter.AccountingStatusId = string.Join(",", hasAccountingStatus.Select(x => x.Id));
+    if(tableVariable != null)
+      await tableVariable.ReloadServerData();
+  }
+  private string AccountingStatus(List<string> selectedStatus)
+  {
+    var status = "";
+    foreach (var item in hasAccountingStatus)
+    {
+     status = string.Join(", ", hasAccountingStatus.Select(x => x.StatusName));      
+    }
+    return $"{status}";
+  }
+
+  private void OpenSideFilter()
+  {
+    openSideFilter = !openSideFilter;
+    if (openSideFilter)
+        visibility = "visibility-animation-show";
+    if (!openSideFilter)
+        visibility = "visibility-animation-hide";
+  }
+  private async Task<bool> PromptMessage(Enums.ActionMode actionMode)
+  {
+    bool isNotCancel;
+    var parameters = new DialogParameters();
+    string contentText = "Liquidation ";
+    string dialogTitle = actionMode == Enums.ActionMode.Cancel ? "Cancel " + contentText 
+    : actionMode == Enums.ActionMode.Approve ? "Approve " + contentText 
+    : "Void " + contentText;
+
+    parameters.Add("actionMode", actionMode == Enums.ActionMode.Cancel ? Enums.ActionMode.Cancel 
+    : actionMode == Enums.ActionMode.Approve ? Enums.ActionMode.Approve
+    : Enums.ActionMode.Void );
+
+    parameters.Add("contentText", contentText);
+
+    var options = new DialogOptions()
+    {
+        CloseButton = false,
+        MaxWidth = MaxWidth.ExtraSmall,
+        FullWidth = true,
+        NoHeader = false,
+        DisableBackdropClick = true
+    };
+    var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+    if (!resultDialog.Cancelled)
+        isNotCancel = true;
+    else
+        isNotCancel = false;
+
+    StateHasChanged();
+
+    return isNotCancel;
+  }
+  private bool FilterItems(LiquidationModel items)
+  {
+    if (string.IsNullOrEmpty(searchTerm))
+        return true;
+    if (items.ControlNumber.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase))
+        return true;
+    if (items.StatusName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase))
+        return true;
+    return true;
+  }
+  private void SignalRHubConnection()
+  {
+      try
+      {
+        if(GlobalVariable.AMSHubConnection != null)
+          GlobalVariable.AMSHubConnection.On<LiquidationModel>("SaveLiquidation", (_liquidation)=> {
+          if(tableVariable != null)
+            tableVariable.ReloadServerData();
+          
+          StateHasChanged();
+
+          });
+      }
+      catch (System.Exception ex)
+      {
+         Console.WriteLine(ex.Message);
+         throw;
+      }
+  }
+  private bool AccessLevelAddmin()
+  {
+    return GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.Administrator 
+    ||GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.AccountingAdmin;
+
+  }
+  private bool AccessLevelRequestors()
+  {
+    return GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.OthersRequestor
+    || GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.AccountingRequestor
+    || GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.AccountingIssuer;
+    
+  }
+  private bool AccessLevelViewers()
+  {
+    return GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.AccountingViewer
+    || GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.OthersViewer;
+  }
+  private void navigateAuditTrail(LiquidationModel liquidation)
+  {
+    GlobalClass.liquidationAudit = liquidation;
+    navigationManager.NavigateTo($"/liquidation-audit");
+  }
+  private AccountingStatusModel AccountingStatus(Enums.ActionMode actionMode)
+  {
+      var acctgStatus = new AccountingStatusModel();
+      if(actionMode == Enums.ActionMode.Approve)
+        acctgStatus = GlobalClassList.accountingStatusList.Where(x=>x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.LA).FirstOrDefault();
+      else if (actionMode == Enums.ActionMode.Cancel)
+        acctgStatus = GlobalClassList.accountingStatusList.Where(x=>x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.LC).FirstOrDefault();
+      else if(actionMode == Enums.ActionMode.Void)
+        acctgStatus = GlobalClassList.accountingStatusList.Where(x=>x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.LG).FirstOrDefault();
+      return acctgStatus?? new();
+  }
+  private void ClearSearch()
+  {
+    filterParameter = new();
+    dateRange = new DateRange(DateTime.Now, DateTime.Now);
+    Task.Run(async()=> await tableVariable!.ReloadServerData());
+  }
+}

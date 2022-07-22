@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /*!
  * Quill Editor v1.3.6
  * https://quilljs.com/
@@ -5,8 +6,7 @@
  * Copyright (c) 2013, salesforce.com
  */
 .ql-container {
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   font-family: Helvetica, Arial, sans-serif;
   font-size: 13px;
   height: 100%;
@@ -36,8 +36,7 @@
 }
 
 .ql-editor {
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   line-height: 1.42;
   height: 100%;
   outline: none;
@@ -82,7 +81,7 @@
 }
 
 .ql-editor ul > li::before {
-  content: '\2022';
+  content: "•";
 }
 
 .ql-editor ul[data-checked=true],
@@ -103,11 +102,11 @@
 }
 
 .ql-editor ul[data-checked=true] > li::before {
-  content: '\2611';
+  content: "☑";
 }
 
 .ql-editor ul[data-checked=false] > li::before {
-  content: '\2610';
+  content: "☐";
 }
 
 .ql-editor li::before {
@@ -513,7 +512,7 @@
 .ql-bubble.ql-toolbar:after,
 .ql-bubble .ql-toolbar:after {
   clear: both;
-  content: '';
+  content: "";
   display: table;
 }
 
@@ -626,31 +625,28 @@
 
 @media (pointer: coarse) {
   .ql-bubble.ql-toolbar button:hover:not(.ql-active),
-  .ql-bubble .ql-toolbar button:hover:not(.ql-active) {
+.ql-bubble .ql-toolbar button:hover:not(.ql-active) {
     color: #ccc;
   }
   .ql-bubble.ql-toolbar button:hover:not(.ql-active) .ql-fill,
-  .ql-bubble .ql-toolbar button:hover:not(.ql-active) .ql-fill,
-  .ql-bubble.ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill,
-  .ql-bubble .ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill {
+.ql-bubble .ql-toolbar button:hover:not(.ql-active) .ql-fill,
+.ql-bubble.ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill,
+.ql-bubble .ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill {
     fill: #ccc;
   }
   .ql-bubble.ql-toolbar button:hover:not(.ql-active) .ql-stroke,
-  .ql-bubble .ql-toolbar button:hover:not(.ql-active) .ql-stroke,
-  .ql-bubble.ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter,
-  .ql-bubble .ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter {
+.ql-bubble .ql-toolbar button:hover:not(.ql-active) .ql-stroke,
+.ql-bubble.ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter,
+.ql-bubble .ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter {
     stroke: #ccc;
   }
 }
-
 .ql-bubble {
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 .ql-bubble * {
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 .ql-bubble .ql-hidden {
@@ -664,8 +660,7 @@
 
 .ql-bubble .ql-tooltip {
   position: absolute;
-  -webkit-transform: translateY(10px);
-          transform: translateY(10px);
+  transform: translateY(10px);
 }
 
 .ql-bubble .ql-tooltip a {
@@ -674,8 +669,7 @@
 }
 
 .ql-bubble .ql-tooltip.ql-flip {
-  -webkit-transform: translateY(-10px);
-          transform: translateY(-10px);
+  transform: translateY(-10px);
 }
 
 .ql-bubble .ql-formats {
@@ -685,7 +679,7 @@
 
 .ql-bubble .ql-formats:after {
   clear: both;
-  content: '';
+  content: "";
   display: table;
 }
 
@@ -910,12 +904,12 @@
   width: 18px;
 }
 
-.ql-bubble .ql-picker.ql-header .ql-picker-label[data-label]:not([data-label=''])::before,
-.ql-bubble .ql-picker.ql-font .ql-picker-label[data-label]:not([data-label=''])::before,
-.ql-bubble .ql-picker.ql-size .ql-picker-label[data-label]:not([data-label=''])::before,
-.ql-bubble .ql-picker.ql-header .ql-picker-item[data-label]:not([data-label=''])::before,
-.ql-bubble .ql-picker.ql-font .ql-picker-item[data-label]:not([data-label=''])::before,
-.ql-bubble .ql-picker.ql-size .ql-picker-item[data-label]:not([data-label=''])::before {
+.ql-bubble .ql-picker.ql-header .ql-picker-label[data-label]:not([data-label=""])::before,
+.ql-bubble .ql-picker.ql-font .ql-picker-label[data-label]:not([data-label=""])::before,
+.ql-bubble .ql-picker.ql-size .ql-picker-label[data-label]:not([data-label=""])::before,
+.ql-bubble .ql-picker.ql-header .ql-picker-item[data-label]:not([data-label=""])::before,
+.ql-bubble .ql-picker.ql-font .ql-picker-item[data-label]:not([data-label=""])::before,
+.ql-bubble .ql-picker.ql-size .ql-picker-item[data-label]:not([data-label=""])::before {
   content: attr(data-label);
 }
 
@@ -925,37 +919,37 @@
 
 .ql-bubble .ql-picker.ql-header .ql-picker-label::before,
 .ql-bubble .ql-picker.ql-header .ql-picker-item::before {
-  content: 'Normal';
+  content: "Normal";
 }
 
 .ql-bubble .ql-picker.ql-header .ql-picker-label[data-value="1"]::before,
 .ql-bubble .ql-picker.ql-header .ql-picker-item[data-value="1"]::before {
-  content: 'Heading 1';
+  content: "Heading 1";
 }
 
 .ql-bubble .ql-picker.ql-header .ql-picker-label[data-value="2"]::before,
 .ql-bubble .ql-picker.ql-header .ql-picker-item[data-value="2"]::before {
-  content: 'Heading 2';
+  content: "Heading 2";
 }
 
 .ql-bubble .ql-picker.ql-header .ql-picker-label[data-value="3"]::before,
 .ql-bubble .ql-picker.ql-header .ql-picker-item[data-value="3"]::before {
-  content: 'Heading 3';
+  content: "Heading 3";
 }
 
 .ql-bubble .ql-picker.ql-header .ql-picker-label[data-value="4"]::before,
 .ql-bubble .ql-picker.ql-header .ql-picker-item[data-value="4"]::before {
-  content: 'Heading 4';
+  content: "Heading 4";
 }
 
 .ql-bubble .ql-picker.ql-header .ql-picker-label[data-value="5"]::before,
 .ql-bubble .ql-picker.ql-header .ql-picker-item[data-value="5"]::before {
-  content: 'Heading 5';
+  content: "Heading 5";
 }
 
 .ql-bubble .ql-picker.ql-header .ql-picker-label[data-value="6"]::before,
 .ql-bubble .ql-picker.ql-header .ql-picker-item[data-value="6"]::before {
-  content: 'Heading 6';
+  content: "Heading 6";
 }
 
 .ql-bubble .ql-picker.ql-header .ql-picker-item[data-value="1"]::before {
@@ -988,17 +982,17 @@
 
 .ql-bubble .ql-picker.ql-font .ql-picker-label::before,
 .ql-bubble .ql-picker.ql-font .ql-picker-item::before {
-  content: 'Sans Serif';
+  content: "Sans Serif";
 }
 
 .ql-bubble .ql-picker.ql-font .ql-picker-label[data-value=serif]::before,
 .ql-bubble .ql-picker.ql-font .ql-picker-item[data-value=serif]::before {
-  content: 'Serif';
+  content: "Serif";
 }
 
 .ql-bubble .ql-picker.ql-font .ql-picker-label[data-value=monospace]::before,
 .ql-bubble .ql-picker.ql-font .ql-picker-item[data-value=monospace]::before {
-  content: 'Monospace';
+  content: "Monospace";
 }
 
 .ql-bubble .ql-picker.ql-font .ql-picker-item[data-value=serif]::before {
@@ -1015,22 +1009,22 @@
 
 .ql-bubble .ql-picker.ql-size .ql-picker-label::before,
 .ql-bubble .ql-picker.ql-size .ql-picker-item::before {
-  content: 'Normal';
+  content: "Normal";
 }
 
 .ql-bubble .ql-picker.ql-size .ql-picker-label[data-value=small]::before,
 .ql-bubble .ql-picker.ql-size .ql-picker-item[data-value=small]::before {
-  content: 'Small';
+  content: "Small";
 }
 
 .ql-bubble .ql-picker.ql-size .ql-picker-label[data-value=large]::before,
 .ql-bubble .ql-picker.ql-size .ql-picker-item[data-value=large]::before {
-  content: 'Large';
+  content: "Large";
 }
 
 .ql-bubble .ql-picker.ql-size .ql-picker-label[data-value=huge]::before,
 .ql-bubble .ql-picker.ql-size .ql-picker-item[data-value=huge]::before {
-  content: 'Huge';
+  content: "Huge";
 }
 
 .ql-bubble .ql-picker.ql-size .ql-picker-item[data-value=small]::before {
@@ -1128,7 +1122,7 @@
 
 .ql-bubble .ql-tooltip-editor a:before {
   color: #ccc;
-  content: "\D7";
+  content: "×";
   font-size: 16px;
   font-weight: bold;
 }
@@ -1167,9 +1161,7 @@
   left: 0;
   margin-left: 50%;
   position: absolute;
-  -webkit-transform: translate(-50%, -100%);
-          transform: translate(-50%, -100%);
-  -webkit-transition: visibility 0s ease 200ms;
+  transform: translate(-50%, -100%);
   transition: visibility 0s ease 200ms;
   visibility: hidden;
 }
@@ -1177,5 +1169,4 @@
 .ql-container.ql-bubble:not(.ql-disabled) a:hover::before,
 .ql-container.ql-bubble:not(.ql-disabled) a:hover::after {
   visibility: visible;
-}
-/*# sourceMappingURL=quill.bubble.styles.css.map */
+}/*# sourceMappingURL=quill.bubble.styles.css.map */

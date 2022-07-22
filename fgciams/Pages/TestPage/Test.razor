@@ -1,0 +1,184 @@
+@page "/test"
+
+@inject IGlobalService globalService
+@inject HttpClient client
+@inject IConfiguration configuration
+@inject IVoucherRouteService routeService
+@inject NavigationManager navigationManager
+
+<div class='page-cont d-flex'>
+    <MudContainer Class='d-flex flex-column gap-2' Fixed='false' MaxWidth='MaxWidth.Large'>
+        <h1>Test page</h1>
+        <div class='d-flex align-center gap-2 border-1'>
+            <MudTextField T=string Margin='Margin.None'
+            Label='Employee' Variant='Variant.Outlined' />
+            <MudTextField T=string Margin='Margin.Normal' HelperText='Prepared By' 
+            Label='Employee' Variant='Variant.Outlined' />
+            <MudTextField @bind-Value="TextValue" Label="Outlined" Variant="Variant.Text" 
+            Margin="Margin.Dense"/>
+        </div>
+        <div class='d-flex align-center gap-2 border-1'>
+            <MudGrid Spacing='2'>
+                <MudItem xs=4>
+                     <BlazoredTypeahead SearchMethod='LoadEmployee' @ref='employeeTypeahead' EnableDropDown DisableClear
+                        @bind-Value='selectedEmployee' Debounce='500' MaximumSuggestions='10' placeholder='Search'>
+                        <SelectedTemplate>
+                            @* <div class='ddavatar overflow-hidden wspace-nowrap'>
+                                @if(context.Picture != null)
+                                {
+                                    <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@context.Picture)}")' Size='Size.Small'/>
+                                }
+                                @if (selectedEmployee.EmployeeId != 0)
+                                {
+                                    <MudText Class='font12'>
+                                        @context.EmployeeName
+                                    </MudText>
+                                }
+                            </div> *@
+                              @context?.FirstName
+                        </SelectedTemplate>
+                        <ResultTemplate>
+                            <div class='ddavatar'>
+                                <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@context.Picture)}")' Size='Size.Small'/>
+                                @context.EmployeeName | @context.Designation
+                            </div>
+                        </ResultTemplate>
+                     </BlazoredTypeahead>
+                     <MudText Class='txt-uppercase font10 pt-1 pl-2'>Requested By</MudText>
+                </MudItem>
+                <MudItem xs=4>
+                    <MudAutocomplete T='UserAccount' Value='selectedEmployee' HelperText='Prepared By' SearchFunc='Search1'/>
+                </MudItem>
+                <MudItem xs=12>
+                    <iframe src='@PDFContent' />
+                </MudItem>
+                <MudItem xs="3">
+                    <BlazoredTypeahead SearchMethod='LoadRoutes' DisableClear placeholder='Route to' aria-placeholder="Location"
+                    @bind-Value='locationRoute' Debounce='500' MaximumSuggestions='5'>
+                        <SelectedTemplate>
+                            <MudText Class='font12'>@context.ProjectName</MudText>
+                        </SelectedTemplate>
+                        <ResultTemplate>
+                            @context.ProjectName | @context.Location    
+                        </ResultTemplate>
+                    </BlazoredTypeahead>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudTextField @bind-Value="@GlobalClass.voucherRoute.Remarks"  Label="Remarks" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudTextField @bind-Value="@GlobalClass.voucherRoute.Reason"  Label="Reason" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudText Class='txt-uppercase font-bold font10'>Date</MudText>
+                        <MudDatePicker Class='txt-top-0 font14-txtfield txtfield-right' @bind-Date='GlobalClass.voucherRoute.RouteDate' IconSize='Size.Small' />
+                    </MudItem>
+                    <MudItem xs="12">
+                        @if(GlobalClassList.selectedVoucherToRoute.Count != 0)
+                        {
+                            foreach(var vouchers in GlobalClassList.selectedVoucherToRoute)
+                            {
+                                <MudChip Size='Size.Small'>@vouchers.ControlNumber</MudChip>
+                            }
+                        }
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudButton OnClick="(()=> SaveVoucherRoute())" Variant="Variant.Filled" Color="Color.Primary">Save</MudButton>
+                    </MudItem>
+            </MudGrid>
+        </div>
+    </MudContainer>
+</div>
+
+
+@code {
+
+    private bool dataFetched;
+    private string TextValue  = "Click me";
+    private UserAccount selectedEmployee = new UserAccount();
+    private BlazoredTypeahead<UserAccount, UserAccount> employeeTypeahead = new BlazoredTypeahead<UserAccount, UserAccount>();
+    private string PDFContent = default!;
+    private List<Project> locationRoutesList = new();
+    private Project locationRoute = new();
+    protected override async Task OnInitializedAsync()
+    {
+        while (GlobalClass.currentUserAccount == null)
+            await Task.Delay(1);
+        PDFContent = await GetBIR(GlobalClass.checkModel);
+        CompletedFetch();
+        StateHasChanged();
+    }
+
+    void CompletedFetch()
+    {
+        dataFetched = true;
+        Task.Run(StateHasChanged);
+    }
+
+    private async Task<IEnumerable<UserAccount>> Search1(string employeeName)
+    {
+        var filterParameter = new FilterParameter()
+        {
+            IsName = true,
+            Name = employeeName,
+            IsLookUp = true
+        };
+        var employee = await globalService.LoadAllEmployee(filterParameter, GlobalClass.token);
+        if (string.IsNullOrWhiteSpace(employeeName))
+            return employee;
+        return employee.Where(x=>x.EmployeeName.Contains(employeeName, StringComparison.InvariantCultureIgnoreCase));
+    }
+    private async Task<IEnumerable<UserAccount>> LoadEmployee(string employeeName)
+    {
+        var filterParameter = new FilterParameter()
+        {
+            IsName = true,
+            Name = employeeName,
+            IsLookUp = true
+        };
+        var employee = await globalService.LoadAllEmployee(filterParameter, GlobalClass.token);
+        return employee;
+    }
+    //For testing BIR report
+    public async Task<string> GetBIR(CheckModel model)
+    {
+        var pdfContent = "data:application/pdf;base64,";
+        HttpResponseMessage responseMessage = await client.PostAsJsonAsync(configuration["ReportServer"] + "ams-BIR/GetBIR", model);
+        if(responseMessage.IsSuccessStatusCode)
+            pdfContent += Convert.ToBase64String(await responseMessage.Content.ReadAsByteArrayAsync());
+        return pdfContent;
+    }
+    private Task SaveVoucherRoute()
+    {
+        //props needed
+        GlobalClass.voucherRoute.LocationId = locationRoute.ProjectId;
+        GlobalClass.voucherRoute.LocationCategoryId = locationRoute.ProjectCategoryId;
+        GlobalClass.voucherRoute.UserId = GlobalClass.currentUserAccount.EmployeeId;
+        GlobalClass.voucherRoute.Activity = "Add Route"; 
+
+        Task t = Task.Run(async()=>await routeService.SaveRouteVouchers(GlobalClass.voucherRoute,GlobalClass.token));
+        if(t.Status == TaskStatus.RanToCompletion)
+            Console.WriteLine("Save");
+        navigationManager.NavigateTo($"voucher/route/list");
+        //New
+        GlobalClass.voucherRoute = new();
+        GlobalClassList.selectedVoucherToRoute.Clear();
+        return t;
+    }
+    private async Task<IEnumerable<Project>> LoadRoutes(string employeeName)
+    {
+        var filterParameter = new FilterParameter()
+        {
+            IsName = true,
+            Name = employeeName,
+            IsLookUp = true
+        };
+        locationRoutesList = await globalService.LoadLocationRoutes(new FilterParameter(){isActive=true},GlobalClass.token);
+        return locationRoutesList;
+    }
+    private async Task LocationRouteList()
+    {
+        locationRoutesList = await globalService.LoadLocationRoutes(new FilterParameter(){isActive=true},GlobalClass.token);
+
+    }
+}

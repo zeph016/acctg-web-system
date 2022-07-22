@@ -43,7 +43,7 @@ namespace fgciams.domain.clsPO
         public DateTime? DeliveryDate { get; set; }
         public string Remarks { get; set; }
         public int POStatusId { get; set; }
-        public string POStatusView { get; set; }
+        public string POStatusView { get; set; } = string.Empty;
 
         public DateTime StatusDate { get; set; }
         public string StatusRemarks { get; set; }

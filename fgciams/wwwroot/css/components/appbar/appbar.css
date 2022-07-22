@@ -1,8 +1,7 @@
 .topbar,
 .footerbar {
-  background-color: #f7f7f8 !important;
+  background-color: rgba(211, 211, 211, 0.2705882353) !important;
 }
-
 .topbar .mud-toolbar,
 .footerbar .mud-toolbar {
   padding: 0px 16px;
@@ -12,7 +11,6 @@
   background-color: #fafafa;
   height: 55px !important;
 }
-
 .topbar__tbxpagetitle {
   color: #7d7d7d;
   font-family: "Theramin", sans-serif !important;
@@ -23,14 +21,11 @@
 .footerbar {
   height: 32px;
 }
-
 .footerbar .mud-typography {
   color: black;
   font-size: 12px;
 }
-
 .footerbar__btn-hardreload, .footerbar__btn-fullscreen {
   margin: 0px 0px 0px 5px !important;
   padding: 0px !important;
-}
-/*# sourceMappingURL=appbar.css.map */
+}/*# sourceMappingURL=appbar.css.map */

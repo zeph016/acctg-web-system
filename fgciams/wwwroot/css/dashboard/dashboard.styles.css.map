@@ -1,9 +1,1 @@
-{
-    "version": 3,
-    "mappings": "AAAA,AACI,cADU,CACV,UAAU,CAAC;EACP,MAAM,EAAE,IAAI;CACf;;AACA,AAAD,oBAAO,CAAC;EACJ,MAAM,EAAE,mBAAmB;EAC3B,OAAO,EAAE,IAAI;EACb,qBAAqB,EAAE,UAAU;EACjC,kBAAkB,EAAE,OAAO;EAC3B,GAAG,EAAE,KAAK;EACV,mBAAmB,EACnB,iCACiB;CACpB;;AAbL,AAcI,cAdU,CAcV,QAAQ,CAAC;EAAE,SAAS,EAAE,OAAO;CAAI;;AAdrC,AAeI,cAfU,CAeV,WAAW,CAAC;EAAE,SAAS,EAAE,UAAU;CAAI;;AAf3C,AAgBI,cAhBU,CAgBV,KAAK,CAAC;EAAE,SAAS,EAAE,IAAI;CAAI",
-    "sources": [
-        "dashboard.styles.scss"
-    ],
-    "names": [],
-    "file": "dashboard.styles.css"
-}
+{"version":3,"sources":["dashboard.styles.scss","dashboard.styles.css"],"names":[],"mappings":"AACI;EACI,YAAA;ACAR;ADEI;EACI,2BAAA;EACA,aAAA;EACA,iCAAA;EACA,2BAAA;EACA,WAAA;EACA,qDACA;ACDR;ADII;EAAW,kBAAA;ACDf;ADEI;EAAc,qBAAA;ACClB;ADAI;EAAQ,eAAA;ACGZ","file":"dashboard.styles.css"}

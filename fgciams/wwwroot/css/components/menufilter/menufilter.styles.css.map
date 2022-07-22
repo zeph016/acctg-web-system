@@ -1,9 +1,1 @@
-{
-    "version": 3,
-    "mappings": "",
-    "sources": [
-        "menufilter.styles.scss"
-    ],
-    "names": [],
-    "file": "menufilter.styles.css"
-}
+{"version":3,"sources":[],"names":[],"mappings":"","file":"menufilter.styles.css"}

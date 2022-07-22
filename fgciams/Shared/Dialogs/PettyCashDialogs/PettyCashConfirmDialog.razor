@@ -10,9 +10,9 @@
     </DialogActions>
 </MudDialog>
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
-    [Parameter] public string pettyCashId { get; set; }
-    [Parameter] public string action { get; set; }
+    [CascadingParameter] MudDialogInstance? MudDialog { get; set; }
+    [Parameter] public string? pettyCashId { get; set; }
+    [Parameter] public string action { get; set; } = string.Empty;
     async Task Submit()
     {
         if(isValidated()){
@@ -20,7 +20,7 @@
             GlobalClass.pettyCash.PettyCashId = GlobalClass.pettyCash.Id;
             GlobalClass.pettyCash.UserId = GlobalClass.currentUserAccount.EmployeeId;
             await PettyCashService.UpdatePettyCash(GlobalClass.pettyCash,GlobalClass.token);
-            MudDialog.Close(DialogResult.Ok(true));
+            MudDialog?.Close(DialogResult.Ok(true));
             Console.WriteLine(GlobalClass.pettyCash.StatusId);
             Extensions.ShowAlert(action+" by: "+GlobalClass.currentUserAccount.EmployeeName,Variant.Filled,Snackbar,Severity.Success);
         }else{
@@ -29,7 +29,7 @@
     }
     void Cancel()
     {
-        MudDialog.Cancel(); 
+        MudDialog?.Cancel(); 
         GlobalClass.pettyCash = new();
     }
     bool isValidated(){

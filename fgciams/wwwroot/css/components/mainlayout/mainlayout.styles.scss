@@ -99,7 +99,8 @@ main {
         &__header-text {
             color: white;
             font-size: 13px;
-            white-space: nowrap;
+            // white-space: nowrap;
+            text-align: left;
             overflow: hidden;
             padding-left: 4px;
             text-overflow: ellipsis;

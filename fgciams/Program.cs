@@ -29,6 +29,8 @@ using fgciams.service.VoucherServices;
 using fgciams.service.AccountTypeServices;
 using fgciams.service.AccountingLineServices;
 using fgciams.service.AccountLineTypeServices;
+using fgciams.service.CheckServices;
+using fgciams.service.VoucherRouteBatchServices;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -61,4 +63,7 @@ builder.Services.AddScoped<IVoucherService, VoucherService>();
 builder.Services.AddScoped<IAccountTypeService, AccountTypeService>();
 builder.Services.AddScoped<IAccountingLineService, AccountingLineService>();
 builder.Services.AddScoped<IAccountLineTypeService, AccountLineTypeService>();
+builder.Services.AddScoped<ICheckService, CheckService>();
+builder.Services.AddScoped<IVoucherRouteService, VoucherRouteService>();
+builder.Services.AddScoped<IVoucherRouteBatchService, VoucherRouteBatchService>();
 await builder.Build().RunAsync();

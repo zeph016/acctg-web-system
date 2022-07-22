@@ -14,6 +14,10 @@
   font-weight: bold !important;
 }
 
+.font8 {
+  font-size: 8px !important;
+}
+
 .font10 {
   font-size: 10px !important;
 }
@@ -30,6 +34,22 @@
   font-size: 16px !important;
 }
 
+.font20 {
+  font-size: 20px !important;
+}
+
+.font-1-1rem {
+  font-size: 1.1rem !important;
+}
+
+.font-1-2rem {
+  font-size: 1.2rem !important;
+}
+
+.font10-txtfield .mud-input {
+  font-size: 10px;
+}
+
 .font12-txtfield .mud-input {
   font-size: 12px;
 }
@@ -38,42 +58,58 @@
   font-size: 14px;
 }
 
+.font16-txtfield .mud-input {
+  font-size: 16px;
+}
+
+.txtbold .mud-input {
+  font-weight: bold !important;
+}
+
+.txtem .mud-input {
+  font-style: italic !important;
+}
+
 .txtfield-75 .mud-input {
   height: 35px;
 }
-
-.txtfield-75 .mud-input-slot, .txtfield-75 .mud-input-label {
-  font-size: .75rem !important;
+.txtfield-75 .mud-input-slot,
+.txtfield-75 .mud-input-label {
+  font-size: 0.75rem !important;
 }
 
 .selectparent-75 .mud-input {
-  font-size: .75rem;
+  font-size: 0.75rem;
   height: 35px;
   text-align: left;
 }
 
 .selectitem-75 .mud-typography {
-  font-size: .75rem !important;
+  font-size: 0.75rem !important;
 }
 
 .title875 {
-  font-size: .875rem;
+  font-size: 0.875rem;
   font-weight: bold;
   text-transform: uppercase;
 }
 
 .lbl75 {
-  font-size: .775rem !important;
+  font-size: 0.775rem !important;
   font-weight: bold !important;
   text-transform: uppercase !important;
 }
 
 .lbl70 {
-  font-size: .7rem !important;
+  font-size: 0.7rem !important;
 }
 
 .txt-uppercase {
   text-transform: uppercase !important;
+}
+
+.fweight500 {
+  font-weight: 500 !important;
 }
 
 .chkbxfont10 .mud-typography {
@@ -83,4 +119,16 @@
 .chkbxtxbold .mud-typography {
   font-weight: bold;
 }
-/*# sourceMappingURL=fontmods.styles.css.map */
+
+.toolbar-sm-font12 .mud-table-pagination-information,
+.toolbar-sm-font12 .mud-table-page-number-information {
+  font-size: 12px !important;
+}
+
+.fontpad-t-2px {
+  padding-top: 2px;
+}
+
+.ff-theramin {
+  font-family: "Theramin" !important;
+}/*# sourceMappingURL=fontmods.styles.css.map */
