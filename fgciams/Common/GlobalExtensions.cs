@@ -44,13 +44,18 @@ public static class Extensions
 
     public static async Task<bool> ValidateToken(IUserAccountService userAccountService, ILocalStorageService localStorageService, IJSRuntime jsRuntimeService)
     {
-        bool isTokenExist = await CheckGlobalTokenV2(localStorageService);
-        bool isAuth;
+        bool isTokenExist = await CheckGlobalTokenV2(localStorageService) ? true : await GetSetToken(localStorageService, jsRuntimeService);
+        bool isAuthExpired;
         if (isTokenExist) {
-            return isAuth = isTokenExist ? await AuthenticateToken(userAccountService, GlobalClass.token) : false;
-        } else if (!isTokenExist) {
-            bool isTokenSet = await GetSetToken(localStorageService, jsRuntimeService);
-            return isAuth = isTokenSet ? await AuthenticateToken(userAccountService, GlobalClass.token) : false;
+            isAuthExpired = isTokenExpired(await localStorageService.GetItemAsync<string>("token"));
+            if (!isAuthExpired) {
+                await ClearRemainingCookie(jsRuntimeService);
+                return await AuthenticateToken(userAccountService, GlobalClass.token);
+            }
+            else if (isAuthExpired) {
+                await GetSetToken(localStorageService, jsRuntimeService);
+                return await AuthenticateToken(userAccountService, GlobalClass.token);
+            }
         }
         return false;
     }
@@ -73,11 +78,18 @@ public static class Extensions
         await jsRuntimeService.InvokeAsync<string>("DeleteCookie");
     }
 
+    public static async Task ClearRemainingCookie(IJSRuntime jsRuntimeService)
+    {
+        await jsRuntimeService.InvokeAsync<string>("DeleteCookie");
+    }
+
     public static async Task<bool> AuthenticateToken(IUserAccountService userAccountService, string token)
     {
         UserAccount userAccount = await userAccountService.AuthenticateToken(new UserAccount(), token);
         GlobalClass.currentUserAccount = userAccount ?? new UserAccount();
-        if (GlobalClass.currentUserAccount.httpResponse == System.Net.HttpStatusCode.OK)
+        Console.WriteLine(GlobalClass.currentUserAccount.httpResponse);
+        if (GlobalClass.currentUserAccount.httpResponse == System.Net.HttpStatusCode.OK 
+        && GlobalClass.currentUserAccount.httpResponse != System.Net.HttpStatusCode.Unauthorized)
             return true;
         return false;
     }
@@ -106,7 +118,7 @@ public static class Extensions
         var userId = jwt.Claims.First(claim => claim.Type == "EmployeeId").Value;
         var tokenDate = jwt.Claims.First(claim => claim.Type == "exp").Value;
         DateTime expirationTime = DateTimeOffset.FromUnixTimeSeconds(long.Parse(tokenDate)).DateTime;
-
+        
         var ts = new TimeSpan(DateTime.Now.Ticks - expirationTime.Ticks);
         double delta = Math.Abs(ts.TotalSeconds);
         if (delta > 8 * hour)

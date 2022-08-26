@@ -43,7 +43,7 @@
 @code{
   private string pdfReport = string.Empty;
   bool isSaved, _processing;
-
+  public static bool isPrint = false;
   protected override async Task OnInitializedAsync()
   {
     GlobalClass.pageTitle = "Voucher Report";
@@ -59,7 +59,7 @@
   {
     _processing = true;
     var parameters = new DialogParameters();
-        string contentText = "Voucher ";
+        string contentText = "Voucher";
         string dialogTitle = GlobalClass.forPrintingOrSaveVoucher.Id == 0 ? "Create " + contentText : "Update " + contentText;
         parameters.Add("contentText", contentText);
         parameters.Add("actionMode", GlobalClass.forPrintingOrSaveVoucher.Id == 0 ? Enums.ActionMode.Create : Enums.ActionMode.Update);
@@ -90,15 +90,20 @@
             isSaved = true;
           }
           pdfReport = await voucherService.GenerateReport(SavedVoucher);
-
+          
           if(GlobalVariable.AMSHubConnection != null)
             await GlobalVariable.AMSHubConnection.InvokeAsync("SaveVoucher", SavedVoucher);
+        }
+        else
+        {
+          _processing = false;
         }
   }
   private void Back()
   {
     if(!isSaved)
     {
+      isPrint = true;
       GlobalClass.voucher = GlobalClass.forPrintingOrSaveVoucher;
       navigationManager.NavigateTo($"/voucher/create");
     }

@@ -1,0 +1,41 @@
+@inject Blazored.LocalStorage.ILocalStorageService localStorageService
+@inject IUserAccountService userAccountService
+@inject IJSRuntime jsRuntimeService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@if (isLoaded)
+{
+    @ChildContent
+}
+else
+{
+    <div class="fgloader-1">
+        <img class="fgloader-1__img" src="images/loaders/fgloader-1.gif" />
+    </div>
+}
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    bool isLoaded;
+
+    protected override async Task OnInitializedAsync()
+    {
+        bool checkAuthToken = await Extensions.ValidateToken(userAccountService, localStorageService, jsRuntimeService);
+        if (checkAuthToken) {
+            await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        }
+        else if (!checkAuthToken) {
+            GlobalClass.currentUserAccount = default!;
+            await localStorageService.RemoveItemAsync("token");
+            await jsRuntimeService.InvokeVoidAsync("DeleteCookie");
+            await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        }
+        Console.WriteLine("Initialized Preloader");
+        CompletedFetch();
+    }
+    void CompletedFetch()
+    {
+        isLoaded = true;
+        StateHasChanged();
+    }
+}

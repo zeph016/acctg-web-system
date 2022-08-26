@@ -52,39 +52,6 @@
                 <MudItem xs=12>
                     <iframe src='@PDFContent' />
                 </MudItem>
-                <MudItem xs="3">
-                    <BlazoredTypeahead SearchMethod='LoadRoutes' DisableClear placeholder='Route to' aria-placeholder="Location"
-                    @bind-Value='locationRoute' Debounce='500' MaximumSuggestions='5'>
-                        <SelectedTemplate>
-                            <MudText Class='font12'>@context.ProjectName</MudText>
-                        </SelectedTemplate>
-                        <ResultTemplate>
-                            @context.ProjectName | @context.Location    
-                        </ResultTemplate>
-                    </BlazoredTypeahead>
-                    </MudItem>
-                    <MudItem xs="3">
-                        <MudTextField @bind-Value="@GlobalClass.voucherRoute.Remarks"  Label="Remarks" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
-                    </MudItem>
-                    <MudItem xs="3">
-                        <MudTextField @bind-Value="@GlobalClass.voucherRoute.Reason"  Label="Reason" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
-                    </MudItem>
-                    <MudItem xs="3">
-                        <MudText Class='txt-uppercase font-bold font10'>Date</MudText>
-                        <MudDatePicker Class='txt-top-0 font14-txtfield txtfield-right' @bind-Date='GlobalClass.voucherRoute.RouteDate' IconSize='Size.Small' />
-                    </MudItem>
-                    <MudItem xs="12">
-                        @if(GlobalClassList.selectedVoucherToRoute.Count != 0)
-                        {
-                            foreach(var vouchers in GlobalClassList.selectedVoucherToRoute)
-                            {
-                                <MudChip Size='Size.Small'>@vouchers.ControlNumber</MudChip>
-                            }
-                        }
-                    </MudItem>
-                    <MudItem xs="3">
-                        <MudButton OnClick="(()=> SaveVoucherRoute())" Variant="Variant.Filled" Color="Color.Primary">Save</MudButton>
-                    </MudItem>
             </MudGrid>
         </div>
     </MudContainer>
@@ -98,8 +65,6 @@
     private UserAccount selectedEmployee = new UserAccount();
     private BlazoredTypeahead<UserAccount, UserAccount> employeeTypeahead = new BlazoredTypeahead<UserAccount, UserAccount>();
     private string PDFContent = default!;
-    private List<Project> locationRoutesList = new();
-    private Project locationRoute = new();
     protected override async Task OnInitializedAsync()
     {
         while (GlobalClass.currentUserAccount == null)
@@ -148,37 +113,5 @@
             pdfContent += Convert.ToBase64String(await responseMessage.Content.ReadAsByteArrayAsync());
         return pdfContent;
     }
-    private Task SaveVoucherRoute()
-    {
-        //props needed
-        GlobalClass.voucherRoute.LocationId = locationRoute.ProjectId;
-        GlobalClass.voucherRoute.LocationCategoryId = locationRoute.ProjectCategoryId;
-        GlobalClass.voucherRoute.UserId = GlobalClass.currentUserAccount.EmployeeId;
-        GlobalClass.voucherRoute.Activity = "Add Route"; 
-
-        Task t = Task.Run(async()=>await routeService.SaveRouteVouchers(GlobalClass.voucherRoute,GlobalClass.token));
-        if(t.Status == TaskStatus.RanToCompletion)
-            Console.WriteLine("Save");
-        navigationManager.NavigateTo($"voucher/route/list");
-        //New
-        GlobalClass.voucherRoute = new();
-        GlobalClassList.selectedVoucherToRoute.Clear();
-        return t;
-    }
-    private async Task<IEnumerable<Project>> LoadRoutes(string employeeName)
-    {
-        var filterParameter = new FilterParameter()
-        {
-            IsName = true,
-            Name = employeeName,
-            IsLookUp = true
-        };
-        locationRoutesList = await globalService.LoadLocationRoutes(new FilterParameter(){isActive=true},GlobalClass.token);
-        return locationRoutesList;
-    }
-    private async Task LocationRouteList()
-    {
-        locationRoutesList = await globalService.LoadLocationRoutes(new FilterParameter(){isActive=true},GlobalClass.token);
-
-    }
+    
 }

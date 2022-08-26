@@ -24,7 +24,7 @@ namespace fgciams.service.PayeeCategoryServices
             if(responseMessage.IsSuccessStatusCode){
                 payeeCategoryModelList = await responseMessage.Content.ReadAsAsync<List<PayeeCategoryModel>>();
             }
-            return payeeCategoryModelList.OrderBy(x=> x.CategoryName).Reverse().ToList();
+            return payeeCategoryModelList;
             }catch(Exception ee){
                 Console.WriteLine(ee.Message);
                 throw ee;

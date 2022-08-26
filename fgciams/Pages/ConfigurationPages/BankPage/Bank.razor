@@ -2,7 +2,8 @@
 
 @inject IBankService bankService
 @inject IDialogService dialogService
-@inject ISnackbar snackBarService
+@inject ISnackbar snackbarService
+@inject ApplicationState AppState
 
 <div class='page-cont'>
   <div class='drawer-right'>
@@ -28,36 +29,31 @@
   <MudContainer Class='bankpage' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
     @if(!dataFetched)
     {
-      <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
-        <MudSkeleton SkeletonType='SkeletonType.Text' Height='100px' Animation='Animation.Wave' />
-        <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='71vh' Animation='Animation.Wave' />
-      </MudPaper>
+      <SkeletonPageList />
     }
     else
     {
-      <MudTable Class='configtables' Items="@GlobalClassList.banks"  Hover="true" Breakpoint='Breakpoint.Sm' 
-      FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true' RowsPerPage='30' Striped="true"
+      <MudTable Class='configtables row-popup-anim-2px' Items="@GlobalClassList.banks"  Hover="true" Breakpoint='Breakpoint.Sm' 
+      FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true' RowsPerPage='30'
       Filter='new Func<BankModel,bool>(FilterItems)'>
         <ToolBarContent>
             <MudText Typo='Typo.caption'>
               @GlobalClassList.banks.Count() 
               @(GlobalClassList.banks.Count() == 1 ? "item" : "items") 
-              in Total
+              in total
             </MudText>
             <MudSpacer />
-            <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small' Label='More'>
-              <MudMenuItem OnClick='(() => BankDialog(new BankModel()))'>
-                    <div class='d-flex align-center gap-2'>
-                        <MudIcon Icon='@Icons.Filled.Add' Size='Size.Medium'/>
+            <MudTooltip Text="Refresh Table">
+            <MudIconButton Icon="@Icons.Filled.Refresh" Size="Size.Small" OnClick='(()=>{searchTerm = "";})' ></MudIconButton>
+            </MudTooltip>
+            <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
+              TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
+              <MudMenuItem OnClick='(() => BankDialog(new BankModel(), Enums.ActionMode.Create))'>
+                    <div class='d-flex align-center gap-2 menu-grow-anim'>
+                        <MudIcon Icon='@Icons.Filled.Add' Size='Size.Small'/>
                         <MudText Typo='Typo.body2'>Add</MudText>
                     </div>
-                </MudMenuItem>
-                <MudMenuItem OnClick='OpenSideFilter'>
-                    <div class='d-flex align-center gap-2'>
-                      <MudIcon Icon='@Icons.Filled.FilterList' />
-                      <MudText Typo='Typo.body2'>Filter</MudText>
-                    </div>
-                  </MudMenuItem>
+              </MudMenuItem>
             </MudMenu>
         </ToolBarContent>
         <ColGroup>
@@ -65,8 +61,10 @@
           <col />
           <col />
           <col />
+          <col style='width:20px' />
           <col />
-          <col style='width: 10%;'/>
+          <col style='width:20px;'/>
+          <col style='width:20px;'/>
         </ColGroup>
         <HeaderContent>
             <MudTh Class='customheader-1'>Bank</MudTh>
@@ -75,8 +73,8 @@
             <MudTh Class='customheader-1'>Account No.</MudTh>
             <MudTh Class='customheader-1 text-center'>Currency</MudTh>
             <MudTh Class='customheader-1 text-center'>Beg. Balance</MudTh>
-            <MudTh Class='customheader-1 text-center'>Contact</MudTh>
-            <MudTh Class='customheader-1 text-center'>Actions</MudTh>
+            <MudTh Class='customheader-1 text-center pa-2'>Contact</MudTh>
+            <MudTh Class='customheader-1 text-center pa-2'>Action</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Bank">@context.BankName</MudTd>
@@ -85,14 +83,17 @@
             <MudTd DataLabel="AccountNo.">@context.AccountNo</MudTd>
             <MudTd Class='text-center' DataLabel="Currency">@Extensions.GetEnumDescription(context.CurrencyId)</MudTd>
             <MudTd Class='text-right' DataLabel="Beg.Balance"> @context.BeginningBalance.ToString("N2") </MudTd>
-            <MudTd Class='text-center' DataLabel='Contact'>
-              <MudIconButton OnClick='(() => context.subTable = ShowSubTable(context.subTable))' Icon="@Icons.Filled.Contacts" aria-label="Contacts" Size='Size.Small'></MudIconButton>
+            <MudTd Class='text-center pa-2' DataLabel='Contact'>
+              <MudToggleIconButton @bind-Toggled='context.subTable'
+                Icon="@Icons.Filled.ExpandMore" Color="Color.Dark" Title="Show" Size='Size.Small' ToggledSize='Size.Small'
+                ToggledIcon="@Icons.Filled.ExpandLess" ToggledColor="@Color.Info" ToggledTitle="Collapse"/>
             </MudTd>
-            <MudTd Class='text-center'>
-              <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small' ActivationEvent='MouseEvent.MouseOver'>
-                 <MudMenuItem OnClick='(()=> BankDialog(context))'>
+            <MudTd Class='text-center pa-2'>
+              <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
+                TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' >
+                 <MudMenuItem OnClick='(()=> BankDialog(context, Enums.ActionMode.Update))'>
                    <div class='d-flex align-center gap-2'>
-                      <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Medium'/>
+                      <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small'/>
                       <MudText Typo='Typo.body2'>Edit</MudText>
                     </div>
                  </MudMenuItem>
@@ -100,35 +101,31 @@
             </MudTd>
         </RowTemplate>
         <ChildRowContent>
-          @if (context.subTable)
-          {
-            <td colspan='8'>
-              <MudTr Class='d-flex justify-end align-center'>
-                <MudCard Class='pa-2 ma-2 d-flex align-center gap-6'>
-                  <div class='d-flex align-center gap-2'>
-                    <MudIcon Icon="@Icons.Material.Filled.Person" Title="Person" />
-                    <MudText Typo='Typo.body2'>@context.ContactPerson</MudText>
-                  </div>
-                   <div class='d-flex align-center gap-2'>
-                    <MudIcon Icon="@Icons.Material.Filled.ContactPhone" Title="Contact Phone" />
-                    <MudText Typo='Typo.body2'>@context.ContactNo</MudText>
-                  </div>
-                  <div class='d-flex align-center gap-2' style='max-width: 25vw;'>
-                    <MudIcon Icon="@Icons.Material.Filled.Message" Title="Remarks" />
-                      @if (!string.IsNullOrWhiteSpace(context.Remarks)) {
-                        <MudText Typo='Typo.body2'>
-                          @context.Remarks
-                        </MudText>
-                      } else {
-                        <MudText Typo='Typo.body2'>
-                          No Remarks
-                        </MudText>
-                      }
-                  </div>
-                </MudCard>
-              </MudTr>
+           <MudTr>
+            <td colspan='3'></td>
+            <td colspan='4'>
+                <div class='d-flex align-center justify-end transition-05s-ease overflow-hidden' style='@(context.subTable ? "max-height:500px" : "max-height:0px")'>
+                  <MudPaper Class='d-flex align-center justify-content-between gap-2 ma-2 pa-2 bgc-e7f2fb min-width50' Elevation='1'>
+                      <MudAvatar Class='bgc-gainsb' Size='Size.Medium'>
+                          <MudIcon Color="Color.Dark" Icon="@Icons.Filled.Person" Size="Size.Medium" />
+                      </MudAvatar>
+                      <div class='d-flex align-start flex-column'>
+                        @if(!string.IsNullOrWhiteSpace(context.ContactPerson))
+                        {
+                          <MudText Class='font12 font-bold'>@context.ContactPerson</MudText>
+                          <MudText Class='font10'>Contact: @context.ContactNo</MudText>
+                          <MudText Class='font10'>Remarks: @context.Remarks</MudText>
+                        }
+                        else
+                        {
+                          <MudText Class='font12 font-bold'>No contacts</MudText>
+                        }
+                      </div>
+                  </MudPaper>
+                </div>
             </td>
-          }
+            <td colspan='1'></td>
+           </MudTr>
         </ChildRowContent>
         <PagerContent>
             <MudTablePager PageSizeOptions='@pageSize'/>
@@ -142,88 +139,81 @@
   private bool dataFetched, openSideFilter;
   private int[] pageSize = new int[] { 30, 50, 100, 500, 1000 };
   private string searchTerm = string.Empty, visibility = "visibility-animation-hide";
-    protected override async Task OnInitializedAsync()
-    {
-      GlobalClass.pageTitle = "BANK";
-      while (GlobalClass.currentUserAccount == null || GlobalClassList.banks == null)
-        await Task.Delay(1);
-      
-      BankHub();
-      CompletedFetch();
-    }
-    private void CompletedFetch()
-    {
-      dataFetched = true;
-      StateHasChanged();
-    }
-    async Task<List<BankModel>> LoadBanks()
-    {
-      GlobalClassList.banks = await bankService.LoadBanks(GlobalClass.token);
-      return GlobalClassList.banks;
-    }
+  protected override async Task OnInitializedAsync()
+  {
+    GlobalClass.pageTitle= "Configuration - BANK";
+    while (GlobalClass.currentUserAccount == null || GlobalClassList.banks == null)
+      await Task.Delay(1);
+    await AppState.UpdateMainLayoutComponent(true);
+    BankHub();
+    CompletedFetch();
+  }
+  void CompletedFetch()
+  {
+    dataFetched = true;
+    StateHasChanged();
+  }
+  async Task<List<BankModel>> LoadBanks()
+  {
+    GlobalClassList.banks = await bankService.LoadBanks(GlobalClass.token);
+    return GlobalClassList.banks;
+  }
 
-    async Task BankDialog(BankModel selectedBank)
+  private async Task BankDialog(BankModel selectedBank, Enums.ActionMode action)
+  {
+    var parameters = new DialogParameters();
+    GlobalClass.bank = selectedBank;
+    string dialogTitle = GlobalClass.bank.Id != 0 ? "Edit Bank Details" : "Add Bank";
+    string buttonText = GlobalClass.bank.Id != 0 ? "Update" : "Add";
+    Color color = GlobalClass.bank.Id != 0 ? Color.Info : Color.Success;
+    var _maxWidth = GlobalClass.bank.Id != 0 ? MaxWidth.Medium : MaxWidth.Small;
+    parameters.Add("color", color);
+    parameters.Add("dialogTitle", dialogTitle);
+    parameters.Add("buttonText", buttonText);
+    parameters.Add("currentAction", action);
+    var options = new DialogOptions() { CloseButton = false, MaxWidth = _maxWidth, FullWidth = true, NoHeader = false, DisableBackdropClick = false };
+    var resultDialog = await dialogService.Show<Shared.Dialogs.BankDialogs.BankDialog>("",parameters,options).Result;
+    if(!resultDialog.Cancelled)
     {
-      var parameters = new DialogParameters();
-      GlobalClass.bank = selectedBank;
-      string dialogTitle = GlobalClass.bank.Id != 0 ? "Edit Bank Details" : "Add Bank";
-      string buttonText = GlobalClass.bank.Id != 0 ? "Update" : "Add";
-      Color color = GlobalClass.bank.Id != 0 ? Color.Info : Color.Success;
-      parameters.Add("color", color);
-      parameters.Add("dialogTitle", dialogTitle);
-      parameters.Add("buttonText", buttonText);
-      var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.Small, FullWidth = true, NoHeader = false, DisableBackdropClick = false };
-      var resultDialog = await dialogService.Show<Shared.Dialogs.BankDialogs.BankDialog>("",parameters,options).Result;
-      if(!resultDialog.Cancelled)
-      {
-        if ((int)resultDialog.Data == 0)
-          ShowAlert("Added new Bank", Variant.Filled, Severity.Success);
-        else if ((int)resultDialog.Data == 1)
-          ShowAlert("Updated Bank", Variant.Filled, Severity.Info);
-        GlobalClassList.banks = GlobalClassList.banks.Where(x=>x.IsActive == true).ToList();
-      }
+      if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Create)
+        Extensions.ShowAlert("Bank successfully added.", Variant.Filled,snackbarService,Severity.Success);
+      else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Update)
+        Extensions.ShowAlert("Bank successfully updated.", Variant.Filled,snackbarService,Severity.Info);
+      else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Deactivate)
+         Extensions.ShowAlert("Bank has been deactivated.", Variant.Filled,snackbarService,Severity.Warning);
+      GlobalClassList.banks = GlobalClassList.banks.Where(x=>x.IsActive == true).ToList();
     }
+    else if (resultDialog.Cancelled)
+      Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
+  }
 
-    private bool FilterItems(BankModel items)
-    {
-        if (string.IsNullOrEmpty(searchTerm))
-            return true;
-        if (items.BankName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase))
-            return true;
-        return false;
-    }
+  private bool FilterItems(BankModel items)
+  {
+      if (string.IsNullOrEmpty(searchTerm))
+          return true;
+      if (items.BankName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase))
+          return true;
+      return false;
+  }
 
-    private void ShowAlert(string message, Variant variant, Severity severity)
-    {
-        snackBarService.Clear();
-        snackBarService.Configuration.PositionClass = Defaults.Classes.Position.BottomCenter;
-        snackBarService.Configuration.SnackbarVariant = variant;
-        snackBarService.Configuration.MaxDisplayedSnackbars = 10;
-        snackBarService.Add($"{message}", severity);
-    }
+  private void OpenSideFilter()
+  {
+    openSideFilter = !openSideFilter;
+    if(openSideFilter)
+      visibility = "visibility-animation-show";
+    if(!openSideFilter)
+      visibility = "visibility-animation-hide";
+  }
+  private void BankHub()
+  {
+    if(GlobalVariable.AMSHubConnection != null)
+      GlobalVariable.AMSHubConnection.On<BankModel>("SaveBank", (_bank) => {
 
-    private bool ShowSubTable(bool isShow)
-    {
-      return isShow = !isShow;
-    }
-    private void OpenSideFilter()
-    {
-      openSideFilter = !openSideFilter;
-      if(openSideFilter)
-        visibility = "visibility-animation-show";
-      if(!openSideFilter)
-        visibility = "visibility-animation-hide";
-    }
-    private void BankHub()
-    {
-      if(GlobalVariable.AMSHubConnection != null)
-        GlobalVariable.AMSHubConnection.On<BankModel>("SaveBank", (_bank) => {
+        GlobalClassList.banks.RemoveAll(x=>x.Id == _bank.Id);
+        GlobalClassList.banks.Add(_bank);
+        GlobalClassList.banks = GlobalClassList.banks.Where(x=>x.IsActive == true).OrderBy(x=>x.BankName).ToList();
+        StateHasChanged();
 
-          GlobalClassList.banks.RemoveAll(x=>x.Id == _bank.Id);
-          GlobalClassList.banks.Add(_bank);
-          GlobalClassList.banks = GlobalClassList.banks.Where(x=>x.IsActive == true).OrderBy(x=>x.BankName).ToList();
-          StateHasChanged();
-
-          });
-    }
+        });
+  }
 }

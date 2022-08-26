@@ -110,7 +110,11 @@ namespace fgciams.domain.clsEnums
             [Description("PO Billing")]
             POBilling = 2,
             [Description("PO")]
-            PO = 3
+            PO = 3,
+            [Description("Reversal")]
+            Reversal = 4,
+            [Description("Labor")]
+            Labor = 5
         }
         public enum LookUpType :byte
         {
@@ -162,6 +166,10 @@ namespace fgciams.domain.clsEnums
             Cleared = 8,
             [Description("Deactivate")]
             Deactivate = 9,
+            [Description("Route")]
+            Route = 10,
+            [Description("Invalid")]
+            Invalid = 11,
         }
         public enum AccountReportGroup : byte
         {

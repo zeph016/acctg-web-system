@@ -1,7 +1,8 @@
 @inject IBankService bankService
 @inject ISnackbar snackbarService
+@inject IDialogService dialogService
 
-<MudDialog Class="customdialog">
+<MudDialog Class="customdialog2">
   <TitleContent>
     <div class='d-flex align-center'>
       @if (GlobalClass.bank.Id != 0)
@@ -12,61 +13,155 @@
       {
         <MudIcon Icon="@Icons.Filled.Add" Class="mr-3 mb-n1" />
       }
-      <MudText Typo='Typo.h6'>@dialogTitle</MudText>
+      <MudText Class='txt-uppercase' Typo='Typo.h6'>@dialogTitle</MudText>
     </div>
   </TitleContent>
   <DialogContent>
-    <div class='customdialog__content-container'>
+    @if (!isDataFetch)
+    {
+      <SkeletonBankDialog fetchTypeId='GlobalClass.bank.Id' />
+    }
+    else
+    {
       <MudGrid Spacing='1'>
-        <MudItem xs='6'>
-          <MudTextField @bind-Value='@GlobalClass.bank.BankName' Adornment='Adornment.Start'
-            AdornmentIcon='@Icons.Filled.AccountBalance' Label='Bank Name' Error=@reqBank ErrorText='Bank name is required'/>
+        <MudItem Class='d-flex flex-column' xs=gridXs>
+          <MudPaper Class='flex-1 pa-2' Elevation='elevationValue'>
+            <MudGrid Class='pa-2' Spacing='1'>
+              <MudItem xs='6'>
+                <MudTextField @bind-Value='@GlobalClass.bank.BankName' Label='Bank Name' Error=@reqBank ErrorText='Bank name is required'
+                  HelperText='Required*' Margin='Margin.Dense' />
+              </MudItem>
+              <MudItem xs='6'>
+                <MudTextField @bind-Value='@GlobalClass.bank.ShortcutName' Label="Short Name" Error=@reqShrtCut ErrorText='Shortcut name is required'
+                  HelperText='Required*' Margin='Margin.Dense'/>
+              </MudItem>
+              <MudItem xs='6'>
+                <MudTextField @bind-Value='@GlobalClass.bank.BankBranch' Label="Branch" Error='@reqBranch' ErrorText='Branch name is required' 
+                  HelperText='Required*' Margin='Margin.Dense'/>
+              </MudItem>
+              <MudItem xs='6'>
+                <MudTextField @bind-Value='@GlobalClass.bank.AccountNo' Mask="@(new PatternMask("0000 0000 0000 0000"))" Label="Account No." 
+                  HelperText='Required*' Margin='Margin.Dense'/>
+              </MudItem>
+              <MudItem xs='8'>
+                <MudTextField @bind-Value='@GlobalClass.bank.ContactPerson' Label="Contact Person" Error=@reqConPer ErrorText='Contact person is required' 
+                  HelperText='Required*' Margin='Margin.Dense'/>
+              </MudItem>
+              <MudItem xs='4'>
+                <MudTextField @bind-Value='@GlobalClass.bank.ContactNo' Label="Contact No." Error=@reqConNo ErrorText='Contact number is required'
+                  HelperText='Required*' Margin='Margin.Dense'/>
+              </MudItem>
+              <MudItem xs='4'>
+                <MudSelect @bind-Value='@GlobalClass.bank.CurrencyId' Label="Currency" HelperText='Required*' Margin='Margin.Dense'>
+                  @foreach (Enums.BankCurrency currency in Enum.GetValues(typeof(Enums.BankCurrency)))
+                  {
+                    <MudSelectItem Value="currency">@Extensions.GetEnumDescription(currency)</MudSelectItem>
+                  }
+                </MudSelect>
+              </MudItem>
+              <MudItem xs="8">
+                <MudNumericField Class='txtfield-right txtfield-padlr-4px' @bind-Value='@GlobalClass.bank.BeginningBalance' Label="Beginning Balance" Format='N2' HideSpinButtons
+                  HelperText='Required*' Margin='Margin.Dense' />
+              </MudItem>
+              <MudItem xs='12'>
+                @if(GlobalClass.bank.Id != 0 && isDataFetch)
+                {
+                  @if(GlobalClassList.bankCheckNumberList.Count > 0 )
+                  {
+                    <MudSelect Text="@(currentBankCheckNumber.CheckNoRangeFrom == 0? String.Empty:currentBankCheckNumber.CheckNoRangeFrom.ToString()+'-'+currentBankCheckNumber.CheckNoRangeTo.ToString())" 
+                      Placeholder="Range" T="BankCheckNumberModel" Value="currentBankCheckNumber" 
+                      ValueChanged="((BankCheckNumberModel model)=>SelectedChecks(model))" Label="Check number range" Margin='Margin.Dense'>
+                      @foreach (var item in  GlobalClassList.bankCheckNumberList)
+                      {
+                        <MudSelectItem Value='@item'>@item.CheckNoRangeFrom - @item.CheckNoRangeTo</MudSelectItem>
+                      }
+                    </MudSelect>
+                  }
+                  else
+                  {
+                    <MudTextField T=string Text='No check range added' Label='Check number range' Disabled 
+                      Margin='Margin.Dense'/>
+                  }
+                }
+              </MudItem>
+              <MudItem xs="12">
+                <MudTextField @bind-Value='@GlobalClass.bank.Remarks' Variant='Variant.Filled' Label="Remarks" Lines='2' 
+                 Margin='Margin.Dense'/>
+              </MudItem>
+            </MudGrid>
+          </MudPaper>
         </MudItem>
-        <MudItem xs='4'>
-          <MudTextField @bind-Value='@GlobalClass.bank.ShortcutName' Adornment='Adornment.Start'
-            AdornmentIcon='@Icons.Filled.ShortText' Label="Short Name" Error=@reqShrtCut ErrorText='Shortcut name is required'/>
-        </MudItem>
-        @if(GlobalClass.bank.Id != 0) {
-        <MudItem xs='2'>
-          <MudCheckBox @bind-Checked='@GlobalClass.bank.IsActive' Label='Active' />
-        </MudItem>
+         @if(GlobalClass.bank.Id != 0 && isDataFetch)
+         {
+          <MudItem xs=5>
+            <MudTable Class='mtable-bottom-border pb-2' Items="@GlobalClassList.bankCheckNumberList" Hover 
+              Breakpoint="Breakpoint.Xs" FixedHeader Bordered Dense Height='415px'>
+                <ToolBarContent>
+                  <div class='d-flex align-center gap-2'>
+                    <MudTextField Class='txtfield-right' @bind-Value="GlobalClass.bankCheckNumberModel.CheckNoRangeFrom" Variant="Variant.Outlined"
+                      Margin="Margin.Dense" Label="Range From" />
+                    <MudTextField Class='txtfield-right' @bind-Value="GlobalClass.bankCheckNumberModel.CheckNoRangeTo" Variant="Variant.Outlined"
+                      Margin="Margin.Dense" Label="Range To" />
+                    <MudSpacer/>
+                    <MudButton Class='btn-ios-d font12' OnClick="(()=>SaveCheckRFRT())" Variant="Variant.Filled" DisableElevation
+                      Margin="Margin.Dense"  Color='Color.Tertiary' Size='Size.Small'>@(subAction == Enums.ActionMode.Create? "Add":"Update")</MudButton>
+                  </div>
+                </ToolBarContent>
+                <ColGroup>
+                    <col style="width:20px"/>
+                    <col style="width:80px"/>
+                    <col style="width:80px"/>
+                    <col style="width:20px"/>
+                    <col style="width:20px"/>
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh Class='customheader-4 pa-2'>Default</MudTh>
+                    <MudTh Class='customheader-4 pa-2 text-center'>Range From</MudTh>
+                    <MudTh Class='customheader-4 pa-2 text-center'>Range To</MudTh>
+                    <MudTh Class='customheader-4 text-center'>Date Added</MudTh>
+                    <MudTh Class='customheader-4 text-center pa-2'>-</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                  <MudTd Class='text-center pa-2' DataLabel="Checkbox Default">
+                    <MudCheckBox @bind-Checked='context.isSelected' Dense Color='Color.Dark' Size='Size.Small' ReadOnly/>
+                  </MudTd>
+                  <MudTd Class='text-right pa-2' DataLabel="Division Name">@context.CheckNoRangeFrom</MudTd>
+                  <MudTd Class='text-right pa-2' DataLabel="Short Name">@context.CheckNoRangeTo</MudTd>
+                  <MudTd Class='text-center' DataLabel='Date Log'>@context.LogDateTime.ToShortDateString()</MudTd>
+                  <MudTd Class='text-center pa-2'>
+                      <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                      TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
+                          <MudMenuItem OnClick="(()=>EditRange(context, Enums.ActionMode.Update))">
+                              <div class='d-flex align-center gap-2'>
+                                  <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small' />
+                                  <MudText Typo='Typo.body2'>Edit</MudText>
+                              </div>
+                          </MudMenuItem>
+                          <MudMenuItem OnClick="(()=>EditRange(context, Enums.ActionMode.Deactivate))">
+                              <div class='d-flex align-center gap-2'>
+                                  <MudIcon Icon='@Icons.Filled.DeleteForever' Size='Size.Small' />
+                                  <MudText Typo='Typo.body2'>Remove</MudText>
+                              </div>
+                          </MudMenuItem>
+                      </MudMenu>
+                  </MudTd>
+                </RowTemplate>
+            </MudTable>
+          </MudItem>
         }
-        <MudItem xs='6'>
-          <MudTextField @bind-Value='@GlobalClass.bank.BankBranch' Adornment='Adornment.Start'
-            AdornmentIcon='@Icons.Filled.LocationCity' Label="Branch" Error='@reqBranch' ErrorText='Branch name is required' />
-        </MudItem>
-        <MudItem xs='6'>
-          <MudTextField @bind-Value='@GlobalClass.bank.AccountNo' Mask="@(new PatternMask("0000 0000 0000 0000"))"
-            Adornment='Adornment.Start' AdornmentIcon='@Icons.Filled.Numbers' Label="Account No." />
-        </MudItem>
-        <MudItem xs='8'>
-          <MudTextField @bind-Value='@GlobalClass.bank.ContactPerson' Adornment='Adornment.Start'
-            AdornmentIcon='@Icons.Filled.Person' Label="Contact Person" Error=@reqConPer ErrorText='Contact person is required' />
-        </MudItem>
-        <MudItem xs='4'>
-          <MudTextField @bind-Value='@GlobalClass.bank.ContactNo' Adornment='Adornment.Start'
-            AdornmentIcon='@Icons.Filled.ContactPhone' Label="Contact No." Error=@reqConNo ErrorText='Contact number is required'/>
-        </MudItem>
-        <MudItem xs='4'>
-          <MudSelect @bind-Value='@GlobalClass.bank.CurrencyId' Label="Currency">
-            @foreach (Enums.BankCurrency currency in Enum.GetValues(typeof(Enums.BankCurrency)))
-            {
-              <MudSelectItem Value="currency">@Extensions.GetEnumDescription(currency)</MudSelectItem>
-            }
-          </MudSelect>
-        </MudItem>
-        <MudItem xs="8">
-          <MudNumericField @bind-Value='@GlobalClass.bank.BeginningBalance' Label="Beginning Balance" Format='N2' />
-        </MudItem>
-        <MudItem xs="12">
-          <MudTextField @bind-Value='@GlobalClass.bank.Remarks' Variant='Variant.Filled' Label="Remarks" Lines='2' />
-        </MudItem>
       </MudGrid>
-    </div>
+    }
   </DialogContent>
     <DialogActions>
-      <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
-      <MudButton OnClick="Submit" Variant='Variant.Filled' Color="@color">@buttonText</MudButton>
+        @if(GlobalClass.bank.Id != 0) {
+          <MudCheckBox @bind-Checked='@GlobalClass.bank.IsActive' Label='Active' Size='Size.Small' 
+            Color='Color.Dark' Dense />
+        }
+      <MudSpacer />
+      <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text' Size='Size.Small' DisableElevation>Cancel</MudButton>
+      <MudButton Class='btn-ios-d font12' OnClick="Submit" Variant='Variant.Filled' Color='@(!GlobalClass.bank.IsActive ? Color.Error : @color)' Size='Size.Small' DisableElevation>
+        @(!GlobalClass.bank.IsActive ? "Deactivate" : @buttonText)
+      </MudButton>
   </DialogActions>
 </MudDialog>
 
@@ -75,52 +170,53 @@
   [Parameter] public Color color { get; set; }
   [Parameter] public string dialogTitle { get; set; } = string.Empty;
   [Parameter] public string buttonText { get; set; } = string.Empty;
+  [Parameter] public Enums.ActionMode currentAction { get; set; }
+  private Enums.ActionMode subAction { get; set; }
   private bool reqBank, reqShrtCut, reqBranch, reqConPer, reqConNo, reqBegBal;
+  private bool isDataFetch;
+  private BankCheckNumberModel currentBankCheckNumber = new();
+  private int gridXs = 12, elevationValue = 0;
+
   protected override async Task OnInitializedAsync()
   {
+    Console.WriteLine(currentAction);
     if (GlobalClass.bank.Id == 0)
+    {
       GlobalClass.bank.IsActive = true;
-    await Task.Delay(1);
+      GlobalClass.bankCheckNumberModel = new();
+      GlobalClass.bank.BankCheckNumbers = new();
+      isDataFetch = true;
+    }
+    else {
+      gridXs = 7;
+      elevationValue = 1;
+      Task t= Task.WhenAll(GetListOfRFRT());
+      await t;
+      if(t.Status == TaskStatus.RanToCompletion)
+        if(GlobalClass.bank.BankCheckNumberId != 0)
+          currentBankCheckNumber = GlobalClassList.bankCheckNumberList.Where(x=>x.Id == GlobalClass.bank.BankCheckNumberId).FirstOrDefault()?? new();
+      isDataFetch = true;
+    }
+    await Refresh();
   }
 
   void Cancel()
   {
+    GlobalClass.bank.IsActive = !GlobalClass.bank.IsActive ? true : true;
     MudDialog.Cancel();
   }
 
   private async Task Submit()
   {
-    try
+    if (!GlobalClass.bank.IsActive)
     {
-      if (GlobalClass.bank.Id != 0)
-      {
-        if(ValidateEntries()) {
-          
-          await bankService.UpdateBank(GlobalClass.bank, GlobalClass.token);
-          MudDialog.Close(DialogResult.Ok(1));
-
-        } else Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbarService, Severity.Error);
-
-      }
-      else
-      {
-        if(ValidateEntries()) {
-
-          GlobalClass.bank = await bankService.AddBank(GlobalClass.bank, GlobalClass.token);
-          GlobalClassList.banks.Add(GlobalClass.bank);
-          MudDialog.Close(DialogResult.Ok(0));
-
-        } else Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbarService, Severity.Error);
-  
-      }
-      if(GlobalVariable.AMSHubConnection != null && ValidateEntries())
-        await GlobalVariable.AMSHubConnection.InvokeAsync("SaveBank", GlobalClass.bank);     
+      currentAction = Enums.ActionMode.Deactivate;
+      await PromptMessage();
     }
-    catch (System.Exception ex)
-    {
-      Console.WriteLine(ex.Message);
-       // TODO
-    }
+    else if (isValidated())
+      await PromptMessage();
+    else
+      Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbarService, Severity.Error);
   }
   private bool ValidateEntries()
   {
@@ -157,5 +253,204 @@
    }
 
     return valid;
+  }
+
+  private async Task PromptMessage()
+  {
+      var parameters = new DialogParameters();
+      string contentText = "bank ";
+      string dialogTitle = currentAction.ToString();
+      parameters.Add("actionMode", currentAction);
+      parameters.Add("dialogTitle", dialogTitle);
+      parameters.Add("contentText", contentText);
+      var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
+      var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+      if (!resultDialog.Cancelled)
+      {
+        try
+        {
+          if (currentAction == Enums.ActionMode.Create)
+          {
+            GlobalClass.bank = await bankService.AddBank(GlobalClass.bank, GlobalClass.token);
+            GlobalClassList.banks.Add(GlobalClass.bank);
+          }
+          else
+            await bankService.UpdateBank(GlobalClass.bank, GlobalClass.token);
+          if(GlobalVariable.AMSHubConnection != null && ValidateEntries())
+            await GlobalVariable.AMSHubConnection.InvokeAsync("SaveBank", GlobalClass.bank);
+          MudDialog.Close(DialogResult.Ok(currentAction));
+        }
+        catch (System.Exception ex)
+        {
+          Extensions.ShowAlert(ex.Message, Variant.Filled, snackbarService, Severity.Error);
+        }
+      }
+      else if (currentAction == Enums.ActionMode.Deactivate)
+      {
+        GlobalClass.bank.IsActive = !GlobalClass.bank.IsActive;
+        MudDialog.Cancel();
+      }
+  }
+  private async Task SaveCheckRFRT()
+  {
+    try
+    {
+      if(isValidated())
+      {
+        if(subAction == Enums.ActionMode.Create)
+        {
+          if(GlobalClass.bank.Id != 0)
+          {
+            GlobalClass.bankCheckNumberModel.BankId = GlobalClass.bank.Id;
+            await Prompt(GlobalClass.bankCheckNumberModel);
+          } else {
+            Extensions.ShowAlert("No bank selected.", Variant.Filled, snackbarService, Severity.Success);
+          }
+        } else {
+            GlobalClass.bankCheckNumberModel.BankId = GlobalClass.bank.Id;
+            await Prompt(GlobalClass.bankCheckNumberModel);
+        }
+          await Refresh();
+      }
+    } catch(Exception ee) {
+      Console.WriteLine(ee.Message);
+    }
+  }
+  private async Task GetListOfRFRT()
+  {
+    GlobalClassList.bankCheckNumberList = await bankService.LoadBankCheckNumber(GlobalClass.bank.Id,GlobalClass.token);
+    DefaultCheck(Convert.ToInt64(GlobalClass.bank.BankCheckNumberId));
+  }
+  private void SelectedChecks(BankCheckNumberModel checkNumber)
+  {
+    currentBankCheckNumber = checkNumber;
+    GlobalClass.bank.BankCheckNumberId = checkNumber.Id;
+    DefaultCheck(checkNumber.Id);
+  }
+  private async Task EditRange(BankCheckNumberModel model, Enums.ActionMode action)
+  {
+    subAction = action;
+    GlobalClass.bankCheckNumberModel = model;
+    if (subAction == Enums.ActionMode.Deactivate) {
+      GlobalClass.bankCheckNumberModel.IsActive = false;
+      await Prompt(GlobalClass.bankCheckNumberModel);
+    }
+  }
+  private bool isValidated()
+  {
+
+    if (currentAction == Enums.ActionMode.Update)
+      if (GlobalClass.bank.BankCheckNumberId == null)
+        Extensions.ShowAlert("Please sselect a default check range", Variant.Filled, snackbarService, Severity.Error);
+    
+    if(GlobalClass.bankCheckNumberModel.CheckNoRangeFrom > GlobalClass.bankCheckNumberModel.CheckNoRangeTo)
+    {
+      Extensions.ShowAlert("Range from should not be greater than range to.", Variant.Filled, snackbarService, Severity.Error);
+      return false;
+    }
+    if(RangeFromIsBetween())
+    {
+      Extensions.ShowAlert("Range from should not  beetween the ranges.", Variant.Filled, snackbarService, Severity.Error);
+      return false; 
+    }
+    if(RangeToIsBetween())
+    {
+      Extensions.ShowAlert("Range to should not be beetween the ranges.", Variant.Filled, snackbarService, Severity.Error);
+      return false; 
+    }
+    return true;
+  }
+  private async Task Refresh()
+  {
+      StateHasChanged();
+      GlobalClass.bankCheckNumberModel = new();
+      subAction = Enums.ActionMode.Create;
+      await GetListOfRFRT();
+  }
+  private bool RangeFromIsBetween()
+  {
+    if(GlobalClass.bankCheckNumberModel.Id == 0)
+    {
+      //Add
+      if(GlobalClassList.bankCheckNumberList.Any(x=>
+        GlobalClass.bankCheckNumberModel.CheckNoRangeFrom >= x.CheckNoRangeFrom && GlobalClass.bankCheckNumberModel.CheckNoRangeFrom <= x.CheckNoRangeTo
+      ))
+      {
+        return true;
+      }
+    } else {
+      //Update
+      if(GlobalClassList.bankCheckNumberList.Where(y=>y.Id != GlobalClass.bankCheckNumberModel.Id).Any(x=>
+      GlobalClass.bankCheckNumberModel.CheckNoRangeFrom >= x.CheckNoRangeFrom && GlobalClass.bankCheckNumberModel.CheckNoRangeFrom <= x.CheckNoRangeTo
+        && x.Id != GlobalClass.bankCheckNumberModel.Id
+      ))
+      {
+        return true;
+      }
+    }
+    return false;
+  }
+  private async Task Prompt(BankCheckNumberModel checkNumberModel)
+  {
+      var parameters = new DialogParameters();
+      string contentText = " Check Number Range";
+      string dialogTitle = subAction.ToString();
+      parameters.Add("contentText", contentText);
+      parameters.Add("dialogTitle", dialogTitle);
+      parameters.Add("actionMode", subAction);
+      var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
+      var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+      if (!resultDialog.Cancelled) 
+      {   
+        if (subAction == Enums.ActionMode.Create) {
+          await bankService.AddBankCheckNumber(GlobalClass.bankCheckNumberModel,GlobalClass.token);
+          Extensions.ShowAlert("Bank checks successfuly added.", Variant.Filled, snackbarService, Severity.Success);
+        }
+        else {
+          await bankService.UpdateBankCheckNumber(checkNumberModel,GlobalClass.token);
+          if (subAction == Enums.ActionMode.Update) 
+            Extensions.ShowAlert("Bank checks successfuly updated.", Variant.Filled, snackbarService, Severity.Info);
+          else if (subAction == Enums.ActionMode.Deactivate)
+            Extensions.ShowAlert("Bank check number range removed.", Variant.Filled, snackbarService, Severity.Warning);
+        }
+      }
+      await Refresh();
+  }
+  private bool RangeToIsBetween()
+  {
+    if(GlobalClass.bankCheckNumberModel.Id == 0)
+    {
+      //Add
+      if(GlobalClassList.bankCheckNumberList.Any(x=> GlobalClass.bankCheckNumberModel.CheckNoRangeTo >= x.CheckNoRangeFrom && GlobalClass.bankCheckNumberModel.CheckNoRangeTo <= x.CheckNoRangeTo
+      ))
+      {
+        return true;
+      }
+    } else {
+      //Update
+      if(GlobalClassList.bankCheckNumberList.Where(y=>y.Id != GlobalClass.bankCheckNumberModel.Id).Any(x=>
+      GlobalClass.bankCheckNumberModel.CheckNoRangeTo >= x.CheckNoRangeFrom && GlobalClass.bankCheckNumberModel.CheckNoRangeTo <= x.CheckNoRangeTo
+      ))
+      {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private void DefaultCheck(long ChecksNoId)
+  {
+    ClearDefaultChecks();
+    foreach (var item in GlobalClassList.bankCheckNumberList)
+      if (item.Id == ChecksNoId) {
+        item.isSelected = true;
+        break;
+      }
+  }
+
+  private void ClearDefaultChecks()
+  {
+    foreach (var item in GlobalClassList.bankCheckNumberList)
+      item.isSelected = false; 
   }
 }

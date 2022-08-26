@@ -1,0 +1,29 @@
+<MudGrid Spacing='1'>
+    <MudItem xs='gridXs'>
+        <MudPaper Class='pa-2' Elevation='elevationValue'>
+            <MudSkeleton SkeletonType='SkeletonType.Rectangle' Width='100%' Height='400px' Animation='Animation.Wave' />
+        </MudPaper>
+    </MudItem>
+     @if (fetchTypeId != 0)
+    {
+        <MudItem xs=6>
+            <MudPaper Class='pa-2'>
+                 <MudSkeleton SkeletonType='SkeletonType.Rectangle' Width='100%' Height='400px' Animation='Animation.Wave' />
+            </MudPaper>
+        </MudItem>
+    }
+</MudGrid>
+
+
+@code {
+    [Parameter] public long fetchTypeId { get; set; }
+
+    private int gridXs = 12, elevationValue = 0;
+    protected override void OnInitialized()
+    {
+        if (fetchTypeId != 0) {
+            elevationValue = 1;
+            gridXs = 6;
+        }
+    }
+}

@@ -24,6 +24,16 @@
                     Immediate Clearable='true' Variant='Variant.Outlined' Disabled='!filterParameter.IsControlNumber'/>
                   </div>
                   <div class='d-flex align-center gap-2 @visibility'>
+                    <MudCheckBox Class='pt-1' @bind-Checked='filterParameter.IsPettyCash' Dense Size='Size.Small' />
+                    <MudTextField Class='txtfield-75' @bind-Value='filterParameter.PettyCash' Placeholder='Petty Cash Control Number'
+                    Immediate Clearable='true' Variant='Variant.Outlined' Disabled='!filterParameter.IsPettyCash'/>
+                  </div>
+                  <div class='d-flex align-center gap-2 @visibility'>
+                    <MudCheckBox Class='pt-1' @bind-Checked='filterParameter.IsPayee' Dense Size='Size.Small'/>
+                    <MudTextField Class='txtfield-75' @bind-Value='filterParameter.PayeeName' Placeholder='Payee' 
+                    Immediate Clearable Variant='Variant.Outlined' Disabled=!filterParameter.IsPayee @onclick='PayeeSearchLookup' />
+                  </div>
+                  <div class='d-flex align-center gap-2 @visibility'>
                     <MudCheckBox Class='pt-1' @bind-Checked='filterParameter.IsAccountingStatus' Dense Size='Size.Small' />
                     <MudSelect Class='txtfield-75' MultiSelectionTextFunc='@(new Func<List<string>, string>(AccountingStatus))' @bind-SelectedValues='hasAccountingStatus' 
                       @bind-Value="selectedStatus" Dense="true" MultiSelection=true Disabled='!filterParameter.IsAccountingStatus' Placeholder='Accounting Status' Variant='Variant.Outlined'>
@@ -35,10 +45,14 @@
                   </div>
                   <div class='d-flex align-center gap-2 @visibility'>
                     <MudCheckBox Class='pt-1' @bind-Checked='filterParameter.IsDate' Dense Size='Size.Small' />
-                    <MudDateRangePicker Class='txtfield-75' @bind-DateRange='dateRange' Disabled='!filterParameter.IsDate' Placeholder='Filter Date' Variant='Variant.Outlined'></MudDateRangePicker>
+                    <MudDateRangePicker Class='txtfield-75' @bind-DateRange='dateRange' Disabled='!filterParameter.IsDate' Label='Liquidation Date' Variant='Variant.Outlined'></MudDateRangePicker>
+                  </div>
+                 <div class='d-flex align-center gap-2 @visibility'>
+                    <MudCheckBox Class='pt-1' @bind-Checked='filterParameter.IsPeriodDate' Dense Size='Size.Small' />
+                    <MudDateRangePicker Class='txtfield-75' @bind-DateRange='periodRange' Disabled='!filterParameter.IsPeriodDate' Label='Period Date' Variant='Variant.Outlined'></MudDateRangePicker>
                   </div>
                   <div class='d-flex align-center justify-end'>
-                    <MudButton Class='wspace-nowrap' Variant='Variant.Filled' Color='Color.Secondary' OnClick='(()=> ClearSearch())'>Clear filter</MudButton> 
+                    <MudButton Class='wspace-nowrap' Variant='Variant.Filled' Color='Color.Secondary' OnClick='(()=> ClearSearch())' Disabled=!EnableClearButton()>Clear filter</MudButton> 
                     &nbsp;
                     <MudButton Class='wspace-nowrap' Variant='Variant.Filled' Color='Color.Secondary' OnClick='(()=> FilteredItems())'>Apply Filter</MudButton>
                   </div>
@@ -56,9 +70,9 @@
     }
     else
     {
-      <MudTable Class='configtables' ServerData='new Func<TableState, Task<TableData<LiquidationModel>>>(LoadLiquidationFromServer)' Hover='true' Virtualize=true 
-      Breakpoint='Breakpoint.Sm' FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'  LoadingProgressColor='Color.Primary'
-      RowsPerPage='10' Striped='true' Filter='new Func<LiquidationModel,bool>(FilterItems)' @ref='tableVariable'> 
+      <MudTable Class='configtables row-popup-anim-2px' ServerData='new Func<TableState, Task<TableData<LiquidationModel>>>(LoadLiquidationFromServer)' Hover='true' Virtualize=true 
+        Breakpoint='Breakpoint.Sm' FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'  LoadingProgressColor='Color.Primary'
+        RowsPerPage='10' Filter='new Func<LiquidationModel,bool>(FilterItems)' @ref='tableVariable'> 
         <ToolBarContent>
           <MudText Typo='Typo.caption'>
             @totalItems
@@ -66,24 +80,20 @@
             in Total
           </MudText>
           <MudSpacer />
-           <MudIconButton Icon="@Icons.Material.Filled.Refresh" OnClick='ClearSearch'/>
-            <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'
-                TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small' Label='More'>
+            <MudTooltip Text="Refresh Table">
+                <MudIconButton Icon="@Icons.Filled.Refresh" Size="Size.Small" OnClick='ClearSearch' ></MudIconButton>
+            </MudTooltip>
+            <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
+                TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
               @if(AccessLevelAddmin() || AccessLevelRequestors())
                 {
                   <MudMenuItem OnClick='(()=> navigationManager.NavigateTo($"/liquidation"))'>
-                    <div class='d-flex align-center gap-2'>
-                        <MudIcon Icon='@Icons.Filled.Add' Size='Size.Medium' />
+                    <div class='d-flex align-center gap-2 menu-grow-anim'>
+                        <MudIcon Icon='@Icons.Filled.Add' Size='Size.Small' />
                         <MudText Typo='Typo.body2'>Add</MudText>
                     </div>
                   </MudMenuItem>                        
                 }
-                <MudMenuItem OnClick='OpenSideFilter'>
-                  <div class='d-flex align-center gap-2'>
-                    <MudIcon Icon='@Icons.Filled.FilterList' />
-                    <MudText Typo='Typo.body2'>Filter</MudText>
-                  </div>
-                </MudMenuItem>
             </MudMenu>
         </ToolBarContent>
         <ColGroup>
@@ -113,7 +123,7 @@
           <MudTh Class='customheader-1'>Approver</MudTh>
           <MudTh Class='customheader-1'></MudTh>
           <MudTh Class='customheader-1 text-center'>Amount</MudTh>
-          <MudTh Class='customheader-1 text-center'>Actions</MudTh>
+          <MudTh Class='customheader-1 text-center pa-2'>Actions</MudTh>
         </HeaderContent>
         <RowTemplate>
           <MudTd Class='text-center'>
@@ -131,27 +141,37 @@
               <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@Extensions.GetAcctgStatusColor(context.StatusId)'>@context.StatusName</MudChip>
           </MudTd>
           <MudTd Class='wspace-nowrap text-right font-bold'>
-            @if (context.TotalAmount > 0)
-            {
-              <MudText Class='font-bold color-green' Typo='Typo.body2'>
-                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.TotalAmount.ToString("N2")
-              </MudText>
-            }
-            else
-            {
-              <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
-                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.TotalAmount.ToString("N2")
-              </MudText>
-            }
+            <div class='d-flex align-center gap-2'>
+              @if (context.TotalAmount > 0)
+              {
+                <MudText Class='font-bold color-green font12'>
+                  @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) 
+                </MudText>
+                <MudSpacer />
+                <MudText Class='font-bold color-green font12'>
+                  @context.TotalAmount.ToString("N2")
+                </MudText>
+              }
+              else
+              {
+                <MudText Class='font-bold font12' Color='Color.Error'>
+                  @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                </MudText>
+                 <MudSpacer />
+                <MudText Class='font-bold font12' Color='Color.Error'>
+                  @context.TotalAmount.ToString("N2")
+                </MudText>
+              }
+            </div>
           </MudTd>
-          <MudTd Class='text-center pa-1'>
+          <MudTd Class='text-center pa-2'>
             <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
             TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
                 @if((!EnableEditApproved(context) && AccessLevelAddmin()) 
                 || (!EnableEditApproved(context) && AccessLevelRequestors()))
                 {
                   <MudMenuItem OnClick='(()=> EditLiquidation(context))' Disabled='EnableEditApproved(context)'>
-                    <a class='d-flex align-center gap-2'>
+                    <a class='d-flex align-center gap-2 menu-grow-anim'>
                       <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small'/>
                       <MudText Typo='Typo.body2'>Edit</MudText>
                     </a>
@@ -160,13 +180,13 @@
                   if(AccessLevelAddmin())
                   {
                     <MudMenuItem OnClick='(()=> ApproveLiquidation(context))'>
-                      <div class='d-flex align-center gap-2'>
+                      <div class='d-flex align-center gap-2 menu-grow-anim'>
                         <MudIcon Icon='@Icons.Filled.CheckCircle' Size='Size.Small'/>
                         <MudText Typo='Typo.body2'>Approve</MudText>
                       </div>
                     </MudMenuItem>
                     <MudMenuItem OnClick='(()=> CancelLiquidation(context))'>
-                      <div class='d-flex align-center gap-2'>
+                      <div class='d-flex align-center gap-2 menu-grow-anim'>
                         <MudIcon Icon='@Icons.Filled.Cancel' Size='Size.Small'/>
                         <MudText Typo='Typo.body2'>Cancel</MudText>
                       </div>
@@ -177,20 +197,20 @@
                 else if(AccountingStatus(Enums.ActionMode.Approve).Id == context.StatusId && AccessLevelAddmin())
                 {
                   <MudMenuItem OnClick='(()=> VoidLiquidation(context))'>
-                    <a class='d-flex align-center gap-2'>
+                    <a class='d-flex align-center gap-2 menu-grow-anim'>
                       <MudIcon Icon='@Icons.Filled.CancelPresentation' Size='Size.Small'/>
                       <MudText Typo='Typo.body2'>Generated (Void)</MudText>
                     </a>
                   </MudMenuItem>
                 }
                 <MudMenuItem OnClick='(()=> navigateAuditTrail(context))'>
-                  <a class='d-flex align-center gap-2' >
+                  <a class='d-flex align-center gap-2 menu-grow-anim'>
                     <MudIcon Icon='@Icons.Filled.ListAlt' Size='Size.Small' />
                     <MudText Typo='Typo.body2'>Audit Trail</MudText>
                   </a>
                 </MudMenuItem>
                 <MudMenuItem OnClick='(()=> context.ShowReport = ShowReport(context.ShowReport, context))'>
-                    <div class='d-flex align-center gap-2'>
+                    <div class='d-flex align-center gap-2 menu-grow-anim'>
                         <MudIcon Icon='@Icons.Filled.PictureAsPdf' Size='Size.Small' />
                         <MudText Typo='Typo.body2'> @(context.ShowReport ? "Close" : "Show") Report</MudText>
                     </div>
@@ -244,6 +264,7 @@
   private IEnumerable<LiquidationModel>? pageData;
   private MudTable<LiquidationModel>? tableVariable;
   private DateRange dateRange = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
+  private DateRange periodRange = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
   private AccountingStatusModel selectedStatus = new();
   private IEnumerable<AccountingStatusModel> hasAccountingStatus {get; set;} = new HashSet<AccountingStatusModel>();
   private List<AccountingStatusModel> statusList = new();
@@ -298,6 +319,7 @@
       ChargingId = details.ChargingId,
       ChargingName = details.ChargingName,
       Amount = details.Amount,
+      ActualAmount = details.ActualAmount,
       Remarks = details.Remarks
 
       }).ToList();
@@ -313,7 +335,7 @@
       liquidation.Activity = "Update liquidation status to generated (void)";
       liquidation.UserId = GlobalClass.currentUserAccount.EmployeeId;
       var updatedStatus = await liquidationService.UpdateLiquidationStatus(liquidation, GlobalClass.token);
-      Extensions.ShowAlert("Liquidation Voided", Variant.Filled, snackBar, Severity.Info);
+      Extensions.ShowAlert("Liquidation voided", Variant.Filled, snackBar, Severity.Info);
       if(GlobalVariable.AMSHubConnection != null)
         await GlobalVariable.AMSHubConnection.InvokeAsync("SaveLiquidation", updatedStatus);
     }
@@ -387,6 +409,8 @@
   {
     filterParameter.DateFrom = (DateTime)dateRange.Start.GetValueOrDefault();
     filterParameter.DateTo = (DateTime)dateRange.End.GetValueOrDefault();
+    filterParameter.PeriodDateFrom = (DateTime)periodRange.Start.GetValueOrDefault();
+    filterParameter.PeriodDateTo = (DateTime)periodRange.End.GetValueOrDefault();
     filterParameter.AccountingStatusId = string.Join(",", hasAccountingStatus.Select(x => x.Id));
     if(tableVariable != null)
       await tableVariable.ReloadServerData();
@@ -508,7 +532,52 @@
   private void ClearSearch()
   {
     filterParameter = new();
+    hasAccountingStatus = new HashSet<AccountingStatusModel>();
     dateRange = new DateRange(DateTime.Now, DateTime.Now);
+    periodRange = new DateRange(DateTime.Now, DateTime.Now); 
     Task.Run(async()=> await tableVariable!.ReloadServerData());
   }
+  private bool EnableClearButton()
+  {
+      if(filterParameter.IsControlNumber) 
+        return true;
+      if(filterParameter.IsAccountingStatus)
+        return true;
+      if(filterParameter.IsDate)
+        return true;
+      if(filterParameter.IsPayee)
+        return true;
+      if(filterParameter.IsPettyCash)
+        return true;
+      if(filterParameter.IsPeriodDate)
+        return true;
+      
+      return false;
+  }
+    private async Task PayeeSearchLookup()
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = "Payee Look Up";
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", "Select");
+        parameters.Add("color", Color.Success);
+        parameters.Add("lookUpType", Enums.LookUpType.Project);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = false
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            var payee = (Project)resultDialog.Data;
+            filterParameter.PayeeId = payee.ProjectId;
+            filterParameter.PayeeCategoryId = payee.ProjectCategoryId;
+            filterParameter.PayeeName = payee.ProjectName;
+            StateHasChanged();
+        }
+    }
 }

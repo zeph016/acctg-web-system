@@ -1,8 +1,9 @@
-@page "/requesttype"
+@page "/request/type"
 
 @inject IRequestTypeService requestTypeService
 @inject IDialogService dialogService
-@inject ISnackbar snackBarService
+@inject ISnackbar snackbarService
+@inject ApplicationState AppState
 
 <div class='page-cont'>
   <div class='drawer-right'>
@@ -28,16 +29,13 @@
   <MudContainer Class='requesttype' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
       @if (!dataFetched)
       {
-        <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
-            <MudSkeleton SkeletonType='SkeletonType.Text' Height='100px' Animation='Animation.Wave' />
-            <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='71vh' Animation='Animation.Wave' />
-        </MudPaper>
+        <SkeletonPageList />
       }
       else 
       {
-        <MudTable Class='configtables' Items="@GlobalClassList.requestTypes" Hover="true" 
-        Breakpoint='Breakpoint.Sm' FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true' 
-        RowsPerPage='30' Striped="true" Filter='new Func<RequestTypeModel,bool>(FilterItems)'>
+        <MudTable Class='configtables row-popup-anim-2px' Items="@GlobalClassList.requestTypes" Hover="true" 
+          Breakpoint='Breakpoint.Xs' FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true' 
+          RowsPerPage='30' Filter='new Func<RequestTypeModel,bool>(FilterItems)'>
           <ToolBarContent>
             <MudText Typo='Typo.caption'>
               @GlobalClassList.requestTypes.Count() 
@@ -45,41 +43,37 @@
               in Total
             </MudText>
             <MudSpacer />
-            <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'
-              TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small' Label='More'>
-                  <MudMenuItem OnClick='(() => RequestTypeDialog(new RequestTypeModel()))'>
-                      <div class='d-flex align-center gap-2'>
-                          <MudIcon Icon='@Icons.Filled.Add' Size='Size.Medium' />
+            <MudTooltip Text="Refresh Table">
+                <MudIconButton Icon="@Icons.Filled.Refresh" Size="Size.Small" OnClick='(()=>{searchTerm = "";})' ></MudIconButton>
+            </MudTooltip>
+            <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
+              TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
+                  <MudMenuItem OnClick='(() => RequestTypeDialog(new RequestTypeModel(), Enums.ActionMode.Create))'>
+                      <div class='d-flex align-center gap-2 menu-grow-anim'>
+                          <MudIcon Icon='@Icons.Filled.Add' Size='Size.Small' />
                           <MudText Typo='Typo.body2'>Add</MudText>
                       </div>
-                  </MudMenuItem>
-                  <MudMenuItem OnClick='OpenSideFilter'>
-                    <div class='d-flex align-center gap-2'>
-                      <MudIcon Icon='@Icons.Filled.FilterList' />
-                      <MudText Typo='Typo.body2'>Filter</MudText>
-                    </div>
                   </MudMenuItem>
               </MudMenu>
           </ToolBarContent>
             <ColGroup>
-                  <col/>
-                  <col/>
-                  <col class='text-center' style='width: 5%;' />
-                  <col style='width: 5%;' />
-              </ColGroup>
+              <col/>
+              <col/>
+              <col style='width:20px;' />
+            </ColGroup>
           <HeaderContent>
               <MudTh Class='customheader-1'>Type</MudTh>
               <MudTh Class='customheader-1'>Remarks</MudTh>
-              <MudTh Class="customheader-1 text-center">Actions</MudTh>
+              <MudTh Class="customheader-1 text-center pa-2">Action</MudTh>
           </HeaderContent>
           <RowTemplate>
               <MudTd DataLabel="Bank">@context.TypeName</MudTd>
               <MudTd DataLabel="ShortcutName">@context.Remarks</MudTd>
-              <MudTd class="text-center">
-                <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'
-                TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small' ActivationEvent='MouseEvent.MouseOver'>
-                  <MudMenuItem OnClick='(() => RequestTypeDialog(context))'>
-                    <div class='d-flex align-center gap-2'>
+              <MudTd class="text-center pa-2">
+                <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft'
+                  TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' ActivationEvent='MouseEvent.MouseOver'>
+                  <MudMenuItem OnClick='(() => RequestTypeDialog(context, Enums.ActionMode.Update))'>
+                    <div class='d-flex align-center gap-2 menu-grow-anim'>
                       <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small' />
                       <MudText Typo='Typo.body2'>Edit</MudText>
                     </div>
@@ -97,17 +91,16 @@
 
 
 @code{
-
   private bool dataFetched, openSideFilter;
-    private int[] pageSize = new int[] { 30, 50, 100, 500, 1000 };
-    private string searchTerm = string.Empty, visibility = "visibility-animation-hide";
+  private int[] pageSize = new int[] { 30, 50, 100, 500, 1000 };
+  private string searchTerm = string.Empty, visibility = "visibility-animation-hide";
 
   protected override async Task OnInitializedAsync()
   {
-    GlobalClass.pageTitle = "REQUEST TYPES";
+    GlobalClass.pageTitle = "Configuration - REQUEST TYPES";
     while (GlobalClass.currentUserAccount == null || GlobalClassList.requestTypes == null)
       await Task.Delay(1);
-
+    await AppState.UpdateMainLayoutComponent(true);
     RequestTypeHub();
     CompletedFetch();
   }
@@ -118,7 +111,7 @@
       StateHasChanged();
   }
 
-  private async Task RequestTypeDialog(RequestTypeModel requestType)
+  private async Task RequestTypeDialog(RequestTypeModel requestType, Enums.ActionMode action)
   {
     var parameters = new DialogParameters();
     GlobalClass.requestType = requestType;
@@ -128,23 +121,20 @@
     parameters.Add("color", color);
     parameters.Add("dialogTitle", dialogTitle);
     parameters.Add("buttonText", buttonText);
-    var options = new DialogOptions()
-    {
-      CloseButton = false,
-      MaxWidth = MaxWidth.ExtraSmall,
-      FullWidth = true,
-      NoHeader = false,
-      DisableBackdropClick = false
-    };
+    parameters.Add("currentAction", action);
+    var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = false };
     var resultDialog = await dialogService.Show<Shared.Dialogs.RequestTypeDialogs.RequestTypeDialog>("", parameters, options).Result;
     if (!resultDialog.Cancelled)
     {
-      if ((int)resultDialog.Data == 0)
-        ShowAlert("Added request type", Variant.Filled, Severity.Success);
-      else if ((int)resultDialog.Data == 1)
-        ShowAlert("Updated request type", Variant.Filled, Severity.Info);
+      if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Create)
+        Extensions.ShowAlert("Request Type successfully added.", Variant.Filled,snackbarService,Severity.Success);
+      else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Update)
+        Extensions.ShowAlert("Request Type successfully updated.", Variant.Filled,snackbarService,Severity.Info);
+      else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Deactivate)
+        Extensions.ShowAlert("Request Type has been deactivated.", Variant.Filled,snackbarService,Severity.Warning);
       GlobalClassList.requestTypes = GlobalClassList.requestTypes.Where(x => x.IsActive == true).ToList();
-    }
+    } else if (resultDialog.Cancelled)
+      Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
   }
 
   private bool FilterItems(RequestTypeModel items)
@@ -155,14 +145,7 @@
       return true;
     return false;
   }
-  private void ShowAlert(string message, Variant variant, Severity severity)
-  {
-    snackBarService.Clear();
-    snackBarService.Configuration.PositionClass = Defaults.Classes.Position.BottomCenter;
-    snackBarService.Configuration.SnackbarVariant = variant;
-    snackBarService.Configuration.MaxDisplayedSnackbars = 10;
-    snackBarService.Add($"{message}", severity);
-  }
+
   private void OpenSideFilter()
   {
     openSideFilter = !openSideFilter;

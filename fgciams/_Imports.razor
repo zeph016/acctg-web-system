@@ -5,6 +5,8 @@
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @using Microsoft.AspNetCore.Components.WebAssembly.Http
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.JSInterop
 @using System.IdentityModel.Tokens.Jwt
 @using System.Globalization
@@ -12,12 +14,30 @@
 @using Blazored.TextEditor
 @using System.Reflection
 @using Microsoft.AspNetCore.SignalR.Client
+@using fgciams.Pages.SkeletonPages
 @using fgciams.Pages.ModulePages
 @using fgciams.Pages.ModulePages.PettyCashPage
 @using fgciams.Pages.ModulePages.CheckWriterPage
 @using fgciams.Pages.ConfigurationPages.AccountingStatusPage
 @using fgciams.Pages.ConfigurationPages.AccountingLinePage
+@using fgciams.Pages.ConfigurationPages.BankPage
+@using fgciams.Pages.ConfigurationPages.BillingDocumentPage
+@using fgciams.Pages.ConfigurationPages.DivisionPage
+@using fgciams.Pages.ConfigurationPages.ModeOfPaymentPage
+@using fgciams.Pages.ConfigurationPages.PayeePage
+@using fgciams.Pages.ConfigurationPages.PayeeCategoryPages
+@using fgciams.Pages.ConfigurationPages.ProjectChargingLinePage
+@using fgciams.Pages.ConfigurationPages.RequestType
+@using fgciams.Pages.ConfigurationPages.SubConPages
+@using fgciams.Pages.ConfigurationPages.ExpenseLinePage
+@using fgciams.Pages.ConfigurationPages.AccountingLinePage
+@using fgciams.Pages.ConfigurationPages.AccountTypePage
+@using fgciams.Pages.ConfigurationPages.SupplierPage
+@using fgciams.Pages.ConfigurationPages.TermsOfPaymentPage
+@using fgciams.Pages.ConfigurationPages.TaxCodePage
+@using fgciams.Pages.ConfigurationPages.ScopeOfWorkPage
 
+@using Pages.PrintPages
 @using Blazored.Typeahead
 @using fgciams  
 @using fgciams.Shared
@@ -25,6 +45,7 @@
 @using MudBlazor.Utilities
 @using fgciams.Common
 @using fgciams.domain
+@using fgciams.domain.clsAppstate
 @using fgciams.domain.clsFilterParameter
 @using fgciams.domain.clsUserAccount
 @using fgciams.domain.clsEnums
@@ -56,9 +77,16 @@
 @using fgciams.domain.clsAccountType
 @using fgciams.domain.clsAccountingLine
 @using fgciams.domain.common
-@using fgciams.Components.CheckListComponents
 @using fgciams.domain.clsCheck
 @using fgciams.domain.clsVoucherRouteBatch
+@using fgciams.domain.clsTaxCode
+@using fgciams.domain.clsSupplier
+@using fgciams.domain.clsTermsOfPayment
+@using fgciams.domain.clsMuniCity
+@using fgciams.domain.clsVAT
+@using fgciams.domain.clsBIR
+@using fgciams.domain.clsScopeOfWork
+@using fgciams.domain.clsSubContractProject
 
 @using fgciams.service.UserAccountServices
 @using fgciams.service.AccountingStatusServices
@@ -85,4 +113,15 @@
 @using fgciams.service.AccountLineTypeServices
 @using fgciams.service.CheckServices
 @using fgciams.service.VoucherRouteBatchServices
+@using fgciams.service.TaxCodeServices
+@using fgciams.service.SupplierServices
+@using fgciams.service.TermsOfPaymentServices
+@using fgciams.service.MuniCityServices
+@using fgciams.service.VATServices
+@using fgciams.service.BIRServices
+@using fgciams.service.ScopeOfWorkServices
 
+
+@using fgciams.Components.CheckListComponents
+@using fgciams.Components.MudChipComponents
+@using fgciams.Components.Signatories

@@ -42,7 +42,7 @@ namespace fgciams.domain.clsRequest
         public Int64 DivisionId { get; set; }
         public string DivisionName { get; set; }
         public string DivisionShortcutName { get; set; }
-        public decimal Amount { get; set; }
+        public decimal Amount {get;set;}
         public string Remarks { get; set; }
         public Int64 POBillingId { get; set; }
         public string POBControlNumber { get; set; }
@@ -76,5 +76,6 @@ namespace fgciams.domain.clsRequest
         public Int64? LiquidationId { get; set; }
         public string LiquidationControlNumber { get; set; } = string.Empty;
         public int TemporaryId {get; set;}
+        public Enums.RFPDetailTypeId rfpType {get;set;}
     }
 }

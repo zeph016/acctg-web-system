@@ -1,20 +1,20 @@
-.dashboardpage .mud-paper {
-  height: 100%;
-}
-.dashboardpage__grid {
-  height: calc(100vh - 110px);
+.dashboard-container {
   display: grid;
-  grid-template-columns: 1fr 0.25fr;
-  grid-template-rows: 1fr 1fr;
-  gap: 0.5rem;
-  grid-template-areas: "topleft side" "bottomleft side";
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr;
+  gap: 10px;
+  grid-template-areas: "topdash topdash topdash topdash topdash topdash" "topdash topdash topdash topdash topdash topdash" "bodydash bodydash bodydash bodydash sidedash sidedash" "bodydash bodydash bodydash bodydash sidedash sidedash" "bodydash bodydash bodydash bodydash sidedash sidedash" "bodydash bodydash bodydash bodydash sidedash sidedash";
+  height: calc(100vh - 105px);
 }
-.dashboardpage .topleft {
-  grid-area: topleft;
+
+.topdash {
+  grid-area: topdash;
 }
-.dashboardpage .bottomleft {
-  grid-area: bottomleft;
+
+.bodydash {
+  grid-area: bodydash;
 }
-.dashboardpage .side {
-  grid-area: side;
+
+.sidedash {
+  grid-area: sidedash;
 }/*# sourceMappingURL=dashboard.styles.css.map */

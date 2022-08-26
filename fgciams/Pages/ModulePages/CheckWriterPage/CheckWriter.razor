@@ -64,8 +64,8 @@
                                 Bank
                                 <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
                             </MudText>
-                            <BlazoredTypeahead SearchMethod=SearchBank Context='selbank'
-                            @bind-Value='bank' Debounce="500" placeholder='BANK & ACCOUNT NO.'>
+                            <BlazoredTypeahead SearchMethod=SearchBank ValueChanged="((BankModel bank)=>SelectedBank(bank))" ValueExpression='(()=>bank)' Value="bank"
+                                Context='selbank' Debounce="500" placeholder='BANK & ACCOUNT NO.'>
                                 <SelectedTemplate>
                                     @if (selbank.Id != 0) {
                                         <MudText Class='font12'>@selbank.BankName | @selbank.AccountNo</MudText>
@@ -85,7 +85,7 @@
                                     Check No.
                                 <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
                             </MudText>
-                            <MudTextField Class='txtfield-overflow-ellipsis font14-txtfield txt-top-0' Mask='@(new PatternMask("00000 00000"))' @bind-Value="@GlobalClass.checkModel.CheckNo"
+                            <MudTextField Class='txtfield-overflow-ellipsis font14-txtfield txt-top-0 txtfield-center' Mask='@(new PatternMask("00000 00000"))' @bind-Value="@GlobalClass.checkModel.CheckNo"
                             Variant='Variant.Text' Margin='Margin.Dense' DisableClear Error="@checkNoValid" />
                         </div>
                         <div class="chkw-voucher d-flex align-center pa-2 gap-2 overflowx-auto overflowy-hidden">
@@ -191,8 +191,8 @@
                                 </MudCardContent>
                                 <MudCardActions Class='d-flex gap-2 border-thin-top'>
                                      <MudSpacer />
-                                    <MudButton Class='btn-ios-d pa-1 font12' OnClick='(() => {New();NavigationManager.NavigateTo("/check/list");})' Variant='Variant.Text' Size='Size.Medium' DisableElevation>Cancel</MudButton>
-                                    <MudButton Class='btn-ios-d pa-1 font12' OnClick="(() => PrintCheck())" Variant="Variant.Filled" Color='Color.Primary' Size='Size.Medium' DisableElevation>GENERATE</MudButton>
+                                    <MudButton Class='btn-ios-d font12' OnClick='(() => {New();NavigationManager.NavigateTo("/check/list");})' Variant='Variant.Text' Size='Size.Medium' DisableElevation>Cancel</MudButton>
+                                    <MudButton Class='btn-ios-d font12' OnClick="(() => PrintCheck())" Variant="Variant.Filled" Color='Color.Primary' Size='Size.Medium' DisableElevation>GENERATE</MudButton>
                                 </MudCardActions>
                             </div>
                         </div>
@@ -203,7 +203,7 @@
 </div>
 
 @code {
-    private bool dataFetched {get;set;}
+    private bool dataFetched, _processing;
     private BankModel bank = new();
     private Project payee = new Project();
     private DateTime? checkDate = DateTime.Now;
@@ -409,9 +409,18 @@
         else
         {
             if(GlobalClass.checkModel.CheckVouchers.Count ==0)
-                Extensions.ShowAlert("Cannot create Check. No Voucher Selected",Variant.Filled,snackBarService,Severity.Error);
+                Extensions.ShowAlert("Cannot create Check. No voucher selected.",Variant.Filled,snackBarService,Severity.Error);
             else
-                Extensions.ShowAlert("Cannot create Check. Incomplete Fields",Variant.Filled,snackBarService,Severity.Error);
+                Extensions.ShowAlert("Cannot create Check. Incomplete fields.",Variant.Filled,snackBarService,Severity.Error);
         }
+    }
+    private async Task SelectedBank(BankModel model)
+    {
+        bank = model;
+        GlobalClass.checkModel.CheckNo = (await CheckNo(model.Id)).ToString();
+    }
+    private async Task<long> CheckNo(long bankId)
+    {
+        return await bankService.GetCheckNo(bankId,GlobalClass.token);
     }
 }

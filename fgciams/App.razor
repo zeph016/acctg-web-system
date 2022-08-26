@@ -1,22 +1,44 @@
 ﻿@inject NavigationManager navigationManager
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
 
-<Router AppAssembly="@typeof(App).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-    </Found>
-    <NotFound>
-        @* <PageTitle>Not found</PageTitle> *@
-        <LayoutView Layout="@typeof(MainLayout)">
-            @* <p role="alert">Sorry, there's nothing at this address.</p> *@
-            <MudContainer Class='d-flex errorpage' Fixed='true' MaxWidth='MaxWidth.Small'>
-                 <img class='errorpage__img' src="images/pagenotfound404.png" asp-append-version="true" />
-                 <MudButton class='errorpage__btn' OnClick='BackToDashboard' Variant='Variant.Filled'>Back to Dashboard</MudButton>
-            </MudContainer>
-        </LayoutView>
-    </NotFound>
-</Router>
-
+<PreLoader>
+    <CascadingAuthenticationState>
+        @* Cache Busting versioning *@
+        @* <HeadContent>
+            <link href="css/app.css?@(Configuration["0.0.0.3"])" rel="stylesheet" />
+        </HeadContent> *@
+         @* Cache Busting versioning *@
+        <Router AppAssembly="@typeof(App).Assembly">
+            <Found Context="routeData">
+                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                    <Authorizing>
+                        @* <span>Your spinner goes here</span> *@
+                        <div class="fgloader-1">
+                            <img class="fgloader-1__img" src="images/loaders/fgloader-1.gif" />
+                        </div>
+                    </Authorizing>
+                    <NotAuthorized>
+                        <MudContainer Class='d-flex align-center justify-center height100 errorpage bgc-transparent' Fixed='false' MaxWidth='MaxWidth.Large'>
+                            <img class='errorpage__img' src="images/pageforbidden403.png" asp-append-version="true" />
+                        </MudContainer>
+                    </NotAuthorized>
+                </AuthorizeRouteView>
+                <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+            </Found>
+            <NotFound>
+                @* <PageTitle>Not found</PageTitle> *@
+                <LayoutView Layout="@typeof(MainLayout)">
+                    @* <p role="alert">Sorry, there's nothing at this address.</p> *@
+                    <MudContainer Class='d-flex errorpage' Fixed='true' MaxWidth='MaxWidth.Small'>
+                        <img class='errorpage__img' src="images/pagenotfound404.png" asp-append-version="true" />
+                        <MudButton class='errorpage__btn' OnClick='BackToDashboard' Variant='Variant.Filled'>Back to Dashboard</MudButton>
+                    </MudContainer>
+                </LayoutView>
+            </NotFound>
+        </Router>
+    </CascadingAuthenticationState>
+</PreLoader>
 @code {
     private void BackToDashboard()
     { 

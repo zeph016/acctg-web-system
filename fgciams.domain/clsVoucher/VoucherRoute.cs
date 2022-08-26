@@ -7,7 +7,7 @@ namespace fgciams.domain.clsVoucher
         public Int64 Id { get; set; }
         public bool IsActive { get; set; } = true;
         public Int64 VoucherId { get; set; }
-        public DateTime? RouteDate { get; set; }
+        public DateTime? RouteDate { get; set; } = DateTime.Now;
         public Int64 LocationId { get; set; }
         public Enums.ProjectCategory LocationCategoryId { get; set; }
         public string LocationName { get; set; } = string.Empty;

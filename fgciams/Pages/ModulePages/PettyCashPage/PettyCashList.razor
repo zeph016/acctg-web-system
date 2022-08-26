@@ -54,6 +54,10 @@
                         </MudSelect>
                     </div>
                     <div class='d-flex align-center justify-end pt-1'>
+                        <div class='d-flex align-center justify-end'>
+                            <MudButton Class='wspace-nowrap' Variant='Variant.Filled' Color='Color.Secondary' OnClick='(()=> RealoadTable())' Disabled=!EnableClearButton()>Clear filter</MudButton> 
+                        </div>
+                        &nbsp;
                         <MudButton Class='wspace-nowrap' OnClick="(() => FilterTable())" Variant='Variant.Filled' Color='Color.Secondary'>Apply Filter</MudButton>
                     </div>
                 </div>
@@ -71,32 +75,29 @@
         }
         else
         {
-            <MudTable Class='configtables' ServerData='new Func<TableState, Task<TableData<PettyCashModel>>>(LoadPettyCashInServer)'  Hover="true"
-            Breakpoint="Breakpoint.Sm" FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
-            RowsPerPage='10' Striped='true' Filter='new Func<PettyCashModel,bool>(FilterItems)' @ref='tableVariable'>
+            <MudTable Class='configtables row-popup-anim-2px' ServerData='new Func<TableState, Task<TableData<PettyCashModel>>>(LoadPettyCashInServer)'  Hover="true"
+                Breakpoint="Breakpoint.Sm" FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
+                RowsPerPage='10' Filter='new Func<PettyCashModel,bool>(FilterItems)' @ref='tableVariable'>
                 <ToolBarContent>
                     <MudText Typo='Typo.caption'>
                         @GlobalClassList.pettyCashList.Count() 
-                        @(GlobalClassList.pettyCashList.Count() == 1 ? "item" : "items") 
+                        @(GlobalClassList.pettyCashList.Count() == 1 ? "Item" : "iItems") 
                         in Total
                     </MudText>
                     <MudSpacer />
-                    <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'
-                    TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small' Label='More'>
-                    @if(GlobalClass.currentUserAccount.AccessLevel != Enums.AccountingAccessLevel.OthersViewer){
-                        <MudMenuItem OnClick="(() => CreatePettyCash())"  Class="@style">
-                            <div class='d-flex align-center gap-2'>
-                                <MudIcon Icon='@Icons.Filled.Add' Size='Size.Medium' />
-                                <MudText Typo='Typo.body2'>Add</MudText>
-                            </div>
-                        </MudMenuItem>
-                    }
-                        <MudMenuItem OnClick="(() => OpenSideFilter())">
-                            <div class='d-flex align-center gap-2'>
-                            <MudIcon Icon='@Icons.Filled.FilterList' />
-                            <MudText Typo='Typo.body2'>Filter</MudText>
-                            </div>
-                        </MudMenuItem>
+                    <MudTooltip Text="Refresh Table">
+                        <MudIconButton Icon="@Icons.Filled.Refresh" Size="Size.Small" OnClick='(()=>RealoadTable())' ></MudIconButton>
+                    </MudTooltip>
+                    <MudMenu Class='overflow-hidden' StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                        TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
+                        @if(GlobalClass.currentUserAccount.AccessLevel != Enums.AccountingAccessLevel.OthersViewer) {
+                            <MudMenuItem OnClick="(() => CreatePettyCash())"  >
+                                <div class='d-flex align-center gap-2 menu-grow-anim'>
+                                    <MudIcon Icon='@Icons.Filled.Add' Size='Size.Small' />
+                                    <MudText Typo='Typo.body2'>Add</MudText>
+                                </div>
+                            </MudMenuItem>
+                            }
                     </MudMenu>
                 </ToolBarContent>
                 <ColGroup>
@@ -104,8 +105,8 @@
                     <col />
                     <col />
                     <col />
-                    <col />
-                    <col />
+                    <col style='width: 20px' />
+                    <col style='width: 20px' />
                     <col style='width: 20px'/>
                 </ColGroup>
                 <HeaderContent>
@@ -127,7 +128,7 @@
                     <MudTh Class='customheader-1 text-center'>Requestor</MudTh>
                     <MudTh Class='customheader-1 text-center'>Status</MudTh>
                     <MudTh Class='customheader-1 text-right'>Amount</MudTh>
-                    <MudTh Class='customheader-1'>Action</MudTh>
+                    <MudTh Class='customheader-1 pa-2'>Action</MudTh>
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd DataLabel="Control Number">
@@ -135,7 +136,7 @@
                             <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'>
                                 @context.ControlNumber
                             </MudChip>
-                            <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Text' Icon='@Icons.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
+                            <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Text' Icon='@Icons.Filled.CalendarMonth' Size='Size.Small'>
                                 @Convert.ToDateTime(context.RequestDate).ToShortDateString()
                             </MudChip>
                         </div>
@@ -146,33 +147,43 @@
                     <MudTd DataLabel="Status">
                         <div class='d-flex align-center justify-center'>
                             <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@Extensions.GetAcctgStatusColor(context.StatusId)'>@context.StatusName</MudChip>
-                         </div>
+                        </div>
                     </MudTd>
                     <MudTd Class='wspace-nowrap text-right' DataLabel="Amount">
-                        @if (context.Amount > 0)
-                        {
-                            <MudText Class='font-bold color-green' Typo='Typo.body2'>
-                                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.Amount.ToString("N2")
-                            </MudText>
-                        }
-                        else
-                        {
-                            <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
-                                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.Amount.ToString("N2")
-                            </MudText>
-                        }
+                        <div class='d-flex align-center gap-2'>
+                            @if (context.Amount > 0)
+                            {
+                                <MudText Class='font-bold color-green font12'>
+                                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                                </MudText>
+                                <MudSpacer />
+                                <MudText Class='font-bold color-green font12'>
+                                    @context.Amount.ToString("N2")
+                                </MudText>
+                            }
+                            else
+                            {
+                                <MudText Class='font-bold font12' Color='Color.Error'>
+                                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                                </MudText>
+                                <MudSpacer />
+                                <MudText Class='font-bold font12' TColor='Color.Error'>
+                                    @context.Amount.ToString("N2")
+                                </MudText>
+                            }
+                        </div>
                     </MudTd>
-                    <MudTd Class='text-center pa-0' DataLabel="Action">
-                        <MudMenu Icon="@Icons.Material.Filled.MoreVert" AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
-                        TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Class="@style">
+                    <MudTd Class='text-center pa-2' DataLabel="Action">
+                        <MudMenu Icon="@Icons.Material.Filled.MoreVert" AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                            TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
                             @if(context.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCG)
                             {
-                            <MudMenuItem OnClick='(() => EditPettyCash(context))'>
-                                <a class='d-flex align-center gap-2'>
-                                    <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small'/>
-                                    <MudText Typo='Typo.body2'>Edit</MudText>
-                                </a>
-                            </MudMenuItem>
+                                <MudMenuItem OnClick='(() => EditPettyCash(context))'>
+                                    <a class='d-flex align-center gap-2 menu-grow-anim'>
+                                        <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small' />
+                                        <MudText Typo='Typo.body2'>Edit</MudText>
+                                    </a>
+                                </MudMenuItem>
                             }
                             @if(context.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCG || context.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCA ||
                             context.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCR && GlobalClass.currentUserAccount.AccessLevel != Enums.AccountingAccessLevel.OthersViewer)
@@ -180,23 +191,23 @@
                                 if(context.StatusEnumCategoryId != Enums.AccountingStatusEnumCategory.PCA && 
                                 context.StatusEnumCategoryId != Enums.AccountingStatusEnumCategory.PCR)
                                 {
-                                    <MudMenuItem OnClick='(() => Prompt(Enums.ActionMode.Approve,context))' Class="@style">
-                                        <div class='d-flex align-center gap-2'>
+                                    <MudMenuItem OnClick='(() => Prompt(Enums.ActionMode.Approve,context))'>
+                                        <div class='d-flex align-center gap-2 menu-grow-anim'>
                                             <MudIcon Icon='@Icons.Filled.CheckCircle' Size='Size.Small' />
                                             <MudText Typo='Typo.body2'>Approve</MudText>
                                         </div>
                                     </MudMenuItem>
                                 }
                                 <MudMenuItem OnClick='(() => Prompt(Enums.ActionMode.Cancel,context))'>
-                                    <div class='d-flex align-center gap-2'>
+                                    <div class='d-flex align-center gap-2 menu-grow-anim'>
                                         <MudIcon Icon='@Icons.Filled.Cancel' Size='Size.Small' />
                                         <MudText Typo='Typo.body2'>Cancel</MudText>
                                     </div>
                                 </MudMenuItem>
-                                 @if(context.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCA)
+                                @if(context.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCA)
                                 {
                                     <MudMenuItem OnClick='(() => Prompt(Enums.ActionMode.Receive,context))'>
-                                        <div class='d-flex align-center gap-2'>
+                                        <div class='d-flex align-center gap-2 menu-grow-anim'>
                                             <MudIcon Icon='@Icons.Filled.GetApp' Size='Size.Small' />
                                             <MudText Typo='Typo.body2'>Receive</MudText>
                                         </div>
@@ -205,7 +216,7 @@
                                 if(context.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCR)
                                 {
                                     <MudMenuItem OnClick='(() => Prompt(Enums.ActionMode.Approve,context))'>
-                                        <div class='d-flex align-center gap-2'>
+                                        <div class='d-flex align-center gap-2 menu-grow-anim'>
                                             <MudIcon Icon='@Icons.Filled.Outbound' Size='Size.Small' />
                                             <MudText Typo='Typo.body2'>Approved (Void)</MudText>
                                         </div>
@@ -214,21 +225,21 @@
                                 if(context.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCA)
                                 {
                                     <MudMenuItem OnClick='(() => Prompt(Enums.ActionMode.Update,context))'>
-                                        <a class='d-flex align-center gap-2'>
-                                            <MudIcon Icon='@Icons.Filled.CancelPresentation' Size='Size.Small'/>
+                                        <a class='d-flex align-center gap-2 menu-grow-anim'>
+                                            <MudIcon Icon='@Icons.Filled.CancelPresentation' Size='Size.Small' />
                                             <MudText Typo='Typo.body2'>Generated (Void)</MudText>
                                         </a>
                                     </MudMenuItem>
                                 }
                             }
                             <MudMenuItem OnClick='(() => ViewAuditTrail(context))'>
-                                <a class='d-flex align-center gap-2'>
+                                <a class='d-flex align-center gap-2 menu-grow-anim'>
                                     <MudIcon Icon='@Icons.Filled.ListAlt' Size='Size.Small' />
                                     <MudText Typo='Typo.body2'>Audit Trail</MudText>
                                 </a>
                             </MudMenuItem>
                             <MudMenuItem OnClick='(() => context.ShowReport = ShowReport(context.ShowReport, context))'>
-                                <div class='d-flex align-center gap-2'>
+                                <div class='d-flex align-center gap-2 menu-grow-anim'>
                                     <MudIcon Icon='@Icons.Filled.PictureAsPdf' Size='Size.Small' />
                                     <MudText Typo='Typo.body2'>@(context.ShowReport ? "Close" : "Show") Report</MudText>
                                 </div>
@@ -279,7 +290,6 @@
     private string searchTerm = string.Empty, visibility = "visibility-animation-hide";
     private string PDFContent = default!;
     public static Enums.ActionMode currActionMode { get; set; }
-    private string style {get;set;} = ".d-flex";
     private IEnumerable<PettyCashModel>? pageData;
     private MudTable<PettyCashModel> tableVariable = new();
     private DateRange dateRangeFilter = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
@@ -291,11 +301,10 @@
     protected override async Task OnInitializedAsync()
     {
         GlobalClass.pageTitle = "PETTY CASH LIST";
-        
-        while (GlobalClass.currentUserAccount == null || string.IsNullOrEmpty(GlobalClass.token) || GlobalClassList.accountingStatusList == null)
-            await Task.Delay(1);
         Task t = Task.WhenAll(LoadPettyCashList());
         await t;
+        while (GlobalClass.currentUserAccount == null || string.IsNullOrEmpty(GlobalClass.token) || GlobalClassList.accountingStatusList == null)
+            await Task.Delay(1);
         if (t.Status == TaskStatus.RanToCompletion)
         {
             CompletedFetch();
@@ -417,7 +426,7 @@
         Task t = Task.WhenAll(UpdatePettyCash());
         await t;
         if (t.Status == TaskStatus.RanToCompletion)
-            Extensions.ShowAlert("Petty Status updated", Variant.Filled, snackBarService, Severity.Success);
+            Extensions.ShowAlert("Petty updated successfully", Variant.Filled, snackBarService, Severity.Success);
         else
             Extensions.ShowAlert("Something went wrong, Please contact Administrator", Variant.Filled, snackBarService, Severity.Error);
     }
@@ -521,4 +530,24 @@
         }
         return $"{status}";
     }
+    private async Task RealoadTable()
+    {
+        filterParameter = new();
+        await tableVariable.ReloadServerData();
+    }
+    private bool EnableClearButton()
+    {
+      if(filterParameter.IsControlNumber) 
+        return true;
+      if(filterParameter.IsAccountingStatus)
+        return true;
+      if(filterParameter.IsDate)
+        return true;
+      if(filterParameter.IsRequestor)
+        return true;
+      if(filterParameter.IsPayee)
+        return true;
+      return false;
+  }
+    
 }

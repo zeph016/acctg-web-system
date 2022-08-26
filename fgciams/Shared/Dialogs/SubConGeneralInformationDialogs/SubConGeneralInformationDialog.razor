@@ -2,8 +2,10 @@
 @inject ISubContractorPositionService subConPositionService
 @inject ISubContractorCompanyService subConCompanyService
 @inject ISnackbar snackbarService
+@inject IDialogService dialogService
+@inject IGlobalService globalService
 
-<MudDialog Class="customdialog">
+<MudDialog Class="customdialog2">
   <TitleContent>
     <div class='d-flex align-center'>
       @if (GlobalClass.subConGeneralInformation.Id != 0)
@@ -14,90 +16,216 @@
       {
         <MudIcon Icon="@Icons.Filled.Add" Class="mr-3 mb-n1" />
       }
-      <MudText Typo='Typo.h6'>@dialogTitle</MudText>
+      <MudText Class='txt-uppercase' Typo='Typo.h6'>@dialogTitle</MudText>
     </div>
   </TitleContent>
   <DialogContent>
-    <div class='customdialog__content-container'>
+    @if (!isDataFetch)
+    {
+      <SkeletonSubConGenInfo fetchTypeId='GlobalClass.subConGeneralInformation.Id' />
+    }
+    else
+    {
       <MudGrid Spacing='1'>
-        <MudItem xs='12'>
-          <MudTextField @bind-Value='@GlobalClass.subConGeneralInformation.FirstName' Label='First Name' Error=@reqFname ErrorText='First name is required' />
+        <MudItem Class='d-flex align-start flex-column' xs='gridXs'>
+          <MudPaper Class='flex-1 pa-2' Elevation='elevationValue'>
+            <MudGrid Spacing='1'>
+              <MudItem xs='12'>
+                <MudTextField @bind-Value='@GlobalClass.subConGeneralInformation.FirstName' Label='First Name' Error=@reqFname ErrorText='First name is required' 
+                  HelperText='Required*' Margin='Margin.Dense' />
+              </MudItem>
+              <MudItem xs='12'>
+                <MudTextField @bind-Value='@GlobalClass.subConGeneralInformation.MiddleName' Label='Middle Name' Error=@reqMname ErrorText='Middle name is required'
+                  HelperText='Optional' Margin='Margin.Dense' />
+              </MudItem>
+              <MudItem xs='10'>
+                <MudTextField @bind-Value='@GlobalClass.subConGeneralInformation.LastName' Label='Last Name' Error=@reqLname ErrorText='Last name is required'
+                  HelperText='Required*' Margin='Margin.Dense' />
+              </MudItem>
+              <MudItem xs='2'>
+                <MudNumericField Class='txtfield-center' @bind-Value='@GlobalClass.subConGeneralInformation.Age' Label='Age' Error=@reqAge ErrorText='Age is required' HideSpinButtons
+                  HelperText='Required*' Margin='Margin.Dense' />
+              </MudItem>
+              <MudItem xs='10'>
+                <MudTextField @bind-Value='@GlobalClass.subConGeneralInformation.NameExtention' Label='Name Ext.'
+                  HelperText='Optional' Margin='Margin.Dense' />
+              </MudItem>
+              <MudItem xs='2'>
+                <MudSelect @bind-Value='@GlobalClass.subConGeneralInformation.Gender' Label="Gender" Margin='Margin.Dense' HelperText='Required*'>
+                  @foreach (Enums.Gender gender in Enum.GetValues(typeof(Enums.Gender)))
+                  {
+                    <MudSelectItem Value="gender">@Extensions.GetEnumDescription(gender)</MudSelectItem>
+                  }
+                </MudSelect>
+              </MudItem>
+              <MudItem xs='6'>
+                <MudText Class='font12 color-sec'>Position</MudText>
+                <BlazoredTypeahead SearchMethod=LoadPosition @bind-Value='position' Debounce="500" placeholder='Position'>
+                  <SelectedTemplate>
+                    @if(context.Id != 0) {
+                      @context.PositionName
+                      GlobalClass.subConGeneralInformation.PositionId = context.Id;
+                    } else if(reqPos) {
+                      <MudText Class='font12 font-bold txt-uppercase' Color='Color.Error'>Required</MudText>
+                    } else {
+                      <MudText Class='font12'> - </MudText>
+                    }
+                  </SelectedTemplate>
+                  <ResultTemplate>
+                    @context.PositionName
+                  </ResultTemplate>
+                </BlazoredTypeahead>
+                <MudText Class='font12 color-sec'>Required*</MudText>
+              </MudItem>
+              <MudItem xs='6'>
+                <MudText Class='font12 color-sec'>Company</MudText>
+                <BlazoredTypeahead SearchMethod=LoadCompany @bind-Value='company' Debounce="500" placeholder='Company'>
+                  <SelectedTemplate>
+                    @if(context.Id != 0){
+                      @context.CompanyName
+                      GlobalClass.subConGeneralInformation.CompanyId = context.Id;
+                    } else if(reqCom) {
+                      <MudText Class='font12 font-bold txt-uppercase' Color='Color.Error'>Required</MudText>
+                    } else {
+                      <MudText Class='font12'> - </MudText>               
+                    }
+                  </SelectedTemplate>
+                  <ResultTemplate>
+                    @context.CompanyName
+                  </ResultTemplate>
+                </BlazoredTypeahead>
+                <MudText Class='font12 color-sec'>Required*</MudText>
+              </MudItem>
+              <MudItem xs="6">
+                <MudDatePicker @bind-Date='@GlobalClass.subConGeneralInformation.DateStart' Label='Date Start' IconSize='Size.Small'
+                  HelperText='Required*' Margin='Margin.Dense' />
+              </MudItem>
+              <MudItem xs="6">
+                <MudDatePicker @bind-Date='@GlobalClass.subConGeneralInformation.DateEnd' MinDate='@GlobalClass.subConGeneralInformation.DateStart' Label='Date End' IconSize='Size.Small'
+                  HelperText='Required*' Margin='Margin.Dense' />
+              </MudItem>
+            </MudGrid>
+          </MudPaper>
         </MudItem>
-        <MudItem xs='12'>
-          <MudTextField @bind-Value='@GlobalClass.subConGeneralInformation.MiddleName' Label='Middle Name' Error=@reqMname ErrorText='Middle name is required'/>
-        </MudItem>
-        <MudItem xs='9'>
-          <MudTextField @bind-Value='@GlobalClass.subConGeneralInformation.LastName' Label='Last Name' Error=@reqLname ErrorText='Last name is required'/>
-        </MudItem>
-        <MudItem xs='3'>
-          <MudNumericField @bind-Value='@GlobalClass.subConGeneralInformation.Age' Label='Age' Error=@reqAge ErrorText='Age is required' />
-        </MudItem>
-        <MudItem xs='6'>
-          <MudTextField @bind-Value='@GlobalClass.subConGeneralInformation.NameExtention' Label='Name Ext.' />
-        </MudItem>
-        <MudItem xs='3'>
-          <MudSelect @bind-Value='@GlobalClass.subConGeneralInformation.Gender' Label="Gender">
-            @foreach (Enums.Gender gender in Enum.GetValues(typeof(Enums.Gender)))
-            {
-              <MudSelectItem Value="gender">@Extensions.GetEnumDescription(gender)</MudSelectItem>
-            }
-          </MudSelect>
-        </MudItem>
-        @if(GlobalClass.subConGeneralInformation.Id != 0) {
-
-        <MudItem Class='d-flex align-center' xs='3'>
-          <MudCheckBox @bind-Checked='@GlobalClass.subConGeneralInformation.IsActive' Label='Active' />
-        </MudItem>
-
+        @if(isDataFetch && GlobalClass.subConGeneralInformation.Id != 0)
+        {
+          <MudItem xs='6'>
+            <MudPaper Class='d-flex align-start flex-column gap-2'>
+              <MudGrid Class='pa-2' Spacing='1'>
+                <MudItem xs=8>
+                  <MudText Class='font12'>Sub Con Project</MudText>
+                  <BlazoredTypeahead SearchMethod=SearchSubconProject ValueChanged="((Project subProj)=>SelectedSubconProject(subProj))" ValueExpression='(()=>subconProject)' Value="subconProject"
+                    Context='project' Debounce="500" DisableClear placeholder='SUB CON Project'>
+                    <SelectedTemplate>
+                        @if (project.ProjectId != 0) {
+                            <MudText Class='font12'>@project.ProjectName</MudText>
+                        } else {
+                            <MudText Class='font12'> - </MudText>
+                        }
+                    </SelectedTemplate>
+                    <ResultTemplate>
+                        @project.ProjectName
+                    </ResultTemplate>
+                  </BlazoredTypeahead>
+                </MudItem>
+                <MudItem Class='d-flex align-center' xs=4>
+                  <div class='d-flex align-center pt-4 gap-2'>
+                    <MudText Class='pl-2 font12 font-bold color-green'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
+                    <MudSpacer />
+                    <MudNumericField Class='txt-search-overflow txt-top-0 txtfield-right tfield-color-green font12-txtfield' @bind-Value='GlobalClass.subContractProject.ContractAmount' Culture='CultureInfo.GetCultureInfo("en-PH")'
+                      Format='N2' Variant='Variant.Text' ErrorText='' HideSpinButtons Margin='Margin.Dense' />
+                  </div>
+                </MudItem>
+                <MudItem xs=8>
+                  <MudText Class='font12'>Scope of Work</MudText>
+                  <BlazoredTypeahead SearchMethod=LoadSOW ValueChanged="((ScopeOfWorkModel SOW)=>SelectedScopeOfWork(SOW))" ValueExpression='(()=>scopeOfWork)' Value="scopeOfWork"
+                      Context='sow' Debounce="500" DisableClear placeholder='Scope of Work'>
+                      <SelectedTemplate>
+                          @if (sow.Id != 0) {
+                              <MudText Class='font12'>@sow.ScopeName</MudText>
+                          } else {
+                              <MudText Class='font12'> - </MudText>
+                          }
+                      </SelectedTemplate>
+                      <ResultTemplate>
+                          @sow.ScopeName
+                      </ResultTemplate>
+                    </BlazoredTypeahead>
+                </MudItem>
+                <MudItem Class='d-flex align-center justify-end' xs=4>
+                  <div class='d-flex align-center pt-4 gap-2'>
+                    <MudSpacer/>
+                    <MudButton Class='btn-ios-d font12' OnClick="(()=>Reset())" Icon="@Icons.Filled.Refresh" Variant='Variant.Text' Size='Size.Small' Color='Color.Error' DisableElevation>Clear</MudButton>
+                    <MudButton Class='btn-ios-d font12' OnClick="(()=>SaveSubConProject())" Variant="Variant.Filled" 
+                      Margin="Margin.Dense"  Color='Color.Tertiary' Size='Size.Small' DisableElevation>@(subConAction == Enums.ActionMode.Create? "Add":"Update")</MudButton>
+                  </div>
+                </MudItem>
+              </MudGrid>
+              <MudTable Class='mtable-bottom-border pb-2 width100' Items="@GlobalClassList.subContractorProjectist" Hover="true" 
+                  Breakpoint="Breakpoint.Xs" FixedHeader Bordered Dense Height='350px' Elevation='0'>
+                  <ColGroup>
+                      <col />
+                      <col />
+                      <col />
+                      <col />
+                  </ColGroup>
+                  <HeaderContent>
+                      <MudTh Class='customheader-4 pa-2'>Project</MudTh>
+                      <MudTh Class='customheader-4 pa-2'>Scope</MudTh>
+                      <MudTh Class='customheader-4 text-right pa-2'>Amount</MudTh>
+                      <MudTh Class='customheader-4 text-center pa-2'>-</MudTh>
+                  </HeaderContent>
+                  <RowTemplate>
+                    <MudTd DataLabel="Division Name">
+                      <MudText Class='font12'>@context.ProjectName</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Short Name">
+                      <MudText Class='font12'>@context.ScopeOfWork</MudText>
+                    </MudTd>
+                    <MudTd Class='text-right pa-2' DataLabel="Amount">
+                      <div class='d-flex align-center gap-2'>
+                       <MudText Class='pl-2 font12 color-green font-bold'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
+                       <MudSpacer />
+                       <MudText Class='pl-2 font12 color-green font-bold'> @context.ContractAmount.ToString("N2")</MudText>
+                      </div>
+                    </MudTd>
+                    <MudTd Class='text-center pa-2'>
+                        <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                        TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
+                            <MudMenuItem OnClick="(()=>EditSubCon(context))">
+                                <div class='d-flex align-center gap-2'>
+                                    <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Medium' />
+                                    <MudText Typo='Typo.body2'>Edit</MudText>
+                                </div>
+                            </MudMenuItem>
+                            <MudMenuItem OnClick="(()=>RemoveProject(context))">
+                                <div class='d-flex align-center gap-2'>
+                                    <MudIcon Icon='@Icons.Filled.DeleteForever' Size='Size.Medium' />
+                                    <MudText Typo='Typo.body2'>Remove</MudText>
+                                </div>
+                            </MudMenuItem>
+                        </MudMenu>
+                    </MudTd>
+                  </RowTemplate>
+              </MudTable>
+            </MudPaper>
+          </MudItem>
         }
-
-        <MudItem xs='6'>
-          <BlazoredTypeahead SearchMethod=LoadPosition @bind-Value='position' Debounce="500" placeholder='Position'>
-            <SelectedTemplate>
-              @if(context.Id != 0) {
-                @context.PositionName
-                GlobalClass.subConGeneralInformation.PositionId = context.Id;
-              } else if(reqPos) {
-                <MudText Class='font12 font-bold txt-uppercase' Color='Color.Error'>Required</MudText>
-              } else {
-                <MudText Class='font12'> - </MudText>
-              }
-            </SelectedTemplate>
-            <ResultTemplate>
-              @context.PositionName
-            </ResultTemplate>
-          </BlazoredTypeahead>
-        </MudItem>
-        <MudItem xs='6'>
-          <BlazoredTypeahead SearchMethod=LoadCompany @bind-Value='company' Debounce="500" placeholder='Company'>
-            <SelectedTemplate>
-              @if(context.Id != 0){
-                @context.CompanyName
-                GlobalClass.subConGeneralInformation.CompanyId = context.Id;
-              } else if(reqCom) {
-                <MudText Class='font12 font-bold txt-uppercase' Color='Color.Error'>Required</MudText>
-              } else {
-                 <MudText Class='font12'> - </MudText>               
-              }
-
-            </SelectedTemplate>
-            <ResultTemplate>
-              @context.CompanyName
-            </ResultTemplate>
-          </BlazoredTypeahead>
-        </MudItem>
-        <MudItem xs="6">
-          <MudDatePicker @bind-Date='@GlobalClass.subConGeneralInformation.DateStart' Label='Date Start' />
-        </MudItem>
-        <MudItem xs="6">
-          <MudDatePicker @bind-Date='@GlobalClass.subConGeneralInformation.DateEnd' MinDate='@GlobalClass.subConGeneralInformation.DateStart' Label='Date End' />
-        </MudItem>
       </MudGrid>
-    </div>
+    }
   </DialogContent>
   <DialogActions>
-    <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
-    <MudButton OnClick="Submit" Variant='Variant.Filled' Color="@color">@buttonText</MudButton>
+    <div class='d-flex align-center'>
+     @if(GlobalClass.subConGeneralInformation.Id != 0) 
+     {
+       <MudCheckBox @bind-Checked='@GlobalClass.subConGeneralInformation.IsActive' Label='Active' Size='Size.Small' Color='Color.Dark' />
+     }
+     </div>      
+    <MudSpacer />
+    <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text' Size='Size.Small' DisableElevation>Cancel</MudButton>
+    <MudButton Class='btn-ios-d font12' OnClick="Submit" Variant='Variant.Filled' Color='@(!GlobalClass.subConGeneralInformation.IsActive ? Color.Error : @color)' Size='Size.Small' DisableElevation>
+        @(!GlobalClass.subConGeneralInformation.IsActive ? "Deactivate" : @buttonText)
+    </MudButton>
   </DialogActions>
 </MudDialog>
 @code {
@@ -105,46 +233,55 @@
   [Parameter] public Color color { get; set; }
   [Parameter] public string dialogTitle { get; set; } = string.Empty;
   [Parameter] public string buttonText { get; set; } = string.Empty;
+  [Parameter] public Enums.ActionMode currentAction { get; set; }
   SubContractorPositionModel position = new();
   SubContractorCompanyModel company = new();
   private bool reqFname, reqMname, reqLname, reqAge, reqPos, reqCom;
-
+  private Project subconProject = new();
+  private ScopeOfWorkModel scopeOfWork = new();
+  private bool isDataFetch;
+  private Enums.ActionMode subConAction {get;set;} = Enums.ActionMode.Create;
+  private int gridXs = 12, elevationValue = 0;
   protected override async Task OnInitializedAsync()
   {
-    await Task.Delay(1);
-    if (GlobalClass.subConGeneralInformation.Id == 0)
+    if (currentAction == Enums.ActionMode.Create)
       GlobalClass.subConGeneralInformation.IsActive = true;
     else
     {
+      elevationValue = 1;
+      gridXs = 6;
       MapExistingPosition();
       MapExistingCompany();
     }
+    Task t = Task.WhenAll(LoadSubconProjects());
+    await t;
+    if(t.Status == TaskStatus.RanToCompletion)
+      CompletedFetch();
+  }
+
+  void CompletedFetch()
+  {
+    isDataFetch = true;
+    StateHasChanged();
   }
   void Cancel()
   {
+    GlobalClass.subConGeneralInformation.IsActive = !GlobalClass.subConGeneralInformation.IsActive ? true : true;
     MudDialog.Cancel();
   }
   private async Task Submit()
   {
-    if (GlobalClass.subConGeneralInformation.Id != 0)
+    if (!GlobalClass.subConGeneralInformation.IsActive)
     {
-      if(ValidateEntries()) {
-        GlobalClass.subConGeneralInformation  = await subConGeneralInformationService.UpdateSubConGenInfo(MapProperties(), GlobalClass.token);
-        MudDialog.Close(DialogResult.Ok(1));
-      } else Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbarService, Severity.Error);
-
+      currentAction = Enums.ActionMode.Deactivate;
+      await PromptMessage();
     }
-    else
-    {
-      if(ValidateEntries()) {
-        GlobalClass.subConGeneralInformation = await subConGeneralInformationService.AddSubConGenInfo(MapProperties(),
-        GlobalClass.token);
-        GlobalClassList.subConGeneralInformations.Add(GlobalClass.subConGeneralInformation);
-        MudDialog.Close(DialogResult.Ok(0));
-      } else Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbarService, Severity.Error);
-    }
-    if(GlobalVariable.AMSHubConnection != null && ValidateEntries())
-        await GlobalVariable.AMSHubConnection.InvokeAsync("SaveSubContractorGeneralInformation", GlobalClass.subConGeneralInformation);
+    else if(ValidateEntries())
+      await PromptMessage();
+    else 
+      Extensions.ShowAlert("Cannot " 
+      + (currentAction == Enums.ActionMode.Create ? "add" : (currentAction == Enums.ActionMode.Update ? "update" : "")) 
+      + " Sub Con general info, Incomplete fields.", Variant.Filled, snackbarService, Severity.Error);
   }
 
   private void MapExistingPosition()
@@ -183,7 +320,7 @@
     x.CompanyName.Contains(companyName, StringComparison.OrdinalIgnoreCase)));
     return companies;
   }
-  SubConGeneralInformationModel MapProperties()
+  SubConGeneralInformationModel MapPositionCompanyProperties()
   {
     GlobalClass.subConGeneralInformation.PositionId = position.Id;
     GlobalClass.subConGeneralInformation.CompanyId = company.Id;
@@ -218,5 +355,149 @@
     } else reqCom = false;
 
     return valid;
+  }
+  private async Task PromptMessage()
+  {
+      var parameters = new DialogParameters();
+      string contentText = "information ";
+      string dialogTitle = currentAction.ToString();
+      parameters.Add("actionMode", currentAction);
+      parameters.Add("dialogTitle", dialogTitle);
+      parameters.Add("contentText", contentText);
+      var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
+      var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+      if (!resultDialog.Cancelled)
+      {
+        try
+        {
+          if (currentAction == Enums.ActionMode.Create) {
+            GlobalClass.subConGeneralInformation = await subConGeneralInformationService.AddSubConGenInfo(MapPositionCompanyProperties(), GlobalClass.token);
+            GlobalClassList.subConGeneralInformations.Add(GlobalClass.subConGeneralInformation);
+          }
+          else
+            GlobalClass.subConGeneralInformation  = await subConGeneralInformationService.UpdateSubConGenInfo(MapPositionCompanyProperties(), GlobalClass.token);
+          if(GlobalVariable.AMSHubConnection != null && ValidateEntries())
+            await GlobalVariable.AMSHubConnection.InvokeAsync("SaveSubContractorGeneralInformation", GlobalClass.subConGeneralInformation);
+          MudDialog.Close(DialogResult.Ok(currentAction));
+        }
+        catch (System.Exception ex) {
+          Extensions.ShowAlert(ex.Message, Variant.Filled, snackbarService, Severity.Error);
+        }
+      }
+      else if (currentAction == Enums.ActionMode.Deactivate)
+      {
+        GlobalClass.subConGeneralInformation.IsActive = !GlobalClass.subConGeneralInformation.IsActive;
+        MudDialog.Cancel();
+      }
+  }
+  private async Task<IEnumerable<Project>> SearchSubconProject(string projectName)
+  {
+      var filterParameter = new FilterParameter()
+      {
+          IsName = true,
+          Name = projectName,
+          IsLookUp = true
+      };
+      var employee = await globalService.SubConProjects(filterParameter, GlobalClass.token);
+      return employee;
+  }
+  private void SelectedSubconProject(Project project)
+  {
+    subconProject = project;
+    GlobalClass.subContractProject.ProjectId = project.ProjectId;;
+  }
+  private async Task LoadSubconProjects()
+  {
+    GlobalClassList.subContractorProjectist = await subConGeneralInformationService.GetSubConProjects(GlobalClass.subConGeneralInformation.Id,GlobalClass.token);
+  }
+  async Task<IEnumerable<ScopeOfWorkModel>> LoadSOW(string scopeName)
+  {
+    var SOW = await Task.Run(() => GlobalClassList.scopeOfWork.Where(x =>
+    x.ScopeName.Contains(scopeName, StringComparison.OrdinalIgnoreCase)));
+    return SOW;
+  }
+  private void SelectedScopeOfWork(ScopeOfWorkModel sow)
+  {
+    scopeOfWork = sow;
+    GlobalClass.subContractProject.ScopeOfWorkId = sow.Id;
+  }
+  private async Task SaveSubConProject()
+  {
+    if(isValidSubConProject())
+    {
+      GlobalClass.subContractProject.SubContractorId = GlobalClass.subConGeneralInformation.Id;
+      if(subConAction == Enums.ActionMode.Create)
+      {
+        await subConGeneralInformationService.AddSubConProjects(GlobalClass.subContractProject,GlobalClass.token);
+        Extensions.ShowAlert("Sub contractor project successfully saved.",Variant.Filled,snackbarService,Severity.Success);
+      } else {
+        await subConGeneralInformationService.UpdateSubConProjects(GlobalClass.subContractProject,GlobalClass.token);
+        Extensions.ShowAlert("Sub contractor project successfully updated.",Variant.Filled,snackbarService,Severity.Success);
+      }
+            Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(GlobalClass.subContractProject,Newtonsoft.Json.Formatting.Indented));
+      await LoadSubconProjects();
+      Reset();
+    }
+  }
+  private void Reset()
+  {
+    subConAction = Enums.ActionMode.Create;
+    GlobalClass.subContractProject = new();
+    scopeOfWork = new();
+    subconProject = new();
+    GlobalClass.subContractProject.ContractAmount = 0.00m;
+  }
+  private async Task EditSubCon(SubContractorProjectModel subconProj)
+  {
+    GlobalClass.subContractProject = subconProj;
+    subConAction = Enums.ActionMode.Update;
+    scopeOfWork =  (await LoadSOW(subconProj.ScopeOfWork)).FirstOrDefault()?? new();
+    subconProject = (await SearchSubconProject(subconProj.ProjectName)).FirstOrDefault()?? new();
+  }
+  private bool isValidSubConProject()
+  {
+    if(GlobalClass.subContractProject.ProjectId == 0) {
+      Extensions.ShowAlert("Project is required.",Variant.Filled,snackbarService,Severity.Error);
+      return false;
+    }
+    if(GlobalClass.subContractProject.ScopeOfWorkId == 0)
+    {
+      Extensions.ShowAlert("Scope of Work is required.",Variant.Filled,snackbarService,Severity.Error);
+      return false;
+    }
+    if(GlobalClass.subContractProject.ContractAmount <= 0)
+    {
+      Extensions.ShowAlert("Amuount should be greater than zero.",Variant.Filled,snackbarService,Severity.Error);
+      return false;
+    }
+    return true;
+  }
+  private async Task RemoveProject(SubContractorProjectModel subCon)
+  {
+    subCon.IsActive = false;
+    await Prompt(Enums.ActionMode.Delete,subCon);
+  }
+  private async Task Prompt(Enums.ActionMode action,SubContractorProjectModel sub)
+  {
+      var parameters = new DialogParameters();
+      string contentText = " Sub Contractor Project";
+      string dialogTitle = action+ contentText;
+      parameters.Add("contentText", contentText);
+      parameters.Add("actionMode", action);
+      var options = new DialogOptions()
+      {
+          CloseButton = false,
+          MaxWidth = MaxWidth.ExtraSmall,
+          FullWidth = true,
+          NoHeader = false,
+          DisableBackdropClick = true
+      };
+      var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+      if (!resultDialog.Cancelled) 
+      {   
+        await subConGeneralInformationService.UpdateSubConProjects(sub,GlobalClass.token);
+        Extensions.ShowAlert("Sub contractor successfully removed.",Variant.Filled,snackbarService,Severity.Success);
+      }
+      await LoadSubconProjects();
   }
 }

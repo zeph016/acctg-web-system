@@ -1,8 +1,9 @@
 @inject IAccountingLineService accountLineService
 @inject IAccountLineTypeService accountLineTypeService
-@inject ISnackbar snackbar
+@inject ISnackbar snackbarService
+@inject IDialogService dialogService
 
-<MudDialog Class='customdialog'>
+<MudDialog Class='customdialog2'>
     <TitleContent>
         <div class='d-flex align-center'>
             @if (GlobalClass.accountLineType.Id != 0 || GlobalClass.accountLineType.Id != 0)
@@ -13,56 +14,65 @@
             {
                 <MudIcon Icon="@Icons.Filled.Add" Class="mr-3 mb-n1" />
             }
-            <MudText Typo='Typo.h6'>@dialogTitle</MudText>
+            <MudText Class='txt-uppercase' Typo='Typo.h6'>@dialogTitle</MudText>
         </div>
     </TitleContent>
     <DialogContent>
-        <div class='customdialog__content-container'>
-            @switch (accountLine)
-            {
-                case 0:
-                    <MudGrid Spacing='1'>
-                        <MudItem xs='12'>
-                            <MudTextField @bind-Value='@GlobalClass.accountLineGroup.LineGroupName' Label='Group Name' Error=@reqGName ErrorText='Group name is required' />
-                        </MudItem>
-                        <MudItem xs='9'>
-                            <MudTextField @bind-Value='@GlobalClass.accountLineGroup.Remarks' Label='Remarks' />
-                        </MudItem>
-                        @if(GlobalClass.accountLineGroup.Id != 0) {
-
-                        <MudItem Class='d-flex align-center' xs='3'>
-                            <MudCheckBox @bind-Checked='@GlobalClass.accountLineGroup.IsActive' Label='Active' />
-                        </MudItem>
-
-                        }
- 
-                    </MudGrid>
-                    break;
-                case 1:
-                    <MudGrid Spacing='1'>
-                        <MudItem xs='12'>
-                            <MudTextField @bind-Value='@GlobalClass.accountLineType.LineTypeName' Label='Type Name'  Error=@reqTName ErrorText='Type name is required'/>
-                        </MudItem>
-                        <MudItem xs='9'>
-                            <MudTextField @bind-Value='@GlobalClass.accountLineType.Remarks' Label='Remarks' />
-                        </MudItem>
-                        @if(GlobalClass.accountLineType.Id != 0) {
-
-                        <MudItem Class='d-flex align-center' xs='3'>
-                            <MudCheckBox @bind-Checked='@GlobalClass.accountLineType.IsActive' Label='Active' />
-                        </MudItem>
-                        
-                        }
-                    </MudGrid>
-                    break;
-            }
-
-
-        </div>
+        <MudPaper Class='pa-2' Elevation='0'>
+            <MudGrid Class='pa-2' Spacing='1'>
+                @switch (accountLine)
+                {
+                    case 0:
+                            <MudItem xs='12'>
+                                <MudTextField @bind-Value='@GlobalClass.accountLineGroup.LineGroupName' Label='Group Name' Error=@reqGName ErrorText='Group name is required'
+                                    HelperText='Required*' Margin='Margin.Dense' />
+                            </MudItem>
+                            <MudItem xs='12'>
+                                <MudTextField @bind-Value='@GlobalClass.accountLineGroup.Remarks' Label='Remarks' Lines='2' Variant='Variant.Filled'
+                                   HelperText='Optional' Margin='Margin.Dense' />
+                            </MudItem>
+                        break;
+                    case 1:
+                            <MudItem xs='12'>
+                                <MudTextField @bind-Value='@GlobalClass.accountLineType.LineTypeName' Label='Type Name'  Error=@reqTName ErrorText='Type name is required'
+                                    HelperText='Required*' Margin='Margin.Dense' />
+                            </MudItem>
+                            <MudItem xs='12'>
+                                <MudTextField @bind-Value='@GlobalClass.accountLineType.Remarks' Label='Remarks' Lines='2' Variant='Variant.Filled'
+                                    HelperText='Optional' Margin='Margin.Dense' />
+                            </MudItem>
+                        break;
+                }
+            </MudGrid>
+        </MudPaper>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
-        <MudButton OnClick="Submit" Variant='Variant.Filled' Color="@color">@buttonText</MudButton>
+        @if (accountLine == 0 && currentAction == Enums.ActionMode.Update || currentAction== Enums.ActionMode.Deactivate)
+        {
+            <MudCheckBox @bind-Checked='@GlobalClass.accountLineGroup.IsActive' Label='Active'
+                Size='Size.Small' Color='Color.Dark' Dense/>
+        }
+        else if(accountLine == 1 && currentAction == Enums.ActionMode.Update || currentAction== Enums.ActionMode.Deactivate)
+        {
+            <MudCheckBox @bind-Checked='@GlobalClass.accountLineType.IsActive' Label='Active' 
+                Size='Size.Small' Color='Color.Dark' Dense />
+        }
+        <MudSpacer />
+        <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text' Size='Size.Small' DisableElevation>Cancel</MudButton>
+        @if (accountLine == 0)
+        {
+            <MudButton Class='btn-ios-d font12' OnClick="Submit" Variant='Variant.Filled' Color='@(!GlobalClass.accountLineGroup.IsActive ? Color.Error : @color)'
+                Size='Size.Small' DisableElevation>
+                @(!GlobalClass.accountLineGroup.IsActive ? "Deactivate" : @buttonText)
+            </MudButton>
+        }
+        else if (accountLine == 1)
+        {
+            <MudButton Class='btn-ios-d font12' OnClick="Submit" Variant='Variant.Filled' Color='@(!GlobalClass.accountLineType.IsActive ? Color.Error : @color)'
+                Size='Size.Small' DisableElevation >
+                @(!GlobalClass.accountLineType.IsActive ? "Deactivate" : @buttonText)
+            </MudButton>
+        }
     </DialogActions>
 </MudDialog>
 @code{
@@ -70,131 +80,112 @@
     [Parameter] public Color color { get; set; }
     [Parameter] public string dialogTitle { get; set; } = string.Empty;
     [Parameter] public string buttonText { get; set; } = string.Empty;
-    [Parameter] public int accountLine { get; set; } = 0;
+    [Parameter] public int accountLine { get; set; }
+    [Parameter] public Enums.ActionMode currentAction { get; set; }
     private bool reqGName , reqTName;
     protected override async Task OnInitializedAsync()
     {
-        if (GlobalClass.accountLineType.Id == 0 || GlobalClass.accountLineGroup.Id == 0)
+        if (currentAction == Enums.ActionMode.Create)
         {
             GlobalClass.accountLineType.IsActive = true;
             GlobalClass.accountLineGroup.IsActive = true;
         }
-
         await Task.Delay(1);
     }
     void Cancel()
     {
+        if (accountLine == 0 && !GlobalClass.accountLineGroup.IsActive || accountLine == 1 && !GlobalClass.accountLineType.IsActive)
+        {
+            GlobalClass.accountLineGroup.IsActive = !GlobalClass.accountLineGroup.IsActive;
+            GlobalClass.accountLineType.IsActive = !GlobalClass.accountLineType.IsActive;
+        }
         MudDialog.Cancel();
     }
 
     private async Task Submit()
     {
-        switch (accountLine)
+        if (accountLine == 0 && !GlobalClass.accountLineGroup.IsActive || accountLine == 1 && !GlobalClass.accountLineType.IsActive)
         {
-            case 0:
-                if (GlobalClass.accountLineGroup.Id != 0)
-                {
-                    try
-                    {
-                      if(ValidateEntries()) {
-
-                        GlobalClass.accountLineGroup = await accountLineService.UpdateAccountLineGroup(GlobalClass.accountLineGroup, GlobalClass.token);
-                        MudDialog.Close(DialogResult.Ok(1));
-
-                      } else Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbar, Severity.Error);
-  
-                    }
-                    catch (System.Exception ex)
-                    {
-                        Extensions.ShowAlert(ex.Message, Variant.Filled, snackbar, Severity.Normal);
-                        MudDialog.Close();
-                    }
-                }
-                else
-                {
-                    try
-                    {
-                       if(ValidateEntries()) {
-
-                        GlobalClass.accountLineGroup = await accountLineService.AddAccountLineGroup(GlobalClass.accountLineGroup, GlobalClass.token);
-                        MudDialog.Close(DialogResult.Ok(0));
-
-                       } else Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbar, Severity.Error);
- 
-                    }
-                    catch (System.Exception ex)
-                    {
-                        Extensions.ShowAlert(ex.Message, Variant.Filled, snackbar, Severity.Normal);
-                        MudDialog.Close();
-                    }
-                }
-                if(GlobalVariable.AMSHubConnection != null && ValidateEntries())
-                    await GlobalVariable.AMSHubConnection.InvokeAsync("SaveAccountLineGroup", GlobalClass.accountLineGroup);
-
-                break;
-            case 1:
-                if (GlobalClass.accountLineType.Id != 0)
-                {
-                    try
-                    {
-                      if(ValidateEntries()) {
-                        
-                        GlobalClass.accountLineType = await accountLineTypeService.UpdateAccountLineType(GlobalClass.accountLineType, GlobalClass.token);
-                        MudDialog.Close(DialogResult.Ok(1));
-
-                      } else Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbar, Severity.Error);
- 
-                    }
-                    catch (System.Exception ex)
-                    {
-                        // TODO
-                        Extensions.ShowAlert(ex.Message, Variant.Filled, snackbar, Severity.Normal);
-                        MudDialog.Close();
-                    }
-
-                }
-                else
-                {
-                    try
-                    {
-                      if(ValidateEntries()) {
-
-                        GlobalClass.accountLineType = await accountLineTypeService.AddAccountLineType(GlobalClass.accountLineType, GlobalClass.token);
-                        GlobalClassList.accountLineTypes.Add(GlobalClass.accountLineType);
-                        MudDialog.Close(DialogResult.Ok(0));
-
-                      } else Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbar, Severity.Error);
-                    }
-                    catch (System.Exception ex)
-                    {
-                        // TODO
-                        Extensions.ShowAlert(ex.Message, Variant.Filled, snackbar, Severity.Normal);
-                        MudDialog.Close();
-                    }
-                }
-                if(GlobalVariable.AMSHubConnection != null)
-                    await GlobalVariable.AMSHubConnection.InvokeAsync("SaveAccountLineType", GlobalClass.accountLineGroup);
-
-                break;
+            currentAction = Enums.ActionMode.Deactivate;
+            await PromptMessage();
         }
+        else if (ValidateEntries())
+            await PromptMessage();
+        else
+            Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbarService, Severity.Error);
     }
     private bool ValidateEntries()
     {
       bool valid = true;
       switch(accountLine) {
         case 0 : 
-             if(string.IsNullOrEmpty(GlobalClass.accountLineGroup.LineGroupName)) {
+            if(string.IsNullOrEmpty(GlobalClass.accountLineGroup.LineGroupName)) {
                 reqGName = true;
                 valid = false;
-              } else reqGName = false;
-              break;
-              case 1 :
-                if(string.IsNullOrEmpty(GlobalClass.accountLineType.LineTypeName)) {
-                  reqTName = true;
-                  valid = false;
-                } else reqTName = false;
-                break;
+            } else reqGName = false;
+            break;
+        case 1 :
+            if(string.IsNullOrEmpty(GlobalClass.accountLineType.LineTypeName)) {
+                reqTName = true;
+                valid = false;
+            } else reqTName = false;
+            break;
       }
       return valid;
+    }
+    private async Task PromptMessage()
+    {
+        var parameters = new DialogParameters();
+        string contentText = accountLine == 0 ? "account group " : "account line";
+        string dialogTitle = currentAction.ToString();
+        parameters.Add("actionMode", currentAction);
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("contentText", contentText);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            try
+            {
+                if (currentAction == Enums.ActionMode.Create)
+                {
+                    if (accountLine == 0) {
+                        GlobalClass.accountLineGroup = await accountLineService.UpdateAccountLineGroup(GlobalClass.accountLineGroup, GlobalClass.token);
+                        GlobalClassList.accountLineGroups.Add(GlobalClass.accountLineGroup);
+                    }
+                    else if (accountLine == 1) {
+                        GlobalClass.accountLineType = await accountLineTypeService.AddAccountLineType(GlobalClass.accountLineType, GlobalClass.token);
+                        GlobalClassList.accountLineTypes.Add(GlobalClass.accountLineType);
+                    }
+                }
+                else
+                {
+                    if (accountLine == 0)
+                        GlobalClass.accountLineGroup = await accountLineService.UpdateAccountLineGroup(GlobalClass.accountLineGroup, GlobalClass.token);
+                    else if (accountLine == 1)
+                        GlobalClass.accountLineType = await accountLineTypeService.UpdateAccountLineType(GlobalClass.accountLineType, GlobalClass.token);
+                }
+                if (accountLine == 0)
+                    if(GlobalVariable.AMSHubConnection != null)
+                        await GlobalVariable.AMSHubConnection.InvokeAsync("SaveAccountLineGroup", GlobalClass.accountLineGroup);
+                else if (accountLine == 1)
+                    if(GlobalVariable.AMSHubConnection != null)
+                        await GlobalVariable.AMSHubConnection.InvokeAsync("SaveAccountLineType", GlobalClass.accountLineGroup);
+                MudDialog.Close(DialogResult.Ok(currentAction));
+            }
+            catch (System.Exception ex) {
+                Extensions.ShowAlert(ex.Message, Variant.Filled, snackbarService, Severity.Error);
+            }
+        }
+        else if (currentAction == Enums.ActionMode.Deactivate && accountLine == 0)
+        {
+            GlobalClass.accountLineGroup.IsActive = !GlobalClass.accountLineGroup.IsActive;
+            MudDialog.Cancel();
+        }
+        else if (currentAction == Enums.ActionMode.Deactivate && accountLine == 1)
+        {
+            GlobalClass.accountLineType.IsActive = !GlobalClass.accountLineType.IsActive;
+            MudDialog.Cancel();
+        }
     }
 }

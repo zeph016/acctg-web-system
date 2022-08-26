@@ -27,5 +27,8 @@ namespace fgciams.domain.clsBank
         public decimal BeginningBalance { get; set; }
         public string Remarks { get; set; } = string.Empty;
         public bool subTable { get; set; }
+        public Nullable<Int64> BankCheckNumberId { get; set; } = 0;
+        public List<BankCheckNumberModel> BankCheckNumbers { get; set; }
+        public List<BankCheckNumberModel> RemovedBankCheckNumbers { get; set; }
     }
 }

@@ -21,13 +21,15 @@ main {
   align-items: center;
 }
 
-.top-row ::deep a, .top-row ::deep .btn-link {
+.top-row ::deep a,
+.top-row ::deep .btn-link {
   white-space: nowrap;
   margin-left: 1.5rem;
   text-decoration: none;
 }
 
-.top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
+.top-row ::deep a:hover,
+.top-row ::deep .btn-link:hover {
   text-decoration: underline;
 }
 
@@ -43,7 +45,8 @@ main {
   .top-row.auth {
     justify-content: space-between;
   }
-  .top-row ::deep a, .top-row ::deep .btn-link {
+  .top-row ::deep a,
+.top-row ::deep .btn-link {
     margin-left: 0;
   }
 }
@@ -69,7 +72,8 @@ main {
     text-align: right;
     width: 0;
   }
-  .top-row, article {
+  .top-row,
+article {
     padding-left: 2rem !important;
     padding-right: 1.5rem !important;
   }
@@ -108,9 +112,6 @@ main {
   white-space: nowrap;
   overflow: hidden;
 }
-.main-drawer .mud-nav-group a {
-  padding-left: 16px !important;
-}
 .main-drawer .mud-nav-group .mud-collapse-container {
   background-color: #3d2052;
 }
@@ -118,13 +119,14 @@ main {
   fill: white !important;
 }
 .main-drawer .mud-nav-link.active:not(.mud-nav-link-disabled) {
-  color: orange !important;
+  color: #ffa500 !important;
+  border-left: solid thick #ffa500 !important;
 }
 .main-drawer .mud-nav-link.active:not(.mud-nav-link-disabled) .mud-icon-root {
-  color: orange !important;
+  color: #ffa500 !important;
 }
 .main-drawer .mud-nav-link.active:not(.mud-nav-link-disabled) .mud-nav-link-text {
-  color: orange;
+  color: #ffa500;
 }
 .main-drawer .expandheight-navgroup {
   max-height: calc(100vh - 185px);

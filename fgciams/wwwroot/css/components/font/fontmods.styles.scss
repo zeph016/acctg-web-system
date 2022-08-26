@@ -78,6 +78,16 @@
     font-size: 0.75rem !important;
   }
 }
+.txtfield-70 {
+  .mud-input {
+    height: 20px;
+  }
+  .mud-input-slot,
+  .mud-input-label {
+    font-size: 0.75rem !important;
+  }
+}
+
 .selectparent-75 {
   .mud-input {
     font-size: 0.75rem;
@@ -134,4 +144,8 @@
 
 .ff-theramin {
   font-family: "Theramin" !important;
+}
+
+.ltr-spacing-1px {
+  letter-spacing: 1px !important;
 }

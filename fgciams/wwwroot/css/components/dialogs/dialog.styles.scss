@@ -1,19 +1,39 @@
-.customdialog, .customdialog-table-only {
-    .mud-dialog-title {
-        background-color: #542d6f;
-        color:white;
-        .mud-typography {
-            font-family: "Theramin";
-        }
+.customdialog,
+.customdialog-table-only {
+  .mud-dialog-title {
+    background-color: #542d6f !important;
+    color: white;
+    .mud-typography {
+      font-family: "Theramin";
     }
-    &__content-container {
-        font-size: 1rem;
-        padding: 10px 14px;
-    }
+  }
+  &__content-container {
+    font-size: 1rem;
+    padding: 10px 14px;
+  }
 }
 .customdialog-table-only {
-    .mud-dialog-content { 
-        overflow: hidden;
-        padding: 0px !important;
+  .mud-dialog-content {
+    overflow: hidden;
+    padding: 0px !important;
+  }
+}
+
+.customdialog2 {
+  .mud-dialog-title {
+    background-color: #542d6f !important;
+    color: white;
+    .mud-typography {
+      font-family: "Theramin";
     }
+  }
+  .mud-dialog-content {
+    background-color: #eeeeeea0 !important;
+  }
+}
+
+.customdialog2 {
+  .mud-dialog-content {
+    padding: 8px !important;
+  }
 }

@@ -9,42 +9,42 @@
         </div>
     </TitleContent>
     <DialogContent>
-<div class='page-cont overflow-auto'>
-    <MudOverlay @bind-Visible="showOverlay" DarkBackground="true" AutoClose="true">
-         <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-    </MudOverlay>
-    <MudContainer>
-        <MudContainer class='d-flex gap-2 mt-3' Fixed='false' MaxWidth='MaxWidth.Medium'>
-            <MudTextField Class='flex-grow-1' @bind-Value='searchString' Variant='Variant.Outlined' Placeholder='Search Icon' Margin="Margin.Dense"
-            Adornment='Adornment.End' AdornmentIcon='@Icons.Filled.Search' OnAdornmentClick='(() => GetIconStringsList(numberOfIconsView))'/>
-            <MudSelect @bind-Value='GlobalClass.selectedIconType' Dense='true' Variant='Variant.Outlined' Margin="Margin.Dense">
-            @foreach (var item in iconTypes)
-            {
-                <MudSelectItem Value='item'>@item.ToString()</MudSelectItem>
-            }
-            </MudSelect>
-            <MudSelect @bind-Value='numberOfIconsView' T="int" Dense='true' Variant='Variant.Outlined' Margin="Margin.Dense" 
-                SelectedValuesChanged="((e) => OnSelectedValuesChanged(e))">
-                <MudSelectItem Value=50>50</MudSelectItem>
-                <MudSelectItem Value=100>100</MudSelectItem>
-                <MudSelectItem Value=150>150</MudSelectItem>
-                <MudSelectItem Value=200>200</MudSelectItem>
-                <MudSelectItem Value=250>250</MudSelectItem>
-            </MudSelect>
-        </MudContainer>
-        <div class='d-flex align-top flex-wrap gap-2' style="height: 400px;max-height:600px;">
-            <div style="height: auto;">
-                @if (dataFetched)
+    <div class='page-cont overflow-auto'>
+        <MudOverlay @bind-Visible="showOverlay" DarkBackground="true" AutoClose="true">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        </MudOverlay>
+        <MudContainer>
+            <MudContainer class='d-flex gap-2 mt-3' Fixed='false' MaxWidth='MaxWidth.Medium'>
+                <MudTextField Class='flex-grow-1' @bind-Value='searchString' Variant='Variant.Outlined' Placeholder='Search Icon' Margin="Margin.Dense"
+                Adornment='Adornment.End' AdornmentIcon='@Icons.Filled.Search' OnAdornmentClick='(() => GetIconStringsList(numberOfIconsView))'/>
+                <MudSelect @bind-Value='GlobalClass.selectedIconType' Dense='true' Variant='Variant.Outlined' Margin="Margin.Dense">
+                @foreach (var item in iconTypes)
                 {
-                    @foreach (var item in iconList)
-                    {
-                        <MudIconButton OnClick='(() => SelectIcon(item))' Icon="@Extensions.GetIconValue(@GlobalClass.selectedIconType, @item)" Size='Size.Medium' style="height: 40px;"/>
-                    }
+                    <MudSelectItem Value='item'>@item.ToString()</MudSelectItem>
                 }
-        </div>
-        </div>
-    </MudContainer>
-</div>
+                </MudSelect>
+                <MudSelect @bind-Value='numberOfIconsView' T="int" Dense='true' Variant='Variant.Outlined' Margin="Margin.Dense" 
+                    SelectedValuesChanged="((e) => OnSelectedValuesChanged(e))">
+                    <MudSelectItem Value=50>50</MudSelectItem>
+                    <MudSelectItem Value=100>100</MudSelectItem>
+                    <MudSelectItem Value=150>150</MudSelectItem>
+                    <MudSelectItem Value=200>200</MudSelectItem>
+                    <MudSelectItem Value=250>250</MudSelectItem>
+                </MudSelect>
+            </MudContainer>
+            <div class='d-flex align-top flex-wrap gap-2' style="height: 400px;max-height:600px;">
+                <div style="height: auto;">
+                    @if (dataFetched)
+                    {
+                        @foreach (var item in iconList)
+                        {
+                            <MudIconButton OnClick='(() => SelectIcon(item))' Icon="@Extensions.GetIconValue(@GlobalClass.selectedIconType, @item)" Size='Size.Medium' style="height: 40px;"/>
+                        }
+                    }
+            </div>
+            </div>
+        </MudContainer>
+    </div>
 </DialogContent>
 </MudDialog>
 

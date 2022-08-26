@@ -29,7 +29,9 @@
                   in total
                 </MudText>
                 <MudSpacer />
-                <MudIconButton Icon="@Icons.Material.Filled.Refresh" OnClick='(()=> tableVariable!.ReloadServerData())'/>
+                <MudTooltip Text="Refresh Table">
+                  <MudIconButton Icon="@Icons.Filled.Refresh" Size="Size.Small" OnClick='(()=> tableVariable!.ReloadServerData())' ></MudIconButton>
+                </MudTooltip>
                 <MudTextField Class='txtfield-75 width5' T='string' ValueChanged='@(s=>OnSearch(s))' Placeholder='Control Number' Margin='Margin.Dense'
                 Adornment='Adornment.Start' AdornmentIcon='@Icons.Material.Filled.Search' IconSize='Size.Small'
                 Clearable='true' Variant='Variant.Outlined' />
@@ -159,7 +161,8 @@
                     </MudChip>
                 </MudTd>
                 <MudTd Class='text-center' DataLabel="Status">
-                  <MudChip Class='chip-radius-5 font-bold font10' Color='Color.Info' Variant='Variant.Filled' Size='Size.Small'>
+                  <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Filled' Size='Size.Small'
+                    Style="@Extensions.GetAcctgStatusColor(context.AccountingStatusId)">
                     @context.StatusName
                   </MudChip>
                 </MudTd>

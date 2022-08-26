@@ -2,7 +2,8 @@
 
 @inject IDivisionService divisionService
 @inject IDialogService dialogService
-@inject ISnackbar snackBarService
+@inject ISnackbar snackbarService
+@inject ApplicationState AppState
 
 <div class='page-cont'>
     <div class='drawer-right'>
@@ -28,16 +29,13 @@
     <MudContainer Class='divisionpage' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
         @if(!dataFetched)
         {
-            <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
-                <MudSkeleton SkeletonType='SkeletonType.Text' Height='100px' Animation='Animation.Wave' />
-                <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='71vh' Animation='Animation.Wave' />
-            </MudPaper>
+            <SkeletonPageList />
         }
         else
         {
-            <MudTable Class='configtables' Items="@GlobalClassList.divisionList" Hover="true" 
-            Breakpoint="Breakpoint.Sm" FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
-            RowsPerPage='30' Striped='true' Filter='new Func<DivisionModel,bool>(FilterItems)'>
+            <MudTable Class='configtables row-popup-anim-2px' Items="@GlobalClassList.divisionList" Hover="true" 
+                Breakpoint="Breakpoint.Xs" FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
+                RowsPerPage='30' Filter='new Func<DivisionModel,bool>(FilterItems)'>
                 <ToolBarContent>
                     <MudText Typo='Typo.caption'>
                         @GlobalClassList.divisionList.Count() 
@@ -49,17 +47,11 @@
                         <MudIconButton Icon="@Icons.Filled.Refresh" Size="Size.Small" OnClick='(()=>{searchTerm = "";})' ></MudIconButton>
                     </MudTooltip>
                     <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
-                    TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
-                        <MudMenuItem OnClick='(() => DivisionDialog(new DivisionModel()))'>
-                            <div class='d-flex align-center gap-2'>
-                                <MudIcon Icon='@Icons.Filled.Add' Size='Size.Medium' />
+                        TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
+                        <MudMenuItem OnClick='(() => DivisionDialog(new DivisionModel(), Enums.ActionMode.Create))'>
+                            <div class='d-flex align-center gap-2 menu-grow-anim'>
+                                <MudIcon Icon='@Icons.Filled.Add' Size='Size.Small' />
                                 <MudText Typo='Typo.body2'>Add</MudText>
-                            </div>
-                        </MudMenuItem>
-                         <MudMenuItem OnClick='OpenSideFilter'>
-                            <div class='d-flex align-center gap-2'>
-                            <MudIcon Icon='@Icons.Filled.FilterList' />
-                            <MudText Typo='Typo.body2'>Filter</MudText>
                             </div>
                         </MudMenuItem>
                     </MudMenu>
@@ -67,7 +59,7 @@
                 <ColGroup>
                     <col />
                     <col />
-                    <col style='width: 5%' />
+                    <col style='width: 20px' />
                 </ColGroup>
                 <HeaderContent>
                     <MudTh Class='customheader-1'>
@@ -76,17 +68,17 @@
                         </MudTableSortLabel>
                     </MudTh>
                     <MudTh Class='customheader-1'>Short Name</MudTh>
-                    <MudTh Class='customheader-1 text-center'>Action</MudTh>
+                    <MudTh Class='customheader-1 text-center pa-2'>Action</MudTh>
                 </HeaderContent>
                 <RowTemplate>
                         <MudTd DataLabel="Division Name">@context.divisionName</MudTd>
                         <MudTd DataLabel="Short Name">@context.shortcutName</MudTd>
-                        <MudTd Class='text-center'>
+                        <MudTd Class='text-center pa-2'>
                             <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
                             TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
-                                <MudMenuItem OnClick='(() => DivisionDialog(context))'>
-                                    <div class='d-flex align-center gap-2'>
-                                        <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Medium' />
+                                <MudMenuItem OnClick='(() => DivisionDialog(context, Enums.ActionMode.Update))'>
+                                    <div class='d-flex align-center gap-2 menu-grow-anim'>
+                                        <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small' />
                                         <MudText Typo='Typo.body2'>Edit</MudText>
                                     </div>
                                 </MudMenuItem>
@@ -107,9 +99,10 @@
     private string searchTerm = string.Empty, visibility = "visibility-animation-hide";
     protected override async Task OnInitializedAsync()
     {
-        GlobalClass.pageTitle = "DIVISION";
+        GlobalClass.pageTitle = "Configuration - DIVISION";
         while (GlobalClass.currentUserAccount == null || GlobalClassList.divisionList == null)
             await Task.Delay(1);
+        await AppState.UpdateMainLayoutComponent(true);
         CompletedFetch();
         SignalR();
     }
@@ -120,35 +113,31 @@
         StateHasChanged();
     }
 
-    private async Task DivisionDialog(DivisionModel division)
+    private async Task DivisionDialog(DivisionModel division, Enums.ActionMode action)
     {
         var parameters = new DialogParameters();
         GlobalClass.division = division;
-        division.IsActive = true;
         string dialogTitle = GlobalClass.division.Id != 0 ? "Edit division" : "Add division";
         string buttonText = GlobalClass.division.Id != 0 ? "Update" : "Add";
         Color color = GlobalClass.division.Id != 0 ? Color.Info : Color.Success;
         parameters.Add("color", color);
         parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("buttonText", buttonText);
-        var options = new DialogOptions()
-        {
-            CloseButton = false,
-            MaxWidth = MaxWidth.ExtraSmall,
-            FullWidth = true,
-            NoHeader = false,
-            DisableBackdropClick = false
-        };
+        parameters.Add("currentAction", action);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = false };
         var resultDialog = await dialogService.Show<Shared.Dialogs.DivisionDialogs.DivisionDialog>("", parameters, options).Result;
         if (!resultDialog.Cancelled)
         {
-            if ((int)resultDialog.Data == 0)
-                ShowAlert("The new division is successfully saved.", Variant.Filled, Severity.Success);
-            else if ((int)resultDialog.Data == 1)
-                ShowAlert("The updated division is successfully saved.", Variant.Filled, Severity.Info);
-            else if ((int)resultDialog.Data == 2)
-                ShowAlert("The division has been removed from the list.", Variant.Filled, Severity.Info);
-        }
+            if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Create)
+                Extensions.ShowAlert("Division successfully added.", Variant.Filled,snackbarService,Severity.Success);
+            else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Update)
+                Extensions.ShowAlert("Division successfully updated.", Variant.Filled,snackbarService,Severity.Info);
+            else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Deactivate)
+                Extensions.ShowAlert("Division has been deactivated.", Variant.Filled,snackbarService,Severity.Warning);
+            else
+                await LoadDivisionList();
+        } else if (resultDialog.Cancelled)
+            Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
     }
     private bool FilterItems(DivisionModel items)
     {
@@ -158,15 +147,7 @@
             return true;
         return false;
     }
-
-    private void ShowAlert(string message, Variant variant, Severity severity)
-    {
-        snackBarService.Clear();
-        snackBarService.Configuration.PositionClass = Defaults.Classes.Position.BottomCenter;
-        snackBarService.Configuration.SnackbarVariant = variant;
-        snackBarService.Configuration.MaxDisplayedSnackbars = 10;
-        snackBarService.Add($"{message}", severity);
-    }
+    
     private void OpenSideFilter()
     {
         openSideFilter = !openSideFilter;
@@ -192,5 +173,9 @@
             Console.WriteLine(ex.Message);
             throw;
         }
+    }
+    private async Task LoadDivisionList()
+    {
+        GlobalClassList.divisionList = await divisionService.LoadDivisionList(GlobalClass.token);
     }
 }

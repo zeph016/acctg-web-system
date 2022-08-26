@@ -60,10 +60,12 @@
                                               IconSize='Size.Small' Required='reqCharging' Error='reqCharging' @onclick='(()=> ProjectChargingLookUp(selectedRFPDModelEdit))' ReadOnly AutoFocus></MudTextField>
                             </MudItem>
                             <MudItem Class='text-right d-flex align-center gap-1' xs='4'>
-                                <MudText Class='pt-6 font-bold font12'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
-                                <MudNumericField Class='txt-search-overflow font12 txtfield-right' @bind-Value='selectedRFPDModelEdit.Amount' HideSpinButtons='true'
-                                                 Format="N2" Error='reqAmount'
-                                                 ReadOnly='@(GlobalClass.requestForPayment?.RFPDetailTypeId != Enums.RFPDetailTypeId.None ? true : false)' />
+                            <MudText Class='pt-6 font-bold font12'>
+                                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                            </MudText>
+                            <MudNumericField Class='txt-search-overflow font12 txtfield-right' Value="selectedRFPDModelEdit.Amount" ValueChanged="((decimal amount)=>AmountChange(amount))"  HideSpinButtons='true'
+                                Format="N2" Error='reqAmount'
+                                ReadOnly='@(selectedRFPDModelEdit.rfpType == Enums.RFPDetailTypeId.Reversal || selectedRFPDModelEdit.rfpType == Enums.RFPDetailTypeId.Labor? false : (GlobalClass.requestForPayment?.RFPDetailTypeId != Enums.RFPDetailTypeId.None ? true : false))' />
                             </MudItem>
                             <MudItem xs='6'>
                                 <MudTextField @bind-Value='@selectedRFPDModelEdit.ExpenseLineName' AdornmentIcon='@Icons.Filled.Search' Label='Expense'
@@ -85,7 +87,7 @@
                 <div class='d-flex align-center gap-1 pa-2'>
                     <MudSpacer />
                     <MudButton OnClick='ClearChanges' Variant='Variant.Text' Size='Size.Small'>Cancel</MudButton>
-                    <MudButton OnClick='SaveChanges' StartIcon="@Icons.Material.Filled.DoneAll" Variant='Variant.Filled' Color='Color.Success' Size='Size.Small'>Done</MudButton>
+                    <MudButton OnClick='SaveChanges' Variant='Variant.Filled' Color='Color.Success' Size='Size.Small'>Done</MudButton>
                 </div>
             </MudNavMenu>
         </MudDrawer>
@@ -100,20 +102,26 @@
         }
         else
         {
-            <MudCard Class='flex-1' Square>
+            <MudCard Class='flex-1'>
                 <MudCardContent Class='pa-2'>
                     <div class='requestpayment__entryform overflow-auto scroll-width-auto'>
-                        <div class="d-flex align-center justify-start rpheader">
-                            <div class='d-flex gap-1 align-center fgcilogocont'>
-                                <MudImage Class='fgcilogocont__imglogo' Src='images/fglogo/fgci1.png' Alt='fgci logo' Height='30' Width='30' />
-                                <MudText Class='fgcilogocont__lblfirst'>F. GURREA</MudText>
-                                <MudText Class='fgcilogocont__lblsecond'>Construction, Inc.</MudText>
-                            </div>
-                            <MudSpacer />
-                            <div class='d-flex gap-1 align-center'>
-                                <MudText Class='requestpayment__entryformtitle'>@GlobalClass.pageTitle</MudText>
-                            </div>
-                            <MudSpacer />
+                        <div class="d-flex align-center justify-start rpheader bgc-F4F5FB pa-2">
+                            <MudGrid Spacing='1'>
+                                <MudItem Class='d-flex align-center gap-2' xs=4>
+                                    <MudImage Class='fgcilogocont__imglogo' Src='images/fglogo/fgci1.png' Alt='fgci logo' Height='30' Width='30' />
+                                    <MudText Class='fgcilogocont__lblfirst'>F. GURREA</MudText>
+                                    <MudText Class='fgcilogocont__lblsecond'>Construction, Inc.</MudText>
+                                </MudItem>
+                                <MudItem Class='d-flex align-center justify-center' xs=4>
+                                    <MudText Class='wspace-nowrap txt-uppercase font-1-1rem ff-theramin'>@GlobalClass.pageTitle</MudText>
+                                </MudItem>
+                                <MudItem Class='d-flex align-center justify-end' xs=4>
+                                    <MudTooltip Text="Create Petty Cash">
+                                        <MudButton Class='btn-ios-d pa-1 font12' OnClick='New' StartIcon="@Icons.Filled.Add" Variant='Variant.Filled'
+                                        Color='Color.Info' Size='Size.Small' DisableElevation>new</MudButton>
+                                    </MudTooltip>
+                                </MudItem>
+                            </MudGrid>
                         </div>
                         <div class="d-flex align-center rpheadmid">
                             <div class='d-flex align-center gap-2 rpheadmid__cont1'>
@@ -130,59 +138,64 @@
                                 <MudDatePicker Class='requestpayment__txtinputs' @bind-Date='dateReq' IconSize='Size.Small' Adornment='Adornment.None' />
                             </div>
                         </div>
-                        <div class="rptbbody">
-                            <MudTable Class='requestpayment__table' Items="GlobalClassList.requestForPayments" Bordered=true Striped=true ReadOnly=false CanCancelEdit=true
-                                      Dense=true Elevation='0' OnCommitEditClick='@(()=> TotalAmount())' IsEditRowSwitchingBlocked=true Height='auto'>
+                        <div class="rptbbody overflow-hidden">
+                            <MudTable Class='requestpayment__table toolbar-pad-0' Items="GlobalClassList.requestForPayments" Bordered=true Striped=true ReadOnly=false CanCancelEdit=true
+                                Dense=true Elevation='0' OnCommitEditClick='@(()=> TotalAmount())' IsEditRowSwitchingBlocked=true Height='calc(100vh - 540px)'>
                                 <ToolBarContent>
-                                    <div class='d-flex align-center gap-2'>
-                                        <MudText Class='font-bold font10 txt-uppercase'>Request Category:</MudText>
-                                        <MudSelect Class='requestpayment__txtinputs' @bind-Value='GlobalClass.requestForPayment.RFPDetailTypeId' Dense='true' style='margin-top: 3px; width: 200px;' Disabled='disableRequestCategory'>
-                                            @foreach (Enums.RFPDetailTypeId item in Enum.GetValues(typeof(Enums.RFPDetailTypeId)))
+                                    <div class='d-flex flex-1 align-center gap-2 border-thin-bottom px-2'>
+                                        <div class='d-flex align-center gap-2'>
+                                            <MudText Class='font-bold font10 txt-uppercase'>Request Category:</MudText>
+                                            <MudSelect Class='requestpayment__txtinputs' T="Enums.RFPDetailTypeId" Value='@rfpTypes' ValueChanged="@((Enums.RFPDetailTypeId rfpType)=>PromptValidation(rfpType))" Dense='true' style='margin-top: 3px; width: 200px;' Disabled='disableRequestCategory'>
+                                                @foreach (Enums.RFPDetailTypeId item in Enum.GetValues(typeof(Enums.RFPDetailTypeId)))
+                                                {
+                                                    if(item != Enums.RFPDetailTypeId.Reversal)
+                                                    {
+                                                        <MudSelectItem Class='requestpayment__select' Value='@item'>@Extensions.GetEnumDescription(item)</MudSelectItem>
+                                                    }
+                                                }
+                                            </MudSelect>
+                                        </div>
+                                        <div class='d-flex align-center gap-2 ml-2'>
+                                            <MudText Class='font-bold font10 txt-uppercase'>Request Type:</MudText>
+                                            @if (GlobalClass.requestForPayment == null || GlobalClass.requestForPayment.Id == 0)
                                             {
-                                                <MudSelectItem Class='requestpayment__select' Value='@item'>@Extensions.GetEnumDescription(item)</MudSelectItem>
+                                                <MudSelect Class='requestpayment__txtinputs' @bind-Value='selectedRequestType' Dense='true' style='margin-top: 3px; width: 200px;'>
+                                                    @foreach (var item in GlobalClassList.requestTypes)
+                                                        {
+                                                        <MudSelectItem Class='requestpayment__select' Value='@item'>@item.TypeName</MudSelectItem>
+                                                        }
+                                                </MudSelect>
                                             }
-                                        </MudSelect>
-                                    </div>
-                                    <div class='d-flex align-center gap-2 ml-2'>
-                                        <MudText Class='font-bold font10 txt-uppercase'>Request Type:</MudText>
-                                        @if (GlobalClass.requestForPayment == null || GlobalClass.requestForPayment.Id == 0)
+                                            else
+                                            {
+                                                <MudSelect Class='requestpayment__txtinputs' @bind-Value='selectedRequestType.Id' Dense='true' style='margin-top: 3px; width: 200px;'>
+                                                    @foreach (var item in GlobalClassList.requestTypes)
+                                                        {
+                                                        <MudSelectItem Class='requestpayment__select' Value='@item.Id'>@item.TypeName</MudSelectItem>
+                                                        }
+                                                </MudSelect>
+                                            }
+                                        </div>
+                                        <MudSpacer />
+                                        @if(GlobalClass.requestForPayment?.RFPDetailTypeId != Enums.RFPDetailTypeId.None)
                                         {
-                                            <MudSelect Class='requestpayment__txtinputs' @bind-Value='selectedRequestType' Dense='true' style='margin-top: 3px; width: 200px;'>
-                                                @foreach (var item in GlobalClassList.requestTypes)
-                                                    {
-                                                    <MudSelectItem Class='requestpayment__select' Value='@item'>@item.TypeName</MudSelectItem>
-                                                    }
-                                            </MudSelect>
+                                            <MudTooltip Text='Add Reversal' style="">
+                                                <MudButton Class='wspace-nowrap' OnClick='AddReversal' StartIcon="@Icons.Filled.Add" aria-label="add" Color='Color.Error' Variant='Variant.Text' Size='Size.Small'>
+                                                    Add Reversal
+                                                </MudButton>
+                                            </MudTooltip>
                                         }
-                                        else
-                                        {
-                                            <MudSelect Class='requestpayment__txtinputs' @bind-Value='selectedRequestType.Id' Dense='true' style='margin-top: 3px; width: 200px;'>
-                                                @foreach (var item in GlobalClassList.requestTypes)
-                                                    {
-                                                    <MudSelectItem Class='requestpayment__select' Value='@item.Id'>@item.TypeName</MudSelectItem>
-                                                    }
-                                            </MudSelect>
-                                        }
+                                        <MudTooltip Text='Add details'>
+                                            <MudButton Class='wspace-nowrap' OnClick='AddNew' StartIcon="@Icons.Filled.Add" aria-label="add" Color='Color.Info' Variant='Variant.Text' Size='Size.Small'>
+                                                Add details
+                                            </MudButton>
+                                        </MudTooltip>
+                                        <MudTooltip Text='Reset Details'>
+                                            <MudButton OnClick='RefreshTable' StartIcon="@Icons.Filled.Refresh" aria-label="add" Color='Color.Warning' Variant='Variant.Text' Size='Size.Small'>
+                                                Reset
+                                            </MudButton>
+                                        </MudTooltip>
                                     </div>
-                                    <MudSpacer />
-                                    @if(GlobalClass.requestForPayment?.RFPDetailTypeId != Enums.RFPDetailTypeId.None)
-                                    {
-                                    <MudTooltip Text='Add details' style="">
-                                        <MudButton Class='wspace-nowrap' OnClick='AddReversal' StartIcon="@Icons.Filled.Add" aria-label="add" Color='Color.Error' Variant='Variant.Text' Size='Size.Small'>
-                                            Add Reversal
-                                        </MudButton>
-                                    </MudTooltip>
-                                    }
-                                    <MudTooltip Text='Add details'>
-                                        <MudButton Class='wspace-nowrap' OnClick='AddNew' StartIcon="@Icons.Filled.Add" aria-label="add" Color='Color.Info' Variant='Variant.Text' Size='Size.Small'>
-                                            Add details
-                                        </MudButton>
-                                    </MudTooltip>
-                                    <MudTooltip Text='Reset Details'>
-                                        <MudButton OnClick='RefreshTable' StartIcon="@Icons.Filled.Refresh" aria-label="add" Color='Color.Warning' Variant='Variant.Text' Size='Size.Small'>
-                                            Reset
-                                        </MudButton>
-                                    </MudTooltip>
                                 </ToolBarContent>
                                 <ColGroup>
                                     <col style='width: 10px' />
@@ -383,7 +396,7 @@
                                 <MudTextField Class='txt-top-0' T='string' Margin='Margin.Dense' DisableUnderLine='false' />
                             </div>
                             <div class='d-flex flex-column overflow-auto'>
-                                <div class='d-flex align-center justify-center pa-2 border-thin-bottom bgc-beige scroll-color-dgray'>
+                                <div class='d-flex align-center justify-center pa-2 border-thin-bottom scroll-color-dgray'>
                                     <MudText Class='font10 font-bold txt-uppercase'>billing requirements for payment</MudText>
                                 </div>
                                 <div class='d-flex flex-wrap overflow-auto scroll-width-auto'>
@@ -501,6 +514,7 @@
     public EventCallback<ChangeEventArgs> OnInput { get; set; }
     private byte[] preparedByImg = new byte[] { }, requestorImg = new byte[] { }, recommendByImg = new byte[] { }, approvedByImg = new byte[] { };
     bool txt1;
+    private Enums.RFPDetailTypeId rfpTypes {get;set;}
     #endregion
 
     #region Methods
@@ -527,7 +541,9 @@
         if (GlobalClass.requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.None)
         {
             var temp = 1;
-            GlobalClassList.requestForPayments.Add(new RequestForPaymentDetailModel());
+            var none = new RequestForPaymentDetailModel();
+            none.rfpType = Enums.RFPDetailTypeId.None;
+            GlobalClassList.requestForPayments.Add(none);
             rowEditChargeTo = new();
             selectedDivision = new();
             accountingPOBilling = new();
@@ -542,13 +558,26 @@
             AddPOBilling();
         if (GlobalClass.requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.PO)
             AddPO();
+        if (GlobalClass.requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.Labor)
+            {
+                var temp = 1;
+                var rfpDetail = new RequestForPaymentDetailModel();
+                rfpDetail.rfpType = Enums.RFPDetailTypeId.Labor;
+                GlobalClassList.requestForPayments.Add(rfpDetail);
+                foreach (var item in GlobalClassList.requestForPayments)
+                {
+                    item.TemporaryId = temp++;
+                }
+            }
     }
     #endregion
 
     #region Add Reversal
     private void AddReversal()
     {
-      GlobalClassList.requestForPayments.Add(new RequestForPaymentDetailModel());
+    var rfpDetail = new RequestForPaymentDetailModel();
+    rfpDetail.rfpType = Enums.RFPDetailTypeId.Reversal;
+    GlobalClassList.requestForPayments.Add(rfpDetail);
     }
 
     #endregion
@@ -800,7 +829,6 @@
             await DisplayProperties();
             TotalAmount();
         }
-
         CompletedFetch();
     }
 
@@ -879,7 +907,7 @@
             navigationManager.NavigateTo($"rfpreport/print");
         }
         else
-            Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbarService, Severity.Error);
+            Extensions.ShowAlert("Cannot create Request fo Payment, Incomplete fields.", Variant.Filled, snackbarService, Severity.Error);
 
     }
 
@@ -918,6 +946,7 @@
         _requestedby = GlobalClass.requestForPayment.RequestedByName;
         _recommendby = GlobalClass.requestForPayment.RecommendedByName;
         _approvedby = GlobalClass.requestForPayment.ApprovedByName;
+        
     }
     async Task GetByIdDisplayProperties()
     {
@@ -1026,16 +1055,6 @@
     #endregion
 
     #region Load Employee
-    async Task<IEnumerable<UserAccount>> LoadEmployee(string employeeName)
-    {
-        var filterParameter = new FilterParameter()
-        {
-            IsName = true,
-            Name = employeeName,
-            IsLookUp = true
-        };
-        return await globalService.LoadAllEmployee(filterParameter, GlobalClass.token);
-    }
 
     #endregion
 
@@ -1239,7 +1258,7 @@
 
     void TotalAmount()
     {
-        var total = GlobalClassList.requestForPayments.Select(x => x.Amount).Sum();
+        var total = GlobalClassList.requestForPayments.Sum(x => x.Amount);
         totalAmount = decimal.Round(total, 2);
     }
 
@@ -1294,6 +1313,7 @@
             GlobalClassList.requestForPayments.Remove(RFPremoved);
             GlobalClass.requestForPayment.RemovedRequestForPaymentDetails = removedRFPDetails.ToList();
         }
+        TotalAmount();
         StateHasChanged();
     }
 
@@ -1405,7 +1425,7 @@
             selectedRFPDModelEdit.ChargedId = 0;
             selectedRFPDModelEdit.ChargedName = string.Empty;
             selectedRFPDModelEdit.DivisionId = 0;
-            selectedRFPDModelEdit.DivisionName = string.Empty;
+            selectedRFPDModelEdit.DivisionName = string.Empty;SaveChanges
             selectedRFPDModelEdit.DivisionShortcutName = string.Empty;
             selectedRFPDModelEdit.ExpenseLineId = 0;
             selectedRFPDModelEdit.ExpenseLineName = string.Empty;
@@ -1438,7 +1458,7 @@
             break;
         }
         openEditDrawer = !openEditDrawer;
-        totalAmount = GlobalClassList.requestForPayments.Sum(x => x.Amount);
+        TotalAmount();
         MarginToDrawer();
     }
 
@@ -1491,4 +1511,21 @@
         navigationManager.NavigateTo("/requestpayment/list");
     }
     #endregion
+    private void AmountChange(decimal amount)
+    {
+        selectedRFPDModelEdit.Amount = selectedRFPDModelEdit.rfpType == Enums.RFPDetailTypeId.Reversal? -Math.Abs(amount):amount;
+        TotalAmount();
+    }
+    private void PromptValidation(Enums.RFPDetailTypeId rfps)
+    {
+        if(GlobalClassList.requestForPayments.Count > 0)
+        {
+            //Initial alert
+            Extensions.ShowAlert("Please remove all the details before selecting new request category.",Variant.Filled,snackbarService,Severity.Error);
+        } else 
+        {
+            rfpTypes = rfps;
+            GlobalClass.requestForPayment.RFPDetailTypeId = rfps;
+        }
+    }
 }

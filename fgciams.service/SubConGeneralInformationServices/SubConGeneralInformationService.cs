@@ -1,4 +1,5 @@
 ﻿using fgciams.domain.clsSubConGeneralInformation;
+using fgciams.domain.clsSubContractProject;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,6 +71,61 @@ namespace fgciams.service.SubConGeneralInformationServices
                 throw;
             }
         }
+
+        public async Task<List<SubContractorProjectModel>> GetSubConProjects(long id, string token)
+        {
+            try
+            {
+                var subConProjects = new List<SubContractorProjectModel>();
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                HttpResponseMessage responseMessage = await _client.GetAsync("subcon-general-information/projects/"+id);
+                if (responseMessage.IsSuccessStatusCode)
+                    subConProjects = await responseMessage.Content.ReadAsAsync<List<SubContractorProjectModel>>();
+                return subConProjects;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public async Task<SubContractorProjectModel> AddSubConProjects(SubContractorProjectModel subconProj, string token)
+        {
+            try
+            {
+                var subConGenInfo = new SubContractorProjectModel();
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("subcon-projects", subconProj);
+                if (responseMessage.IsSuccessStatusCode)
+                    subConGenInfo = await responseMessage.Content.ReadAsAsync<SubContractorProjectModel>();
+                return subConGenInfo;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public async Task<SubContractorProjectModel> UpdateSubConProjects(SubContractorProjectModel subconProj, string token)
+        {
+            try
+            {
+                var subConGenInfo = new SubContractorProjectModel();
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                HttpResponseMessage responseMessage = await _client.PutAsJsonAsync("subcon-projects", subconProj);
+                if (responseMessage.IsSuccessStatusCode)
+                    subConGenInfo = await responseMessage.Content.ReadAsAsync<SubContractorProjectModel>();
+                return subConGenInfo;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
         #endregion
     }
 }

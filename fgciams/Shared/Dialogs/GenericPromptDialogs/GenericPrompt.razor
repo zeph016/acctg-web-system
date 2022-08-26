@@ -1,13 +1,16 @@
 <MudDialog Class='customdialog'>
+    <TitleContent>
+         <MudText Class='txt-uppercase ltr-spacing-1px' Typo='Typo.h6'>@dialogTitle</MudText>
+    </TitleContent>
     <DialogContent>
-        <MudText Class='font18 pa-2'>
+        <MudText Class='font14 pa-2'>
             @contentText
         </MudText>
-        <MudText Class="font16 mud-text-secondary pa-2">@note</MudText>
+        <MudText Class="font12 mud-text-secondary pa-2">@note</MudText>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
-        <MudButton OnClick="Submit" Variant='Variant.Filled' Color="@color">@buttonText</MudButton>
+        <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text' Size='Size.Small' DisableElevation>Cancel</MudButton>
+        <MudButton Class='btn-ios-d font12' OnClick="Submit" Variant='Variant.Filled' Color="@color" Size='Size.Small' DisableElevation>@buttonText</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -23,12 +26,12 @@
 
     public override async Task SetParametersAsync(ParameterView parameters)
     {
-
         await base.SetParametersAsync(parameters);
     }
 
     protected override void OnInitialized()
     {
+        Console.WriteLine(actionMode);
         CheckActionsMode();
         CompletedFetch();
     }
@@ -52,12 +55,12 @@
     private void CheckActionsMode()
     {
         if (actionMode == Enums.ActionMode.Create) {
-            contentText = $"Are you sure you want to create {contentText}?";
+            contentText = $"Are you sure you want to save this {contentText}?";
             buttonText = "Confirm";
-            color = Color.Success;
+            color = Color.Info;
         } else if (actionMode == Enums.ActionMode.Update) {
-            contentText = $"Are you sure you want to update {contentText}?";
-            buttonText = "Update";
+            contentText = $"Are you sure you want to update this {contentText}?";
+            buttonText = "Confirm";
             color = Color.Info;
         } else if (actionMode == Enums.ActionMode.Approve) {
             contentText = $"Are you sure you want to approve {contentText}?";
@@ -84,13 +87,13 @@
         }
         else if(actionMode == Enums.ActionMode.Released)
         {
-            contentText = $"Are you sure you want to released this {contentText}?";
+            contentText = $"Are you sure you want to release this {contentText}?";
             buttonText = "Release";
             color = Color.Info;
         }
         else if(actionMode == Enums.ActionMode.Cleared)
         {
-            contentText = $"Are you sure you want to cleared this {contentText}?";
+            contentText = $"Are you sure you want to clear this {contentText}?";
             buttonText = "Clear";
             color = Color.Info;
         }
@@ -98,8 +101,20 @@
         {
             contentText = $"Are you sure you want to deactivate this {contentText}?";
             note = "Note: This will remove the item from the list.";
-            buttonText = "Deactivate";
+            buttonText = "Confirm";
             color = Color.Error;
+        }
+        else if(actionMode == Enums.ActionMode.Route)
+        {
+            contentText = $"Are you sure you want to route this {contentText}?";
+            buttonText = "Route";
+            color = Color.Info;
+        }
+        else if(actionMode == Enums.ActionMode.Invalid)
+        {
+            contentText = $"Your are not allowed to remove this details, payee have EWT value.";
+            buttonText = "OK";
+            color = Color.Info;
         }
     }
 }

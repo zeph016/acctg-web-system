@@ -16,7 +16,10 @@ namespace fgciams.domain.clsVoucher
         public string RFPControlNumber { get; set; } = string.Empty;
         public string VoucherControlNumber { get; set; } = string.Empty;
         public decimal Amount {get; set;}
+        public decimal TotalAmount { get; set; }
         public long payeeId { get; set; }
         public Enums.ProjectCategory payeeCategory { get; set; }
+        public Enums.RFPDetailTypeId rfpType;
+        public string PayeeName = String.Empty;
     }
 }

@@ -63,7 +63,7 @@
             if (CheckWriter.currentActionMode == Enums.ActionMode.Create)
             {
                 returnedModel =  await checkService.AddCheck(GlobalClass.checkModel,GlobalClass.token);
-                Extensions.ShowAlert("Check has been CREATED",Variant.Filled,snackBarService,Severity.Error);
+                Extensions.ShowAlert("Check has been CREATED",Variant.Filled,snackBarService,Severity.Success);
             }
             else if (CheckWriter.currentActionMode == Enums.ActionMode.Update)
             {

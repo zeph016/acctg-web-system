@@ -2,7 +2,7 @@
 @inject ISnackbar snackBar
 @inject IDialogService dialogService
 
-<MudDialog class="customdialog">
+<MudDialog class="customdialog2">
     <TitleContent>
         <div class='d-flex align-center'>
             @if (GlobalClass.modeOfPayment.Id != 0)
@@ -13,25 +13,30 @@
             {
                 <MudIcon Icon="@Icons.Filled.Add" Class="mr-3" />
             }
-            <MudText Typo='Typo.h6'>@dialogTitle</MudText>
+            <MudText Class='txt-uppercase' Typo='Typo.h6'>@dialogTitle</MudText>
         </div>
     </TitleContent>
     <DialogContent>
-        <div class='customdialog__content-container'>
-            <MudGrid Spacing='1'>
-                <MudItem xs='9'>
+        <MudPaper Class='pa-2' Elevation='0'>
+            <MudGrid Class='pa-2' Spacing='1'>
+                <MudItem xs='12'>
                     <MudTextField @bind-Value='@GlobalClass.modeOfPayment.ModeName' Label='Mode Name' Error=@notValidModeName ErrorText="Required*"
-                    HelperText="Required*"/>
-                </MudItem>
-                <MudItem Class='d-flex align-center' xs='3'>
-                    <MudCheckBox @bind-Checked='@GlobalClass.modeOfPayment.IsActive' Label='Active' ReadOnly=@isReadOnly/>
+                    HelperText="Required*" Margin='Margin.Dense' />
                 </MudItem>
             </MudGrid>
-        </div>
+        </MudPaper>
     </DialogContent>
      <DialogActions>
-        <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
-        <MudButton OnClick="Submit" Variant='Variant.Filled' Color="@color">@buttonText</MudButton>
+        @if(GlobalClass.modeOfPayment.Id != 0)
+        {
+            <MudCheckBox @bind-Checked='@GlobalClass.modeOfPayment.IsActive' Label='Active' ReadOnly=@isReadOnly
+                Size='Size.Small' Color='Color.Dark' Dense />
+        }
+        <MudSpacer />
+        <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text' Size='Size.Small' DisableElevation>Cancel</MudButton>
+        <MudButton Class='btn-ios-d font12' OnClick="Submit" Variant='Variant.Filled' Color='@(!GlobalClass.modeOfPayment.IsActive ? Color.Error : @color)' Size='Size.Small' DisableElevation>
+            @(!GlobalClass.modeOfPayment.IsActive ? "Deactivate" : @buttonText)
+        </MudButton>
     </DialogActions>
 </MudDialog>
 @code{
@@ -39,12 +44,12 @@
     [Parameter] public Color color { get; set; }
     [Parameter] public string dialogTitle { get; set; } = string.Empty;
     [Parameter] public string buttonText { get; set; } = string.Empty;
+    [Parameter] public Enums.ActionMode currentAction { get; set; }
     private bool isReadOnly = false;
-    private Enums.ActionMode currentAction {get;set;}
     private bool notValidModeName = false;
     protected override async Task OnInitializedAsync()
     {
-        if(GlobalClass.modeOfPayment.Id == 0)
+        if(currentAction == Enums.ActionMode.Create)
         {
             GlobalClass.modeOfPayment.IsActive = true;
             isReadOnly = true;
@@ -55,45 +60,31 @@
 
     void Cancel()
     {
+        GlobalClass.modeOfPayment.IsActive = !GlobalClass.modeOfPayment.IsActive ? true : true;
         MudDialog.Cancel();
     }
 
     private async Task Submit()
     {
-        if(GlobalClass.modeOfPayment.IsActive == false)
+        if(!GlobalClass.modeOfPayment.IsActive)
         {
             currentAction = Enums.ActionMode.Deactivate;
             await Prompt();
         }
-        else 
-        {
-            if(IsValidated())
-            {
-                if(GlobalClass.modeOfPayment.Id == 0)
-                    currentAction = Enums.ActionMode.Create;
-                else
-                    currentAction = Enums.ActionMode.Update;
-                await Prompt();
-            }
-            else 
-                Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" mode of payment"+GlobalVariable.errorPromptText,Variant.Filled,snackBar,Severity.Error);
-        }
+        else if (IsValidated())
+            await Prompt();
+         else 
+            Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" mode of payment"+GlobalVariable.errorPromptText,Variant.Filled,snackBar,Severity.Error);
     }
     private async Task Prompt()
     {
         var parameters = new DialogParameters();
         string contentText = " Mode of Payment";
-        string dialogTitle = currentAction + contentText;
+        string dialogTitle = currentAction.ToString();
         parameters.Add("contentText", contentText);
+        parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("actionMode", currentAction);
-        var options = new DialogOptions()
-        {
-            CloseButton = false,
-            MaxWidth = MaxWidth.ExtraSmall,
-            FullWidth = true,
-            NoHeader = false,
-            DisableBackdropClick = true
-        };
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
         if (!resultDialog.Cancelled) 
         {   
@@ -101,22 +92,22 @@
             {
                 if (currentAction == Enums.ActionMode.Create)
                 {
-                    GlobalClass.modeOfPayment = await modeOfPaymentService.AddModeOfPayment(GlobalClass.modeOfPayment, GlobalClass.token);
-                    MudDialog.Close(DialogResult.Ok(0));
+                GlobalClass.modeOfPayment = await modeOfPaymentService.AddModeOfPayment(GlobalClass.modeOfPayment, GlobalClass.token);
+                   GlobalClassList.modeOfPaymentList.Add(GlobalClass.modeOfPayment);
                 }
                 else
-                {
                     GlobalClass.modeOfPayment = await modeOfPaymentService.UpdateModeOfpayment(GlobalClass.modeOfPayment, GlobalClass.token);
-                    if(currentAction == Enums.ActionMode.Deactivate)
-                        MudDialog.Close(DialogResult.Ok(2));
-                    else
-                         MudDialog.Close(DialogResult.Ok(1));
-                }
                 if(GlobalVariable.AMSHubConnection != null)
                     await GlobalVariable.AMSHubConnection.InvokeAsync("SaveModeOfPayment",GlobalClass.modeOfPayment);
+                 MudDialog.Close(DialogResult.Ok(currentAction));
             }catch (Exception ex) {
                 Extensions.ShowAlert(ex.Message,Variant.Filled,snackBar,Severity.Info);
             }
+        }
+        else if (currentAction == Enums.ActionMode.Deactivate)
+        {
+            GlobalClass.modeOfPayment.IsActive = !GlobalClass.modeOfPayment.IsActive;
+            MudDialog.Close(DialogResult.Ok(true));
         }
     }
     private bool IsValidated()

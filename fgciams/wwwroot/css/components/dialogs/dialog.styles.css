@@ -1,11 +1,14 @@
-.customdialog .mud-dialog-title, .customdialog-table-only .mud-dialog-title {
-  background-color: #542d6f;
+.customdialog .mud-dialog-title,
+.customdialog-table-only .mud-dialog-title {
+  background-color: #542d6f !important;
   color: white;
 }
-.customdialog .mud-dialog-title .mud-typography, .customdialog-table-only .mud-dialog-title .mud-typography {
+.customdialog .mud-dialog-title .mud-typography,
+.customdialog-table-only .mud-dialog-title .mud-typography {
   font-family: "Theramin";
 }
-.customdialog__content-container, .customdialog-table-only__content-container {
+.customdialog__content-container,
+.customdialog-table-only__content-container {
   font-size: 1rem;
   padding: 10px 14px;
 }
@@ -13,4 +16,19 @@
 .customdialog-table-only .mud-dialog-content {
   overflow: hidden;
   padding: 0px !important;
+}
+
+.customdialog2 .mud-dialog-title {
+  background-color: #542d6f !important;
+  color: white;
+}
+.customdialog2 .mud-dialog-title .mud-typography {
+  font-family: "Theramin";
+}
+.customdialog2 .mud-dialog-content {
+  background-color: rgba(238, 238, 238, 0.6274509804) !important;
+}
+
+.customdialog2 .mud-dialog-content {
+  padding: 8px !important;
 }/*# sourceMappingURL=dialog.styles.css.map */

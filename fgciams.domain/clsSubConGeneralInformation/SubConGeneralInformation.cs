@@ -1,4 +1,5 @@
 ﻿using fgciams.domain.clsEnums;
+using fgciams.domain.clsSubContractProject;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,15 +24,15 @@ namespace fgciams.domain.clsSubConGeneralInformation
         CompanyName = "";
         PositionId = 0;
         PositionName = "";
-
-        
+        SubContractorProjects = new List<SubContractorProjectModel>();
+        RemovedSubContractorProjects = new List<SubContractorProjectModel>();
       }
         public Int64 Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string MiddleName { get; set; }
         public string NameExtention { get; set; }
-        public Enums.Gender Gender { get; set; }
+        public Enums.Gender Gender { get; set; }     
         public bool IsActive { get; set; }
         public DateTime? DateStart { get; set; }
         public DateTime? DateEnd { get; set; }
@@ -47,6 +48,7 @@ namespace fgciams.domain.clsSubConGeneralInformation
                 return LastName + ", " + FirstName + " " + MiddleName;
             }
         }
-
+        public List<SubContractorProjectModel> SubContractorProjects { get; set; }
+        public List<SubContractorProjectModel> RemovedSubContractorProjects { get; set; }
     }
 }

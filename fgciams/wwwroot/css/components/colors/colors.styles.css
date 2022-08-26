@@ -23,11 +23,11 @@
 }
 
 .bgc-gray {
-  background-color: gray;
+  background-color: gray !important;
 }
 
 .bgc-8080805c {
-  background-color: rgba(128, 128, 128, 0.3607843137);
+  background-color: rgba(128, 128, 128, 0.3607843137) !important;
 }
 
 .bgc-F8F9FE {
@@ -43,11 +43,23 @@
 }
 
 .bgc-F5F5DC73 {
-  background-color: rgba(245, 245, 220, 0.4509803922);
+  background-color: rgba(245, 245, 220, 0.4509803922) !important;
 }
 
 .bgc-b2a7b82e {
   background-color: rgba(178, 167, 184, 0.1803921569);
+}
+
+.bgc-gainsb {
+  background-color: gainsboro !important;
+}
+
+.bgc-e7f2fb {
+  background-color: #e7f2fb !important;
+}
+
+.bgc-transparent {
+  background-color: transparent !important;
 }
 
 .bgc-4d43521a {
@@ -70,6 +82,10 @@
   color: #7d7d7d;
 }
 
+.color-sec {
+  color: var(--mud-palette-text-secondary) !important;
+}
+
 .mudtoolbar-bg-8080805c .mud-toolbar {
   background-color: rgba(128, 128, 128, 0.3607843137);
 }
@@ -90,4 +106,8 @@
 
 .chkwriter-bgc-grad {
   background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.0784313725), rgba(83, 94, 155, 0.1098039216));
+}
+
+.border-c-l {
+  border-color: lightgrey;
 }/*# sourceMappingURL=colors.styles.css.map */

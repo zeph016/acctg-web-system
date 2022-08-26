@@ -2,7 +2,8 @@
 @inject IDialogService dialogService
 @inject NavigationManager NavigationManager
 @inject ISnackbar snackbar
-<MudDialog Class="customdialog">
+
+<MudDialog Class="customdialog2">
     <TitleContent>
         <div class='d-flex align-center'>
             @if (GlobalClass.acctgStatus.Id != 0)
@@ -13,31 +14,32 @@
             {
                 <MudIcon Icon="@Icons.Filled.Add" Class="mr-3" />
             }
-            <MudText Typo='Typo.h6'>@dialogTitle</MudText>
+            <MudText Class='txt-uppercase' Typo='Typo.h6'>@dialogTitle</MudText>
         </div>
     </TitleContent>
     <DialogContent>
-        <div class='customdialog__content-container'>
-            <MudGrid Spacing='1'>
-                <MudItem xs='9'>
-                    <MudTextField @bind-Value='@GlobalClass.acctgStatus.StatusName' HelperText="Required*" Label='Accounting Status' ErrorText="Required*" Error=@notValidStatus/>
+        <MudPaper Class='pa-2' Elevation='0'>
+            <MudGrid Class='pa-2' Spacing='1'>
+                <MudItem xs='12'>
+                    <MudTextField @bind-Value='@GlobalClass.acctgStatus.StatusName' HelperText="Required*" Label='Accounting Status' ErrorText="Required*" 
+                        Error=@notValidStatus Margin='Margin.Dense' />
                 </MudItem>
-                <MudItem Class='d-flex align-center' xs='3'>
-                    <MudCheckBox @bind-Checked='@GlobalClass.acctgStatus.IsActive' Label='Active' ReadOnly=@isReadOnly/>
+                <MudItem xs='10'>
+                    <MudColorPicker Label='Color' ColorPickerView='ColorPickerView.Grid' ColorPickerMode='ColorPickerMode.HEX' Value="GlobalClass.acctgStatus.StatusColor" 
+                        ValueChanged='UpdateSelectedColor' IconSize='Size.Small' HelperText='Required*' />
                 </MudItem>
-                <MudItem xs='9'>
-                    <div class='smallColorBox text-left' style='@($"background-color:{GlobalClass.acctgStatus.StatusColor};")'>
-                    </div>
-                    <MudColorPicker Label='Color' ColorPickerView='ColorPickerView.Grid' ColorPickerMode='ColorPickerMode.HEX' Value="GlobalClass.acctgStatus.StatusColor" ValueChanged='UpdateSelectedColor' />
+                <MudItem Class='d-flex align-center' xs='2'>
+                    <div class='smallColorBox text-left' style='@($"background-color:{GlobalClass.acctgStatus.StatusColor};")' />
                 </MudItem>
-                <MudItem xs='9'>
-                    <div class="text-center">
-                        <MudIcon  Icon="@GlobalClass.selectedIcon" Color="Color.Primary"/>
-                    </div>
+                <MudItem xs='10'>
                     <MudTextField @bind-Value="@GlobalClass.acctgStatus.StatusIcon" HelperText="Required*" class="mud-grid-item mud-grid-item-xs-9" Label="Icon" Variant="Variant.Text"
-                        Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.InsertEmoticon" OnAdornmentClick="(() => ShowIcons())" Error=@notValidStatusIcon ErrorText="Required*"></MudTextField>
+                        Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.InsertEmoticon" OnAdornmentClick="(() => ShowIcons())" Error=@notValidStatusIcon ErrorText="Required*" 
+                        Margin='Margin.Dense' />
                 </MudItem>
-                <MudItem xs='9'>
+                <MudItem Class='d-flex align-center justify-center' xs='2'>
+                    <MudIcon Icon="@GlobalClass.selectedIcon" Color="Color.Primary" Size='Size.Medium' />
+                </MudItem>
+                <MudItem xs='12'>
                     <MudSelect Label="Category" @bind-Value="GlobalClass.acctgStatus.StatusEnumCategoryId" AnchorOrigin="Origin.BottomCenter">
                         @foreach (var items in SortedCategory())
                         {
@@ -46,11 +48,19 @@
                     </MudSelect>
                 </MudItem>
             </MudGrid>
-        </div>
+        </MudPaper>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
-        <MudButton OnClick="Submit" Variant='Variant.Filled' Color="@color">@buttonText</MudButton>
+        @if(GlobalClass.acctgStatus.Id != 0)
+        {
+            <MudCheckBox @bind-Checked='@GlobalClass.acctgStatus.IsActive' Label='Active' ReadOnly=@isReadOnly 
+                Size='Size.Small' Color='Color.Dark' Dense/>
+        }
+        <MudSpacer />
+        <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text' Size='Size.Small' DisableElevation>Cancel</MudButton>
+        <MudButton Class='btn-ios-d font12' OnClick="Submit" Variant='Variant.Filled' Color='@(!GlobalClass.acctgStatus.IsActive ? Color.Error : @color)' Size='Size.Small' DisableElevation>
+            @(!GlobalClass.acctgStatus.IsActive ? "Deactivate" : @buttonText)
+        </MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -59,12 +69,12 @@
     [Parameter] public Color color { get; set; }
     [Parameter] public string dialogTitle { get; set; } = string.Empty;
     [Parameter] public string buttonText { get; set; } = string.Empty;
+    [Parameter] public Enums.ActionMode currentAction { get; set; }
     private bool isReadOnly = false;
-    private Enums.ActionMode currentAction {get;set;}
     private bool notValidStatus,notValidStatusIcon = false;
     protected override async Task OnInitializedAsync()
     {
-        if (GlobalClass.acctgStatus.Id == 0) {
+        if (currentAction == Enums.ActionMode.Create) {
             isReadOnly = true;
             GlobalClass.acctgStatus.IsActive = true;
             GlobalClass.acctgStatus.StatusColor = "#FFFF00";
@@ -79,29 +89,21 @@
     }
     void Cancel()
     {
-        MudDialog.Close(DialogResult.Ok(2));
+        GlobalClass.acctgStatus.IsActive = !GlobalClass.acctgStatus.IsActive ? true : true;
+        MudDialog.Cancel();
     }
 
     private async Task Submit()
     {
-        if(GlobalClass.acctgStatus.IsActive == false)
+        if(!GlobalClass.acctgStatus.IsActive)
         {
             currentAction = Enums.ActionMode.Deactivate;
             await Prompt();
         }
+        else if (IsValidated())
+            await Prompt();
         else
-        {
-            if(IsValidated()) 
-            {
-                if(GlobalClass.acctgStatus.Id == 0)
-                    currentAction = Enums.ActionMode.Create;
-                else
-                    currentAction = Enums.ActionMode.Update;
-                await Prompt();
-            }
-            else
-                Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" acounting status"+GlobalVariable.errorPromptText,Variant.Filled,snackbar,Severity.Error);
-        }
+            Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" accounting status"+GlobalVariable.errorPromptText,Variant.Filled,snackbar,Severity.Error);
     }
     private void UpdateSelectedColor(MudColor colorValue)
     {
@@ -109,7 +111,6 @@
     }
     private async Task ShowIcons()
     {
-        //NavigationManager.NavigateTo($"/iconpage");
         var parameters = new DialogParameters();
         var options = new DialogOptions()
         {
@@ -124,17 +125,11 @@
     {
         var parameters = new DialogParameters();
         string contentText = " Accounting Status";
-        string dialogTitle = currentAction + contentText;
-        parameters.Add("contentText", contentText);
+        string dialogTitle = currentAction.ToString();
         parameters.Add("actionMode", currentAction);
-        var options = new DialogOptions()
-        {
-            CloseButton = false,
-            MaxWidth = MaxWidth.ExtraSmall,
-            FullWidth = true,
-            NoHeader = false,
-            DisableBackdropClick = true
-        };
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("contentText", contentText);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = false, NoHeader = false, DisableBackdropClick = true };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
         if (!resultDialog.Cancelled) 
         {   
@@ -143,19 +138,19 @@
                 if (currentAction == Enums.ActionMode.Create) {
                     GlobalClass.acctgStatus = await accountingStatusService.AddAccountingStatus(GlobalClass.acctgStatus, GlobalClass.token);
                     GlobalClassList.accountingStatusList.Add(GlobalClass.acctgStatus);
-                    MudDialog.Close(DialogResult.Ok(0));
-                } else {
+                } else 
                     await accountingStatusService.UpdateAccountingStatus(GlobalClass.acctgStatus, GlobalClass.token);
-                    if(currentAction == Enums.ActionMode.Deactivate)
-                        MudDialog.Close(DialogResult.Ok(2));
-                    else
-                        MudDialog.Close(DialogResult.Ok(1));
-                } 
                 if(GlobalVariable.AMSHubConnection != null)
                     await GlobalVariable.AMSHubConnection.InvokeAsync("SaveAccountingStatus",GlobalClass.acctgStatus);
+                MudDialog.Close(DialogResult.Ok(currentAction));
             } catch(System.Exception ex) {
-                Extensions.ShowAlert(ex.Message, Variant.Filled, snackbar, Severity.Info);
+                Extensions.ShowAlert(ex.Message, Variant.Filled, snackbar, Severity.Error);
             }
+        }
+        else if (currentAction == Enums.ActionMode.Deactivate)
+        {
+            GlobalClass.acctgStatus.IsActive = !GlobalClass.acctgStatus.IsActive;
+            MudDialog.Cancel();
         }
     }
     private bool IsValidated()

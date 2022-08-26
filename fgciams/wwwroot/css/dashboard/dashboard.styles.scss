@@ -1,19 +1,23 @@
-.dashboardpage {
-    .mud-paper {
-        height: 100%;
-    }
-    &__grid {
-        height: calc(100vh - 110px);
-        display: grid;
-        grid-template-columns: 1fr 0.25fr;
-        grid-template-rows: 1fr 1fr;
-        gap: .5rem;
-        grid-template-areas: 
-        'topleft side'
-        'bottomleft side';
-    }
-    .topleft { grid-area: topleft; }
-    .bottomleft { grid-area: bottomleft; }
-    .side { grid-area: side; }
+.dashboard-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr;
+  gap: 10px;
+  grid-template-areas:
+    "topdash topdash topdash topdash topdash topdash"
+    "topdash topdash topdash topdash topdash topdash"
+    "bodydash bodydash bodydash bodydash sidedash sidedash"
+    "bodydash bodydash bodydash bodydash sidedash sidedash"
+    "bodydash bodydash bodydash bodydash sidedash sidedash"
+    "bodydash bodydash bodydash bodydash sidedash sidedash";
+  height: calc(100vh - 105px);
 }
-
+.topdash {
+  grid-area: topdash;
+}
+.bodydash {
+  grid-area: bodydash;
+}
+.sidedash {
+  grid-area: sidedash;
+}

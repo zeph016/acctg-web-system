@@ -2,38 +2,45 @@
 @inject ISnackbar snackBar
 @inject IDialogService dialogService
 
-<MudDialog Class='customdialog'>
+<MudDialog Class='customdialog2'>
     <TitleContent>
         <div class='d-flex align-center'>
             @if (GlobalClass.accountTypeModel.Id != 0)
             {
-                <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3 mb-n1" />
+                <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3" />
             }
             else
             {
-                <MudIcon Icon="@Icons.Filled.Add" Class="mr-3 mb-n1" />
+                <MudIcon Icon="@Icons.Filled.Add" Class="mr-3" />
             }
-            <MudText Typo='Typo.h6'>@dialogTitle</MudText>
+            <MudText Class='txt-uppercase' Typo='Typo.h6'>@dialogTitle</MudText>
         </div>
     </TitleContent>
     <DialogContent>
-        <div class='customdialog__content-container'>
-            <MudGrid Spacing='1'>
+        <MudPaper Class='pa-2' Elevation='0'>
+            <MudGrid Class='pa-2' Spacing='1'>
                 <MudItem xs='12'>
-                    <MudTextField @bind-Value='@GlobalClass.accountTypeModel.TypeName' Label='Type name' Error=@notValidAccountType ErrorText="Required" />
+                    <MudTextField @bind-Value='@GlobalClass.accountTypeModel.TypeName' Label='Type name' Error=@notValidAccountType ErrorText="Required*" 
+                        HelperText="Required*" Margin='Margin.Dense' />
                 </MudItem>
-                <MudItem xs='9'>
-                    <MudTextField @bind-Value='@GlobalClass.accountTypeModel.Remarks' Label='Remarks' />
-                </MudItem>
-                <MudItem Class='d-flex align-center' xs='3'>
-                    <MudCheckBox @bind-Checked='@GlobalClass.accountTypeModel.IsActive' Label='Active' />
+                <MudItem xs='12'>
+                    <MudTextField @bind-Value='@GlobalClass.accountTypeModel.Remarks' Label='Remarks' Lines='2' Variant='Variant.Filled'
+                        HelperText='Optional' Margin='Margin.Dense' />
                 </MudItem>
             </MudGrid>
-        </div>
+        </MudPaper>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
-        <MudButton OnClick="(() => Submit())" Variant='Variant.Filled' Color="@color">@buttonText</MudButton>
+        @if(GlobalClass.accountTypeModel.Id != 0)
+        {
+            <MudCheckBox @bind-Checked='@GlobalClass.accountTypeModel.IsActive' Label='Active' 
+                Size='Size.Small' Color='Color.Dark' Dense />
+        }
+        <MudSpacer />
+        <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text' Size='Size.Small' DisableElevation>Cancel</MudButton>
+        <MudButton Class='btn-ios-d font12' OnClick="(() => Submit())" Variant='Variant.Filled' Color='@(!GlobalClass.accountTypeModel.IsActive ? Color.Error : @color)' Size='Size.Small' DisableElevation>
+            @(!GlobalClass.accountTypeModel.IsActive ? "Deactivate" : @buttonText)
+        </MudButton>
     </DialogActions>
 </MudDialog>
 @code
@@ -42,59 +49,45 @@
     [Parameter] public Color color { get; set; }
     [Parameter] public string dialogTitle { get; set; } = string.Empty;
     [Parameter] public string buttonText { get; set; } = string.Empty;
+    [Parameter] public Enums.ActionMode currentAction {get;set;}
     private bool isReadOnly = false;
-    private Enums.ActionMode currentAction {get;set;}
     private bool notValidAccountType = false;
     protected override async Task OnInitializedAsync()
     {
-        if (GlobalClass.accountTypeModel.Id == 0)
+        if (currentAction == Enums.ActionMode.Create)
         {
-            isReadOnly = true;
             GlobalClass.accountTypeModel.IsActive = true;
+            isReadOnly = true;
         }
         await Task.Delay(1);
     }
     void Cancel() 
     {
+        GlobalClass.accountTypeModel.IsActive = !GlobalClass.accountTypeModel.IsActive ? true : true;
         MudDialog.Cancel();
     }
     private async Task Submit()
     {
-        if(GlobalClass.accountTypeModel.IsActive == false)
+        if(!GlobalClass.accountTypeModel.IsActive)
         {
             currentAction = Enums.ActionMode.Deactivate;
             await Prompt();
         }
-        else 
-        {
-            if(IsValidated())
-            {
-                if(GlobalClass.accountTypeModel.Id == 0)
-                    currentAction = Enums.ActionMode.Create;
-                else
-                    currentAction = Enums.ActionMode.Update;
-                await Prompt();
-            }
-            else 
-                Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" account type"+GlobalVariable.errorPromptText,Variant.Filled,snackBar,Severity.Error);
-        }
+        else if (IsValidated())
+            await Prompt();
+        else
+            Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" account type"+GlobalVariable.errorPromptText,Variant.Filled,snackBar,Severity.Error);
 
     }
     private async Task Prompt()
     {
         var parameters = new DialogParameters();
         string contentText = " Account Type";
-        string dialogTitle = currentAction + contentText;
+        string dialogTitle = currentAction.ToString();
         parameters.Add("contentText", contentText);
+        parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("actionMode", currentAction);
-        var options = new DialogOptions()
-        {
-            CloseButton = false,
-            MaxWidth = MaxWidth.ExtraSmall,
-            FullWidth = true,
-            NoHeader = false,
-            DisableBackdropClick = true
-        };
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
         if (!resultDialog.Cancelled) 
         {   
@@ -102,17 +95,20 @@
             {
                 if (currentAction == Enums.ActionMode.Create) {
                     GlobalClass.accountTypeModel = await accountTypeService.AddAccountType(GlobalClass.accountTypeModel, GlobalClass.token);
-                    GlobalClassList.listOfAccountTypes.Insert(0,GlobalClass.accountTypeModel);
-                    MudDialog.Close(DialogResult.Ok(0));
-                } else { 
+                    GlobalClassList.listOfAccountTypes.Add(GlobalClass.accountTypeModel);
+                } else
                     await accountTypeService.UpdateAccountType(GlobalClass.accountTypeModel, GlobalClass.token);
-                    MudDialog.Close(DialogResult.Ok(1));
-                }
                 if(GlobalVariable.AMSHubConnection != null)
                     await GlobalVariable.AMSHubConnection.InvokeAsync("SaveAccountType",GlobalClass.accountTypeModel);
+                MudDialog.Close(DialogResult.Ok(currentAction));
             } catch (Exception ex) {
                 Extensions.ShowAlert(ex.Message,Variant.Filled,snackBar,Severity.Info);
             }
+        }
+        else if (currentAction == Enums.ActionMode.Deactivate)
+        {
+            GlobalClass.accountTypeModel.IsActive = !GlobalClass.accountTypeModel.IsActive;
+            MudDialog.Cancel();
         }
     }
     private bool IsValidated()
@@ -123,7 +119,7 @@
         if(notValidAccountType) {
             GlobalVariable.errorPromptText = " incomplete field/s."; return false; }
         if(GlobalClassList.listOfAccountTypes.Any(x=>x.TypeName == GlobalClass.accountTypeModel.TypeName && x.Id != GlobalClass.accountTypeModel.Id)) {
-            GlobalVariable.errorPromptText = " duplicate entry found for account type."; return false; }
+            GlobalVariable.errorPromptText = " duplicate entry found for type name."; return false; }
         return true;
     }
     private void ResetValidation()

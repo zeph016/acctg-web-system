@@ -138,6 +138,17 @@ a,
   width: 120px !important;
 }
 
+.fgloader-1 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+.fgloader-1__img {
+  position: relative;
+  width: 40%;
+}
+
 /* Safari */
 @-webkit-keyframes spin {
   0% {

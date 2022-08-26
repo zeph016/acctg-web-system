@@ -2,41 +2,39 @@
 @inject ISnackbar snackBar
 @inject IDialogService dialogService
 
-<MudDialog Class='customdialog'>
+<MudDialog Class='customdialog2'>
     <TitleContent>
         <div class='d-flex align-center'>
             @if (GlobalClass.expenseLine.Id != 0)
             {
-                <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3 mb-n1" />
+                <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3" />
             }
             else
             {
-                <MudIcon Icon="@Icons.Filled.Add" Class="mr-3 mb-n1" />
+                <MudIcon Icon="@Icons.Filled.Add" Class="mr-3" />
             }
-            <MudText Typo='Typo.h6'>@dialogTitle</MudText>
+            <MudText Class='txt-uppercase' Typo='Typo.h6'>@dialogTitle</MudText>
         </div>
     </TitleContent>
     <DialogContent>
-        <div class='customdialog__content-container'>
-            <MudGrid Spacing='1'>
-                <MudItem xs='9'>
-                    <MudTextField @bind-Value='@GlobalClass.expenseLine.ExpenseName' Label='Expense Line' Error=@notValidExpenseName ErrorText="Required"/>
-                </MudItem>
-                <MudItem Class='d-flex align-center' xs='3'>
-                    <MudCheckBox @bind-Checked='@GlobalClass.expenseLine.WithLedger' Label='With Ledger' />
-                </MudItem>
+        <MudPaper Class='pa-2' Elevation='0'>
+            <MudGrid Class='pa-2' Spacing='1'>
                 <MudItem xs='12'>
-                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountTypeId" Text="@GlobalClass.expenseLine.AccountTypeName" Placeholder="Account Type" 
-                    AnchorOrigin="Origin.BottomCenter" Error=@notValidAccountType ErrorText="Required">
+                    <MudTextField @bind-Value='@GlobalClass.expenseLine.ExpenseName' Label='Expense Line Name' Error=@notValidExpenseName ErrorText="Required*" 
+                        HelperText="Required*" Margin='Margin.Dense' />
+                </MudItem>
+                <MudItem xs='6'>
+                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountTypeId" Text="@GlobalClass.expenseLine.AccountTypeName" Placeholder="Account Type" HelperText="Required*" Margin='Margin.Dense'
+                    AnchorOrigin="Origin.BottomCenter" Error=@notValidAccountType ErrorText="Required*">
                         @foreach (var accountTypes in GlobalClassList.listOfAccountTypes)
                         {
                             <MudSelectItem Value="@accountTypes.Id">@accountTypes.TypeName</MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
-                <MudItem xs='12'>
-                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountLineTypeId" Text="@GlobalClass.expenseLine.AccountLineTypeName" Placeholder="Account Line Type" 
-                    AnchorOrigin="Origin.BottomCenter" Error=@notValidAccountLineType ErrorText="Required">
+                <MudItem xs='6'>
+                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountLineTypeId" Text="@GlobalClass.expenseLine.AccountLineTypeName" Placeholder="Account Line Type" HelperText="Required*" Margin='Margin.Dense'
+                    AnchorOrigin="Origin.BottomCenter" Error=@notValidAccountLineType ErrorText="Required*">
                         @foreach (var accountLineType in GlobalClassList.accountLineTypes)
                         {
                             <MudSelectItem Value="@accountLineType.Id">@accountLineType.LineTypeName</MudSelectItem>
@@ -44,102 +42,99 @@
                     </MudSelect>
                 </MudItem>
                 <MudItem xs='12'>
-                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountLineGroupId" Text="@GlobalClass.expenseLine.AccountLineGroupName" Placeholder="Account Line Group" 
-                    AnchorOrigin="Origin.BottomCenter" Error=@notValidAccountLineGroup ErrorText="Required">
+                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountLineGroupId" Text="@GlobalClass.expenseLine.AccountLineGroupName" Placeholder="Account Line Group"  HelperText="Required*" Margin='Margin.Dense'
+                    AnchorOrigin="Origin.BottomCenter" Error=@notValidAccountLineGroup ErrorText="Required*">
                         @foreach (var accountLineGroup in GlobalClassList.accountLineGroups)
                         {
                             <MudSelectItem Value="@accountLineGroup.Id">@accountLineGroup.LineGroupName</MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
-                <MudItem xs='12'>
-                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountReportGroupId" Text="@Extensions.GetEnumDescription(GlobalClass.expenseLine.AccountReportGroupId)" Placeholder="Account Report Group" AnchorOrigin="Origin.BottomCenter">
+                <MudItem xs='6'>
+                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountReportGroupId" Text="@Extensions.GetEnumDescription(GlobalClass.expenseLine.AccountReportGroupId)" Placeholder="Account Report Group" HelperText='Required*' Margin='Margin.Dense'
+                        AnchorOrigin="Origin.BottomCenter">
                         @foreach (Enums.AccountReportGroup accountReportGroup in Enum.GetValues(typeof(Enums.AccountReportGroup)))
                         {
                             <MudSelectItem Value="@accountReportGroup">@Extensions.GetEnumDescription(accountReportGroup)</MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
-                <MudItem xs='12'>
-                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountDefaultBalanceId" Text="@Extensions.GetEnumDescription(GlobalClass.expenseLine.AccountDefaultBalanceId)" Placeholder="Account Default Balance" AnchorOrigin="Origin.BottomCenter">
+                <MudItem xs='6'>
+                    <MudSelect @bind-Value="GlobalClass.expenseLine.AccountDefaultBalanceId" Text="@Extensions.GetEnumDescription(GlobalClass.expenseLine.AccountDefaultBalanceId)" Placeholder="Account Default Balance" HelperText='Required*' Margin='Margin.Dense'
+                        AnchorOrigin="Origin.BottomCenter">
                         @foreach (Enums.AccountDefaultBalance accountDefaultBalance in Enum.GetValues(typeof(Enums.AccountDefaultBalance)))
                         {
                             <MudSelectItem Value="@accountDefaultBalance">@Extensions.GetEnumDescription(accountDefaultBalance)</MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
-                <MudItem xs='9'>
-                    <MudTextField @bind-Value='@GlobalClass.expenseLine.Remarks' Label='Remarks' />
-                </MudItem>
-                <MudItem Class='d-flex align-center' xs='3'>
-                    <MudCheckBox @bind-Checked='@GlobalClass.expenseLine.IsActive' Label='Active' ReadOnly=@isReadOnly/>
+                <MudItem xs='12'>
+                    <MudTextField @bind-Value='@GlobalClass.expenseLine.Remarks' Label='Remarks' Lines='2' Variant='Variant.Filled' HelperText='Optional' Margin='Margin.Dense' />
                 </MudItem>
             </MudGrid>
-        </div>
+        </MudPaper>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
-        <MudButton OnClick="(() => Submit())" Variant='Variant.Filled' Color="@color">@buttonText</MudButton>
+        @if(GlobalClass.expenseLine.Id != 0)
+        {
+            <MudCheckBox @bind-Checked='@GlobalClass.expenseLine.IsActive' Label='Active' ReadOnly=@isReadOnly
+                Size='Size.Small' Color='Color.Dark' Dense />
+        }
+        <MudSpacer />
+        <MudCheckBox @bind-Checked='@GlobalClass.expenseLine.WithLedger' Label='w/Ledger' Size='Size.Small' Color='Color.Dark' Dense/>   
+        <MudCheckBox @bind-Checked='@GlobalClass.expenseLine.IsEWT' Label='is EWT' ReadOnly=@DontAllowEdit() Size='Size.Small' Color='Color.Dark' Dense/>
+        <MudSpacer /> 
+        <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text' Size='Size.Small' DisableElevation>Cancel</MudButton>
+        <MudButton Class='btn-ios-d font12' OnClick="(() => Submit())" Variant='Variant.Filled' Color='@(!GlobalClass.expenseLine.IsActive ? Color.Error : @color)' Size='Size.Small' DisableElevation>
+            @(!GlobalClass.expenseLine.IsActive ? "Deactivate" : @buttonText)
+        </MudButton>
     </DialogActions>
 </MudDialog>
 @code{
-    [CascadingParameter]public MudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] public MudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public Color color { get; set; }
     [Parameter] public string dialogTitle { get; set; } = string.Empty;
     [Parameter] public string buttonText { get; set; } = string.Empty;
+    [Parameter] public Enums.ActionMode currentAction {get;set;}
     private bool isReadOnly = false;
-    private Enums.ActionMode currentAction {get;set;}
+    
     private bool notValidExpenseName,notValidAccountType,notValidAccountLineType,notValidAccountLineGroup = false;
      protected override async Task OnInitializedAsync()
     {
-        if (GlobalClass.expenseLine.Id == 0)
+        if (currentAction == Enums.ActionMode.Create)
         {
-            isReadOnly = true;
             GlobalClass.expenseLine.IsActive = true;
+            isReadOnly = true;
         }
         ResetValidation();
         await Task.Delay(1);
     }   
     void Cancel() 
     {
+        GlobalClass.expenseLine.IsActive = !GlobalClass.expenseLine.IsActive ? true : true;
         MudDialog.Cancel();
     }
     private async Task Submit()
     {
-        if(GlobalClass.expenseLine.IsActive == false)
+        if(!GlobalClass.expenseLine.IsActive)
         {
             currentAction = Enums.ActionMode.Deactivate;
             await Prompt();
         }
+        else if(IsValidated())
+            await Prompt();
         else 
-        {
-            if(IsValidated())
-            {
-                if(GlobalClass.expenseLine.Id == 0)
-                    currentAction = Enums.ActionMode.Create;
-                else
-                    currentAction = Enums.ActionMode.Update;
-                await Prompt();
-            }
-            else 
-                Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" expense line"+GlobalVariable.errorPromptText,Variant.Filled,snackBar,Severity.Error);
-        }
+            Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" expense line"+GlobalVariable.errorPromptText,Variant.Filled,snackBar,Severity.Error);
     }
     private async Task Prompt()
     {
         var parameters = new DialogParameters();
         string contentText = " Expense Line";
-        string dialogTitle = currentAction + contentText;
+        string dialogTitle = currentAction.ToString();
         parameters.Add("contentText", contentText);
+        parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("actionMode", currentAction);
-        var options = new DialogOptions()
-        {
-            CloseButton = false,
-            MaxWidth = MaxWidth.ExtraSmall,
-            FullWidth = true,
-            NoHeader = false,
-            DisableBackdropClick = true
-        };
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
         if (!resultDialog.Cancelled) 
         {   
@@ -148,17 +143,21 @@
                 if(currentAction == Enums.ActionMode.Create) 
                 {
                     GlobalClass.expenseLine = await expenseLineService.AddExpenseLine(GlobalClass.expenseLine, GlobalClass.token);
-                    MudDialog.Close(DialogResult.Ok(0));
-                } else {
-                    GlobalClass.expenseLine = await expenseLineService.UpdateExpenseLine(GlobalClass.expenseLine, GlobalClass.token);
-                    MudDialog.Close(DialogResult.Ok(1));
-                }
+                    GlobalClassList.expenseLineList.Add(GlobalClass.expenseLine);
+                } else 
+                    await expenseLineService.UpdateExpenseLine(GlobalClass.expenseLine, GlobalClass.token);
                 if(GlobalVariable.AMSHubConnection != null)
                     await GlobalVariable.AMSHubConnection.InvokeAsync("SaveExpenseLine",GlobalClass.expenseLine);
+                MudDialog.Close(DialogResult.Ok(currentAction));
             }catch(Exception ex)
             {
                 Extensions.ShowAlert(ex.Message,Variant.Filled,snackBar,Severity.Info);
             }
+        }
+        else if (currentAction == Enums.ActionMode.Deactivate)
+        {
+            GlobalClass.expenseLine.IsActive = !GlobalClass.expenseLine.IsActive;
+            MudDialog.Cancel();
         }
     }
     private bool IsValidated()
@@ -184,5 +183,11 @@
         notValidAccountType = false;
         notValidAccountLineType = false;
         notValidAccountLineGroup = false;
+    }
+    private bool DontAllowEdit()
+    {
+        if(GlobalClassList.expenseLineList.Any(x=>x.IsEWT == true && GlobalClass.expenseLine.IsEWT == false))
+            return true;
+        return false;
     }
 }

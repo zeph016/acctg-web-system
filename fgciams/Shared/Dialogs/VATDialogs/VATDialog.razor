@@ -1,0 +1,60 @@
+@inject IVATService vatService
+
+<MudDialog Class='customdialog'>
+    <TitleContent>
+        <div class='d-flex align-center'>
+                <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3" />
+            <MudText Typo='Typo.h6'>Change VAT</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        @if(datafetch)
+        {
+        <div class='customdialog__content-container'>
+            <MudGrid Spacing='1'>
+                <MudItem xs='12'>
+                    <MudNumericField Format="N2" T="decimal" @bind-Value='@vat.VATValue' Text="@(vat.VATValue.ToString())" Label='VAT Value (%)' ErrorText="Required*"
+                    HelperText="Required*"/>
+                </MudItem>
+            </MudGrid>
+        </div>
+          }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
+        <MudButton OnClick="Submit" Variant='Variant.Filled' Color="Color.Info">SAVE</MudButton>
+    </DialogActions>
+  
+</MudDialog>
+@code{
+    [CascadingParameter]
+    public MudDialogInstance MudDialog { get; set; } = default!;
+    private VATModel vat {get;set;} = new();
+    private bool datafetch = false; 
+    protected override async Task OnInitializedAsync()
+    {
+        Task t = Task.WhenAll(GetVAT());
+        await t;
+        if(t.Status == TaskStatus.RanToCompletion)
+            datafetch = true;
+    }
+    private async Task GetVAT()
+    {
+        vat = await vatService.GetVAT(GlobalClass.token);
+    }
+    private async Task Submit()
+    {
+        if(vat.Id == 0)
+        {
+            await vatService.AddVAT(vat,GlobalClass.token);
+            MudDialog.Close(DialogResult.Ok(0));
+        } else {
+            await vatService.UpdateVAT(vat,GlobalClass.token);
+            MudDialog.Close(DialogResult.Ok(1));
+        }
+    }
+    private void Cancel()
+    {
+        MudDialog.Close(DialogResult.Ok(3));
+    }
+}

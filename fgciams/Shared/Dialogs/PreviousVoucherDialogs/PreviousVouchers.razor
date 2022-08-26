@@ -1,0 +1,155 @@
+@inject IVoucherService voucherService
+
+<MudDialog Class='customdialog-table-only'>
+    <TitleContent>
+        <div class='d-flex align-center'>
+                <MudIcon Icon="@Icons.Filled.Preview" Class="mr-3" />
+            <MudText Typo='Typo.h6'>Previous vouchers</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        @if(dataFetched)
+        {
+            <MudTable Class='configtables' Items="@GlobalClassList.previousVouchers" Hover="true" 
+                Breakpoint="Breakpoint.Sm" FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
+                RowsPerPage='30' Height='calc(100vh - 350px)'>
+                <ToolBarContent>
+                    <MudText Typo='Typo.caption'>
+                        @GlobalClassList.previousVouchers.Count() 
+                        @(GlobalClassList.previousVouchers.Count() == 1 ? "Item" : "Items") 
+                        in Total
+                    </MudText>
+                    <MudSpacer/>
+                    @* <MudTooltip Text="Refresh Table">
+                        <MudIconButton Icon="@Icons.Filled.Refresh" Size="Size.Small" OnClick='(()=>{searchTerm = "";})' ></MudIconButton>
+                    </MudTooltip> *@
+                </ToolBarContent>
+                <ColGroup>
+                    <col style='width: 1%'/>
+                    @* <col /> *@
+                    <col />
+                    <col />
+                    <col />
+                    <col style="width: 20px"/>
+                    <col />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh Class='customheader-1'>
+                        <MudTableSortLabel InitialDirection="SortDirection.None" SortBy="new Func<VoucherModel, object>(x=>x.VoucherDate)">
+                            Control No.
+                        </MudTableSortLabel>
+                        <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<VoucherModel, object>(x=>x.VoucherDate)">
+                            Voucher Date
+                        </MudTableSortLabel>
+                    </MudTh>
+                    @* <MudTh Class='customheader-1 text-center'>Control No.</MudTh> *@
+                    <MudTh Class='customheader-1 text-center'>Payee</MudTh>
+                    <MudTh Class='customheader-1 text-center'>Period</MudTh>
+                    <MudTh Class='customheader-1 text-center'>Amount</MudTh>
+                    <MudTh Class='customheader-1 text-center'>Checks</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                        <MudTd DataLabel="Voucher Date">
+                            <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'>
+                                @context.ControlNumber
+                            </MudChip>
+                            <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Text' Icon='@Icons.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
+                                @Convert.ToDateTime(context.VoucherDate).ToShortDateString()
+                            </MudChip>
+                        </MudTd>
+                        @* <MudTd DataLabel="Control No">
+                            <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'>
+                                @context.ControlNumber
+                            </MudChip>
+                        </MudTd> *@
+                        <MudTd DataLabel="Payee">@context.PayeeName</MudTd>
+                        <MudTd DataLabel='Period'>
+                            <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Text' Icon='@Icons.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
+                                @Convert.ToDateTime(context.PeriodFrom).ToShortDateString() - @Convert.ToDateTime(context.PeriodTo).ToShortDateString()
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Amount">
+                            <div class='d-flex align-center gap-2'>
+                            @if (context.TotalAmount > 0) {
+                                <MudText Class='font-bold color-green' Typo='Typo.body2'>
+                                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) 
+                                </MudText>
+                                <MudSpacer />
+                                <MudText Class='font-bold color-green' Typo='Typo.body2'>
+                                    @context.TotalAmount.ToString("N2")
+                                </MudText>
+                            } else {
+                                <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
+                                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                                </MudText>
+                                <MudSpacer />
+                                <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
+                                    @context.TotalAmount.ToString("N2")
+                                </MudText>
+                            }
+                            </div>
+                        </MudTd>
+                        <MudTd Class='wspace-nowrap pa-2'>
+                            <div class='d-flex align-center justify-center'>
+                                @if (!string.IsNullOrWhiteSpace(context.CheckNumber)) {
+                                <MudIconButton OnClick='(() => context.isShowChecks = !context.isShowChecks)' Icon='fa-solid fa-angle-down' Size='Size.Small' />
+                                } else {
+                                <MudText Class='font12'> - </MudText>
+                                }
+                            </div>
+                        </MudTd>      
+                </RowTemplate>
+                <ChildRowContent>
+                    @if (context.isShowChecks)
+                    {
+                    <MudTr>
+                        <td colspan="9">
+                            <CheckListComponent stringChecks=@context.CheckNumber />
+                        </td>
+                    </MudTr>
+                    }
+                </ChildRowContent>
+            </MudTable>
+          }
+          else
+          {
+            <SkeletonCLComponent />
+          }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Class='btn-ios-d pa-1 font12' OnClick="Submit" Variant='Variant.Text'>Close</MudButton>
+    </DialogActions>
+  
+</MudDialog>
+@code{
+    [CascadingParameter]
+    public MudDialogInstance MudDialog { get; set; } = default!;
+    private bool dataFetched;
+    protected override async Task OnInitializedAsync()
+    {
+        Task t = Task.WhenAll(GetPreviousV());
+        await t;
+        if(t.Status == TaskStatus.RanToCompletion)
+            CompletedFetch();
+        
+    }
+
+    void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+    private async Task GetPreviousV()
+    {
+        var filterParameter = new FilterParameter();
+        filterParameter.PayeeId = GlobalClass.voucher.PayeeId;
+        filterParameter.PayeeCategoryId = GlobalClass.voucher.PayeeCategoryId;
+        filterParameter.IsPayee = true;
+        GlobalClassList.previousVouchers = await voucherService.LoadVouchers(filterParameter, GlobalClass.token);
+        GlobalClassList.previousVouchers.RemoveAll(x=>x.ControlNumber == GlobalClass.voucher.ControlNumber);
+    }
+    private void Submit()
+    {
+        MudDialog.Close();
+    }
+}

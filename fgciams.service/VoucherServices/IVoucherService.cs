@@ -1,6 +1,7 @@
 ﻿using fgciams.domain.clsFilterParameter;
 using fgciams.domain.clsRequest;
 using fgciams.domain.clsVoucher;
+using fgciams.domain.clsProject;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,5 +20,6 @@ namespace fgciams.service.VoucherServices
         Task<List<VoucherAuditTrailModel>> VoucherAuditTrail(Int64 voucherId, string token);
         Task<string> GenerateReport(VoucherModel voucher);
         Task<List<VoucherModel>> VoucherNotInCheck(FilterParameter param,string token);
+        Task<VoucherModel> GetVATandEWT(Project voucher, string token);
     }
 }

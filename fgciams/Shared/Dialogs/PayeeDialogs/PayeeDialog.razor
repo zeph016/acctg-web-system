@@ -3,51 +3,43 @@
 @inject ISnackbar snackBar
 @inject IDialogService dialogService
 
-<MudDialog Class="customdialog">
+<MudDialog Class="customdialog2">
     <TitleContent>
         <div class='d-flex align-center'>
             @if (GlobalClass.payee.Id != 0)
             {
-                <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3 mb-n1ank" />
+                <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3" />
             }
             else
             {
-                <MudIcon Icon="@Icons.Filled.Add" Class="mr-3 mb-n1" />
+                <MudIcon Icon="@Icons.Filled.Add" Class="mr-3" />
             }
-            <MudText Typo='Typo.h6'>@dialogTitle</MudText>
+            <MudText Class='txt-uppercase' Typo='Typo.h6'>@dialogTitle</MudText>
         </div>
     </TitleContent>
     <DialogContent>
-        <div class='customdialog__content-container'>
-            <MudGrid Spacing='1'>
-                <MudItem xs='10'>
-                    <MudTextField @bind-Value='@GlobalClass.payee.PayeeName' Label='Payee Name' Error=@notValidPayee ErrorText="Required"/>
-                </MudItem>
-                <MudItem Class='d-flex align-center' xs='2'>
-                    <MudCheckBox @bind-Checked='@GlobalClass.payee.IsActive' Label='Active' ReadOnly=@isReadOnly/>
+        <MudPaper Class='pa-2' Elevation='0'>
+            <MudGrid Class='pa-2' Spacing='1'>
+                <MudItem xs='12'>
+                    <MudTextField @bind-Value='@GlobalClass.payee.PayeeName' Label='Payee Name' Error=@notValidPayee ErrorText="Required*" HelperText="Required*"
+                        Margin='Margin.Dense' />
                 </MudItem>
                 <MudItem xs='6'>
-                    <MudTextField @bind-Value='@GlobalClass.payee.ShortcutName' Label='Short Name' />
+                    <MudTextField @bind-Value='@GlobalClass.payee.ShortcutName' Label='Short Name' Error=@notValidShortName ErrorText="Required*" HelperText="Required*"
+                         Margin='Margin.Dense' />
                 </MudItem>
-                 <MudItem xs='4'>
-                     <MudTextField @bind-Value='@GlobalClass.payee.TINNo' Label='TIN #' Mask="@(new PatternMask("000 000 000"))"/>
+                 <MudItem xs='6'>
+                     <MudTextField @bind-Value='@GlobalClass.payee.TINNo' Label='TIN #' Mask="@(new PatternMask("000 000 000"))" HelperText='Required*'
+                         Margin='Margin.Dense' />
                 </MudItem>
-                <MudItem Class='d-flex align-center' xs='2'>
-                     <MudCheckBox @bind-Checked='@GlobalClass.payee.HasInvoice' Label='Invoice?' />
+                <MudItem xs='6'>
+                    <MudTextField @bind-Value='@GlobalClass.payee.PayeeContactNo' Label='Contact #'  Mask="@(new PatternMask("0000 000 0000"))" HelperText="ex. 0922 132 4444 Required*"
+                         Margin='Margin.Dense' />
                 </MudItem>
-                <MudItem xs='7'>
-                    <MudTextField @bind-Value='@GlobalClass.payee.PayeeAddress' Variant='Variant.Filled' Lines='2' Label='Address'/>
-                </MudItem>
-                <MudItem xs='5'>
-                    <MudTextField @bind-Value='@GlobalClass.payee.Remarks' Variant='Variant.Filled' Lines='2' Label='Remarks'/>
-                </MudItem>
-                <MudItem xs='8'>
-                    <MudTextField @bind-Value='@GlobalClass.payee.PayeeContactNo' Label='Contact #'/>
-                </MudItem>
-                <MudItem xs='4'>
+                <MudItem xs='6'>
                     @if (GlobalClass.payee.Id != 0)
                     {
-                        <MudSelect @bind-Value='@GlobalClass.payee.PayeeCategoryId' Label='Category' Error=@notValidCategory ErrorText="Required">
+                        <MudSelect @bind-Value='@GlobalClass.payee.PayeeCategoryId' Label='Category' Error=@notValidCategory ErrorText="Required*" HelperText="Required*"  Margin='Margin.Dense' >
                             @foreach (var item in GlobalClassList.payeeCategoryList)
                             {
                                 <MudSelectItem Value="@item.Id">@item.CategoryName</MudSelectItem>
@@ -56,7 +48,7 @@
                     }
                     else
                     {
-                        <MudSelect @bind-Value='@GlobalClass.payee.PayeeCategory' Label='Category' Error=@notValidCategory ErrorText="Required">
+                        <MudSelect @bind-Value='@GlobalClass.payee.PayeeCategory' Label='Category' Error=@notValidCategory ErrorText="Required*" HelperText="Required*"  Margin='Margin.Dense' >
                             @foreach (var item in GlobalClassList.payeeCategoryList)
                             {
                                 <MudSelectItem Value="@item">@item.CategoryName</MudSelectItem>
@@ -64,12 +56,30 @@
                         </MudSelect>
                     }
                 </MudItem>
+                <MudItem xs='12'>
+                    <MudTextField @bind-Value='@GlobalClass.payee.PayeeAddress' Variant='Variant.Text' Label='Address'
+                        Margin='Margin.Dense' HelperText='Required*' />
+                </MudItem>
+                <MudItem xs='12'>
+                    <MudTextField @bind-Value='@GlobalClass.payee.Remarks' Variant='Variant.Filled' Lines='2' Label='Remarks'
+                        Margin='Margin.Dense' />
+                </MudItem>
             </MudGrid>
-        </div>
+        </MudPaper>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
-        <MudButton OnClick="Submit" Variant='Variant.Filled' Color="@color">@buttonText</MudButton>
+        @if(GlobalClass.payee.Id != 0)
+        {
+            <MudCheckBox @bind-Checked='@GlobalClass.payee.IsActive' Label='Active' ReadOnly=@isReadOnly
+                Size='Size.Small' Color='Color.Dark' Dense />
+        }
+         <MudCheckBox @bind-Checked='@GlobalClass.payee.HasInvoice' Label='Invoice?' 
+            Size='Size.Small' Color='Color.Dark' Dense />
+        <MudSpacer />
+        <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text' Size='Size.Small' DisableElevation>Cancel</MudButton>
+        <MudButton Class='btn-ios-d font12' OnClick="Submit" Variant='Variant.Filled' Color='@(!GlobalClass.payee.IsActive ? Color.Error : @color)' Size='Size.Small' DisableElevation>
+            @(!GlobalClass.payee.IsActive ? "Deactivate" : @buttonText)
+        </MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -78,12 +88,12 @@
     [Parameter] public Color color { get; set; }
     [Parameter] public string dialogTitle { get; set; } = string.Empty;
     [Parameter] public string buttonText { get; set; } = string.Empty;
+    [Parameter] public Enums.ActionMode currentAction { get; set; }
     private bool isReadOnly = false;
-    private Enums.ActionMode currentAction {get;set;}
-    private bool notValidPayee,notValidCategory = false;
+    private bool notValidPayee,notValidCategory,notValidShortName = false;
     protected override async Task OnInitializedAsync()
     {
-        if (GlobalClass.payee.Id == 0)
+        if (currentAction == Enums.ActionMode.Create)
         {
             GlobalClass.payee.IsActive = true;
             isReadOnly = true;
@@ -93,45 +103,31 @@
 
     private void Cancel()
     {
+        GlobalClass.payee.IsActive = !GlobalClass.payee.IsActive ? true : true;
         MudDialog.Cancel();
     }
 
     private async Task Submit()
     {
-        if(GlobalClass.payee.IsActive == false)
+        if(!GlobalClass.payee.IsActive)
         {
             currentAction = Enums.ActionMode.Deactivate;
             await Prompt();
         }
-        else 
-        {
-            if(IsValidated())
-            {
-                if(GlobalClass.payee.Id == 0)
-                    currentAction = Enums.ActionMode.Create;
-                else
-                    currentAction = Enums.ActionMode.Update;
-                await Prompt();
-            }
-            else 
-                Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" payee"+GlobalVariable.errorPromptText,Variant.Filled,snackBar,Severity.Error);
-        }
+        else if (IsValidated())
+            await Prompt();
+        else
+            Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" payee"+GlobalVariable.errorPromptText,Variant.Filled,snackBar,Severity.Error);
     }
     private async Task Prompt()
     {
         var parameters = new DialogParameters();
-        string contentText = " Payee";
-        string dialogTitle = currentAction + contentText;
+        string contentText = "Payee";
+        string dialogTitle = currentAction.ToString();
         parameters.Add("contentText", contentText);
+        parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("actionMode", currentAction);
-        var options = new DialogOptions()
-        {
-            CloseButton = false,
-            MaxWidth = MaxWidth.ExtraSmall,
-            FullWidth = true,
-            NoHeader = false,
-            DisableBackdropClick = true
-        };
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
         if (!resultDialog.Cancelled) 
         {   
@@ -140,21 +136,20 @@
                 if (currentAction == Enums.ActionMode.Create) {
                     GlobalClass.payee.PayeeCategoryId = GlobalClass.payee.PayeeCategory.Id;
                     GlobalClass.payee = await payeeService.AddPayee(GlobalClass.payee, GlobalClass.token);
-                    MudDialog.Close(DialogResult.Ok(0));
-                } else {
-                    foreach (var item in GlobalClassList.payeeCategoryList)
-                        if (item.Id == GlobalClass.payee.PayeeCategoryId) {
-                            GlobalClass.payee.PayeeCategory = item;
-                            break;
-                        }
-                    GlobalClass.payee = await payeeService.UpdatePayee(GlobalClass.payee, GlobalClass.token);
-                    MudDialog.Close(DialogResult.Ok(1));
-                }
+                    GlobalClassList.payeeList.Add(GlobalClass.payee);
+                } else
+                    GlobalClass.payee.PayeeCategory = GlobalClassList.payeeCategoryList.Find(x=>x.Id == GlobalClass.payee.PayeeCategoryId)?? new();
                 if(GlobalVariable.AMSHubConnection != null)
                     await GlobalVariable.AMSHubConnection.InvokeAsync("SavePayee",GlobalClass.payee);
+                MudDialog.Close(DialogResult.Ok(currentAction));
             } catch(Exception ex) {
                 Extensions.ShowAlert(ex.Message,Variant.Filled,snackBar,Severity.Info);
             }
+        }
+        else if (currentAction == Enums.ActionMode.Deactivate)
+        {
+            GlobalClass.payee.IsActive = !GlobalClass.payee.IsActive;
+            MudDialog.Cancel();
         }
     }
     private bool IsValidated()
@@ -162,9 +157,11 @@
         ResetValidation();
         if(String.IsNullOrEmpty(GlobalClass.payee.PayeeName))
             notValidPayee = true;
+        if(String.IsNullOrEmpty(GlobalClass.payee.ShortcutName))
+            notValidShortName = true;
         if(GlobalClass.payee.PayeeCategory == null || String.IsNullOrEmpty(GlobalClass.payee.PayeeCategory.CategoryName))
             notValidCategory = true;
-        if(notValidPayee || notValidCategory) {
+        if(notValidPayee || notValidCategory || notValidShortName) {
             GlobalVariable.errorPromptText = " incomplete field/s."; return false; }
          if(GlobalClassList.payeeList.Any(x=>x.PayeeName == GlobalClass.payee.PayeeName && x.Id != GlobalClass.payee.Id)) {
             GlobalVariable.errorPromptText = " duplicate entry found for payee name."; return false;}
@@ -174,5 +171,6 @@
     {
         notValidPayee = false;
         notValidCategory = false;
+        notValidShortName = false;
     }
 }

@@ -1,0 +1,135 @@
+@inject IScopeOfWorkService scopeOfWorkService
+@inject ISnackbar snackbar
+@inject IDialogService dialogService
+
+<MudDialog Class='customdialog2'>
+    <TitleContent>
+        <div class='d-flex align-center'>
+            @if (GlobalClass.scopeOfWork.Id != 0)
+            {
+                <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3" />
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Filled.Add" Class="mr-3" />
+            }
+            <MudText Class='txt-uppercase' Typo='Typo.h6'>@dialogTitle</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudPaper Class='pa-2' Elevation='0'>
+            <MudGrid Class='pa-2' Spacing='1'>
+                <MudItem xs='12'>
+                    <MudTextField @bind-Value='@GlobalClass.scopeOfWork.ScopeName' Label='Scope of Work Name' Error=@notScope ErrorText="Required*"
+                        HelperText="Required*" Margin='Margin.Dense' />
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </DialogContent>
+    <DialogActions>
+         @if(GlobalClass.scopeOfWork.Id != 0) { 
+            <MudCheckBox @bind-Checked='@GlobalClass.scopeOfWork.IsActive' Label='Active' ReadOnly=@isReadOnly
+                Size='Size.Small' Color='Color.Dark' Dense />
+        }
+        <MudSpacer />
+        <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text' Size='Size.Small' DisableElevation>Cancel</MudButton>
+        <MudButton Class='btn-ios-d font12' OnClick="Submit" Variant='Variant.Filled' Color='@(!GlobalClass.scopeOfWork.IsActive ? Color.Error : @color)' Size='Size.Small' DisableElevation>
+            @(!GlobalClass.scopeOfWork.IsActive ? "Deactivate" : @buttonText)
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+@code{
+    [CascadingParameter]public MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public Color color { get; set; }
+    [Parameter] public string dialogTitle { get; set; } = string.Empty;
+    [Parameter] public string buttonText { get; set; } = string.Empty;
+    [Parameter ]public Enums.ActionMode currentAction {get;set;}
+    private bool isReadOnly = false;
+    private bool notScope;
+   
+     protected override async Task OnInitializedAsync()
+    {
+        if (currentAction == Enums.ActionMode.Create)
+        {
+            GlobalClass.scopeOfWork.IsActive = true;
+            isReadOnly = true;
+        }
+        ResetValidation();
+        await Task.Delay(1);
+    }   
+    void Cancel() 
+    {
+        GlobalClass.scopeOfWork.IsActive = !GlobalClass.scopeOfWork.IsActive ? true : true;
+        MudDialog.Cancel();
+    }
+
+    private async Task Submit()
+    {
+        if(!GlobalClass.scopeOfWork.IsActive)
+        {
+            currentAction = Enums.ActionMode.Deactivate;
+            await Prompt();
+        }
+        else 
+        {
+            if(IsValidated())
+            {
+                if(GlobalClass.scopeOfWork.Id == 0)
+                    currentAction = Enums.ActionMode.Create;
+                else
+                    currentAction = Enums.ActionMode.Update;
+                await Prompt();
+            }
+            else 
+                Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" scope of work"+GlobalVariable.errorPromptText,Variant.Filled,snackbar,Severity.Error);
+        }
+    }
+    private async Task Prompt()
+    {
+        var parameters = new DialogParameters();
+        string contentText = " Scope of Work";
+        string dialogTitle = currentAction.ToString();
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("contentText", contentText);
+        parameters.Add("actionMode", currentAction);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled) 
+        {   
+            try
+            {
+                if (currentAction == Enums.ActionMode.Create) {
+                    GlobalClass.scopeOfWork = await scopeOfWorkService.AddScopeOfWork(GlobalClass.scopeOfWork, GlobalClass.token);
+                    GlobalClassList.scopeOfWork.Add(GlobalClass.scopeOfWork);
+                   
+                } else
+                    await scopeOfWorkService.UpdateScopeOfWork(GlobalClass.scopeOfWork, GlobalClass.token);
+                MudDialog.Close(DialogResult.Ok(currentAction));
+                @* if(GlobalVariable.AMSHubConnection != null)
+                    await GlobalVariable.AMSHubConnection.InvokeAsync("SaveDivision",GlobalClass.division); *@
+            } catch (Exception ex) {
+                Extensions.ShowAlert(ex.Message,Variant.Filled,snackbar,Severity.Info);
+            }
+        }
+        else if (currentAction == Enums.ActionMode.Deactivate)
+        {
+            GlobalClass.scopeOfWork.IsActive = !GlobalClass.scopeOfWork.IsActive;
+            MudDialog.Cancel();
+        }
+    }
+    private bool IsValidated()
+    {   
+        ResetValidation();
+        if(String.IsNullOrEmpty(GlobalClass.scopeOfWork.ScopeName))
+            notScope = true;
+        if(notScope) {
+            GlobalVariable.errorPromptText = " incomplete field/s."; return false; }
+        if(GlobalClassList.scopeOfWork.Any(x=>x.ScopeName==GlobalClass.scopeOfWork.ScopeName && x.Id != GlobalClass.scopeOfWork.Id)) {
+            GlobalVariable.errorPromptText = " duplicate entry found."; return false; }
+        return true;
+    }
+    private void ResetValidation()
+    {
+        notScope = false;
+    }
+}

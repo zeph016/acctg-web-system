@@ -23,7 +23,7 @@ namespace fgciams.service.PayeeServices{
                 {
                     payeeList = await httpResponse.Content.ReadAsAsync<List<PayeeModel>>();
                 }
-                return payeeList.OrderBy(x => x.PayeeName).ToList();
+                return payeeList;
             }
             catch (Exception ex)
             {

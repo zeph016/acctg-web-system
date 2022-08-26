@@ -3,7 +3,8 @@
 @inject IAccountingStatusService accountingStatusService
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 @inject IDialogService dialogService
-@inject ISnackbar snackBarService
+@inject ISnackbar snackbarService
+@inject ApplicationState AppState
 
 <div class='page-cont'>
     <div class='drawer-right'>
@@ -30,13 +31,13 @@
     <MudContainer Class='acctgstatuspage' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
         @if (!dataFetched)
         {
-           
+            <SkeletonPageList />
         }
         else
         {
-            <MudTable Class='configtables' Items="GlobalClassList.accountingStatusList" Hover="true"
-            Breakpoint="Breakpoint.Sm" FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
-            RowsPerPage='30' Striped='true' Filter='new Func<AccountingStatusModel,bool>(FilterItems)'>
+            <MudTable Class='configtables row-popup-anim-2px' Items="GlobalClassList.accountingStatusList" Hover="true"
+                Breakpoint="Breakpoint.Xs" FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
+                RowsPerPage='30' Filter='new Func<AccountingStatusModel,bool>(FilterItems)'>
                 <ToolBarContent>
                     <MudText Typo='Typo.caption'>
                         @GlobalClassList.accountingStatusList.Count() 
@@ -47,18 +48,12 @@
                     <MudTooltip Text="Refresh Table">
                         <MudIconButton Icon="@Icons.Filled.Refresh" Size="Size.Small" OnClick='(()=>{searchTerm = "";})' ></MudIconButton>
                     </MudTooltip>
-                    <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
-                    TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
-                        <MudMenuItem OnClick='(() => AcctgStatusDialog(new AccountingStatusModel()))'>
-                            <div class='d-flex align-center gap-2'>
-                                <MudIcon Icon='@Icons.Filled.Add' Size='Size.Medium'></MudIcon>
+                    <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                        TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
+                        <MudMenuItem OnClick='(() => AcctgStatusDialog(new AccountingStatusModel(), Enums.ActionMode.Create))'>
+                            <div class='d-flex align-center gap-2 menu-grow-anim'>
+                                <MudIcon Icon='@Icons.Filled.Add' Size='Size.Small'></MudIcon>
                                 <MudText Typo='Typo.body2'>Add</MudText>
-                            </div>
-                        </MudMenuItem>
-                        <MudMenuItem OnClick='OpenSideFilter'>
-                            <div class='d-flex align-center gap-2'>
-                            <MudIcon Icon='@Icons.Filled.FilterList' />
-                            <MudText Typo='Typo.body2'>Filter</MudText>
                             </div>
                         </MudMenuItem>
                     </MudMenu>
@@ -68,7 +63,7 @@
                     <col class='text-center' style='width: 50px;' />
                     <col style='width: 50px;' />
                     <col />
-                    <col />
+                    <col style='width:20px' />
                 </ColGroup>
                 <HeaderContent>
                     <MudTh Class='customheader-1'>
@@ -79,7 +74,7 @@
                     <MudTh Class='customheader-1'>Icon</MudTh>
                     <MudTh Class='customheader-1'>Color</MudTh>
                     <MudTh Class='customheader-1'>Category</MudTh>
-                    <MudTh Class='customheader-1 text-center'>Action</MudTh>
+                    <MudTh Class='customheader-1 text-center pa-2'>Action</MudTh>
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd DataLabel="Status Name">@context.StatusName</MudTd>
@@ -97,11 +92,11 @@
                     <MudTd Class='wspace-nowrap' DataLabel="Category">
                         <MudText Typo='Typo.body2'>@Extensions.GetEnumDescription(@context.StatusEnumCategoryId)</MudText>
                     </MudTd>
-                    <MudTd Class='text-center'>
+                    <MudTd Class='text-center pa-2'>
                         <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
                         TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
-                            <MudMenuItem OnClick='(() => AcctgStatusDialog(context))'>
-                                <div class='d-flex align-center gap-2'>
+                            <MudMenuItem OnClick='(() => AcctgStatusDialog(context, Enums.ActionMode.Update))'>
+                                <div class='d-flex align-center gap-2 menu-grow-anim'>
                                     <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small'/>
                                     <MudText Typo='Typo.body2'>Edit</MudText>
                                 </div>
@@ -115,7 +110,6 @@
             </MudTable>
         }
     </MudContainer>
-    
 </div>
 
 @code {
@@ -125,9 +119,10 @@
     private static List<object> iconTypes = new List<object>();
     protected override async Task OnInitializedAsync()
     {
-        GlobalClass.pageTitle = "ACCOUNTING STATUS";
+        GlobalClass.pageTitle = "Configuration - Accounting Status";
         while (GlobalClass.currentUserAccount == null || GlobalClassList.accountingStatusList == null)
             await Task.Delay(1);
+        await AppState.UpdateMainLayoutComponent(true);
         CompletedFetch();
         SignalR();
     }
@@ -137,36 +132,32 @@
         StateHasChanged();
     }
 
-    private async Task AcctgStatusDialog(AccountingStatusModel acctgStatus)
+    private async Task AcctgStatusDialog(AccountingStatusModel acctgStatus, Enums.ActionMode action)
     {
         var parameters = new DialogParameters();
         GlobalClass.acctgStatus = acctgStatus;
-        acctgStatus.IsActive = true;
         string dialogTitle = GlobalClass.acctgStatus.Id != 0 ? "Edit Status" : "Add Status";
         string buttonText = GlobalClass.acctgStatus.Id != 0 ? "Update" : "Add";
         Color color = GlobalClass.acctgStatus.Id != 0 ? Color.Info : Color.Success;
         parameters.Add("color", color);
         parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("buttonText", buttonText);
-        var options = new DialogOptions()
-        {
-            CloseButton = false,
-            MaxWidth = MaxWidth.ExtraSmall,
-            FullWidth = true,
-            NoHeader = false,
-            DisableBackdropClick = false
-        };
+        parameters.Add("currentAction", action);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = false };
         var resultDialog = await dialogService.Show<Shared.Dialogs.AccountingStatusDialogs.AccountingStatusDialog>("",
         parameters, options).Result;
         if (!resultDialog.Cancelled)
         {
-            if ((int)resultDialog.Data == 0)
-                ShowAlert("The new status is successfully saved.", Variant.Filled, Severity.Success);
-            else if ((int)resultDialog.Data == 1)
-                ShowAlert("The updated status is successfully saved.", Variant.Filled, Severity.Info);
-            else if ((int)resultDialog.Data == 2)
-                ShowAlert("The status has been removed from the list.", Variant.Filled, Severity.Info);
-        }
+            if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Create)
+                Extensions.ShowAlert("Accounting Status successfully added.", Variant.Filled,snackbarService,Severity.Success);
+            else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Update)
+                Extensions.ShowAlert("Accounting Status successfully updated.", Variant.Filled,snackbarService,Severity.Info);
+            else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Deactivate)
+                Extensions.ShowAlert("Accounting Status has been deactivated.", Variant.Filled,snackbarService,Severity.Warning);
+            else
+                await LoadAcctgStatusList();
+        } else if (resultDialog.Cancelled)
+            Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
     }
     private bool FilterItems(AccountingStatusModel items)
     {
@@ -176,15 +167,7 @@
             return true;
         return false;
     }
-
-    private void ShowAlert(string message, Variant variant, Severity severity)
-    {
-        snackBarService.Clear();
-        snackBarService.Configuration.PositionClass = Defaults.Classes.Position.BottomCenter;
-        snackBarService.Configuration.SnackbarVariant = variant;
-        snackBarService.Configuration.MaxDisplayedSnackbars = 10;
-        snackBarService.Add($"{message}", severity);
-    }
+    
     private void OpenSideFilter()
     {
         openSideFilter = !openSideFilter;
@@ -193,7 +176,7 @@
         if(!openSideFilter)
             visibility = "visibility-animation-hide";
     }
-       private void SignalR()
+    private void SignalR()
     {
         try
         {
@@ -210,5 +193,9 @@
             Console.WriteLine(ex.Message);
             throw;
         }
+    }
+    private async Task LoadAcctgStatusList()
+    {
+        GlobalClassList.accountingStatusList = await accountingStatusService.LoadAccountingStatusList(GlobalClass.token);
     }
 }

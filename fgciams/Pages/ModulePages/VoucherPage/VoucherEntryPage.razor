@@ -6,6 +6,8 @@
 @inject IGlobalService globalService
 @inject ISnackbar snackbarService
 @inject NavigationManager navigationManager
+@inject IVoucherService voucherService
+@inject IRequestForPaymentService requrestForPaymentService
 
 <div class='page-cont d-flex overflow-auto'>
     @if (!dataFetched)
@@ -40,11 +42,11 @@
                         </div>
                         <div class="voucher-payee d-flex align-center pa-2 gap-2">
                             <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>
-                                Pay To
+                                Payee
                                 <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
                             </MudText>
                             <BlazoredTypeahead SearchMethod='LoadPayee' @ref='projectTypeahead' DisableClear placeholder='Search'
-                            @bind-Value='payee' Debounce='500' MaximumSuggestions='10'>
+                            ValueExpression="@(()=>payee)" Value="payee" ValueChanged="@((Project p) => SelectedPayee(p) )" Debounce='500' MaximumSuggestions='10' class="cursor-progress">
                                 <SelectedTemplate>
                                     <div class='overflow-hidden wspace-nowrap'>
                                         @if (context.ProjectId != 0) {
@@ -84,24 +86,35 @@
                                 <MudChip Class='chip-radius-5 txt-uppercase font-bold font12' Color='Color.Error' Size='Size.Medium' Variant='Variant.Outlined'>@GlobalClass.voucher.ControlNumber</MudChip>
                             }
                         </div>
-                        <div class="voucher-rfp d-flex align-center pa-2 gap-2 overflowx-auto overflowy-hidden">
-                            <MudText Class='d-flex wspace-nowrap font10 font-bold txt-uppercase'>
-                                RFP
-                                <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
-                            </MudText>
-                            <MudTooltip Text='Add RFP'>
-                                <MudIconButton OnClick='(()=> AddRFP())' Icon="@Icons.Material.Filled.Add" aria-label="Add RFP" Color='Color.Info' Size='Size.Small' />
-                            </MudTooltip>
-                            @if (reqRFP)
-                            {
-                                <MudText Class='font12 font-bold txt-uppercase' Color='Color.Error'>
-                                    Required
+                        <div class="voucher-rfp d-flex align-center gap-2 overflowx-auto overflowy-hidden">
+                            <div class='d-flex flex-1 overflow-hidden align-center pa-2 gap-2'>
+                                <MudText Class='d-flex wspace-nowrap font10 font-bold txt-uppercase'>
+                                    RFP
+                                    <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
                                 </MudText>
-                            }
-                            @foreach (var item in GlobalClass.voucher.VoucherRFP)
-                            {
-                                <MudChip OnClose='(()=> RemoveVoucherRFP(item))' Size='Size.Small'>@item.RFPControlNumber</MudChip>
-                            }
+                                <MudTooltip Text='Add RFP'>
+                                    <MudIconButton OnClick='(()=> AddRFP())' Icon="@Icons.Material.Filled.Add" aria-label="Add RFP" Color='Color.Info' Size='Size.Small' />
+                                </MudTooltip>
+                                @if (reqRFP)
+                                {
+                                    <MudText Class='font12 font-bold txt-uppercase' Color='Color.Error'>
+                                        Required
+                                    </MudText>
+                                }
+                                <div class='wspace-nowrap overflow-auto max-width90 oflow-el' style='@(GlobalClass.voucher.VoucherRFP.Count() == 0 ? "display:none" : "")'>
+                                    @foreach (var item in GlobalClass.voucher.VoucherRFP)
+                                    {
+                                        <MudChip OnClose='(()=> RemoveVoucherRFP(item))' Size='Size.Small'>@item.RFPControlNumber</MudChip>
+                                    }
+                                </div>
+                                <MudSpacer />
+                                <MudTooltip Text='Total amount RFP'>
+                                    <MudButton Class='btn-ios-d font12' Color="Color.Tertiary" Variant="Variant.Filled" Size="Size.Small" DisableElevation>@GlobalClass.voucher.RFPTotalAmountString</MudButton>
+                                </MudTooltip>
+                                <MudTooltip Text='Previous Vouchers'>
+                                    <MudIconButton Class='btn-ios-d font12' OnClick="(()=>ShowPreviousDialog())" Icon='@Icons.Filled.History' Color="Color.Tertiary" Variant="Variant.Filled" Size="Size.Small" DisableElevation />
+                                </MudTooltip>
+                            </div>
                         </div>
                         <div class="voucher-desc d-flex align-center pa-2 gap-2">
                             <MudText Class='txt-uppercase font-bold font10'>Description:</MudText>
@@ -112,9 +125,9 @@
                             <MudTextField Class='txtfield-overflow-ellipsis font14-txtfield txt-top-0' @bind-Value=GlobalClass.voucher.Remarks />
                         </div>
                         <div class="voucher-details d-flex rounded-br rounded-bl overflow-hidden">
-                            <div class='d-flex flex-1 flex-column'>
-                                <MudTable Class='small-toolbar-gutter4 toolbar-pad-0 flex-1 mudtoolbar-bg-F4F5FB' Items='GlobalClass.voucher.VoucherDetails' Bordered='true' Striped='true'
-                                    Dense='true' Elevation='0' FixedHeader FixedFooter CustomFooter Hover Square Height='calc(100vh - 376px)'>
+                            <div class='d-flex flex-1 flex-column transition-05s-ease'>
+                                <MudTable Class='small-toolbar-gutter4 toolbar-pad-0 flex-1 mudtoolbar-bg-F4F5FB table-bottom-border' Items='GlobalClass.voucher.VoucherDetails' Bordered
+                                    Dense='true' Elevation='0' FixedHeader FixedFooter CustomFooter Hover Square Height='calc(100vh - 450px)'>
                                     <ToolBarContent>
                                         <div class='d-flex flex-1 align-center px-4 gap-2 border-thin-bottom'>
                                             <MudText Class='txt-uppercase font-bold font12'>Voucher Detail :</MudText>
@@ -135,13 +148,16 @@
                                             }
                                             <MudSpacer />
                                             <MudTooltip Text='Add Detail'>
-                                                <MudButton OnClick='AddNew' StartIcon="@Icons.Filled.Add" aria-label="add" 
+                                                <MudButton OnClick='(()=>AddNew(false))' StartIcon="@Icons.Filled.Add" aria-label="add" 
                                                 Size='Size.Small' Variant='Variant.Text' DisableElevation Color='Color.Info'>Detail</MudButton>
                                             </MudTooltip>
                                             <MudTooltip Text='Reset Detail'>
-                                                <MudButton OnClick='ResetVoucherTable' StartIcon="@Icons.Filled.Refresh" aria-label="reset" 
+                                                <MudButton OnClick='(()=>ResetVoucherTable())' StartIcon="@Icons.Filled.Refresh" aria-label="reset" 
                                                 Size='Size.Small' Variant='Variant.Text' DisableElevation Color='Color.Warning'>Reset</MudButton>
                                             </MudTooltip>
+                                            <MudToggleIconButton @bind-Toggled="isDetailViewExpanded" Size='Size.Small' ToggledSize='Size.Small'
+                                                Icon="@Icons.Filled.KeyboardDoubleArrowLeft" Color="@Color.Tertiary" Title="Expand Sub Details"
+                                                ToggledIcon="@Icons.Filled.KeyboardDoubleArrowRight" ToggledColor="@Color.Info" ToggledTitle="Collapse Sub Details"/>
                                         </div>
                                     </ToolBarContent>
                                     <ColGroup>
@@ -150,6 +166,10 @@
                                         <col />
                                         <col />
                                         <col />
+                                        <col />
+                                        <col />
+                                        <col style='width:1%'/>
+                                        <col style='width:1%'/>
                                         <col style='width:150px'/>
                                     </ColGroup>
                                     <HeaderContent>
@@ -157,7 +177,11 @@
                                         <MudTh Class='wspace-nowrap customheader-1 px-2 pb-0 font10'>Expense</MudTh>
                                         <MudTh Class='wspace-nowrap customheader-1 px-2 pb-0 font10'>Charge</MudTh>
                                         <MudTh Class='wspace-nowrap customheader-1 px-2 pb-0 font10'>Division</MudTh>
+                                        <MudTh Class='wspace-nowrap customheader-1 px-2 pb-0 font10'>Sub Ledger</MudTh>
+                                        <MudTh Class='wspace-nowrap customheader-1 px-2 pb-0 font10'>SOW</MudTh>
                                         <MudTh Class='wspace-nowrap customheader-1 px-2 pb-0 font10'>Description</MudTh>
+                                        <MudTh Class='wspace-nowrap customheader-1 px-2 pb-0 font10'>Exclude</MudTh>
+                                        <MudTh Class='wspace-nowrap customheader-1 px-2 pb-0 font10'>OR</MudTh>
                                         <MudTh Class='wspace-nowrap customheader-1 px-2 pb-0 font10 text-right'>Amount</MudTh>
                                     </HeaderContent>
                                     <RowTemplate>
@@ -168,10 +192,12 @@
                                         </MudTd>
                                         <MudTd Class='pa-2' DataLabel='Expense'>
                                             <BlazoredTypeahead SearchMethod='LoadExpense' Context='selexp' DisableClear
-                                            @bind-Value='context.selExp' Debounce='500' MaximumSuggestions='5' aria-placeholder="Expense">
+                                            @bind-Value='context.selExp' Debounce='500' MaximumSuggestions='5' aria-placeholder="Expense" @ref="@ExpenseLineRef">
                                                 <SelectedTemplate>
                                                         @if (selexp.Id != 0) {
-                                                            <MudText Class='font12'>@selexp.ExpenseName</MudText>
+                                                            <MudTooltip Text="@selexp.ExpenseName">
+                                                                <MudText Class='font12'>@selexp.ExpenseNameFormat</MudText>
+                                                            </MudTooltip>
                                                             context.ExpenseName = selexp.ExpenseName;
                                                             context.ExpenseId = selexp.Id;
                                                         } else if(context.Id != 0) {
@@ -188,13 +214,14 @@
                                             </BlazoredTypeahead>
                                         </MudTd>
                                         <MudTd Class='pa-2' DataLabel='Charge'>
-                                            <BlazoredTypeahead SearchMethod='LoadCharging' Context='selproj' DisableClear
-                                            @bind-Value='context.selProj' Debounce='500' MaximumSuggestions='5' aria-placeholder="Charge to">
+                                            <BlazoredTypeahead SearchMethod='LoadCharging' Context='selproj' 
+                                            ValueChanged="(async(Project p)=>{ await DetailSelectedProject(p,context); context.selProj = p;})" Value="context.selProj" ValueExpression="(()=>context.selProj)"
+                                            Debounce='500' MaximumSuggestions='5' aria-placeholder="Charge to" @ref="@PayeeRef" DisableClear>
                                                 <SelectedTemplate>
                                                     @if (selproj.ProjectId != 0) {
-                                                        <MudText Class='font12'>
-                                                            @context.ProjectName
-                                                        </MudText>
+                                                            <MudTooltip Text="@selproj.ProjectName">
+                                                                <MudText Class='font12'>@selproj.ProjectNameFormat</MudText>
+                                                            </MudTooltip>
                                                             context.ProjectName = selproj.ProjectName;
                                                             context.ProjectId = selproj.ProjectId;
                                                             context.ProjectCategoryId = selproj.ProjectCategoryId;
@@ -216,7 +243,7 @@
                                         </MudTd>
                                         <MudTd Class='pa-2' DataLabel='Division'>
                                             <BlazoredTypeahead SearchMethod='LoadDivision' Context='seldiv' DisableClear
-                                            @bind-Value='context.selDiv' Debounce='500' MaximumSuggestions='5' aria-placeholder="Division">
+                                            @bind-Value='context.selDiv' Debounce='500' MaximumSuggestions='5' aria-placeholder="Division" @ref="@DivisionRef">
                                                 <SelectedTemplate>
                                                     @if (seldiv.Id != 0) {
                                                         <MudText Class='font12'>@seldiv.divisionName</MudText>
@@ -235,27 +262,121 @@
                                                 </ResultTemplate>
                                             </BlazoredTypeahead>
                                         </MudTd>
+                                        @if(GlobalClass.voucher.WithSubLedger && GlobalClass.voucher.VoucherDetails.Any(x=>x.isLabor))
+                                        {
+                                        <MudTd Class='pa-2' DataLabel='Charge'>
+                                            <BlazoredTypeahead SearchMethod='((String search)=>LoadSubConProjects(search,context.selSubConProjectSOWList))' Context='selSubCon'
+                                                ValueChanged="((SubContractorProjectModel p)=>{ SelectedSubLedger(p,context); context.selSubConProject = p;})" Value="context.selSubConProject" ValueExpression="(()=>context.selSubConProject)"
+                                                Debounce='500' MaximumSuggestions='5' aria-placeholder="Charge to" DisableClear>
+                                                <SelectedTemplate>
+                                                    @if (selSubCon.ProjectId != 0) {
+                                                            <MudTooltip Text="@selSubCon.ProjectName">
+                                                                <MudText Class='font12'>@selSubCon.SubContractorName</MudText>
+                                                            </MudTooltip>
+                                                    } else {
+                                                        <MudText Class='font12'> - </MudText>
+                                                    }
+                                                </SelectedTemplate>
+                                                <ResultTemplate>
+                                                    @selSubCon.SubContractorName | @selSubCon.ScopeOfWork
+                                                </ResultTemplate>
+                                            </BlazoredTypeahead>
+                                        </MudTd>
+                                        <!---SCOPE OF WORK-->
+                                         <MudTd Class='pa-2' DataLabel='Charge'>
+                                            <BlazoredTypeahead SearchMethod='((String search)=>LoadSubConProjectsSOW(search,context.selSubConProjectSOWList))' Context='selSOW' 
+                                                ValueChanged="((SubContractorProjectModel sow)=>{ SelectedSOW(sow,context); context.selSOW = sow;})" Value="context.selSOW" ValueExpression="(()=>context.selSOW)"
+                                                Debounce='500' MaximumSuggestions='5' aria-placeholder="Scope of Work" DisableClear Disabled=true>
+                                                <SelectedTemplate>
+                                                    @if (selSOW.ProjectId != 0) {
+                                                            <MudTooltip Text="@selSOW.ScopeOfWork">
+                                                                <MudText Class='font12'>@selSOW.ScopeOfWork</MudText>
+                                                            </MudTooltip>
+                                                    } else {
+                                                        <MudText Class='font12'> - </MudText>
+                                                    }
+                                                </SelectedTemplate>
+                                                <ResultTemplate>
+                                                    @selSOW.ScopeOfWork
+                                                </ResultTemplate>
+                                            </BlazoredTypeahead>
+                                        </MudTd>
+                                        } else 
+                                        {
+                                        <MudTd Class='pa-2' DataLabel='Charge'>
+                                            <BlazoredTypeahead SearchMethod='LoadCharging' Context='selSubCon'
+                                                ValueChanged="(async(Project p)=>{ await DetailSelectedProject(p,context); context.selProj = p;})" Value="context.selProj" ValueExpression="(()=>context.selProj)"
+                                                Debounce='500' MaximumSuggestions='5' aria-placeholder="Charge to" DisableClear>
+                                                <SelectedTemplate>
+                                                    @if (selSubCon.ProjectId != 0) {
+                                                            <MudTooltip Text="@selSubCon.ProjectName">
+                                                                <MudText Class='font12'>@selSubCon.ProjectName</MudText>
+                                                            </MudTooltip>
+                                                    } else {
+                                                        <MudText Class='font12'> - </MudText>
+                                                    }
+                                                </SelectedTemplate>
+                                                <ResultTemplate>
+                                                    @selSubCon.ProjectName
+                                                </ResultTemplate>
+                                            </BlazoredTypeahead>
+                                        </MudTd>
+                                        <!---SCOPE OF WORK-->
+                                        <MudTd Class='pa-2' DataLabel='Charge'>
+                                            <BlazoredTypeahead SearchMethod='((String search)=>LoadSubConProjectsSOW(search,context.selSubConProjectSOWList))' Context='selSOW' 
+                                                ValueChanged="((SubContractorProjectModel sow)=>{ SelectedSOW(sow,context); context.selSOW = sow;})" Value="context.selSOW" ValueExpression="(()=>context.selSOW)"
+                                                Debounce='500' MaximumSuggestions='5' aria-placeholder="Scope of Work" DisableClear Disabled=true>
+                                                <SelectedTemplate>
+                                                    @if (selSOW.ScopeOfWorkId != 0) {
+                                                            <MudTooltip Text="@selSOW.ScopeOfWork">
+                                                                <MudText Class='font12'>@selSOW.ScopeOfWork</MudText>
+                                                            </MudTooltip>
+                                                    } else {
+                                                        <MudText Class='font12'> - </MudText>
+                                                    }
+                                                </SelectedTemplate>
+                                                <ResultTemplate>
+                                                    @selSOW.ScopeOfWork
+                                                </ResultTemplate>
+                                            </BlazoredTypeahead>
+                                        </MudTd>
+                                        }
                                         <MudTd Class='pa-2' DataLabel='Description'>
-                                            <MudTextField Class='xtfield-overflow-ellipsis font12-txtfield' @bind-Value='context.Description'
+                                            <MudTextField Class='txtfield-overflow-ellipsis font12-txtfield' @bind-Value='context.Description'
                                             Margin='Margin.Dense' Variant='Variant.Outlined' />
+                                        </MudTd>
+                                        <MudTd Class='pa-2 text-center' DataLabel='Action'>
+                                            <MudCheckBox T="bool" Checked="@context.IsExcluded" CheckedChanged="@((bool b)=>{ExcludeCheckState(context,context.IsExcluded);context.IsExcluded = !context.IsExcluded;})" Size='Size.Small'></MudCheckBox>
+                                        </MudTd>
+                                        <MudTd Class='pa-2 text-center' DataLabel='Action'>
+                                            <MudCheckBox @bind-Checked="@context.HasOR" Size='Size.Small'></MudCheckBox>
                                         </MudTd>
                                         <MudTd Class='pa-2' DataLabel='Amount'>
                                             <div class='d-flex align-center pt-2 pr-2 gap-2'>
-                                                @if (context.Amount <= 0)
+                                                @if(context.IsEWT)
                                                 {
-                                                    <MudText Class='font-bold font12' Color='Color.Error' >
-                                                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
-                                                    </MudText>
-                                                    <MudNumericField Class='txtfield-overflow-ellipsis txt-top-0 tfield-color-red txtfield-right font12-txtfield'
-                                                    @bind-Value='context.Amount' Margin='Margin.None' Format='N2' HideSpinButtons Variant='Variant.Text' />
-                                                }
-                                                else
-                                                {
-                                                    <MudText Class='font-bold font12 color-green'>
-                                                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
-                                                    </MudText>
-                                                    <MudNumericField Class='txtfield-overflow-ellipsis txt-top-0 tfield-color-green txtfield-right font12-txtfield'
-                                                    @bind-Value='context.Amount' Margin='Margin.None' Format='N2' HideSpinButtons Variant='Variant.Text' />
+                                                    <MudText Class='font-bold font12' Color='Color.Error'>
+                                                            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                                                        </MudText>
+                                                        <MudSpacer/>
+                                                        @* <MudNumericField OnBlur='(()=>ComputeGrossIncome())' Class='txtfield-overflow-ellipsis txt-top-0 tfield-color-green txtfield-right font12-txtfield'
+                                                        @bind-Value='GlobalClass.voucher.WithholdingTax' Margin='Margin.None' Format='N2' HideSpinButtons Variant='Variant.Text' ReadOnly=true/> *@
+                                                        <MudText class="font12 font-bold" Color="Color.Error">@(-Math.Abs(GlobalClass.voucher.WithholdingTax))</MudText>
+                                                } else {
+                                                    if (context.Amount <= 0)
+                                                    {
+                                                        <MudText Class='font-bold font12' Color='Color.Error' >
+                                                            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                                                        </MudText>
+                                                        <MudNumericField OnBlur='(()=>ComputeGrossIncome())' Class='txtfield-overflow-ellipsis txt-top-0 tfield-color-red txtfield-right font12-txtfield'
+                                                        @bind-Value='context.Amount' Margin='Margin.None' Format='N2' HideSpinButtons Variant='Variant.Text' />
+                                                    } else {
+                                                        <MudText Class='font-bold font12 color-green'>
+                                                            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                                                        </MudText>
+                                                        <MudNumericField OnBlur='(()=>ComputeGrossIncome())' Class='txtfield-overflow-ellipsis txt-top-0 tfield-color-green txtfield-right font12-txtfield'
+                                                        @bind-Value='context.Amount' Margin='Margin.None' Format='N2' HideSpinButtons Variant='Variant.Text' />
+                                                    }
                                                 }
                                             </div>
                                         </MudTd>
@@ -264,33 +385,103 @@
                                         <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No details added</MudText>
                                     </NoRecordsContent>
                                 </MudTable>
-                                <MudGrid Class='border-thin-top height50px' Spacing='0'>
-                                    <MudItem Class='d-flex align-center pa-2 gap-2 bgc-F4F5FB border-thin-right' xs=9 >
-                                        <MudSpacer />
-                                        <MudText Class='txt-uppercase font12 font-bold'>Total amount</MudText>
-                                        <MudIcon Icon='@Icons.Filled.Equalizer' Size='Size.Small' />
+                                <MudGrid Class='border-thin-top' Spacing='0'>
+                                    <MudItem Class='d-flex align-center gap-2 bgc-F4F5FB' xs=12 sm=2>
+                                        <MudTooltip Text='With Sub Ledger'>
+                                            <MudCheckBox Class='chkbxfont10 chkbxbold' @bind-Checked='@GlobalClass.voucher.WithSubLedger' ReadOnly Label='W/ SUB LEDGER' Size='Size.Small' Dense Color='Color.Dark' />
+                                        </MudTooltip>
                                     </MudItem>
-                                    <MudItem Class='d-flex align-center pa-2 gap-2 wspace-nowrap overflow-auto' xs=3>
+                                    <MudItem Class='d-flex align-center gap-2 bgc-F4F5FB border-thin-right' xs=12 sm=8>
+                                        <MudSpacer />
+                                        <MudText Class='txt-uppercase font12 font-bold px-1'>Net Total Amount:</MudText>
+                                    </MudItem>
+                                    <MudItem Class='d-flex align-center gap-2 wspace-nowrap overflow-auto' xs=12 sm=2>
                                         @if (GlobalClass.voucher.TotalAmount > 0) {
                                             <MudIcon Class='color-green' Icon='@Icons.Outlined.LabelImportant' Size='Size.Small'/>
                                             <MudSpacer />
-                                            <MudText Class='font-bold color-green' Typo='Typo.body2' >
+                                            <MudText Class='font-bold font10 color-green px-1' >
                                             @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.voucher.TotalAmount.ToString("N2")
                                             </MudText>
                                         } else {
                                             <MudIcon Icon='@Icons.Outlined.LabelImportant' Size='Size.Small' Color='Color.Error' />
                                             <MudSpacer />
-                                            <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error' >
+                                            <MudText Class='font-bold font10 px-1' Color='Color.Error' >
                                                 @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.voucher.TotalAmount.ToString("N2")
                                             </MudText>
                                         }
                                     </MudItem>
+
+                                    
+                                    <MudItem Class='d-flex align-center justify-end bgc-F4F5FB border-thin-right' xs=12 sm=10>
+                                        <MudText Class='txt-uppercase font10 font-bold px-1'>
+                                                Total Gross Amount:
+                                        </MudText>
+                                    </MudItem>
+                                    <MudItem Class='font-bold font10 color-green px-1 justify-end text-right' xs=12 sm=2>
+                                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.voucher.GrossIncome.ToString("N2")
+                                    </MudItem>
+
+                                    <MudItem Class='d-flex align-center justify-end bgc-F4F5FB px-1 border-thin-right' xs=12 sm=10>
+                                        <MudText Class='txt-uppercase font10 font-bold' >
+                                            VAT Amount:
+                                        </MudText>
+                                    </MudItem>
+                                    <MudItem Class='font-bold font10 color-green px-1 text-right' xs=12 sm=2>
+                                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.voucher.VatInput.ToString("N2")
+                                    </MudItem>
+
+                                    <MudItem Class='d-flex align-center justify-end bgc-F4F5FB' xs=12 sm=8>
+                                        <MudText Class='txt-uppercase font10 font-bold px-1'>VAT: </MudText>
+                                        <MudTooltip Text='@(GlobalClass.voucher.VATValue.ToString("N2"))'>
+                                            <MudText Class='font12 font-bold px-1' Color='Color.Error'>@GlobalClass.voucher.VATValue.ToString("N2") %</MudText>
+                                        </MudTooltip>
+                                    </MudItem>
+                                    <MudItem Class='d-flex align-center justify-end bgc-F4F5FB px-1 border-thin-right' xs=12 sm=2>
+                                        <MudText Class='txt-uppercase font10 font-bold'>
+                                             Tax base:
+                                        </MudText>
+                                    </MudItem>
+                                     <MudItem Class='font-bold font10 color-green px-1 text-right' xs=12 sm=2>
+                                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.voucher.VatNet.ToString("N2")
+                                    </MudItem>
+
+                                    <MudItem Class='d-flex align-center justify-end bgc-F4F5FB' xs=12 sm=8>
+                                        <MudText Class='txt-uppercase font10 font-bold px-1'>EWT: </MudText>
+                                        <MudTooltip Text='@(GlobalClass.voucher.EWTValue.ToString("N2"))'>
+                                            <MudText Class='font12 font-bold px-1' Color='Color.Error'>@GlobalClass.voucher.EWTValue.ToString("N2") %</MudText>
+                                        </MudTooltip>
+                                    </MudItem>
+                                    <MudItem Class='d-flex align-center justify-end bgc-F4F5FB px-1 border-thin-right' xs=12 sm=2>
+                                        <MudText Class='txt-uppercase font10 font-bold'>
+                                            WHT Tax %:
+                                        </MudText>
+                                    </MudItem>
+                                    <MudItem Class='font-bold font10 color-green px-1 text-right' xs=12 sm=2>
+                                        @GlobalClass.voucher.EWTValue <span>%</span>
+                                    </MudItem>
+
+
+                                     <MudItem Class='d-flex align-center justify-end bgc-F4F5FB' xs=12 sm=8>
+                                        <MudText Class='txt-uppercase font10 font-bold px-1'>Total Excluded: </MudText>
+                                        <MudTooltip Text='@(GlobalClass.voucher.EWTValue.ToString("N2"))'>
+                                            <MudText Class='font12 font-bold px-1' Color='Color.Error'>@GlobalClass.voucher.TotalExcluded.ToString("N2") %</MudText>
+                                        </MudTooltip>
+                                    </MudItem>
+                                    <MudItem Class='d-flex align-center justify-end bgc-F4F5FB px-1 border-thin-right' xs=12 sm=2>
+                                        <MudText Class='txt-uppercase font10 font-bold'>
+                                            Witholding Tax Amount:
+                                        </MudText>
+                                    </MudItem>
+                                    <MudItem Class='font-bold font10 color-green px-1 text-right' xs=12 sm=2>
+                                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.voucher.WithholdingTax.ToString("N2")
+                                    </MudItem>
                                 </MudGrid>
                             </div>
-                            <div class="d-flex flex-column border-thin-left min-width20">
-                                <MudCardHeader Class='pa-2 border-thin-bottom bgc-F4F5FB height2-05rem'>
-                                    <MudText Class='txt-uppercase font12 font-bold'>Signatories</MudText>
-                                    <MudSpacer />
+                            <div class="d-flex flex-column border-thin-left transition-05s-ease" style='@(isDetailViewExpanded ? "max-width:500px" : "max-width:57px")'>
+                                <MudCardHeader class='d-flex align-center justify-center pa-2 border-thin-bottom bgc-F4F5FB height2-05rem'>
+                                    <div class='d-flex align-center transition-05s-ease overflow-hidden @(isDetailViewExpanded ? "fade-in flex-1" : "fade-out")' style='@(isDetailViewExpanded ? "max-width:500px" : "max-width:0px")'>
+                                        <MudText Class='txt-uppercase font12 font-bold'>Signatories</MudText>
+                                    </div>
                                     <MudIcon Icon='@Icons.Filled.PersonPin' Size='Size.Small' />
                                 </MudCardHeader>
                                 <MudCardContent Class='d-flex flex-column pa-2 gap-2'>
@@ -397,38 +588,41 @@
                                     </div>
                                 </MudCardContent>
                                 <MudDivider />
-                                <MudCardHeader Class='pa-2 border-thin-bottom bgc-F4F5FB height2-05rem'>
-                                    <MudText Class='txt-uppercase font12 font-bold'>Status</MudText>
-                                    <MudSpacer />
+                                <MudCardHeader Class='d-flex align-center justify-center pa-2 border-thin-bottom bgc-F4F5FB height2-05rem'>
+                                    <div class='d-flex align-center transition-05s-ease overflow-hidden @(isDetailViewExpanded ? "fade-in flex-1" : "fade-out")' style='@(isDetailViewExpanded ? "max-width:500px" : "max-width:0px")'>
+                                        <MudText Class='txt-uppercase font12 font-bold'>Status</MudText>
+                                    </div>
                                     <MudIcon Icon='@Icons.Filled.FactCheck' Size='Size.Small' />
                                 </MudCardHeader>
-                                @if (GlobalClass.voucher.Id != 0) {
-                                    <MudCardContent Class='d-flex flex-column align-center pa-2'>
-                                        <MudChip Class='chip-radius-5 font-bold font12' Size='Size.Medium' Variant='Variant.Outlined' Color='Color.Info'>
-                                            @GlobalClass.voucher.StatusName
-                                        </MudChip>
-                                    </MudCardContent>
-                                } else {
-                                    <MudCardContent Class='d-flex flex-column align-center pa-2'>
-                                        <MudChip Class='chip-radius-5 font-bold font12' Size='Size.Medium' Variant='Variant.Outlined' Color='Color.Error'>
-                                            TO BE GENERATED
-                                        </MudChip>
-                                    </MudCardContent>
-                                }
+                                <MudCardContent Class='d-flex flex-column align-center pa-2 overflow-hidden'>
+                                    <div class='d-flex align-center flex-1 @(isDetailViewExpanded ? "fade-in" : "fade-out")'>
+                                        @if (GlobalClass.voucher.Id != 0) {
+                                            <MudChip Class='chip-radius-5 font-bold font12' Size='Size.Medium' Variant='Variant.Outlined' Color='Color.Info'>
+                                                @GlobalClass.voucher.StatusName
+                                            </MudChip>
+                                        } else {
+                                            <MudChip Class='chip-radius-5 font-bold font12' Size='Size.Medium' Variant='Variant.Outlined' Color='Color.Error'>
+                                                TO BE GENERATED
+                                            </MudChip>
+                                        }
+                                    </div>
+                                </MudCardContent>
                                 <MudSpacer />
                                 <MudCardActions Class='d-flex gap-2 border-thin-top'>
-                                    <MudSpacer />
-                                    <MudButton Class='btn-ios-d font12' OnClick='(()=> { DisposePrintMapped();navigationManager.NavigateTo($"/voucher/list"); })' Variant='Variant.Text' Size='Size.Medium' DisableElevation>Cancel</MudButton>
-                                    <MudButton Class='btn-ios-d font12' OnClick='(()=> SaveVoucher())' Variant="Variant.Filled" Color='@(currActionMode == Enums.ActionMode.Update ? Color.Info : Color.Primary)' Size='Size.Medium' DisableElevation Disabled='_processing'>
-                                        @if (_processing) {
-                                            <MudProgressCircular Class="progsize-21" Size="Size.Small" Indeterminate="true"/>
-                                            <MudText Class='font12 fweight500 pl-2'>GENERATING</MudText>
-                                        } else {
-                                            <MudText Class='font12 fweight500'>
-                                                @(currActionMode == Enums.ActionMode.Update ? "UPDATE" : "GENERATE")
-                                            </MudText>
-                                        }
-                                    </MudButton>
+                                    <div class='d-flex align-center flex-1 @(isDetailViewExpanded ? "fade-in" : "fade-out")'>
+                                        <MudSpacer />
+                                        <MudButton Class='btn-ios-d font12' OnClick='(()=> { DisposePrintMapped();navigationManager.NavigateTo($"/voucher/list"); })' Variant='Variant.Text' Size='Size.Medium' DisableElevation>Cancel</MudButton>
+                                        <MudButton Class='btn-ios-d font12' OnClick='(()=> SaveVoucher())' Variant="Variant.Filled" Color='@(currActionMode == Enums.ActionMode.Update ? Color.Info : Color.Primary)' Size='Size.Medium' DisableElevation Disabled='_processing'>
+                                            @if (_processing) {
+                                                <MudProgressCircular Class="progsize-21" Size="Size.Small" Indeterminate="true"/>
+                                                <MudText Class='font12 fweight500 pl-2'>GENERATING</MudText>
+                                            } else {
+                                                <MudText Class='font12 fweight500'>
+                                                    @(currActionMode == Enums.ActionMode.Update ? "UPDATE" : "GENERATE")
+                                                </MudText>
+                                            }
+                                        </MudButton>
+                                    </div>
                                 </MudCardActions>
                             </div>
                         </div>
@@ -448,7 +642,7 @@
     private Project payee = new Project();
     private UserAccount preparedBy = new UserAccount(); private UserAccount verifiedBy = new UserAccount(); private UserAccount approvedBy = new UserAccount();
     private DateTime? voucherDate = DateTime.Now.Date;
-    private bool dataFetched, openEditDrawer, reqProj, reqExp, reqDiv, reqDebt, reqCred, reqAmt, reqVer , reqApp, reqPrep, reqPayee, reqRFP, _processing;
+    private bool dataFetched, openEditDrawer, reqProj, reqExp, reqDiv, reqDebt, reqCred, reqAmt, reqVer , reqApp, reqPrep, reqPayee, reqRFP, _processing, isDetailViewExpanded = true;
     private byte[] preparedByImg= new byte[]{}, verifiedByImg = new byte[]{}, approvedByImg = new byte[]{};
     private VoucherDetailModel selectedVoucherDetailModel = new VoucherDetailModel();
     private string editDrawerMargin = string.Empty;
@@ -456,6 +650,9 @@
     private BlazoredTypeahead<Project, Project> projectTypeahead = new BlazoredTypeahead<Project, Project>();
     private Enums.ActionMode currActionMode { get; set; }
     private int[] pageSize = new int[] {30, 50, 100, 500, 1000 };
+    private BlazoredTypeahead<ExpenseLineModel, ExpenseLineModel> ExpenseLineRef = new();
+    private BlazoredTypeahead<DivisionModel, DivisionModel> DivisionRef = new();
+    private BlazoredTypeahead<Project, Project> PayeeRef = new();
     #endregion
 
     #region Methods
@@ -466,10 +663,14 @@
         while (GlobalClass.currentUserAccount == null)
             await Task.Delay(1);
 
-        Task t = Task.WhenAll(InitializedComponent());
+        Task t = Task.WhenAll(InitializedComponent(),LoadRequesteForPayments());
         await t;
         if (t.Status == TaskStatus.RanToCompletion)
             CompletedFetch();
+    }
+    private async Task LoadRequesteForPayments()
+    {
+        GlobalClassList.requestForPaymentsList = await  requrestForPaymentService.LoadRequestPayment(new FilterParameter(),GlobalClass.token);
     }
     async Task InitializedComponent()
     {
@@ -493,6 +694,11 @@
         }
         else
         {
+            await DisplayOtherProperties();
+        }
+        if(VoucherPrint.isPrint)
+        {
+            RemappedProperties();
             await DisplayOtherProperties();
         }
     }
@@ -520,6 +726,9 @@
         preparedByImg = GlobalClass.forPrintingOrSaveVoucher.PreparedByPicture;
         GlobalClass.voucher.PeriodFrom = GlobalClass.forPrintingOrSaveVoucher.PeriodFrom;
         GlobalClass.voucher.PeriodTo = GlobalClass.forPrintingOrSaveVoucher.PeriodTo;
+         GlobalClass.voucher.RFPTotalAmount = GlobalClass.voucher.VoucherRFP.Sum(x=>x.TotalAmount);
+        GlobalClass.voucher.RFPTotalAmountString = GlobalClass.voucher.VoucherRFP.Sum(x=>x.TotalAmount).ToString("N2");
+        
     }
     #endregion
 
@@ -553,23 +762,44 @@
         }
         else if(!ValidateAmount())
         {
-            Extensions.ShowAlert("Voucher details amount is greater than voucher total amount", Variant.Filled, snackbarService, Severity.Error);
+            Extensions.ShowAlert("Gross amount should be lower than or equal to the voucher/s amount (P "+
+            GlobalClass.voucher.VoucherRFP.Sum(x=>x.TotalAmount).ToString("N2")+")", Variant.Filled, snackbarService, Severity.Error);
         }
         else
-            Extensions.ShowAlert("Please Complete all required fields", Variant.Filled, snackbarService, Severity.Error);
+            Extensions.ShowAlert("Cannot create voucher, Incomplete fields.", Variant.Filled, snackbarService, Severity.Error);
         _processing = false;
     }
     #endregion
 
     #region Add New Voucher Details
-    private void AddNew()
+    private async Task AddNew(bool state)
     {
         var temp = 1;
-        GlobalClass.voucher.VoucherDetails.Add(new VoucherDetailModel());
+        //New code map expense with ewt
+        var VoucherDetail = new VoucherDetailModel();
+        if(state)
+        {
+            VoucherDetail.selExp = GlobalClassList.expenseLineList.Find(x=>x.IsEWT == true) ?? new();
+            VoucherDetail.selProj = (await globalService.LoadPayees(new FilterParameter(){IsPayee=true,PayeeName="None"},GlobalClass.token)).Find(x=>x.ProjectName =="None")?? new();
+            VoucherDetail.selDiv = GlobalClassList.divisionList.Find(x=>x.divisionName == "None")?? new();
+            VoucherDetail.Amount = -Math.Abs(GlobalClass.voucher.WithholdingTax);
+            VoucherDetail.IsEWT = true;
+            GlobalClass.voucher.VoucherDetails.Insert(GlobalClass.voucher.VoucherDetails.Count,VoucherDetail);//Last row if EWT
+        }
+        else
+            if(GlobalClass.voucher.VoucherDetails.Count == 0)
+                GlobalClass.voucher.VoucherDetails.Add(VoucherDetail);//Add if no details {0} row
+            else if(GlobalClass.voucher.VoucherDetails.Any(x=>x.isLabor))
+                GlobalClass.voucher.VoucherDetails.Insert(GlobalClass.voucher.VoucherDetails.Where(x=>x.isLabor).ToList().Count,VoucherDetail);//Insert before after labor
+            else
+                GlobalClass.voucher.VoucherDetails.Insert(GlobalClass.voucher.VoucherDetails.Count-1,VoucherDetail);//Insert before EWT row
+        
         foreach (var item in GlobalClass.voucher.VoucherDetails)
         {
             item.TemporaryId = temp++;
         }
+        ComputeGrossIncome();
+        StateHasChanged();
     }
 
     #endregion
@@ -596,6 +826,68 @@
         preparedBy = await GetEmployeeDetails(GlobalClass.voucher.PreparedById);
         verifiedBy = await GetEmployeeDetails(GlobalClass.voucher.VerifiedById);
         approvedBy = await GetEmployeeDetails(GlobalClass.voucher.ApprovedById);
+        GlobalClass.voucher.RFPTotalAmountString = GlobalClass.voucher.VoucherRFP.Sum(x=>x.TotalAmount).ToString("N2");
+        if(GlobalClass.voucher.Id == 0 && !GlobalClass.voucher.VoucherDetails.Any(x=>x.ProjectName=="None" || x.DivisionName == "None"))
+            await GetVATandEWT(payee);
+        GlobalClass.voucher.RFPTotalAmount = GlobalClass.voucher.VoucherRFP.Sum(x=>x.TotalAmount);
+        GlobalClass.voucher.RFPTotalAmountString = GlobalClass.voucher.VoucherRFP.Sum(x=>x.TotalAmount).ToString("N2");
+        var RFP = await voucherService.NotInVoucher(GlobalClass.token);
+
+        List<Project> projects = await globalService.LoadPayees(new FilterParameter(){IsPayee=true,PayeeName="",isActive=false},GlobalClass.token);
+        List<RequestForPaymentModel> currentRFPList = new List<RequestForPaymentModel>();
+        GlobalClass.voucher.VoucherRFP.ForEach(rf=> {
+            currentRFPList.Add(RFP.Where(x=>x.Id == rf.RequestForPaymentId).First());
+        });
+        currentRFPList.ForEach(x=>{
+            GlobalClass.voucher.VoucherRFP.ForEach(vDetails=>
+            {
+            if(x.Id == vDetails.RequestForPaymentId)
+            {
+                vDetails.rfpType = x.RFPDetailTypeId;
+            }
+            });
+        });
+        if(GlobalClass.voucher.VoucherRFP.Any(x=>x.rfpType==Enums.RFPDetailTypeId.Labor))
+        {
+        GlobalClass.voucher.VoucherDetails.ForEach(async(vDetails)=>{
+            vDetails.selSubConProject = (await globalService.VoucherDetailsSubCon(vDetails.ProjectId,GlobalClass.token)).First();
+            vDetails.selSubConProjectSOWList = await globalService.VoucherDetailsSubCon(vDetails.ProjectId,GlobalClass.token);
+            vDetails.selSOW =  (await globalService.VoucherDetailsSubCon(vDetails.selSubConProject.ProjectId,GlobalClass.token)).First();
+            //Set subledger for saving
+            vDetails.SubLedgerId = vDetails.selSubConProject.SubContractorId;
+            vDetails.SubLedgerCategoryId = Enums.ProjectCategory.SubCon;//Temporary
+            vDetails.SubLedgerName = vDetails.selSubConProject.SubContractorName;
+            //Set subdledger for saving
+            vDetails.ScopeOfWorkId = vDetails.selSOW.ScopeOfWorkId;
+            vDetails.ScopeOfWorkName = vDetails.selSOW.ScopeOfWork;
+            vDetails.isLabor = GlobalClass.voucher.VoucherRFP.Any(x=>x.rfpType==Enums.RFPDetailTypeId.Labor)? true:false;
+        });
+        }
+        else 
+        {
+        GlobalClass.voucher.VoucherDetails.ForEach(async(x)=>{
+            x.selSubConProject = (projects.Where(x=>x.ProjectName.Contains("None",StringComparison.InvariantCultureIgnoreCase)).Select(x=>new SubContractorProjectModel()
+            {
+            SubContractorName = x.SubLedgerName,
+            SubContractorId = x.SubLedgerId,
+            })).First();
+            //Console.WriteLine(x.selSubConProject);
+            x.selSOW = (GlobalClassList.scopeOfWork.Where(x=>x.ScopeName.Contains("None",StringComparison.InvariantCultureIgnoreCase)).Select(x=>new SubContractorProjectModel(){
+            ScopeOfWork = x.ScopeName,
+            ScopeOfWorkId = x.Id,
+            })).First();
+            x.selSubConProjectSOWList = await globalService.VoucherDetailsSubCon(x.ProjectId,GlobalClass.token);
+            //Set subledger for saving
+            x.SubLedgerId = x.selSubConProject.SubContractorId;
+            x.SubLedgerCategoryId = x.SubLedgerCategoryId;
+            x.SubLedgerName = x.selSubConProject.SubContractorName;
+            //Set sow for saving
+            x.ScopeOfWorkId = x.selSOW.ScopeOfWorkId;
+            x.ScopeOfWorkName = x.selSOW.ScopeOfWork;
+            x.isLabor = false;
+        });
+        }
+    ComputeGrossIncome();
     }
 
     #endregion
@@ -614,7 +906,6 @@
         GlobalClass.voucher.PreparedByPicture = preparedBy.Picture;
         GlobalClass.voucher.VerifiedByPicture = verifiedBy.Picture;
         GlobalClass.voucher.ApprovedByPicture = approvedBy.Picture;
-        Console.WriteLine("Id: " + GlobalClass.voucher.PreparedById + " Name: " + GlobalClass.voucher.PreparedByName);
         GlobalClass.voucher.AccountingStatusId = GlobalClassList.accountingStatusList
         .Where(x => x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.VG)
         .Select(x => x.Id)
@@ -783,12 +1074,14 @@
         var resultDialog = await dialogService.Show<Shared.Dialogs.GlobalRFPLiquidationLookUp.GlobalRFPLiquidationLookUp>(dialogTitle, parameters, options).Result;
         if (!resultDialog.Cancelled)
         {
+            ComputeGrossIncome();
+            GetLaborPayee();
             StateHasChanged();
         }
     }
 
     #endregion
-
+    
     #region Add Division
 
     private void AddDivision(VoucherDetailModel voucherDetail)
@@ -909,7 +1202,14 @@
         var projects = await globalService.LoadPayees(filterParameter,GlobalClass.token);
         return projects;
     }
-
+    private async Task<IEnumerable<SubContractorProjectModel>> LoadSubConProjects(string search,List<SubContractorProjectModel> context)
+    {
+        return await Task.Run(()=>context.Where(x=>x.SubContractorName.Contains(search, StringComparison.InvariantCultureIgnoreCase)));
+    }
+    private async Task<IEnumerable<SubContractorProjectModel>> LoadSubConProjectsSOW(string searchSOW, List<SubContractorProjectModel> sowContext)
+    {
+        return await Task.Run(()=>sowContext.Where(x=>x.SubContractorName.Contains(searchSOW, StringComparison.InvariantCultureIgnoreCase)));
+    }
     private async Task<IEnumerable<UserAccount>> LoadEmployee(string employeeName)
     {
         var filterParameter = new FilterParameter()
@@ -951,38 +1251,40 @@
     #region Remove RFP Voucher
     private async void RemoveRFP(VoucherDetailModel voucherDetail)
     {
-      if(voucherDetail.Id != 0)
-      {
-        var parameters = new DialogParameters();
-        string contentText = "Voucher details";
-        string dialogTitle = "Remove " + contentText;
-        parameters.Add("contentText", contentText);
-        parameters.Add("actionMode", Enums.ActionMode.Delete);
-        var options = new DialogOptions()
-        {
-            CloseButton = false,
-            MaxWidth = MaxWidth.ExtraSmall,
-            FullWidth = true,
-            NoHeader = false,
-            DisableBackdropClick = true
-        };
-        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-        if(!resultDialog.Cancelled)
-        {
-          voucherDetail.IsActive = false;
-          GlobalClass.voucher.RemovedVoucherDetails.Add(voucherDetail);
-          GlobalClass.voucher.VoucherDetails = GlobalClass.voucher.VoucherDetails.Where(x=>x.IsActive == true).ToList();
-        }
-      }
-      else
-      {
-          voucherDetail.IsActive = false;
-          GlobalClass.voucher.RemovedVoucherDetails.Add(voucherDetail);
-          GlobalClass.voucher.VoucherDetails = GlobalClass.voucher.VoucherDetails.Where(x=>x.IsActive == true).ToList();
-      }
-      GlobalClass.voucher.TotalAmount = GlobalClass.voucher.VoucherDetails.Sum(x=>x.Amount);
-      StateHasChanged();
+        //Prompt purpose
+    var action = Enums.ActionMode.Delete;
+    if(voucherDetail.IsEWT)
+        action = Enums.ActionMode.Invalid;
 
+    var parameters = new DialogParameters();
+    string contentText = "Voucher details";
+    string dialogTitle = "Remove " + contentText;
+    parameters.Add("contentText", contentText);
+    parameters.Add("actionMode", action);
+    var options = new DialogOptions()
+    {
+        CloseButton = false,
+        MaxWidth = MaxWidth.ExtraSmall,
+        FullWidth = true,
+        NoHeader = false,
+        DisableBackdropClick = true
+    };
+    var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+    if(!resultDialog.Cancelled)
+    {
+        if(action != Enums.ActionMode.Invalid && GlobalClass.voucher.Id != 0 && voucherDetail.Id != 0)
+        {
+            voucherDetail.IsActive = false;
+            GlobalClass.voucher.RemovedVoucherDetails.Add(voucherDetail);
+            GlobalClass.voucher.VoucherDetails = GlobalClass.voucher.VoucherDetails.Where(x=>x.IsActive == true).ToList();
+        } else {
+            GlobalClass.voucher.VoucherDetails.Remove(voucherDetail);
+            GlobalClass.voucher.WithSubLedger = GlobalClass.voucher.VoucherRFP.Count > 0 ? true:false;
+            GlobalClass.voucher.VoucherDetails = GlobalClass.voucher.VoucherRFP.Count > 0 ? GlobalClass.voucher.VoucherDetails:new();
+        }
+    }
+      GlobalClass.voucher.GrossIncome = GlobalClass.voucher.VoucherDetails.Sum(x=>x.Amount);
+      StateHasChanged();
     }
 
     #endregion
@@ -991,11 +1293,15 @@
 
     private void RemoveVoucherRFP(VoucherRFPModel voucherRFP)
     {
-      voucherRFP.IsActive = false;
-      GlobalClass.voucher.VoucherRFP.Remove(voucherRFP);
-      GlobalClass.voucher.RemovedVoucherRFP.Add(voucherRFP);
-      StateHasChanged();
-    }
+        GlobalClass.voucher.RFPTotalAmount = GlobalClass.voucher.RFPTotalAmount - voucherRFP.TotalAmount;
+        GlobalClass.voucher.RFPTotalAmountString = GlobalClass.voucher.RFPTotalAmount.ToString("N2");
+        voucherRFP.IsActive = false;
+        GlobalClass.voucher.VoucherRFP.Remove(voucherRFP);
+        GlobalClass.voucher.RemovedVoucherRFP.Add(voucherRFP);
+        GlobalClass.voucher.WithSubLedger = GlobalClass.voucher.VoucherRFP.Count > 0 ? true:false;
+        GlobalClass.voucher.VoucherDetails = GlobalClass.voucher.VoucherRFP.Count > 0 ? GlobalClass.voucher.VoucherDetails:new();
+        StateHasChanged();
+    }   
 
     #endregion
 
@@ -1014,9 +1320,19 @@
     #endregion
 
     #region Reset Voucher Detail Table
-    private void ResetVoucherTable()
+    private async Task ResetVoucherTable()
     {
         GlobalClass.voucher.VoucherDetails = new List<VoucherDetailModel>();
+        var voucher = await voucherService.GetVATandEWT(payee,GlobalClass.token);
+        GlobalClass.voucher.VATValue = voucher.VATValue;
+        GlobalClass.voucher.EWTValue = voucher.EWTValue;
+        if(voucher.EWTValue > 0 && !GlobalClass.voucher.VoucherDetails.Any(x=>
+        x.ProjectName == "None" || 
+        x.DivisionName == "None")) {
+        if(GlobalClass.voucher.RemovedVoucherDetails.Any(x=> x.ProjectName == "None" || x.DivisionName == "None"))
+                GlobalClass.voucher.RemovedVoucherDetails.RemoveAll(x=> x.ProjectName == "None" || x.DivisionName == "None");
+        await AddNew(true);
+        }
     }
     #endregion
 
@@ -1029,18 +1345,6 @@
             openEditDrawer = !openEditDrawer;
             MarginToDrawer();
         }
-    }
-    #endregion
-
-    #region Save Entry Changes
-    private void SaveEntryChanges()
-    {
-        if(!ValidateEntries()) {
-            Extensions.ShowAlert("Please complete required fields", Variant.Filled, snackbarService, Severity.Error);
-            return;
-        }
-        openEditDrawer = !openEditDrawer;
-        MarginToDrawer();
     }
     #endregion
 
@@ -1065,7 +1369,7 @@
         if (selectedVoucherDetailModel.DivisionId == 0)
             reqDiv = true;
         if (reqProj || reqExp || reqDiv)
-            return false;
+            return  false;
         return true;
     }
     #endregion
@@ -1073,7 +1377,7 @@
     #region ValidateAmount
     private bool ValidateAmount()
     {
-      if(GlobalClass.voucher.VoucherDetails.Sum(x=>x.Amount) > GlobalClass.voucher.TotalAmount)
+      if(GlobalClass.voucher.VoucherDetails.Sum(x=>x.Amount) > GlobalClass.voucher.VoucherRFP.Sum(y=>y.TotalAmount))
       {
         return false;
       }
@@ -1085,6 +1389,7 @@
     private bool ValidateEntry()
     {
         ResetVoucherEntryValidations();
+        bool valid = true;
         if (payee.ProjectId == 0)
             reqPayee = true;
         if (GlobalClass.voucher.PreparedById == 0)
@@ -1097,12 +1402,16 @@
             detailCountStatus = "No details Added"; *@
         if(GlobalClass.voucher.VoucherRFP.Count() == 0)
             reqRFP = true;
-
         if (GlobalClass.voucher.VoucherDetails.Count() == 0
         || GlobalClass.voucher.VoucherRFP.Count() == 0)
-            return false;
-      
-        return true;
+            valid =  false;
+        GlobalClass.voucher.VoucherDetails.Where(y=>y.IsEWT == false).Reverse().ToList().ForEach(x=> { 
+            if(x.selExp.Id == 0 || x.selExp.Id == 0 || x.selExp.Id == 0) {
+                valid = false;
+                return;
+            }
+        });
+        return valid;
     }
 
     private void Validate(int control)
@@ -1158,5 +1467,129 @@
     }
     #endregion
 
+    #region GetVATandEWT
+    private async Task GetVATandEWT(Project p)
+    {
+        var voucher = await voucherService.GetVATandEWT(p,GlobalClass.token);
+        GlobalClass.voucher.VATValue = voucher.VATValue;
+        GlobalClass.voucher.EWTValue = voucher.EWTValue;
+        if(voucher.EWTValue > 0 && !GlobalClass.voucher.VoucherDetails.Any(x=>
+        x.ProjectName == "None" || 
+        x.DivisionName == "None")) {
+            if(GlobalClass.voucher.RemovedVoucherDetails.Any(x=> x.ProjectName == "None" || x.DivisionName == "None"))
+                GlobalClass.voucher.RemovedVoucherDetails.RemoveAll(x=> x.ProjectName == "None" || x.DivisionName == "None");
+            await AddNew(true);
+        } else {
+            if(GlobalClass.voucher.Id != 0)
+                {
+                    var voucherDetail = GlobalClass.voucher.VoucherDetails.Find(x=> x.ProjectName == "None" || x.DivisionName == "None")?? new();
+                    voucherDetail.IsActive = false;
+                    voucherDetail.Amount = -Math.Abs(voucherDetail.Amount);
+                    GlobalClass.voucher.RemovedVoucherDetails.Add(voucherDetail);
+                }
+                if(GlobalClass.voucher.EWTValue <= 0)
+                    GlobalClass.voucher.VoucherDetails.RemoveAll(x=> x.ProjectName == "None" || x.DivisionName == "None");
+        }
+        ComputeGrossIncome();
+        StateHasChanged();
+    }
+    #endregion
+    private void ComputeGrossIncome()
+    {
+        GlobalClass.voucher.GrossIncome = 0.00m;
+        GlobalClass.voucher.WithholdingTax = 0.00m;
+        GlobalClass.voucher.VoucherDetails.ForEach(amount=>{
+            if(amount.IsEWT)
+                amount.Amount = -Math.Abs(GlobalClass.voucher.WithholdingTax);
+            else
+                if(!amount.IsExcluded)
+                    GlobalClass.voucher.GrossIncome += amount.Amount;
+        });
+        StateHasChanged();
+    }
+    private async Task SelectedPayee(Project p)
+    {
+        payee = p;
+        await GetVATandEWT(p);
+    }
+    private async Task ShowPreviousDialog()
+    {
+        if(payee.ProjectId == 0)
+            Extensions.ShowAlert("Please select a payee.",Variant.Filled, snackbarService,Severity.Warning);
+        else {
+            GlobalClass.voucher.PayeeId = payee.ProjectId;
+            GlobalClass.voucher.PayeeCategoryId = payee.ProjectCategoryId;
+            var options = new DialogOptions()
+            {
+                CloseButton = false,
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                NoHeader = false,
+                DisableBackdropClick = false
+            };
+            var resultDialog = await dialogService.Show<Shared.Dialogs.PreviousVoucherDialogs.PreviousVouchers>("",options).Result;
+        }
+    }
+    private void ExcludeCheckState(VoucherDetailModel detail,bool check)
+    {
+        //Need to set value to !check to get state of checkbox
+        ExclueAmountFromGrossIncome(detail,!check);
+        StateHasChanged();
+    }
+    private void ExclueAmountFromGrossIncome(VoucherDetailModel detail,bool isExclude){ 
+        if(isExclude)
+            GlobalClass.voucher.GrossIncome -= detail.Amount;
+        else 
+            GlobalClass.voucher.GrossIncome += detail.Amount;
+    }
+    private void GetLaborPayee()
+    {
+        if(GlobalClass.voucher.VoucherDetails.Any(x=>x.isLabor))
+        {   
+            var RFPLabor = GlobalClass.voucher.VoucherRFP.Where(x=>x.rfpType == Enums.RFPDetailTypeId.Labor).FirstOrDefault();
+            if(RFPLabor != null )
+            {
+                var _LaborPayee = new Project();
+                _LaborPayee.ProjectId = RFPLabor.payeeId;
+                _LaborPayee.ProjectCategoryId = (Enums.ProjectCategory)RFPLabor.payeeCategory;
+                _LaborPayee.ProjectName = RFPLabor.PayeeName;
+                payee = _LaborPayee;
+            }
+
+        }
+    }
+    private void SelectedSubLedger(SubContractorProjectModel p,VoucherDetailModel detail)
+    {
+        detail.selSOW.ScopeOfWork = p.ScopeOfWork;
+        detail.selSOW.ScopeOfWorkId = p.ScopeOfWorkId;
+        detail.ScopeOfWorkId = p.ScopeOfWorkId;
+        detail.ScopeOfWorkName = p.ScopeOfWork;
+        detail.SubLedgerId = p.ProjectId;
+        detail.SubLedgerCategoryId = p.SubContactorCategoryId;
+        //detail.SubLedgerCategoryId = p.cate;
+        detail.SubLedgerName = p.ProjectName;
+        StateHasChanged();
+    }
+    private void SelectedSOW(SubContractorProjectModel p,VoucherDetailModel detail)
+    {
+        detail.selSOW.ScopeOfWork = p.ScopeOfWork;
+        detail.selSOW.ScopeOfWorkId = p.ScopeOfWorkId;
+        detail.ScopeOfWorkId = p.ScopeOfWorkId;
+        detail.ScopeOfWorkName = p.ScopeOfWork;
+        detail.SubLedgerId = p.ProjectId;
+        detail.SubLedgerCategoryId = p.SubContactorCategoryId;
+        //detail.SubLedgerCategoryId = p.cate;
+        detail.SubLedgerName = p.ProjectName;
+        StateHasChanged();
+    }
+    private async Task DetailSelectedProject(Project p,VoucherDetailModel vDetail)
+    {
+        vDetail.selSubConProjectSOWList =  await globalService.VoucherDetailsSubCon(p.ProjectId,GlobalClass.token);
+        if(vDetail.RFPDetailType != Enums.RFPDetailTypeId.Labor)
+        {
+            vDetail.SubLedgerId = p.ProjectId;
+            vDetail.SubLedgerCategoryId = p.ProjectCategoryId;
+        }
+    }
     #endregion
 }

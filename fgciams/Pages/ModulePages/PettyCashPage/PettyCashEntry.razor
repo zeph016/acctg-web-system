@@ -3,10 +3,11 @@
 
 @inject IGlobalService globalService
 @inject IPettyCashService pettyCashService
-@inject ISnackbar snackBarService
+@inject ISnackbar snackbarService
 @inject IDialogService dialogService
 @inject NavigationManager navigationManager
 @inject IJSRuntime jsRuntimeService
+@attribute [Authorize]
 
 <div class='page-cont d-flex'>
     @if (!dataFetched)
@@ -140,7 +141,7 @@
                                         }
                                         <div class='d-flex flex-grow-1 flex-column'>
                                             <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear Context='aprby' placeholder='Approved By'
-                                            @bind-Value='approvedBy' Debounce='500' MaximumSuggestions='5'>
+                                            ValueExpression='@(()=>approvedBy)' Value="approvedBy" ValueChanged="@((UserAccount ac)=>SelectedApprovedBy(ac))" Debounce='500' MaximumSuggestions='5'>
                                                 <SelectedTemplate>
                                                     <div class='overflow-hidden wspace-nowrap'>
                                                         @if (aprby.EmployeeId != 0) {
@@ -174,7 +175,7 @@
                                         }
                                         <div class='d-flex flex-grow-1 flex-column'>
                                             <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear Context='recby' placeholder='Received By'
-                                            @bind-Value='receivedBy' Debounce='500' MaximumSuggestions='5'>
+                                            ValueExpression="@(()=>receivedBy)" Value='receivedBy' ValueChanged="@((UserAccount ac) => SelectedReceivedBy(ac))" Debounce='500' MaximumSuggestions='5'>
                                                 <SelectedTemplate>
                                                     <div class='overflow-hidden wspace-nowrap'>
                                                         @if (recby.EmployeeId != 0) {
@@ -368,13 +369,14 @@
         _processing = true;
         if (isValidated())
         {
+            Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(GlobalClass.pettyCash,Newtonsoft.Json.Formatting.Indented));
             _processing = false;
             navigationManager.NavigateTo($"/pettycash/print");
         }
         else
         {
             _processing = false;
-            Extensions.ShowAlert("Cannot create Petty Cash. Incomplete Fields", Variant.Filled, snackBarService, Severity.Error);
+            Extensions.ShowAlert("Cannot create Petty Cash. Incomplete fields.", Variant.Filled, snackbarService, Severity.Error);
         }
     }
     private void New()
@@ -422,5 +424,17 @@
         reqApprover = false;
         reqReceived = false;
         reqAmount = false;
+    }
+    private void SelectedApprovedBy(UserAccount ac)
+    {
+        approvedBy = ac;
+        GlobalClass.pettyCash.ApprovedById = ac.EmployeeId;
+        GlobalClass.pettyCash.ApprovedByName = ac.EmployeeName;
+    }
+    private void SelectedReceivedBy(UserAccount ac)
+    {
+        receivedBy = ac;
+        GlobalClass.pettyCash.ReceivedById = ac.EmployeeId;
+        GlobalClass.pettyCash.ReceivedByName = ac.EmployeeName;
     }
 }

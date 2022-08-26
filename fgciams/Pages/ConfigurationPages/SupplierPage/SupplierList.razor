@@ -1,0 +1,410 @@
+@page "/supplier/list"
+@inject ISupplierService supplierService
+@inject IDialogService dialogService
+@inject ISnackbar snackBarService
+@inject IMuniCityService muniCityService
+@inject NavigationManager navigationManager
+@inject ApplicationState AppState
+
+<div class='page-cont'>
+    <div class='drawer-right'>
+        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <div class='drawer-right__filtercont'>
+                <div class="icon-area d-flex align-center">
+                    <MudIconButton OnClick='OpenSideFilter' Icon="@Icons.Filled.FilterList" aria-label="Filter" Size='Size.Medium' />
+                </div>
+                <div class="filter-title d-flex align-center">
+                    <p class='title875'>Filter</p>
+                    <MudSpacer />
+                    <MudIconButton OnClick='OpenSideFilter' Icon="@Icons.Filled.Close" aria-label="Close Filter" Size='Size.Medium' />
+                </div>
+                <div class='filter-content d-flex flex-column pl-4 pr-4 gap-2 @visibility'>
+                     <div class='d-flex align-center gap-2 @visibility'>
+                        <MudCheckBox Class='pt-1' @bind-Checked="@filterParameter.IsName" Dense Size='Size.Small'/>
+                        <MudTextField Class='txtfield-75' Immediate=true @bind-Value='filterParameter.Name' Placeholder='Supplier Number'
+                        Clearable='true' Disabled="@(!filterParameter.IsName)" Variant='Variant.Outlined' />
+                     </div>
+                     <div class='d-flex align-center gap-2 @visibility'>
+                        <MudCheckBox Class='pt-1' @bind-Checked="@filterParameter.IsTermsOfPayment" Dense Size='Size.Small' />
+                        <MudSelect Class='txtfield-75' MultiSelectionTextFunc='@(new Func<List<string>, string>(TermsOfPayment))' @bind-SelectedValues='hasTermsOfPayment' IconSize='Size.Small'
+                            @bind-Value="selectedTOP" Dense="true" MultiSelection=true Disabled='!filterParameter.IsTermsOfPayment' Placeholder='Terms of Payment' Variant='Variant.Outlined'>
+                                @if(GlobalClassList.termsOfPayments != null)
+                                    @foreach (var item in GlobalClassList.termsOfPayments)
+                                    {
+                                    <MudSelectItem Value="@item">@item.TermName</MudSelectItem>
+                                    }
+                        </MudSelect>
+                    </div>
+                    <div class='d-flex align-center gap-2 @visibility'>
+                        <MudCheckBox Class='pt-1' @bind-Checked="@filterParameter.IsTaxCode" Dense Size='Size.Small' />
+                        <MudSelect Class='txtfield-75' MultiSelectionTextFunc='@(new Func<List<string>, string>(TaxCode))' @bind-SelectedValues='hasTaxCode' IconSize='Size.Small'
+                            @bind-Value="selectedTaxCode" Dense="true" MultiSelection=true Disabled='!filterParameter.IsTaxCode' Placeholder='Tax Codes' Variant='Variant.Outlined'>
+                                @if(GlobalClassList.taxCodes != null)
+                                    @foreach (var item in GlobalClassList.taxCodes)
+                                    {
+                                    <MudSelectItem Value="@item">@item.Description</MudSelectItem>
+                                    }
+                        </MudSelect>
+                    </div>
+                    <div class='d-flex align-center gap-2 @visibility'>
+                        <MudCheckBox Class='pt-1' @bind-Checked="@filterParameter.IsMuniCity" Dense Size='Size.Small' />
+                        <BlazoredTypeahead SearchMethod='LoadMuniCity' DisableClears placeholder='City/Prov./Municipality'
+                            @bind-Value='muniCity' Debounce='500' MaximumSuggestions='10' Disabled='!filterParameter.IsMuniCity'>
+                            <SelectedTemplate>
+                                @if (muniCity.Id != 0) {
+                                    <MudText Class='font12'>@context.Name</MudText>
+                                } else {
+                                    <MudText Class='font12'> - </MudText>
+                                }
+                            </SelectedTemplate>
+                            <ResultTemplate>
+                                <MudText Class='font12'>@context.Name</MudText>
+                            </ResultTemplate>
+                        </BlazoredTypeahead>
+                    </div>
+                    <div class='d-flex align-center gap-2 @visibility'>
+                        <MudCheckBox Class='pt-1' @bind-Checked="@filterParameter.HasVAT" Dense Size='Size.Small'/>
+                        <MudText Class='txtfield-75'>has VAT</MudText>
+                    </div>
+                    <div class='d-flex align-center justify-end pt-1'>
+                        <div class='d-flex align-center justify-end'>
+                            <MudButton Class='wspace-nowrap' Variant='Variant.Filled' Color='Color.Secondary' OnClick='(()=> ReloadTable())' Disabled=!EnableClearButton()>Clear filter</MudButton> 
+                        </div>
+                        &nbsp;
+                        <MudButton Class='wspace-nowrap' OnClick="(() => FilterTable())" Variant='Variant.Filled' Color='Color.Secondary'>Apply Filter</MudButton>
+                    </div>
+                </div>
+            </div>
+        </MudDrawer>
+    </div>
+    <MudContainer Class='supplierpage' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+        @if(!dataFetched)
+        {
+            <SkeletonPageList />
+        }
+        else
+        {
+            <MudTable Class='configtables row-popup-anim-2px' ServerData='new Func<TableState, Task<TableData<SupplierModel>>>(LoadSupplierInServer)' Hover="true" 
+                Breakpoint="Breakpoint.Sm" FixedHeader FixedFooter Bordered Dense
+                RowsPerPage='30' @ref='tableVariable'>
+                <ToolBarContent>
+                    <MudText Typo='Typo.caption'>
+                        @totalItems 
+                        @(totalItems == 1 ? "Item" : "Items") 
+                        in Total
+                    </MudText>
+                    <MudSpacer/>
+                    <MudTooltip Text="Refresh Table">
+                        <MudIconButton Icon="@Icons.Filled.Refresh" Size="Size.Small" OnClick='(()=>ReloadTable())' ></MudIconButton>
+                    </MudTooltip>
+                    <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                    TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
+                        <MudMenuItem OnClick='(() => SupplierEntry())'>
+                            <div class='d-flex align-center gap-2 menu-grow-anim'>
+                                <MudIcon Icon='@Icons.Filled.Add' Size='Size.Small' />
+                                <MudText Typo='Typo.body2'>Add</MudText>
+                            </div>
+                        </MudMenuItem>
+                    </MudMenu>
+                </ToolBarContent>
+                <ColGroup>
+                    <col />
+                    <col style='width:20px' />
+                    <col />
+                    <col />
+                    <col style='width: 15%'/>
+                    @* <col style='width: 5%' /> *@
+                    <col style='width: 5%' />
+                    <col style='width: 5%' />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh Class='customheader-1 pa-2'>
+                        <MudTableSortLabel SortLabel="SortSupplierName" InitialDirection="SortDirection.Ascending" SortBy="new Func<SupplierModel, object>(x=>x.SupplierName)">
+                            Supplier Name
+                        </MudTableSortLabel>
+                    </MudTh>
+                    <MudTh Class='customheader-1 pa-2'>Short Name</MudTh>
+                    <MudTh Class='customheader-1 pa-2'>Address</MudTh>
+                    <MudTh Class='customheader-1 pa-2'>Terms of Payment</MudTh>
+                    <MudTh Class='customheader-1 text-center pa-2'>Tin - Tax Code</MudTh>
+                    @* <MudTh Class='customheader-1'>Tax Code</MudTh> *@
+                    <MudTh Class='customheader-1 text-center pa-2'>Others</MudTh>
+                    <MudTh Class='customheader-1 text-center pa-2'>Action</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                        <MudTd Class='font12' DataLabel="Supplier Name">@context.SupplierName</MudTd>
+                        <MudTd Class='font12 text-center' DataLabel="Short Name">@context.ShortcutName</MudTd>
+                        <MudTd Class='font12' DataLabel="Address">@context.Address</MudTd>
+                        <MudTd Class='font12' DataLabel="Term Name">@context.TermName</MudTd>
+                        <MudTd Class='font12' DataLabel="TIN & TAX">
+                            <div class='d-flex align-center'>
+                               <MudChip Class='chip-radius-5 font-bold font10 txt-uppercase' Variant='Variant.Filled' Color='Color.Default' Size='Size.Small'>
+                                 @if(string.IsNullOrWhiteSpace(context.TIN)){ 
+                                    <p>N/A</p> }
+                                 else {
+                                    @context.TIN
+                                 }
+                               </MudChip>
+                               <MudChip Class='chip-radius-5 font-bold font10 txt-uppercase' Variant='Variant.Filled' Color='Color.Default' Size='Size.Small'>
+                                  @if(string.IsNullOrWhiteSpace(context.TaxCode)){ 
+                                    <p>N/A</p> }
+                                 else {
+                                    @context.TaxCode
+                                 }
+                               </MudChip>
+                            </div>
+                        </MudTd>
+                        @* <MudTd Class='font12' DataLabel="Tax Code">@context.TaxCode</MudTd> *@
+                        <MudTd Class='text-center pa-2'>
+                            <MudToggleIconButton Toggled='@context.isShowOthers' 
+                            ToggledChanged='(async () => { context.SupplierContacts = await GetSupplierContacts(context.Id); context.isShowOthers = !context.isShowOthers; })'
+                            Icon='@Icons.Filled.ExpandMore' Color="Color.Tertiary" ToggledSize='Size.Small'
+                            ToggledIcon="@Icons.Filled.ExpandLess" ToggledColor="Color.Info" Size='Size.Small'></MudToggleIconButton>
+                        </MudTd>
+                        <MudTd Class='text-center pa-2'>
+                            <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                            TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
+                                <MudMenuItem OnClick='(() => SupplierDialog(context))'>
+                                    <div class='d-flex align-center gap-2 menu-grow-anim'>
+                                        <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small' />
+                                        <MudText Typo='Typo.body2'>Edit</MudText>
+                                    </div>
+                                </MudMenuItem>
+                            </MudMenu>
+                        </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions='@pageSize' />
+                </PagerContent>
+                <ChildRowContent>
+                    <MudTr Class='bgc-f6f6f6'>
+                        <td colspan="1"></td>
+                        <td colspan="5">
+                            <MudPaper Elevation='0' Square>
+                                <div class='d-flex transition-05s-ease overflow-hidden bgc-F4F5FB' style='@(context.isShowOthers ? "max-height:600px;" : "max-height:0px;")'>
+                                    <MudPaper Class='width30 ma-2'>
+                                        <div class='height32px border-thin-bottom'>
+                                            <MudText Class='font-bold txt-uppercase pa-2 font12'>Details</MudText>
+                                        </div>
+                                        <MudGrid Class='pa-2' Spacing='1'>
+                                            <MudItem xs=12>
+                                                <MudText Class='font10'>Busniess Permit:</MudText>
+                                                <MudText Class='font12'>@(string.IsNullOrEmpty(context.BusinessPermit) ? "N/A" : context.BusinessPermit)</MudText>
+                                            </MudItem>
+                                            <MudItem xs=12>
+                                                <MudText Class='font10'>Registration No:</MudText>
+                                                <MudText Class='font12'>@(string.IsNullOrEmpty(context.RegistrationNo) ? "N/A" : context.RegistrationNo)</MudText>
+                                            </MudItem>
+                                            <MudItem xs=12>
+                                                <MudText Class='font10'>City:</MudText>
+                                                <MudText Class='font12'>@(string.IsNullOrEmpty(context.MuniCityName) ? "N/A" : context.MuniCityName)</MudText>
+                                            </MudItem>
+                                            <MudItem xs=12>
+                                                <MudText Class='font10'>Bank: </MudText>
+                                                <MudText Class='font12'>@(string.IsNullOrEmpty(context.BankName) ? "N/A" : context.BankName)</MudText>
+                                            </MudItem>
+                                            <MudItem xs=12>
+                                                <MudText Class='font10'>Document Type: </MudText>
+                                                <MudText Class='font12'>@(string.IsNullOrEmpty(context.DocumentType) ? "N/A" : context.DocumentType)</MudText>
+                                            </MudItem>
+                                            <MudItem xs=12>
+                                                <MudText Class='font10'>Remarks: </MudText>
+                                                <MudText Class='font12'>@(string.IsNullOrEmpty(context.Remarks) ? "N/A" : context.Remarks)</MudText>
+                                            </MudItem>
+                                        </MudGrid>
+                                    </MudPaper>
+                                    <div class='d-flex flex-1 ma-2'>
+                                        <MudTable Class='small-toolbar-gutter2 toolbar-pad-0 toolbar-bottom-border flex-1 oveflow-auto zindex1' Items='@context.SupplierContacts' Hover="true"
+                                            Breakpoint="Breakpoint.Sm" Context='supplierContact' FixedHeader='true' 
+                                            Bordered='true' Dense='true' Striped='true' Height='auto' Elevation='1'>
+                                            <ToolBarContent>
+                                                <MudText Class='font-bold txt-uppercase pa-2 font12'>Contacts</MudText>
+                                            </ToolBarContent>
+                                            <ColGroup>
+                                                <col/>
+                                                <col/>
+                                                <col/>
+                                            </ColGroup>
+                                            <HeaderContent>
+                                                <MudTh Class='wspace-nowrap customheader-1 px-2 pb-0 font10'>
+                                                    <MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<SupplierContactModel, object>(x=>x.ContactPerson)">
+                                                        Contact Person
+                                                    </MudTableSortLabel>
+                                                </MudTh>
+                                                <MudTh Class='wspace-nowrap customheader-1 px-2 pb-0 font10'>Contact No.</MudTh>
+                                                <MudTh Class='wspace-nowrap customheader-1 px-2 pb-0 font10'>Position</MudTh>
+                                            </HeaderContent>
+                                            <RowTemplate>
+                                                <MudTd Class='font12' DataLabel="Contact Person">@supplierContact.ContactPerson</MudTd>
+                                                <MudTd Class='font12' DataLabel="Contact No">@supplierContact.ContactNumber</MudTd>
+                                                <MudTd Class='font12' DataLabel="Position">@supplierContact.Position</MudTd>
+                                            </RowTemplate>
+                                        </MudTable>
+                                    </div>
+                                </div>
+                            </MudPaper>
+                        </td>
+                        <td colspan="1"></td>
+                    </MudTr>
+                </ChildRowContent>
+            </MudTable>
+        }
+    </MudContainer>
+</div>
+
+@code {
+    private bool dataFetched, openSideFilter;
+    private int[] pageSize = new int[] {30, 50, 100, 500, 1000 };
+    private string searchTerm = string.Empty, visibility = "visibility-animation-hide";
+    private MudTable<SupplierModel> tableVariable = new();
+    private IEnumerable<SupplierModel>? pageData;
+    FilterParameter filterParameter = new();
+    private int totalItems;
+    private TermsOfPaymentModel selectedTOP = new();
+    private IEnumerable<TermsOfPaymentModel> hasTermsOfPayment {get; set;} = new HashSet<TermsOfPaymentModel>();
+    private TaxCodeModel selectedTaxCode = new();
+    private IEnumerable<TaxCodeModel> hasTaxCode {get; set;} = new HashSet<TaxCodeModel>();
+    private MuniCityModel muniCity {get;set;} = new();
+    private bool isContactFetch = false;
+    private List<SupplierContactModel> listOfContact {get;set;} = new List<SupplierContactModel>();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        //lazy load - remove slight lag
+        await Task.Delay(1000);
+        //
+        GlobalClass.pageTitle = "Configuration - Supplier";
+        Task t = Task.WhenAll(LoadSupplier());
+        await t;
+        if (t.Status == TaskStatus.RanToCompletion)
+        {
+            await AppState.UpdateMainLayoutComponent(true);
+            CompletedFetch();
+        }
+    }
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+    private bool FilterItems(SupplierModel model)
+    {
+        if (string.IsNullOrEmpty(searchTerm))
+            return true;
+        if (model.SupplierName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase))
+            return true;
+        return false;
+    }
+    private void OpenSideFilter()
+    {
+        openSideFilter = !openSideFilter;
+        if(openSideFilter)
+        visibility = "visibility-animation-show";
+        if(!openSideFilter)
+        visibility = "visibility-animation-hide";
+    }
+    private void SupplierDialog(SupplierModel supplier)
+    {
+        //Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(supplier,Newtonsoft.Json.Formatting.Indented));
+        GlobalClass.supplier = supplier;
+        supplier.IsActive = true;
+        navigationManager.NavigateTo($"/supplier/entry");
+    }
+    private async Task<TableData<SupplierModel>> LoadSupplierInServer(TableState tableState)
+    {
+        IEnumerable<SupplierModel> data = await supplierService.LoadListOfSupplier(filterParameter, GlobalClass.token);
+        switch (tableState.SortLabel)
+        {
+            case "SortSupplierName":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.SupplierName);
+                break;
+            case "SortAddress":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.Address);
+                break;
+        }
+        
+        @* foreach (var item in data)
+        {
+            var appendData = item;
+            item.SupplierContacts = await GetSupplierContacts(item.Id);
+            GlobalClassList.supplierList.Add(appendData);
+        } *@
+
+        GlobalClassList.supplierList = data.ToList();
+        pageData = GlobalClassList.supplierList.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
+        totalItems = GlobalClassList.supplierList.Count();
+        dataFetched = true;
+        return new TableData<SupplierModel>()
+        {
+            TotalItems = totalItems,
+            Items = pageData
+        };
+    }
+
+    async Task LoadSupplier()
+    {
+        GlobalClassList.supplierList =await supplierService.LoadListOfSupplier(new FilterParameter(){IsName=true},GlobalClass.token);
+    }
+    private void SupplierEntry()
+    {
+        GlobalClass.supplier = new();
+        navigationManager.NavigateTo($"/supplier/entry");
+    }
+    private async Task ReloadTable()
+    {
+        filterParameter = new();
+        await tableVariable.ReloadServerData();
+    }
+    private bool EnableClearButton()
+    {
+      if(filterParameter.IsName) 
+        return true;
+      if(filterParameter.IsTermsOfPayment)
+        return true;
+      if(filterParameter.IsMuniCity)
+        return true;
+      if(filterParameter.IsTaxCode)
+        return true;
+      if(filterParameter.HasVAT)
+        return true;
+      return false;
+    }
+    private async Task FilterTable()
+    {
+        filterParameter.TermsOfPaymentId = string.Join(",", hasTermsOfPayment.Select(x => x.Id));
+        filterParameter.TaxCodeId = string.Join(",", hasTaxCode.Select(x => x.Id));
+        filterParameter.MuniCityId = muniCity.Id.ToString();
+        await tableVariable.ReloadServerData();
+    }
+    private string TermsOfPayment(List<string> selectedTOP)
+    {
+        var terms = "";
+        foreach (var item in hasTermsOfPayment)
+        {
+        terms = string.Join(", ", hasTermsOfPayment.Select(x => x.TermName));      
+        }
+        return $"{terms}";
+    }
+    private string TaxCode(List<string> selectedTaxCode)
+    {
+        var terms = "";
+        foreach (var item in hasTaxCode)
+        {
+        terms = string.Join(", ", hasTaxCode.Select(x => x.Description));      
+        }
+        return $"{terms}";
+    }
+    private async Task<IEnumerable<MuniCityModel>> LoadMuniCity(string search)
+    {
+        var muniCity = await muniCityService.LoadMuniCity(GlobalClass.token);
+        return muniCity.Where(x=>x.Name.ToLower().Contains(search.ToLower())).ToList().AsEnumerable();
+    }
+    private async Task<List<SupplierContactModel>> GetSupplierContacts(long supplierId)
+    {
+        listOfContact = await supplierService.GetSupplierContacts(supplierId,GlobalClass.token);
+        if (listOfContact != null && listOfContact.Count != 0)
+            return listOfContact;
+        else
+            return new List<SupplierContactModel>();
+    }
+}

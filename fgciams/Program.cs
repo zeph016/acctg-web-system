@@ -1,3 +1,4 @@
+global using Microsoft.AspNetCore.Components.Authorization;
 using fgciams;
 using System.Net.Http;
 using Microsoft.AspNetCore.Components.Web;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor.Services;
 using Blazored.LocalStorage;
+using fgciams.domain.clsAppstate;
 using fgciams.service.AccountingStatusServices;
 using fgciams.service.UserAccountServices;
 using fgciams.service.ModeOfPaymentServices;
@@ -31,6 +33,13 @@ using fgciams.service.AccountingLineServices;
 using fgciams.service.AccountLineTypeServices;
 using fgciams.service.CheckServices;
 using fgciams.service.VoucherRouteBatchServices;
+using fgciams.service.TaxCodeServices;
+using fgciams.service.SupplierServices;
+using fgciams.service.TermsOfPaymentServices;
+using fgciams.service.MuniCityServices;
+using fgciams.service.VATServices;
+using fgciams.service.BIRServices;
+using fgciams.service.ScopeOfWorkServices;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -39,6 +48,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.Configuration.GetValue<string>("BaseAPIUrl")) });
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddMudServices();
+builder.Services.AddScoped<ApplicationState>();
 builder.Services.AddScoped<IAccountingStatusService, AccountingStatusService>();
 builder.Services.AddScoped<IModeOfPaymentService, ModeOfPaymentService>();
 builder.Services.AddScoped<IUserAccountService, UserAccountService>();
@@ -66,4 +76,18 @@ builder.Services.AddScoped<IAccountLineTypeService, AccountLineTypeService>();
 builder.Services.AddScoped<ICheckService, CheckService>();
 builder.Services.AddScoped<IVoucherRouteService, VoucherRouteService>();
 builder.Services.AddScoped<IVoucherRouteBatchService, VoucherRouteBatchService>();
+builder.Services.AddScoped<ITaxCodeService, TaxCodeService>();
+builder.Services.AddScoped<ISupplierService, SupplierService>();
+builder.Services.AddScoped<ITermsOfPaymentService, TermsOfPaymentService>();
+builder.Services.AddScoped<IMuniCityService, MuniCityService>();
+builder.Services.AddScoped<IVATService, VATService>();
+builder.Services.AddScoped<IBIRService,BIRService>();
+builder.Services.AddScoped<IScopeOfWorkService,ScopeOfWorkService>();
+
+//Microsoft.AspNetCore.Components.Authorization;
+builder.Services.AddOptions();
+builder.Services.AddAuthorizationCore();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+//
+
 await builder.Build().RunAsync();

@@ -40,6 +40,7 @@ namespace fgciams.domain.clsLiquidation
         public decimal TotalAmount { get; set; }
         public Int64 PreparedById { get; set; }
         public string PreparedByName { get; set; } = string.Empty;
+        public string PreparedByDepartment { get; set; }
         public string PreparedByDesignation { get; set; }
         public Int64 PayeeId { get; set; }
         public string PayeeName { get; set; }

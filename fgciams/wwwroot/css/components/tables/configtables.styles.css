@@ -11,6 +11,9 @@
 .configtables .mud-table-head {
   white-space: nowrap;
 }
+.configtables .mud-table-root {
+  border-bottom: solid thin lightgray;
+}
 
 .customheader-1 {
   border-radius: 0px !important;
@@ -21,6 +24,20 @@
 .customheader-2 {
   border-radius: 0px !important;
   font-size: 0.775rem !important;
+  text-transform: uppercase;
+}
+
+.customheader-3 {
+  border-right: none !important;
+  border-bottom: solid thin lightgray !important;
+  border-radius: 0px !important;
+  font-size: 0.775rem !important;
+  text-transform: uppercase;
+}
+
+.customheader-4 {
+  border-radius: 0px !important;
+  font-size: 0.6rem !important;
   text-transform: uppercase;
 }
 
@@ -42,4 +59,16 @@
 
 .toolbar-pad-0 .mud-toolbar-gutters {
   padding: 0px;
+}
+
+.toolbar-bottom-border .mud-toolbar-gutters {
+  border-bottom: solid thin lightgray;
+}
+
+.mtable-bottom-border .mud-table-root {
+  border-bottom: solid thin lightgray;
+}
+
+.table-bottom-border .mud-table-root {
+  border-bottom: solid thin lightgray;
 }/*# sourceMappingURL=configtables.styles.css.map */

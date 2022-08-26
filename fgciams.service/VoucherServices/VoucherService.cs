@@ -1,4 +1,6 @@
 ﻿using fgciams.domain.clsFilterParameter;
+using fgciams.domain.clsPayee;
+using fgciams.domain.clsProject;
 using fgciams.domain.clsRequest;
 using fgciams.domain.clsVoucher;
 using Microsoft.Extensions.Configuration;
@@ -156,6 +158,16 @@ namespace fgciams.service.VoucherServices
             Console.WriteLine(ee.Message);
             throw;
           }
+        }
+
+        public async Task<VoucherModel> GetVATandEWT(Project payee, string token)
+        {
+          VoucherModel voucherModel = new VoucherModel();
+          _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+          HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("voucher/VAT-EWT", payee);
+          if (responseMessage.IsSuccessStatusCode)
+              voucherModel = await responseMessage.Content.ReadAsAsync<VoucherModel>();
+          return voucherModel;
         }
         #endregion
     }

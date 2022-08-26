@@ -1,15 +1,13 @@
 .subdrawer-left {
-  background-color: #fafafa !important;
-  .mud-navmenu {
-    height: 100%;
-  }
-}
-
-.subdrawer-left {
-  width: 56px;
+  width: 58px;
+  position: relative;
   .mud-drawer {
+    overflow: hidden;
+    .mud-navmenu {
+      overflow: auto;
+    }
     .mud-drawer-content {
-      background-color: #3d2052;
+      background-color: #7a5095;
     }
     .mud-nav-link-text {
       color: white;
@@ -20,6 +18,22 @@
     }
     .mud-icon-root {
       color: white !important;
+    }
+    .mud-nav-group {
+      .mud-collapse-container {
+        background-color: #5d3c71 !important;
+      }
+    }
+  }
+
+  .activelink {
+    border-left: solid thick #ffa500;
+    .mud-icon-root {
+      color: #ffa500 !important;
+    }
+    .mud-nav-link-text {
+      color: #ffa500;
+      font-weight: 450;
     }
   }
 }

@@ -1,0 +1,113 @@
+@page "/bir/print"
+
+@inject IBIRService birService
+@inject NavigationManager navigationManager
+@inject IDialogService dialogService
+@inject ISnackbar snackBarService
+@attribute [Authorize]
+
+<div class='page-cont d-flex'>
+    <div class='d-flex flex-1 pa-2'>
+        <MudCard Class='d-flex flex-column flex-1 pa-0' Elevation='1'>
+            <MudCardContent Class='d-flex align-stretch justify-center rounded pa-2 default-report-viewscreen bgc-f2f2f2'>
+                @if (string.IsNullOrWhiteSpace(PDFContent))
+                {
+                    <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
+                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                    </MudOverlay>
+                }
+                else
+                {
+                    <iframe src='@PDFContent' />
+                }
+            </MudCardContent>
+            <MudCardActions Class='d-flex align-center pa-0 gap-2'>
+                <div class='flex-1 border-thin-right bgc-f2f2f2 height100'></div>
+                <div class='d-flex align-center pa-2 gap-2'>
+                    <MudButton Class='btn-ios-d font12'  OnClick="(() => Back())"  Variant='Variant.Text' Size='Size.Small'>CANCEL</MudButton>
+                    @if(_processing)
+                    {
+                        <MudButton Class='width100px font12' OnClick="(() => Prompt())" Variant='Variant.Filled' Color='Color.Success' Size='Size.Small' Disabled=_processing DisableElevation>
+                            <MudProgressCircular Class="progsize-21" Size="Size.Small" Indeterminate="true"/>
+                            <MudText Class='font12 pl-2'>SAVING</MudText>
+                        </MudButton>
+                    } else {
+                        <MudButton Class='width100px font12' OnClick="(() => Prompt())" Variant='Variant.Filled' Color='Color.Success' Size='Size.Small' Disabled=_processing DisableElevation>
+                            <MudText Class='font12'>SAVE</MudText>
+                        </MudButton>
+                    }
+                </div>
+            </MudCardActions>
+        </MudCard>
+    </div>
+</div>
+@code
+{
+    private bool _processing;
+    private string PDFContent = default!;
+    protected override async Task OnInitializedAsync()
+    {
+        GlobalClass.pageTitle = "PRINT BIR";
+        PDFContent = await birService.BIRReport(GlobalClass.voucherBIRModel);
+        if(GlobalClass.voucherBIRModel == null)
+            navigationManager.NavigateTo($"/voucher/list");
+        StateHasChanged();
+    }
+    private async Task Back()
+    {
+      var parameters = new DialogParameters();
+      var options = new DialogOptions()
+      {
+          CloseButton = false,
+          MaxWidth = MaxWidth.Medium,
+          FullWidth = true,
+          NoHeader = false,
+          DisableBackdropClick = true
+      };
+      var resultDialog = await dialogService.Show<Shared.Dialogs.BIRDialogs.BIRDialog>("", options).Result;
+        if(!resultDialog.Cancelled)
+        {
+            navigationManager.NavigateTo($"/bir/print");
+        }
+    }
+    private async Task Prompt()
+    {
+        _processing = true;
+        var returnedModel = new VoucherBIRModel();
+        var parameters = new DialogParameters();
+        string contentText = "B.I.R";
+        Enums.ActionMode action  = GlobalClass.voucherBIRModel.Id == 0 ? Enums.ActionMode.Create : Enums.ActionMode.Update;
+        string dialogTitle = action + contentText;
+        parameters.Add("contentText", contentText);
+        parameters.Add("actionMode", action);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+            if (action == Enums.ActionMode.Create)
+            {
+                returnedModel =  await birService.AddVoucherBIR(GlobalClass.voucherBIRModel,GlobalClass.token);
+                Extensions.ShowAlert("B.I.R has been CREATED",Variant.Filled,snackBarService,Severity.Info);
+                _processing = false;
+            }
+            else if (action == Enums.ActionMode.Update)
+            {
+                returnedModel = await birService.UpdateVoucherBIR(GlobalClass.voucherBIRModel,GlobalClass.token);
+                Extensions.ShowAlert("B.I.R has been UPDATED",Variant.Filled,snackBarService,Severity.Info);
+                _processing = false;
+            }
+           
+            @* if(GlobalVariable.AMSHubConnection != null)
+                await GlobalVariable.AMSHubConnection.InvokeAsync("SaveCheck",returnedModel); *@
+            navigationManager.NavigateTo($"/voucher/list");
+        }
+        _processing = false;
+    }
+}

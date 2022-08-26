@@ -16,7 +16,7 @@ namespace fgciams.Common
     decimal fraction = (number - intPortion)*100;
     int decPortion = (int)fraction;
 
-    words = NumberToWords(intPortion)+"  Pesos And 0/100 Only";
+    words = NumberToWords(intPortion)+" Pesos And 0/100 Only";
     if (decPortion > 0)
     {
         words = NumberToWords(intPortion);

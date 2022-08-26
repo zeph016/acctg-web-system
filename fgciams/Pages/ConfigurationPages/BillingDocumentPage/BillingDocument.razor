@@ -1,8 +1,9 @@
-@page "/billingdocument"
+@page "/billing-document"
 
 @inject IBillingDocumentService billingDocumentService
 @inject IDialogService dialogService
-@inject ISnackbar snackBarService
+@inject ISnackbar snackbarService
+@inject ApplicationState AppState
 
 <div class='page-cont'>
     <div class='drawer-right'>
@@ -28,16 +29,13 @@
     <MudContainer Class='billingdocpage' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
         @if (!dataFetched)
         {
-            <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
-                <MudSkeleton SkeletonType='SkeletonType.Text' Height='100px' Animation='Animation.Wave' />
-                <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='71vh' Animation='Animation.Wave' />
-            </MudPaper>
+           <SkeletonPageList />
         }
         else
         {
-            <MudTable Class='configtables' Items="@GlobalClassList.billingDocumentList" Hover="true"
-            Breakpoint="Breakpoint.Sm" FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
-            RowsPerPage='30' Striped='true' Filter='new Func<BillingDocumentModel,bool>(FilterItems)'>
+            <MudTable Class='configtables row-popup-anim-2px' Items="@GlobalClassList.billingDocumentList" Hover="true"
+                Breakpoint="Breakpoint.Xs" FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
+                RowsPerPage='30' Filter='new Func<BillingDocumentModel,bool>(FilterItems)'>
                 <ToolBarContent>
                     <MudText Typo='Typo.caption'>
                         @GlobalClassList.billingDocumentList.Count() 
@@ -45,18 +43,15 @@
                         in Total
                     </MudText>
                     <MudSpacer />
-                    <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'
-                    TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small' Label='More'>
-                        <MudMenuItem OnClick='(() => BillingDocDialog(new BillingDocumentModel()))'>
-                            <div class='d-flex align-center gap-2'>
-                                <MudIcon Icon='@Icons.Filled.Add' Size='Size.Medium' />
+                    <MudTooltip Text="Refresh Table">
+                        <MudIconButton Icon="@Icons.Filled.Refresh" Size="Size.Small" OnClick='(()=>{searchTerm = "";})' ></MudIconButton>
+                    </MudTooltip>
+                    <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                        TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
+                        <MudMenuItem OnClick='(() => BillingDocDialog(new BillingDocumentModel(), Enums.ActionMode.Create))'>
+                            <div class='d-flex align-center gap-2 menu-grow-anim'>
+                                <MudIcon Icon='@Icons.Filled.Add' Size='Size.Small' />
                                 <MudText Typo='Typo.body2'>Add</MudText>
-                            </div>
-                        </MudMenuItem>
-                        <MudMenuItem OnClick='OpenSideFilter'>
-                            <div class='d-flex align-center gap-2'>
-                                <MudIcon Icon='@Icons.Filled.FilterList' />
-                                <MudText Typo='Typo.body2'>Filter</MudText>
                             </div>
                         </MudMenuItem>
                     </MudMenu>
@@ -65,22 +60,21 @@
                     <col />
                     <col />
                     <col style='width: 20px' />
-                    <col style='width: 20px' />
                 </ColGroup>
                 <HeaderContent>
                     <MudTh Class='customheader-1'>Document Name</MudTh>
                     <MudTh Class='customheader-1'>Remarks</MudTh>
-                    <MudTh Class='customheader-1 text-center'>Action</MudTh>
+                    <MudTh Class='customheader-1 text-center pa-2'>Action</MudTh>
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd DataLabel="Document Name">@context.DocumentName</MudTd>
                     <MudTd DataLabel="Billing Remarks">@context.Remarks</MudTd>
-                    <MudTd Class='text-center pa-0'>
-                        <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'
-                        TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small' ActivationEvent='MouseEvent.MouseOver'>
-                            <MudMenuItem OnClick='(()=> BillingDocDialog(context))'>
-                                <div class='d-flex align-center gap-2'>
-                                    <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Medium' />
+                    <MudTd Class='text-center pa-2'>
+                        <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft'
+                        TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' ActivationEvent='MouseEvent.MouseOver'>
+                            <MudMenuItem OnClick='(()=> BillingDocDialog(context, Enums.ActionMode.Update))'>
+                                <div class='d-flex align-center gap-2 menu-grow-anim'>
+                                    <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small' />
                                     <MudText Typo='Typo.body2'>Edit</MudText>
                                 </div>
                             </MudMenuItem>
@@ -100,10 +94,10 @@
     private string searchTerm = string.Empty, visibility = "visibility-animation-hide";
     protected override async Task OnInitializedAsync()
     {
-        GlobalClass.pageTitle = "BILLING DOCUMENT";
+        GlobalClass.pageTitle = "Configuration - BILLING DOCUMENT";
         while (GlobalClass.currentUserAccount == null || GlobalClassList.billingDocumentList == null)
             await Task.Delay(1);
-
+        await AppState.UpdateMainLayoutComponent(true);
         BillingDocsHub();
         CompletedFetch();
     }
@@ -114,7 +108,7 @@
         StateHasChanged();
     }
 
-    private async Task BillingDocDialog(BillingDocumentModel selectedBillDoc)
+    private async Task BillingDocDialog(BillingDocumentModel selectedBillDoc, Enums.ActionMode action)
     {
         var parameters = new DialogParameters();
         GlobalClass.billingDoc = selectedBillDoc;
@@ -124,24 +118,20 @@
         parameters.Add("color", color);
         parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("buttonText", buttonText);
-        var options = new DialogOptions()
-        {
-            CloseButton = false,
-            MaxWidth = MaxWidth.ExtraSmall,
-            FullWidth = true,
-            NoHeader = false,
-            DisableBackdropClick = false
-        };
-        var resultDialog = await
-        dialogService.Show<Shared.Dialogs.BillingDocumentDialogs.BillingDocumentDialog>("", parameters, options).Result;
+        parameters.Add("currentAction", action);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = false };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.BillingDocumentDialogs.BillingDocumentDialog>("", parameters, options).Result;
         if (!resultDialog.Cancelled)
         {
-            if ((int)resultDialog.Data == 0)
-                ShowAlert("Added new billing document", Variant.Filled, Severity.Success);
-            else if ((int)resultDialog.Data == 1)
-                ShowAlert("Updated billing document", Variant.Filled, Severity.Info);
+            if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Create)
+                Extensions.ShowAlert("Billing Document successfully addded.", Variant.Filled,snackbarService,Severity.Success);
+            else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Update)
+                Extensions.ShowAlert("Billing Document successfully updated.", Variant.Filled,snackbarService,Severity.Info);
+            else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Deactivate)
+                Extensions.ShowAlert("Billing Document has been deactivated.", Variant.Filled,snackbarService,Severity.Warning);
             GlobalClassList.billingDocumentList = GlobalClassList.billingDocumentList.Where(x => x.IsActive == true).ToList();
-        }
+        } else if (resultDialog.Cancelled)
+            Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
     }
 
     private bool FilterItems(BillingDocumentModel items)
@@ -152,16 +142,6 @@
             return true;
         return false;
     }
-
-    private void ShowAlert(string message, Variant variant, Severity severity)
-    {
-        snackBarService.Clear();
-        snackBarService.Configuration.PositionClass = Defaults.Classes.Position.BottomCenter;
-        snackBarService.Configuration.SnackbarVariant = variant;
-        snackBarService.Configuration.MaxDisplayedSnackbars = 10;
-        snackBarService.Add($"{message}", severity);
-    }
-
     private void OpenSideFilter()
     {
         openSideFilter = !openSideFilter;

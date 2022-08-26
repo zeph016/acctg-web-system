@@ -40,4 +40,18 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.txt-dense-v2 .mud-input > input.mud-input-root-outlined.mud-input-root-margin-dense,
+.txt-dense-v2 div.mud-input-slot.mud-input-root-outlined.mud-input-root-margin-dense {
+  padding: 5px;
+}
+
+.oflow-el {
+  text-overflow: ellipsis;
+}
+
+.txtfield-padlr-4px .mud-input-slot {
+  padding-right: 8px !important;
+  padding-left: 8px !important;
 }/*# sourceMappingURL=textfieldmods.styles.css.map */

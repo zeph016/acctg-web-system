@@ -31,6 +31,13 @@ using fgciams.domain.clsAccountingLine;
 using Microsoft.AspNetCore.SignalR.Client;
 using fgciams.domain.clsCheck;
 using fgciams.domain.clsVoucherRouteBatch;
+using fgciams.domain.clsTaxCode;
+using fgciams.domain.clsSupplier;
+using fgciams.domain.clsTermsOfPayment;
+using fgciams.domain.clsMuniCity;
+using fgciams.domain.clsBIR;
+using fgciams.domain.clsScopeOfWork;
+using fgciams.domain.clsSubContractProject;
 
 namespace fgciams.Common
 {
@@ -66,10 +73,20 @@ namespace fgciams.Common
         public static AccountLineGroupModel accountLineGroup {get; set;} = default!;
         public static AccountLineTypeModel accountLineType {get; set;} = default!;
         public static LiquidationModel liquidationAudit {get; set;} = default!;
-        public static CheckModel checkModel {get;set;} = new();
-        public static CheckVoucherModel checkVouher {get;set;} = new();
+        public static CheckModel checkModel {get;set;} = default!;
+        public static CheckVoucherModel checkVoucher {get;set;} = new();
         public static VoucherRouteBatchModel voucherRouteBatch {get; set; } = default!;
         public static VoucherRouteModel voucherRoute {get;set;} = new();
+        public static TaxCodeModel taxCode {get; set;} = new();
+        public static SupplierModel supplier {get; set;} = default!;
+        public static TermsOfPaymentModel termsOfPayment { get; set; } = default!;
+        public static MuniCityModel muniCity {get;set;} = default!;
+        public static SupplierContactModel supplierContact {get; set;} = default!;
+        public static VoucherBIRModel voucherBIRModel {get;set;} = default!;
+        public static ScopeOfWorkModel scopeOfWork  {get;set;} = default!;
+        public static BankCheckNumberModel bankCheckNumberModel  {get;set;} = new();
+        public static SubContractorProjectModel subContractProject  {get;set;} = new();
+        public static Project project  {get;set;} = new();
     }
     public static class GlobalClassList
     {
@@ -110,9 +127,18 @@ namespace fgciams.Common
         public static List<VoucherRouteBatchModel> VoucherBatches {get; set;} = default!;
         public static List<VoucherRouteModel> currentVoucherRoutes {get; set;} =  new();
         public static List<VoucherRouteAuditTrailModel> voucherRouteAuditTrail {get;set;} = default!;
+        public static List<TaxCodeModel> taxCodes {get; set;} = default!;
         public static HashSet<VoucherModel> selectedVoucherToRoute {get;set;} = default!;
+        public static List<SupplierModel> supplierList {get; set;} = default!;
+        public static List<TermsOfPaymentModel> termsOfPayments {get; set;} = default!;
+        public static List<MuniCityModel>  muniCityList {get;set;} = default!;
+        public static List<VoucherModel>  previousVouchers {get;set;} = default!;
+        public static List<ScopeOfWorkModel> scopeOfWork  {get;set;} = default!;
+        public static List<BankCheckNumberModel> bankCheckNumberList  {get;set;} = default!;
+        public static List<SubContractorProjectModel> subContractorProjectist  {get;set;} = default!;
+        public static List<Project> projectList  {get;set;} = default!;
+        public static List<Project> subConProjectList  {get;set;} = default!;
     }
-
     public static class GlobalVariable
     {
         public static bool drawerOpen { get; set; } = true;

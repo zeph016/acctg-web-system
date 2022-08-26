@@ -8,7 +8,7 @@
   display: grid;
   grid-auto-columns: 1fr;
   grid-template-columns: 20px 0.9fr 1fr 1fr 1fr;
-  grid-template-rows: 0.1fr 2rem calc(40vh - 30px) 2rem 20px 120px 70px;
+  grid-template-rows: 0.1fr 2rem calc(100vh - 505px) 2rem 20px 120px 70px;
   gap: 0px 0px;
   grid-template-areas: "rpheader rpheader rpheader rpheader rpheader" "rpheadmid rpheadmid rpheadmid rpheadmid rpheadmid" "rptbleft rptbbody rptbbody rptbbody rptbbody" "rptbleft rptbfooter rptbfooter rptbfooter rptbfooter" "rpfooterhead rpfooterhead rpfooterhead rpfooterhead rpfooterhead" "rpfooterbody rpfooterbody rpfooterbody rpfooterbody rpfooterbody" "rpfooterfoot rpfooterfoot rpfooterfoot rpfooterfoot rpfooterfoot";
 }
@@ -36,7 +36,10 @@
 .requestpayment__entryform .rpfooterfoot {
   grid-area: rpfooterfoot;
 }
-.requestpayment__entryform .rpheader, .requestpayment__entryform .rpheadmid, .requestpayment__entryform .rptbbody, .requestpayment__entryform .rpfooterbody {
+.requestpayment__entryform .rpheader,
+.requestpayment__entryform .rpheadmid,
+.requestpayment__entryform .rptbbody,
+.requestpayment__entryform .rpfooterbody {
   border-bottom: solid thin gray;
 }
 .requestpayment__entryform .rptbleft {
@@ -45,14 +48,13 @@
 .requestpayment__entryform .rptbbody {
   width: 100%;
 }
-.requestpayment__entryform .rpfooterhead, .requestpayment__entryform .rpfooterbody {
+.requestpayment__entryform .rpfooterhead,
+.requestpayment__entryform .rpfooterbody {
   border-top: solid thin gray;
 }
-.requestpayment__entryform .rptbleft, .requestpayment__entryform .rpfooterhead {
-  background-color: gray;
-}
-.requestpayment__entryform .rpheader {
-  background-color: beige;
+.requestpayment__entryform .rptbleft,
+.requestpayment__entryform .rpfooterhead {
+  background-color: #939292;
 }
 .requestpayment__entryform .rpheadmid__cont1 {
   width: 40%;
@@ -106,7 +108,7 @@
   overflow: auto;
 }
 .requestpayment__table .mud-table-head {
-  background-color: gray;
+  background-color: #939292;
   white-space: nowrap;
 }
 .requestpayment__table .mud-table-head .mud-table-cell {
@@ -136,10 +138,6 @@
 }
 .requestpayment__txtinputs .mud-input-control {
   margin-top: 3px !important;
-}
-.requestpayment__entryformtitle {
-  font-weight: bold !important;
-  font-size: 1.2rem;
 }
 .requestpayment__select .mud-typography {
   font-size: 0.7rem;

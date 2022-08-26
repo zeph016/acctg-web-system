@@ -59,7 +59,7 @@
         _processing = true;
         var liquidation = new LiquidationModel();
         var parameters = new DialogParameters();
-        string contentText = "Liquidation ";
+        string contentText = "Liquidation";
         string dialogTitle = GlobalClass.forPrintingOrSaveLiquidation.Id == 0 ? "Create " + contentText : "Update " + contentText;
         parameters.Add("contentText", contentText);
         parameters.Add("actionMode", GlobalClass.forPrintingOrSaveLiquidation.Id == 0 ? Enums.ActionMode.Create : Enums.ActionMode.Update);

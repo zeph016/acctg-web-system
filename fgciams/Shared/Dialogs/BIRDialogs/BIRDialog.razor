@@ -1,0 +1,259 @@
+
+@inject IBIRService birService
+@inject IGlobalService globalService
+@inject NavigationManager navigationManager
+@inject ISupplierService supplierService
+@inject ISnackbar snackbarService
+
+<MudDialog Class='customdialog2'>
+    <TitleContent>
+        <div class='d-flex align-center'>
+            <MudIcon Icon="@Icons.Filled.DocumentScanner" Class="mr-3" />
+            <MudText Typo='Typo.h6'>B.I.R.</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        @if(dataFetch)
+        {
+            <div>
+                <MudGrid Spacing='1'>
+                    <MudItem xs=12>
+                        <MudPaper Class='d-flex gap-2 pa-2'>
+                            <MudText Class='wspace-nowrap font10 font-bold txt-uppercase'>Period: </MudText>
+                            <MudDateRangePicker Class='txt-top-0 font14-txtfield txtfield-right' @bind-DateRange=@voucherPeriod IconSize='Size.Small' />
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs=12>
+                        <MudPaper Class='d-flex flex-column pa-2 gap-2'>
+                            <MudText Typo='Typo.h6'>Authorized Personnel</MudText>
+                            <MudGrid Spacing='1'>
+                                <MudItem xs=6>
+                                     <MudTextField @bind-Value='@GlobalClass.voucherBIRModel.Personnel' Text="L. SENDICO / Govt. EE Benefits Officer II" Margin='Margin.Dense'
+                                 Placeholder="Full name" Variant='Variant.Outlined' />
+                                </MudItem>
+                                <MudItem xs=6>
+                                    <MudTextField Mask="@(new PatternMask("000-000-000-000"))" Text="131-019-875-000" @bind-Value='@GlobalClass.voucherBIRModel.PersonnelTin' Margin='Margin.Dense'
+                                        Label='TIN' Placeholder="TIN" Variant='Variant.Outlined' /> 
+                                </MudItem>
+                            </MudGrid>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs=6>
+                        <MudPaper Class='d-flex flex-column pa-2 gap-2'>
+                            <MudText Typo='Typo.h6'>Payee</MudText>
+                            <BlazoredTypeahead SearchMethod='LoadPayee' DisableClear placeholder='Search'
+                                ValueExpression="@(()=>payee)" Value="payee" ValueChanged="@((Project p) => SelectedPayee(p) )" Debounce='500' MaximumSuggestions='10'>
+                                <SelectedTemplate>
+                                    <div class='overflow-hidden wspace-nowrap'>
+                                        @if (context.ProjectId != 0) {
+                                            <MudText Class='font14'>@context.ProjectName</MudText>
+                                        } else {
+                                            <MudText Class='font14'> Payee </MudText>
+                                        }
+                                    </div>
+                                </SelectedTemplate>
+                                <ResultTemplate>
+                                    @context.ProjectName | @context.Location
+                                </ResultTemplate>
+                            </BlazoredTypeahead>
+                            <MudTextField @bind-Value='@GlobalClass.voucherBIRModel.PayeeRegisteredAddress' Margin='Margin.Dense'
+                                Label='Address' Placeholder="Address" ReadOnly=@readOnlyAddress Variant='Variant.Outlined' Lines='3'/>
+                            <MudGrid Spacing='1'>
+                                <MudItem xs=8>
+                                    <MudTextField Mask="@(new PatternMask("000-000-000-000"))" @bind-Value='@GlobalClass.voucherBIRModel.PayeeTIN' Margin='Margin.Dense'
+                                        Label='TIN' Placeholder="TIN" ReadOnly=@readOnlyTIN Variant='Variant.Outlined'/>
+                                </MudItem>
+                                <MudItem xs=4>
+                                     <MudTextField Mask="@(new PatternMask("0000"))" @bind-Value='@GlobalClass.voucherBIRModel.PayeeZipCode' Margin='Margin.Dense'
+                                Label='Zip Code' Placeholder="Zip Code" ReadOnly=@readOnlyZIPCode Variant='Variant.Outlined' />
+                                </MudItem>
+                            </MudGrid>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs=6>
+                        <MudPaper Class='d-flex flex-column pa-2 gap-2'>
+                            <MudText Typo='Typo.h6'>Payor</MudText>
+                            <BlazoredTypeahead SearchMethod='LoadPayor' DisableClear placeholder='Search'
+                                ValueExpression="@(()=>payor)" Value="payor" ValueChanged="@((Project p) => SelectedPayor(p) )" Debounce='500' MaximumSuggestions='10'>
+                                <SelectedTemplate>
+                                    <div class='overflow-hidden wspace-nowrap'>
+                                        @if (context.ProjectId != 0) {
+                                            <MudText Class='font14'>@context.ProjectName</MudText>
+                                        } else {
+                                            <MudText Class='font14'> Payor </MudText>
+                                        }
+                                    </div>
+                                </SelectedTemplate>
+                                <ResultTemplate>
+                                    @context.ProjectName | @context.Location
+                                </ResultTemplate>
+                            </BlazoredTypeahead>
+                            <MudTextField @bind-Value='@GlobalClass.voucherBIRModel.PayorRegisteredAddress' Margin='Margin.Dense'
+                                Label='Address' Placeholder="Address" Variant='Variant.Outlined' Lines='3'/>
+                            <MudGrid Spacing='1'>
+                                <MudItem xs=8>
+                                    <MudTextField Mask="@(new PatternMask("000-000-000-000"))" @bind-Value='@GlobalClass.voucherBIRModel.PayorTIN' Margin='Margin.Dense'
+                                        Label='TIN' Placeholder="TIN" Variant='Variant.Outlined' /> 
+                                </MudItem>
+                                <MudItem xs=4>
+                                    <MudTextField Mask="@(new PatternMask("0000"))" @bind-Value='@GlobalClass.voucherBIRModel.PayorZipCode' Margin='Margin.Dense'
+                                        Label='Zip Code' Placeholder="Zip Code" Variant='Variant.Outlined' />
+                                </MudItem>
+                            </MudGrid>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            </div>
+        }
+        else
+        {
+            <SkeletonBIRDialog />
+        }
+    </DialogContent>
+    <DialogActions>
+        <div class='px-4 d-flex align-center justify-content-end gap-2'>
+            <MudButton Class='btn-ios-d pa-1 font12' OnClick="Cancel" Variant='Variant.Text' DisableElevation>Cancel</MudButton>
+            <MudButton Class='btn-ios-d py-1 px-2 font12' OnClick="Submit" Variant='Variant.Filled' Color="Color.Info" DisableElevation>Generate</MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+@code{
+    [CascadingParameter]
+    public MudDialogInstance MudDialog { get; set; } = new MudDialogInstance();
+    private bool dataFetch = false;
+    private DateRange voucherPeriod = new DateRange();
+    private Project payee = new();
+    private Project payor = new();
+    private SupplierModel currentSupplier = new();
+    private bool readOnlyAddress,readOnlyZIPCode,readOnlyTIN;
+    protected override async Task OnInitializedAsync()
+    {
+        Task t= Task.WhenAll(LoadVoucherBIR());
+        await t;
+        if(t.Status == TaskStatus.RanToCompletion) {
+            if(GlobalClass.voucherBIRModel.Id != 0)
+            {
+                //Display payee,payor,dates if have BIR
+                await DisplayProperties();
+            } else {
+                if(GlobalClass.voucher.PayeeId != 0 )
+                {
+                    payee = (await globalService.LoadPayees(new FilterParameter(){IsProject=true,
+                    ProjectName=GlobalClass.voucher.PayeeName},GlobalClass.token)).FirstOrDefault()?? new();
+                    await PayeeInformation(payee.ProjectId);
+                    GlobalClass.voucherBIRModel.PayeeName = payee.ProjectName;
+                    voucherPeriod = new DateRange(GlobalClass.voucher.PeriodFrom,GlobalClass.voucher.PeriodTo);
+                } else {
+                    payee = new();
+                }
+            }
+        }
+        GlobalClass.voucherBIRModel.Personnel = "L. SENDICO / Govt. EE Benefits Officer II";
+        GlobalClass.voucherBIRModel.PersonnelTin = "131-019-875-000";
+        CompletedFetch();
+    }
+    private async Task<IEnumerable<Project>> LoadPayee(string projectName)
+    {
+       var filterParameter = new FilterParameter()
+        {
+            IsProject = true,
+            ProjectName = projectName,
+            IsId = false
+        };
+        return await globalService.LoadPayees(filterParameter,GlobalClass.token);
+        
+    }
+    private async Task<IEnumerable<Project>> LoadPayor(string projectName)
+    {
+        return await globalService.LoadPayorList(new FilterParameter(),GlobalClass.token);
+    }
+    void CompletedFetch()
+    {
+        GlobalClass.voucherBIRModel.PreparedBy = GlobalClass.currentUserAccount.EmployeeName;
+        GlobalClass.voucherBIRModel.VoucherId = GlobalClass.voucher.Id;
+        GlobalClass.voucherBIRModel.Voucher = GlobalClass.voucher;
+        voucherPeriod = new DateRange(GlobalClass.voucher.PeriodFrom,GlobalClass.voucher.PeriodTo);
+        dataFetch = true;
+        StateHasChanged();
+    }
+    private async Task LoadVoucherBIR()
+    {
+        GlobalClass.voucherBIRModel = await birService.GetVoucherBIR(GlobalClass.voucher.Id,GlobalClass.token);
+    }
+    private async Task SelectedPayee(Project p)
+    {
+        payee = p;
+        GlobalClass.voucherBIRModel.PayeeId = p.ProjectId;
+        GlobalClass.voucherBIRModel.PayeeCategoryId = p.ProjectCategoryId;
+        if(p.ProjectCategoryId == Enums.ProjectCategory.Supplier)
+        {
+            await PayeeInformation(p.ProjectId);
+        } else {
+            GlobalClass.voucherBIRModel.PayeeRegisteredAddress = p.Location;
+        }
+        GlobalClass.voucherBIRModel.PayeeName = p.ProjectName;
+    }
+    private async Task<SupplierModel> GetSupplier(long id)
+    {
+        return currentSupplier =  await supplierService.GetSupplier(id,GlobalClass.token)?? new();
+    }
+    private void SelectedPayor(Project p)
+    {
+        payor = p;
+        Console.WriteLine(p.ProjectId);
+        PayorInformation(p);
+        GlobalClass.voucherBIRModel.PayorRegisteredAddress = p.Location;
+        
+    }
+    void Cancel() 
+    {
+        MudDialog.Close(DialogResult.Ok(3));
+        navigationManager.NavigateTo($"/voucher/list");
+    }
+    private void Submit()
+    {
+        GlobalClass.voucherBIRModel.PeriodFrom = voucherPeriod.Start;
+        if(GlobalClass.voucherBIRModel.PeriodFrom.HasValue)
+        {
+            GlobalClass.voucherBIRModel.PeriodTo = voucherPeriod.End;
+            GlobalClass.voucherBIRModel.Voucher = GlobalClass.voucher;
+            navigationManager.NavigateTo($"/voucher/list");//Purpose to refresh BIR print page
+            navigationManager.NavigateTo($"bir/print");
+            MudDialog.Close();
+        } else {
+            Extensions.ShowAlert("Voucher period is requred.",Variant.Filled,snackbarService,Severity.Warning);
+        }
+    
+    }
+    private async Task DisplayProperties()
+    {
+        if(GlobalClass.voucherBIRModel.Id == 0)
+        {
+             payee = (await globalService.LoadPayees(new FilterParameter(){IsProject=true,
+             ProjectName=GlobalClass.voucher.PayeeName},GlobalClass.token)).FirstOrDefault()?? new();
+        } else {
+            payee = (await globalService.LoadPayees(new FilterParameter(){IsProject=true,
+             ProjectName=GlobalClass.voucherBIRModel.PayeeName},GlobalClass.token)).FirstOrDefault()?? new();
+             if(GlobalClass.voucherBIRModel.PayeeCategoryId == Enums.ProjectCategory.Supplier)
+             {
+                //ReadOnly Address,ZIP Code,TINd);
+                readOnlyAddress = true; //readOnlyZIPCode = true; readOnlyTIN = true;
+             }
+        }
+        payor.ProjectName = GlobalClass.voucherBIRModel.PayorName;
+        payor = (await LoadPayor(GlobalClass.voucherBIRModel.PayorName)).Where(x=>x.ProjectId == GlobalClass.voucherBIRModel.PayorId).FirstOrDefault()?? new();
+    }
+    private async Task PayeeInformation(long projectID)
+    {
+        if(await GetSupplier(projectID) != null)
+        {
+            GlobalClass.voucherBIRModel.PayeeRegisteredAddress = currentSupplier.Address;
+            GlobalClass.voucherBIRModel.PayeeTIN = currentSupplier.TIN;
+        }
+    }
+    private void PayorInformation(Project payor)
+    {
+        GlobalClass.voucherBIRModel.PayorId = payor.ProjectId;
+        GlobalClass.voucherBIRModel.PayorName = payor.ProjectName;
+    }
+}

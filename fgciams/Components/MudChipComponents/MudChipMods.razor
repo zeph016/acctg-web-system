@@ -1,0 +1,16 @@
+
+<MudChip Class='chip-radius-5 font-bold font10 txt-uppercase' Variant='Variant.Text' Size='Size.Small' style='@styleStr'>
+    @accountTypeName
+</MudChip>
+
+
+@code {
+    [Parameter] public string color { get; set; } = string.Empty;
+    [Parameter] public string accountTypeName { get; set; } = string.Empty;
+    private string styleStr = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        styleStr = "border-left: solid thick " + color;
+    }
+}

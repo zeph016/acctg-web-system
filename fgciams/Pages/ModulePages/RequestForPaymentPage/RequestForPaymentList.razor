@@ -77,7 +77,7 @@
                     <MudDateRangePicker Class='txtfield-75' @bind-DateRange='dateRange' Disabled='!filterParameter.IsDate' Variant='Variant.Outlined' ></MudDateRangePicker>
                   </div>
                   <div class='d-flex align-center justify-end'>
-                    <MudButton Class='wspace-nowrap' OnClick='ClearSearch' Variant='Variant.Filled' Color='Color.Secondary'>Clear Filter</MudButton>
+                    <MudButton Class='wspace-nowrap' OnClick='ClearSearch' Variant='Variant.Filled' Color='Color.Secondary' Disabled=!EnableClearButton()>Clear Filter</MudButton>
                     &nbsp;
                     <MudButton Class='wspace-nowrap' OnClick='FilteredItem' Variant='Variant.Filled' Color='Color.Secondary'>Apply Filter</MudButton>
                   </div>
@@ -96,7 +96,7 @@
         {
             <MudTable Class='configtables' ServerData='new Func<TableState, Task<TableData<RequestForPaymentModel>>>(LoadRFPFromServer)' Hover="true"
             Breakpoint='Breakpoint.Sm' FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
-            RowsPerPage='30' Striped='false' Filter='new Func<RequestForPaymentModel,bool>(FilterItems)' @ref='tableVariable'>
+            RowsPerPage='30' Filter='new Func<RequestForPaymentModel,bool>(FilterItems)' @ref='tableVariable'>
                 <ToolBarContent>
                     <MudText Typo='Typo.caption'>
                         @totalItems
@@ -104,24 +104,20 @@
                         in Total
                     </MudText>
                     <MudSpacer />
-                    <MudIconButton Icon="@Icons.Material.Filled.Refresh" OnClick='ClearSearch'/>
-                    <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'
-                             TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small' Label='More'>
+                    <MudTooltip Text="Refresh Table">
+                        <MudIconButton Icon="@Icons.Filled.Refresh" Size="Size.Small" OnClick='ClearSearch' ></MudIconButton>
+                    </MudTooltip>
+                    <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
+                             TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
                        @if(AccessLevelAddmin() || AccessLevelRequestors())
                        {
                         <MudMenuItem OnClick='(()=> AddNewRFP())'>
-                            <div class='d-flex align-center gap-2'>
-                                <MudIcon Icon='@Icons.Filled.Add' Size='Size.Medium' />
+                            <div class='d-flex align-center gap-2 menu-grow-anim'>
+                                <MudIcon Icon='@Icons.Filled.Add' Size='Size.Small' />
                                 <MudText Typo='Typo.body2'>Add</MudText>
                             </div>
                         </MudMenuItem>                        
                        }
-                        <MudMenuItem OnClick='OpenSideFilter'>
-                            <div class='d-flex align-center gap-2'>
-                                <MudIcon Icon='@Icons.Filled.FilterList' />
-                                <MudText Typo='Typo.body2'>Filter</MudText>
-                            </div>
-                        </MudMenuItem>
                     </MudMenu>
                 </ToolBarContent>
                 <ColGroup>
@@ -148,7 +144,7 @@
                     <MudTh Class='customheader-1'>Payee</MudTh>
                     <MudTh Class='customheader-1'>Requestor</MudTh>
                     <MudTh Class='customheader-1'></MudTh>
-                    <MudTh Class='customheader-1 text-center'>Actions</MudTh>
+                    <MudTh Class='customheader-1 text-center pa-2'>Actions</MudTh>
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd>
@@ -176,8 +172,8 @@
                             </MudChip>
                         </div>
                     </MudTd>
-                    <MudTd Class='text-center pa-0'>
-                        <MudMenu Icon="@Icons.Material.Filled.MoreVert" AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
+                    <MudTd Class='text-center pa-2'>
+                        <MudMenu Icon="@Icons.Material.Filled.MoreVert" AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
                         TransformOrigin='Origin.TopRight' Size='Size.Small' Dense='true'>
                           @if((!EnableEditApproved(context) && AccessLevelAddmin()) 
                             || (!EnableEditApproved(context) && AccessLevelRequestors()))
@@ -194,7 +190,7 @@
                                 <MudMenuItem OnClick='(()=> ApprovedRFPStatus(context))'>
                                   <div class='d-flex align-center gap-2'>
                                     <MudIcon Icon='@Icons.Filled.CheckCircle' Size='Size.Small' />
-                                    <MudText Typo='Typo.body2'>Approved</MudText>
+                                    <MudText Typo='Typo.body2'>Approve</MudText>
                                   </div>
                                 </MudMenuItem>
 
@@ -289,8 +285,8 @@
         || GlobalClassList.requestTypes == null)
             await Task.Delay(1);
 
-        RFPHubConnection();
-
+        //RFPHubConnection();
+        SignalR();
         CompletedFetch();
     }
 
@@ -487,7 +483,7 @@
             requestForPayment.StatusEnumCategoryId = AccountingStatus(Enums.ActionMode.Approve).StatusEnumCategoryId;
 
             var updatedStatus = await requestForPaymentService.UpdateRFPStatus(requestForPayment, GlobalClass.token);
-            Extensions.ShowAlert("Request for payment approved", Variant.Filled, snackBar, Severity.Success);
+            Extensions.ShowAlert("Request for payment approved", Variant.Filled, snackBar, Severity.Info);
             if(GlobalVariable.AMSHubConnection != null)
                 await GlobalVariable.AMSHubConnection.InvokeAsync("SaveRequestForPayment", updatedStatus);
         }
@@ -496,23 +492,22 @@
     }
     private async Task CancelRFPStatus(RequestForPaymentModel requestForPayment)
     {
-        if (await PromptMessage(Enums.ActionMode.Cancel))
-        {
-            requestForPayment.AccountingStatusId = AccountingStatus(Enums.ActionMode.Cancel).Id;
-            requestForPayment.UserId = GlobalClass.currentUserAccount.EmployeeId;
+      if (await PromptMessage(Enums.ActionMode.Cancel))
+      {
+          requestForPayment.AccountingStatusId = AccountingStatus(Enums.ActionMode.Cancel).Id;
+          requestForPayment.UserId = GlobalClass.currentUserAccount.EmployeeId;
 
-            //Audit Trail
-            requestForPayment.StatusName = AccountingStatus(Enums.ActionMode.Cancel).StatusName;
-            requestForPayment.StatusEnumCategoryId = AccountingStatus(Enums.ActionMode.Cancel).StatusEnumCategoryId;
+          //Audit Trail
+          requestForPayment.StatusName = AccountingStatus(Enums.ActionMode.Cancel).StatusName;
+          requestForPayment.StatusEnumCategoryId = AccountingStatus(Enums.ActionMode.Cancel).StatusEnumCategoryId;
 
-            var updatedStatus = await requestForPaymentService.UpdateRFPStatus(requestForPayment, GlobalClass.token);
-            Extensions.ShowAlert("Request for payment cancelled", Variant.Filled, snackBar, Severity.Success);
-            if(GlobalVariable.AMSHubConnection != null)
-                await GlobalVariable.AMSHubConnection.InvokeAsync("SaveRequestForPayment", updatedStatus);
-        }
-        else
-            Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackBar, Severity.Normal);
-
+          var updatedStatus = await requestForPaymentService.UpdateRFPStatus(requestForPayment, GlobalClass.token);
+          Extensions.ShowAlert("Request for payment cancelled", Variant.Filled, snackBar, Severity.Success);
+          if(GlobalVariable.AMSHubConnection != null)
+              await GlobalVariable.AMSHubConnection.InvokeAsync("SaveRequestForPayment", updatedStatus);
+      }
+      else
+          Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackBar, Severity.Normal);
     }
     private bool EnableEditApproved(RequestForPaymentModel requestForPayment)
     {
@@ -521,7 +516,7 @@
         return accountingStatusList?.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.RFPA;
     }
     
-    private void RFPHubConnection()
+    @* private void RFPHubConnection()
     {
       try
       {
@@ -546,7 +541,7 @@
          Console.WriteLine(ex.Message);
          throw;
       }
-    }
+    } *@
     private void NavigateToAuditTrail(RequestForPaymentModel requestForPayment)
     {
       GlobalClass.requestForPayment = requestForPayment;
@@ -584,7 +579,51 @@
     private void ClearSearch()
     {
       filterParameter = new();
+      hasAccountingStatus = new HashSet<AccountingStatusModel>();
+      hasRFPDetail = new HashSet<RequestTypeModel>();
       dateRange = new DateRange(DateTime.Now, DateTime.Now);
       Task.Run(async()=> await tableVariable!.ReloadServerData());
+    }
+    private bool EnableClearButton()
+    {
+      if(filterParameter.IsPOBillingControlNumber)
+        return true;
+      if(filterParameter.IsControlNumber) 
+        return true;
+      if(filterParameter.IsPOBillingControlNumber)
+        return true;
+      if(filterParameter.IsPOControlNumber)
+        return true;
+      if(filterParameter.IsLiqudationControlNumber)
+        return true;
+      if(filterParameter.IsRequestType)
+        return true;
+      if(filterParameter.IsAccountingStatus)
+        return true;
+      if(filterParameter.IsPayee)
+        return true;
+      if(filterParameter.IsDate)
+        return true;
+      
+      return false;
+    }
+    private void SignalR()
+    {
+        try
+        {
+            if(GlobalVariable.AMSHubConnection != null)
+                GlobalVariable.AMSHubConnection.On<RequestForPaymentModel>("SaveRequestForPayment",(requestModel) => 
+                {
+                  tableVariable?.ReloadServerData();
+                    @* GlobalClassList.requestForPaymentsList.RemoveAll(request => request.Id == requestModel.Id);
+                    if(requestModel.IsActive == true)
+                        GlobalClassList.requestForPaymentsList.Insert(0,requestModel);
+                    StateHasChanged(); *@
+                });
+        }catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            throw;
+        }
     }
 }

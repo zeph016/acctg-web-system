@@ -10,6 +10,9 @@ using System.Text;
 using System.Threading.Tasks;
 using fgciams.domain.clsProjectChargingLine;
 using fgciams.domain.clsPO;
+using fgciams.domain.clsScopeOfWork;
+using fgciams.domain.clsSubConGeneralInformation;
+using fgciams.domain.clsSubContractProject;
 
 namespace fgciams.service.GlobalServices
 {
@@ -23,5 +26,9 @@ namespace fgciams.service.GlobalServices
         Task<List<ProjectChargingLineModel>> projectChargingLine(FilterParameter filterParameter, string token);
         Task<List<POModel>> LoadPOs(FilterParameter filterParameter, string token);
         Task<List<Project>> LoadLocationRoutes(FilterParameter filterParameter, string token);
+        Task<List<Project>> LoadPayorList(FilterParameter filterParameter, string token);
+        Task<List<Project>> SubConProjects(FilterParameter filterParameter, string token);
+        Task<List<ScopeOfWorkModel>> SubConScopeOfWorks(FilterParameter filterParameter, string token);
+        Task<List<SubContractorProjectModel>> VoucherDetailsSubCon(long projectID, string token);
     }
 }

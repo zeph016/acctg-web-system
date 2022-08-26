@@ -11,6 +11,9 @@ using System.Text;
 using System.Threading.Tasks;
 using fgciams.domain.clsProjectChargingLine;
 using fgciams.domain.clsPO;
+using fgciams.domain.clsScopeOfWork;
+using fgciams.domain.clsSubConGeneralInformation;
+using fgciams.domain.clsSubContractProject;
 
 namespace fgciams.service.GlobalServices
 {
@@ -163,7 +166,74 @@ namespace fgciams.service.GlobalServices
             }
         }
         #endregion
+        #region Payor
+        public async Task<List<Project>> LoadPayorList(FilterParameter filterParameter, string token)
+        {
+            try
+            {
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("accounting-global/payor-list ", filterParameter);
+                responseMessage.EnsureSuccessStatusCode();
 
+                return await responseMessage.Content.ReadAsAsync<List<Project>>();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public async Task<List<Project>> SubConProjects(FilterParameter filterParameter, string token)
+        {
+            try
+            {
+                var subConProjects = new List<Project>();
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("masterlist/projects/fgciprojects", filterParameter);
+                if (responseMessage.IsSuccessStatusCode)
+                    subConProjects = await responseMessage.Content.ReadAsAsync<List<Project>>();
+                return subConProjects;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<List<ScopeOfWorkModel>> SubConScopeOfWorks(FilterParameter filterParameter, string token)
+        {
+            try
+            {
+                var subConSOW = new List<ScopeOfWorkModel>();
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("subcon-scope-of-work/list", filterParameter);
+                if (responseMessage.IsSuccessStatusCode)
+                    subConSOW = await responseMessage.Content.ReadAsAsync<List<ScopeOfWorkModel>>();
+                return subConSOW;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        public async Task<List<SubContractorProjectModel>> VoucherDetailsSubCon(long projectID, string token)
+        {
+            try
+            {
+                var vDetailsSubCobProjects = new List<SubContractorProjectModel>();
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                HttpResponseMessage responseMessage = await _client.GetAsync("subcon-projects/subcon/"+projectID);
+                if (responseMessage.IsSuccessStatusCode)
+                    vDetailsSubCobProjects = await responseMessage.Content.ReadAsAsync<List<SubContractorProjectModel>>();
+                return vDetailsSubCobProjects;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        #endregion
         #endregion
 
     }

@@ -43,7 +43,10 @@ namespace fgciams.domain.clsFilterParameter
         public string POBillingControlNumber { get; set; } = string.Empty;
         public bool IsPeriodDate { get; set; }
         public DateTime PeriodDateFrom { get; set; }
-        public DateTime PeriodToFrom { get; set; }
+        public DateTime PeriodDateTo { get; set; }
+        public bool IsPettyCash { get; set; }
+        public string PettyCash { get; set; }        
+
         //Others
         public int PageSize { get; set; }
         public int PageNo { get; set; }
@@ -65,6 +68,13 @@ namespace fgciams.domain.clsFilterParameter
         public string BankId { get; set; }
         public bool IsCheckNumber { get; set; }
         public string CheckNumber { get; set; }
+        public bool IsTermsOfPayment { get; set; }
+        public string TermsOfPaymentId { get; set; }
+        public bool IsMuniCity { get; set; }
+        public string MuniCityId { get; set; }
+        public bool IsTaxCode { get; set; }
+        public string TaxCodeId { get; set; }        
+        public bool HasVAT { get; set; }
         public FilterParameter()
         {
             isActive = true;
@@ -88,7 +98,14 @@ namespace fgciams.domain.clsFilterParameter
             IsBank = false;
             BankId = string.Empty;
             IsCheckNumber = false;
-            CheckNumber = "";
+            CheckNumber = string.Empty;
+            IsTermsOfPayment = false;
+            TermsOfPaymentId = string.Empty;
+            IsMuniCity = false;
+            MuniCityId = string.Empty;
+            IsTaxCode = false;
+            TaxCodeId = string.Empty;
+            HasVAT = false;
         }
     }
 }

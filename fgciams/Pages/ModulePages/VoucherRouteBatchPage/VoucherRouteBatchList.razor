@@ -21,7 +21,6 @@
           <MudButton Class='wspace-nowrap' Variant='Variant.Filled' Color='Color.Secondary'>Apply Filter</MudButton>
         </div>
       </div>
-      
     </MudDrawer>
   </div>
   <MudContainer Class='vbatchlistpage' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
@@ -33,8 +32,8 @@
     }
     else
     {
-      <MudTable Class='configtables' ServerData='@(new Func<TableState, Task<TableData<VoucherRouteBatchModel>>>(LoadVoucherServer))'
-        Height='calc(100vh - 185px)' Breakpoint='Breakpoint.Sm' FixedHeader FixedFooter Hover Dense @ref='vRouteBModelTable'>
+      <MudTable Class='configtables row-popup-anim-2px' ServerData='@(new Func<TableState, Task<TableData<VoucherRouteBatchModel>>>(LoadVoucherServer))' Bordered
+        Height='calc(100vh - 185px)' Breakpoint='Breakpoint.Xs' FixedHeader FixedFooter Hover Dense @ref='vRouteBModelTable'>
         <ToolBarContent>
             <MudText Typo='Typo.caption'>
               @GlobalClassList.VoucherBatches.Count()
@@ -42,27 +41,23 @@
               in Total
             </MudText>
             <MudSpacer/>
-            <MudIconButton Icon="@Icons.Material.Filled.Refresh" OnClick='(()=> vRouteBModelTable!.ReloadServerData())'/>
-            <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'
-                TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small' Label='More'>
+            <MudTooltip Text="Refresh Table">
+                <MudIconButton Icon="@Icons.Filled.Refresh" Size="Size.Small" OnClick='(()=> vRouteBModelTable!.ReloadServerData())'></MudIconButton>
+            </MudTooltip>
+            <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
+                TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
                   <MudMenuItem OnClick='(()=> navigationManager.NavigateTo($"/voucher/batch"))'>
-                    <div class='d-flex align-center gap-2'>
-                        <MudIcon Icon='@Icons.Filled.Add' Size='Size.Medium' />
+                    <div class='d-flex align-center gap-2 menu-grow-anim'>
+                        <MudIcon Icon='@Icons.Filled.Add' Size='Size.Small' />
                         <MudText Typo='Typo.body2'>Add</MudText>
                     </div>
-                  </MudMenuItem>                        
-                <MudMenuItem OnClick='OpenSideFilter'>
-                  <div class='d-flex align-center gap-2'>
-                    <MudIcon Icon='@Icons.Filled.FilterList' />
-                    <MudText Typo='Typo.body2'>Filter</MudText>
-                  </div>
-                </MudMenuItem>
+                  </MudMenuItem>        
             </MudMenu>
         </ToolBarContent>
         <ColGroup>
           <col style="width: 1%" />
-          <col />
-          <col style="width: 20px" />
+          <col style="width: 58%"/>
+          <col style="width: 40%" />
           <col style="width: 20px" />
         </ColGroup>
         <HeaderContent>
@@ -79,7 +74,10 @@
               </div>
             </MudTh>
             <MudTh Class='customheader-1'>Remarks</MudTh>
-            <MudTh Class='customheader-1'>Action</MudTh>
+            <MudTh Class='customheader-1'>
+              Prepared By
+            </MudTh>
+            <MudTh Class='customheader-1 pa-2'>Actions</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Ctrl #">
@@ -92,25 +90,28 @@
                 </MudChip>
               </div>
             </MudTd>
-            <MudTd Class='wbreak-breakword font12'>@context.Remarks</MudTd>
-            <MudTd Class='text-center'>
+            <MudTd Class='wbreak-breakword font12' DataLabel='Remarks'>@context.Remarks</MudTd>
+            <MudTd Class='wbreak-breakword font12' DataLabel='Prepared By'>
+              <SignatoriesComponent employeeId='context.PreparedById' isSingleLine='true' />
+            </MudTd>
+            <MudTd Class='text-center pa-2'>
               <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
                   TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
                 <MudMenuItem OnClick='(()=> EditView(context))'>
-                  <a class='d-flex align-center gap-2'>
+                  <a class='d-flex align-center gap-2 menu-grow-anim'>
                     <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small'/>
                     <MudText Typo='Typo.body2'>Edit</MudText>
                   </a>
                 </MudMenuItem>
                 <MudMenuItem OnClick='(()=> NavigateAuditrail(context))'>
-                  <a class='d-flex align-center gap-2'>
+                  <a class='d-flex align-center gap-2 menu-grow-anim'>
                     <MudIcon Icon='@Icons.Filled.ListAlt' Size='Size.Small'/>
                     <MudText Typo='Typo.body2'>Audit Trail</MudText>
                   </a>
                 </MudMenuItem>
                 <MudMenuItem OnClick='(()=> context.ShowReport = ShowReport(context.ShowReport, context))'>
-                  <a class='d-flex align-center gap-2'>
-                    <MudIcon Icon='@Icons.Filled.ListAlt' Size='Size.Small'/>
+                  <a class='d-flex align-center gap-2 menu-grow-anim'>
+                    <MudIcon Icon='@Icons.Filled.PictureAsPdf' Size='Size.Small'/>
                     <MudText Typo='Typo.body2'>Show Report</MudText>
                   </a>
                 </MudMenuItem>
@@ -226,14 +227,8 @@
   //Batch Report
   private bool ShowReport(bool isShow, VoucherRouteBatchModel batch)
   {
-    Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(batch,Newtonsoft.Json.Formatting.Indented));
     Task.Run(()=> LoadBatchVouchersReport(batch));
-      GlobalClassList.VoucherBatchList.ForEach(model => {
-          if(model.Id != batch.Id)
-              model.ShowReport = false;
-      });
-      
-      return isShow = !isShow;
+    return isShow = !isShow;
   }
   private async Task LoadBatchVouchersReport(VoucherRouteBatchModel batch)
   {

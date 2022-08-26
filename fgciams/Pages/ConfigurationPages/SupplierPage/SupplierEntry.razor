@@ -1,0 +1,526 @@
+@page "/supplier/entry"
+
+@inject IDivisionService divisionService
+@inject ISnackbar snackbarService
+@inject IDialogService dialogService
+@inject IMuniCityService muniCityService
+@inject ISupplierService supplierService
+@inject NavigationManager navigationManager
+@attribute [Authorize]
+
+<div class='page-cont d-flex'>
+      <MudContainer Class='supplierentry-page' Fixed='false' MaxWidth='MaxWidth.Large'>
+        @if (!dataFetched)
+        {
+            <MudPaper Class='d-flex gap-2 pa-2' Elevation='0' style="height:650px">
+                <MudGrid Spacing='1'>
+                    <MudItem xs=9>
+                        <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='100%' Animation='Animation.Wave' />
+                    </MudItem>
+                    <MudItem xs=3>
+                        <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='40%' Animation='Animation.Wave' />
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        }
+        else
+        {
+            <MudGrid Spacing='1'>
+                <MudItem xs=9>
+                    <MudPaper Class='py-2 px-4'>
+                        <EditForm Model='GlobalClass.supplier' OnValidSubmit='SaveSupplier' OnInvalidSubmit='(()=>InvalidInput())'>
+                            <DataAnnotationsValidator />
+                                <MudGrid Spacing='1'>
+                                    <MudItem Class='d-flex align-center px-2 color-7d7d7d' xs=12>
+                                        <MudText Class='ff-theramin txt-uppercase' Typo='Typo.h6'>Supplier Entry</MudText>
+                                        <MudSpacer />
+                                        <div class='d-flex align-center justify-space-around position-rel top15 gap-2'>
+                                            @if(GlobalClass.supplier.Id != 0)
+                                            {
+                                                <div class='d-flex align-center'>
+                                                    <MudCheckBox @bind-Checked='@GlobalClass.supplier.IsActive' Dense Size='Size.Small' Color='Color.Dark' />
+                                                    <MudText Class='font14'>Active</MudText>
+                                                </div>
+                                            }
+                                            <div class='d-flex align-center'>
+                                                <MudCheckBox @bind-Checked='@GlobalClass.supplier.HasVAT' Dense Size='Size.Small' Color='Color.Dark'/>
+                                                <MudText Class='font14'>VAT</MudText>
+                                            </div>
+                                            <div class='d-flex align-center'>
+                                                <MudCheckBox @bind-Checked='@GlobalClass.supplier.HasInvoice' Dense Size='Size.Small' Color='Color.Dark' />
+                                                <MudText Class='font14'>Invoice</MudText>
+                                            </div>
+                                        </div>
+                                    </MudItem>
+                                    <MudItem xs=12>
+                                        <MudDivider />
+                                    </MudItem>
+                                    <MudItem xs='8'>
+                                        <MudTextField @bind-Value='GlobalClass.supplier.SupplierName' Margin='Margin.Dense' Label='Supplier Name' HelperText='Required*'
+                                        Variant='Variant.Outlined' For="@(() => GlobalClass.supplier.SupplierName)"/>
+                                    </MudItem>
+                                    <MudItem xs='4'>
+                                        <MudTextField @bind-Value='@GlobalClass.supplier.ShortcutName' Margin="Margin.Dense" Label='Short Name' HelperText='Required*'
+                                        Variant='Variant.Outlined' For="@(() => GlobalClass.supplier.ShortcutName)"/>
+                                    </MudItem>
+                                    <MudItem xs='8'>
+                                        <MudTextField @bind-Value='@GlobalClass.supplier.Address' Margin="Margin.Dense" Label='Address' HelperText="Required*"
+                                        Variant='Variant.Outlined' For="@(() => GlobalClass.supplier.Address)" />
+                                    </MudItem>
+                                    <MudItem xs='4'>
+                                        <div style="padding-top:2px">
+                                            <BlazoredTypeahead SearchMethod='LoadMuniCity' Context='mcitycontext' EnableDropDown DisableClear
+                                                @bind-Value='muniCity' Debounce='500' MaximumSuggestions='10' placeholder="City/Prov./Municipality">
+                                                <SelectedTemplate>
+                                                    @mcitycontext.Name
+                                                    @if (muniCity.Id != 0) {
+                                                        GlobalClass.supplier.MuniCityName = mcitycontext.Name;
+                                                        GlobalClass.supplier.MuniCityId = mcitycontext.Id;
+                                                    } else {
+                                                        <MudText Class='font16 pl-2 color-sec'>Select a Location</MudText>
+                                                    }
+                                                </SelectedTemplate>
+                                                <ResultTemplate>
+                                                    @mcitycontext.Name
+                                                </ResultTemplate>
+                                            </BlazoredTypeahead>
+                                            <MudText Class='d-flex align-center gap-2 mt-1 ml-2 font12'>
+                                                <MudText Class='font12 color-sec'>City/Prov./Municipality</MudText>
+                                                <ValidationMessage For="@(() => GlobalClass.supplier.MuniCityId)"/>
+                                            </MudText>
+                                        </div>
+                                    </MudItem>
+                                    <MudItem xs='6'>
+                                        <MudSelect @bind-Value='@GlobalClass.supplier.DefaultTermId' Margin="Margin.Dense" Text="@GlobalClass.supplier.TermName" Placeholder="Terms"  Label='Terms of Payment' HelperText="Required*"
+                                            Variant='Variant.Outlined' For='(() => GlobalClass.supplier.DefaultTermId)'>
+                                            @foreach (var item in GlobalClassList.termsOfPayments)
+                                            {
+                                                <MudSelectItem Value="@item.Id">@item.TermName</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </MudItem>
+                                    <MudItem xs='5'>
+                                        <MudSelect Margin="Margin.Dense" Text="@GlobalClass.supplier.TaxCode" Label='Tax Code' Placeholder="Code" HelperText="Required*"
+                                            Variant='Variant.Outlined' T='TaxCodeModel' Value='taxCode'  ValueChanged="@((TaxCodeModel tc)=>SelectedTaxCode(tc))">
+                                            @foreach (var item in GlobalClassList.taxCodes)
+                                            {
+                                                <MudSelectItem Value="@item">@item.Description</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </MudItem>
+                                    <MudItem xs='1'>
+                                        <MudTextField @bind-Value='@GlobalClass.supplier.TaxRate' Margin="Margin.Dense" Label='Rate' ReadOnly=true
+                                        Variant='Variant.Outlined'/>
+                                    </MudItem>
+                                    <MudItem xs='6'>
+                                        <MudTextField @bind-Value='@GlobalClass.supplier.BusinessPermit' Margin="Margin.Dense" Label='Business Permit' HelperText="Required*"
+                                        Variant='Variant.Outlined' For="@(() => GlobalClass.supplier.BusinessPermit)"/>
+                                    </MudItem>
+                                    <MudItem xs='6'>
+                                        <MudTextField @bind-Value='@GlobalClass.supplier.RegistrationNo' Margin="Margin.Dense" Label='Registration No.' HelperText="Required*"
+                                            Variant='Variant.Outlined' For="@(() => GlobalClass.supplier.RegistrationNo)"/>
+                                    </MudItem>
+                                    <MudItem xs='6'>
+                                        <MudTextField @bind-Value='@GlobalClass.supplier.TIN' Margin="Margin.Dense" Label='TIN' HelperText="Required*" Mask='@(new PatternMask("000-000-000-000"))'
+                                            Variant='Variant.Outlined' For='@(() => @GlobalClass.supplier.TIN)'/>
+                                    </MudItem>
+                                    <MudItem xs='6'>
+                                        <MudTextField @bind-Value='@GlobalClass.supplier.DocumentType' Margin="Margin.Dense" Label='Document Type' HelperText="Required*"
+                                            Variant='Variant.Outlined' For='@(() => @GlobalClass.supplier.DocumentType)'/>
+                                    </MudItem>
+                                    <MudItem xs='6'>
+                                        <div style="padding-top:2px">
+                                            <BlazoredTypeahead SearchMethod='SearchBank' Context='bankcontext' DisableClear EnableDropDown placeholder='Bank' 
+                                                @bind-Value='bank' Debounce='500' MaximumSuggestions='10'>
+                                                <SelectedTemplate>
+                                                    @bankcontext.BankName
+                                                    @if (bank.Id != 0) {
+                                                        GlobalClass.supplier.BankId = bankcontext.Id;
+                                                        GlobalClass.supplier.BankName = bankcontext.BankName;
+                                                        GlobalClass.supplier.BankAccountNo = bankcontext.AccountNo;
+                                                    } else {
+                                                        <MudText Class='font16 pl-2 color-sec'>Select a Bank</MudText>
+                                                    }
+                                                </SelectedTemplate>
+                                                <ResultTemplate>
+                                                    @bankcontext.BankName
+                                                </ResultTemplate>
+                                            </BlazoredTypeahead>
+                                        <MudText Class='d-flex align-center gap-2 mt-1 ml-2 font12'>
+                                                <MudText Class='font12 color-sec'>Bank</MudText>
+                                                <ValidationMessage class='ml-2 font12' For="@(() => GlobalClass.supplier.BankId)"/>
+                                            </MudText>
+                                        </div>
+                                    </MudItem>
+                                    <MudItem xs='6'>
+                                        <MudTextField @bind-Value='@GlobalClass.supplier.BankAccountName' Margin="Margin.Dense" Label='Bank Account Name' HelperText="Required*"
+                                            Variant='Variant.Outlined' For='@(() => @GlobalClass.supplier.BankAccountName)'/>
+                                    </MudItem>
+                                    <MudItem xs='12'>
+                                        <MudTextField @bind-Value='@GlobalClass.supplier.Remarks' Margin="Margin.Dense" Label='Remarks' HelperText="Optional"
+                                            Variant='Variant.Outlined'/>
+                                    </MudItem>
+                                    <MudItem xs='12'>
+                                        <MudDivider />
+                                    </MudItem>
+                                    <MudItem Class='d-flex align-center justify-end' xs=12>
+                                        <MudButton Class='btn-ios-d pa-1 font12' OnClick='(() => GlobalClass.supplier = new SupplierModel())' Color='Color.Error' Variant='Variant.Outlined' DisableElevation 
+                                            Disabled='@(currentAction == Enums.ActionMode.Update ? true : false)'>Reset</MudButton>
+                                        <MudSpacer />
+                                        <MudButton Class='btn-ios-d pa-1 font12' Href='/supplier/list' DisableElevation>Cancel</MudButton>
+                                        <MudButton Class='btn-ios-d pa-1 font12' ButtonType='ButtonType.Submit' Disabled='_processing'
+                                            Color="@(currentAction == Enums.ActionMode.Update ? Color.Info : Color.Primary)" Variant="Variant.Filled" DisableElevation>
+                                            @if (_processing)
+                                            {
+                                                <MudProgressCircular Class="progsize-21" Size="Size.Small" Indeterminate="true" />
+                                                <MudText Class='font12 pl-2 txt-uppercase'>@(currentAction == Enums.ActionMode.Update ? "Updating" : "Saving")</MudText>
+                                            }
+                                            else
+                                            {
+                                                   <MudText Class='font12 txt-uppercase'>@(currentAction == Enums.ActionMode.Update ? "UPDATE" : "SAVE")</MudText>
+                                            }
+                                        </MudButton>
+                                    </MudItem>
+                                </MudGrid>
+                        </EditForm>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs=3>
+                    <MudPaper Class='pa-2'>
+                        <EditForm Model='supplierContactModel' OnValidSubmit='SaveContact'>
+                            <DataAnnotationsValidator />
+                                <MudGrid Spacing='1'>
+                                    <MudItem Class='d-flex align-center px-2 color-7d7d7d' xs=12>
+                                            <MudText Class='ff-theramin txt-uppercase' Typo='Typo.h6'>Contacts - @(GlobalClass.supplier.SupplierContacts.Count())</MudText>
+                                            <MudSpacer />
+                                            <MudIcon Icon='@Icons.Filled.ContactPhone' Size='Size.Medium' />
+                                    </MudItem>
+                                    <MudItem xs=12>
+                                        <MudDivider />
+                                    </MudItem>
+                                    <MudItem xs='12'>
+                                        <div class='d-flex flex-column align-start gap-1 pa-2'>
+                                            @if (GlobalClass.supplier.SupplierContacts.Count() == 0)
+                                            {
+                                                <MudText Class='font10 font-bold txt-uppercase'>No Contacts Found</MudText>
+                                            }
+                                            else
+                                            {
+                                                @foreach (var item in GlobalClass.supplier.SupplierContacts)
+                                                {
+                                                    <MudPaper Class='d-flex align-center justify-content-between gap-4 pa-2 bgc-e7f2fb' Width='100%' Elevation='1'>
+                                                        <MudAvatar Class='bgc-gainsb' Size='Size.Medium'>
+                                                            <MudIcon Color="Color.Dark" Icon="@Icons.Filled.Person" Size="Size.Medium" />
+                                                        </MudAvatar>
+                                                        <div class='d-flex align-start flex-column'>
+                                                            <MudText Class='font12 font-bold'>@item.ContactPerson</MudText>
+                                                            <MudText Class='font10'>Contact: @item.ContactNumber</MudText>
+                                                            <MudText Class='font10'>Position: @item.Position</MudText>
+                                                        </div>
+                                                        <MudSpacer />
+                                                        <MudIconButton OnClick='(() => AddContact(item))' 
+                                                            Color='Color.Tertiary' Icon='@Icons.Filled.Edit' Size='Size.Small' Disabled='@(isAddContact ? true : false)' />
+                                                    </MudPaper>
+                                                }
+                                            }
+                                        </div>
+                                    </MudItem>
+                                    <MudItem xs=12>
+                                        <MudDivider />
+                                    </MudItem>
+                                    <MudItem Class='d-flex flex-column gap-2' xs=12>
+                                        <div class='d-flex flex-column rounded transition-05s-ease overflow-hidden' style='@(isAddContact ? "max-height:600px;" : "max-height:0px;")'>
+                                            @if (!isOverlayVisible)
+                                            {
+                                                <MudTextField @bind-Value='@supplierContactModel.ContactPerson' Margin="Margin.Dense" Label='Name' HelperText="Required*" 
+                                                    Variant='Variant.Outlined' For="@(() => supplierContactModel.ContactPerson)"/>
+                                                <MudTextField @bind-Value='@supplierContactModel.ContactNumber' Margin="Margin.Dense" Label='Contact No.' HelperText="Required*" 
+                                                    Variant='Variant.Outlined' For="@(() => supplierContactModel.ContactNumber)" />
+                                                <MudTextField @bind-Value='@supplierContactModel.Position' Margin="Margin.Dense" Label='Position' HelperText="Optional" 
+                                                    Variant='Variant.Outlined' />
+                                                <MudDivider />
+                                            }
+                                            else
+                                            {
+                                                <SkeletonSuppConEntry />
+                                            }
+                                        </div>
+                                    
+                                        <div class='d-flex align-center gap-1'>
+                                            @if (isAddContact) 
+                                            {
+                                                <MudButton Class='btn-ios-d pa-1 font12' OnClick="(()=>NewContact())" Color="Color.Error" Variant="Variant.Outlined" DisableElevation>Reset</MudButton>
+                                            }
+                                            <MudSpacer />
+                                            <MudButton Class='btn-ios-d py-1 px-4 font12' OnClick='(() =>AddContact(new SupplierContactModel()))' Size='Size.Small' 
+                                                Variant='@(isAddContact ? Variant.Text : Variant.Filled)' DisableElevation>
+                                                @(isAddContact ? "Cancel" : "Add Contact")
+                                            </MudButton>
+                                            @if (isAddContact)
+                                            {
+                                                <MudButton Class='btn-ios-d pa-1 font12' ButtonType='ButtonType.Submit' Color="Color.Info" Variant="Variant.Filled" 
+                                                    DisableElevation Disabled='_processing2'>
+                                                    @if (_processing2)
+                                                    {
+                                                        <MudProgressCircular Class="progsize-21" Size="Size.Small" Indeterminate="true" />
+                                                        <MudText Class='font12 pl-2 txt-uppercase'>@(isEditContact ? "Updating" : "Adding")</MudText>
+                                                    }
+                                                    else
+                                                    {
+                                                        <MudText Class='font12 txt-uppercase'>@(isEditContact ? "Update" : "Add")</MudText>
+                                                    }
+                                                </MudButton>
+                                            }
+                                        </div>
+                                    </MudItem>
+                                </MudGrid>
+                        </EditForm>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        }
+    </MudContainer>
+</div>
+@code
+{
+    private MuniCityModel muniCity {get;set;} = new();
+    private SupplierContactModel supplierContactModel = new SupplierContactModel();
+    private Enums.ActionMode currentAction = new Enums.ActionMode();
+    private bool dataFetched, isAddContact, isEditContact, _processing, _processing2, isOverlayVisible;
+    private BankModel bank = new BankModel();
+    private SupplierModel currSupplier = new SupplierModel();
+    private TermsOfPaymentModel selectedTerms = new TermsOfPaymentModel();
+    private TaxCodeModel taxCode = new();
+    protected override async Task OnInitializedAsync()
+    {
+        //lazy loader
+        await Task.Delay(1500);
+        //
+
+        GlobalClass.pageTitle = "SUPPLIER ENTRY";
+        while(GlobalClassList.termsOfPayments == null || GlobalClassList.taxCodes == null || GlobalClassList.banks == null)
+            await Task.Delay(1);
+        if(GlobalClass.supplier == null)
+            New();
+        else {
+            await RemapProperties();
+            currentAction = Enums.ActionMode.Update;
+        }
+        CompleteFetched();
+    }
+    private async Task<IEnumerable<MuniCityModel>> LoadMuniCity(string search)
+    {
+        var muniCity = await muniCityService.LoadMuniCity(GlobalClass.token);
+        return muniCity.Where(x=>x.Name.ToLower().Contains(search.ToLower())).ToList().AsEnumerable();
+    }
+    private void CompleteFetched()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+    private void New()
+    {
+        GlobalClass.supplier = new();
+    }
+    private async Task RemapProperties()
+    {
+        await GetSupplierContacts();
+        muniCity = GlobalClassList.muniCityList.Find(x=>x.Id==GlobalClass.supplier.MuniCityId)?? new();
+        bank = GlobalClassList.banks.Find(x=>x.Id == GlobalClass.supplier.BankId)?? new();
+    }
+    private async Task GetSupplierContacts()
+    {
+        GlobalClass.supplier.SupplierContacts = await supplierService.GetSupplierContacts(GlobalClass.supplier.Id,GlobalClass.token);
+    }
+    private void MapProperties()
+    {
+        GlobalClass.supplier.MuniCityId = muniCity.Id;
+        GlobalClass.supplier.BankId = bank.Id;
+    }
+    private async Task SaveSupplier()
+    {
+        _processing = true;
+        if(!GlobalClass.supplier.IsActive)
+        {
+            MapProperties();
+            currentAction = Enums.ActionMode.Deactivate;
+            await Prompt();
+        }
+        else
+        {
+            if(IsValidated())
+            {
+                MapProperties();
+                if(GlobalClass.supplier.Id == 0)
+                    currentAction = Enums.ActionMode.Create;
+                else    
+                    currentAction = Enums.ActionMode.Update;
+                await Prompt();
+            }
+            else
+                Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" supplier, Incomplete Fields."+GlobalVariable.errorPromptText,Variant.Filled,snackbarService,Severity.Error);
+        }
+         _processing = false;
+    }
+    private bool IsValidated()
+    {
+        if (string.IsNullOrWhiteSpace(GlobalClass.supplier.SupplierName))
+            return false;
+        if (string.IsNullOrWhiteSpace(GlobalClass.supplier.ShortcutName))
+            return false;
+        return true;
+    }
+    private async Task Prompt()
+    {
+        var parameters = new DialogParameters();
+        string contentText = " Supplier";
+        string dialogTitle = currentAction.ToString();
+        parameters.Add("contentText", contentText);
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("actionMode", currentAction);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+           try {
+                if(currentAction == Enums.ActionMode.Create) {
+                    GlobalClass.supplier = await supplierService.AddSupplier(GlobalClass.supplier, GlobalClass.token);
+                    Extensions.ShowAlert("Supplier successfully added.", Variant.Filled, snackbarService, Severity.Success);
+                } else {
+                    GlobalClass.supplier = await supplierService.UpdateSupplier(GlobalClass.supplier, GlobalClass.token);
+                    if(currentAction == Enums.ActionMode.Deactivate)
+                    {
+                        Extensions.ShowAlert("Supplier has been deactivated.", Variant.Filled,snackbarService,Severity.Warning);
+                        navigationManager.NavigateTo($"/supplier/list");
+                    }   
+                    else
+                        Extensions.ShowAlert("Supplier updated successfully.", Variant.Filled,snackbarService, Severity.Info);
+                }
+            }catch(Exception ex) {
+                Extensions.ShowAlert(ex.Message,Variant.Filled,snackbarService,Severity.Info);
+            }
+            _processing = false;
+        } else if (resultDialog.Cancelled)
+            Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
+    }
+    private async Task SaveContact()
+    {
+        _processing2 = true;
+        if(isValidatedContact())
+        {
+            supplierContactModel.SupplierId = GlobalClass.supplier.Id;
+            if(supplierContactModel.IsActive == false) {
+                currentAction  = Enums.ActionMode.Deactivate;
+                await ContactConfirmationPrompt();
+            } else {
+                if(supplierContactModel.Id == 0) {
+                    currentAction  = Enums.ActionMode.Create;;
+                } else {
+                    currentAction  = Enums.ActionMode.Update;
+                }
+                await ContactConfirmationPrompt();
+            }
+        }
+        else
+            Extensions.ShowAlert("Cannot add Contact, no supplier selected.",Variant.Filled,snackbarService,Severity.Error);
+         _processing2 = false;
+
+    }
+    private void EditContact(SupplierContactModel supplierContact)
+    {
+        supplierContactModel = supplierContact;
+    }
+    private async Task RemoveContact(SupplierContactModel supplierContact)
+    {
+        supplierContact.IsActive = false;
+        supplierContactModel = supplierContact;
+        await SaveContact();
+    }
+    private bool isValidatedContact()
+    {
+        if(GlobalClass.supplier.Id== 0)
+            return false;
+        return true;
+    }
+    private void NewContact()
+    {
+        supplierContactModel = new();
+    }
+    private async Task ContactConfirmationPrompt()
+    {
+        var parameters = new DialogParameters();
+        string contentText = " contact";
+        string dialogTitle = currentAction + contentText;
+        parameters.Add("contentText", contentText);
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("actionMode", currentAction);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Cancelled)
+        {
+           try {
+                if(currentAction == Enums.ActionMode.Create) {
+                    await supplierService.SaveContact(supplierContactModel,GlobalClass.token);
+                    Extensions.ShowAlert("Contact successfully added.", Variant.Filled, snackbarService, Severity.Success);
+                } else {
+                    await supplierService.UpdateContact(supplierContactModel,GlobalClass.token);
+                    if(currentAction == Enums.ActionMode.Deactivate)
+                        Extensions.ShowAlert("Contact has been removed.", Variant.Filled,snackbarService, Severity.Warning);
+                    else
+                        Extensions.ShowAlert("Contact updated successfully.", Variant.Filled,snackbarService, Severity.Info);
+                }
+            await GetSupplierContacts();
+            NewContact();
+            }catch(Exception ex) {
+                Extensions.ShowAlert(ex.Message,Variant.Filled,snackbarService,Severity.Info);
+            }
+            _processing2 = false;
+            await AddContact(new SupplierContactModel());
+        }
+        else
+        {
+            Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
+            _processing2 = false;
+        }
+    }
+    async Task<IEnumerable<BankModel>> SearchBank(string bankAccount)
+    {
+        var banks = GlobalClassList.banks;
+    return await Task.FromResult(banks.Where(x => x.AccountNo.Contains(bankAccount, StringComparison.OrdinalIgnoreCase)
+        || x.BankName.Contains(bankAccount, StringComparison.OrdinalIgnoreCase)).ToList());
+    }
+
+    private async Task AddContact(SupplierContactModel model)
+    {
+        isAddContact = !isAddContact;
+        if (isAddContact && model.Id == 0) {
+            isOverlayVisible = true;
+            isEditContact = false;
+        } else if (isAddContact && model.Id != 0) {
+            isOverlayVisible = true;
+            isEditContact = true;
+        }
+        ///Animation should continue
+        await Task.Delay(500);
+
+        if (isAddContact && model.Id == 0)
+            supplierContactModel = new SupplierContactModel();
+        else
+            supplierContactModel = model;
+        isOverlayVisible = false;
+        StateHasChanged();
+    }
+    private void SelectedTaxCode(TaxCodeModel tc)
+    {
+        taxCode = tc;
+        GlobalClass.supplier.TaxCodeId = taxCode.Id;
+        GlobalClass.supplier.TaxRate = decimal.Round(taxCode.TaxRate,2);
+    }
+    private async Task InvalidInput()
+    {
+        if(GlobalClass.supplier.IsActive == false) {
+            currentAction  = Enums.ActionMode.Deactivate;
+            await Prompt();
+        }
+    }
+}

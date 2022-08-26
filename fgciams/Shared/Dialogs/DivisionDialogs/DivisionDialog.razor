@@ -2,7 +2,7 @@
 @inject ISnackbar snackbar
 @inject IDialogService dialogService
 
-<MudDialog Class='customdialog'>
+<MudDialog Class='customdialog2'>
     <TitleContent>
         <div class='d-flex align-center'>
             @if (GlobalClass.division.Id != 0)
@@ -13,29 +13,34 @@
             {
                 <MudIcon Icon="@Icons.Filled.Add" Class="mr-3" />
             }
-            <MudText Typo='Typo.h6'>@dialogTitle</MudText>
+            <MudText Class='txt-uppercase' Typo='Typo.h6'>@dialogTitle</MudText>
         </div>
     </TitleContent>
     <DialogContent>
-        <div class='customdialog__content-container'>
-            <MudGrid Spacing='1'>
-                <MudItem xs='12'>
+        <MudPaper Class='pa-2' Elevation='0'>
+            <MudGrid Class='pa-2' Spacing='1'>
+                <MudItem xs='12' sm='9'>
                     <MudTextField @bind-Value='@GlobalClass.division.divisionName' Label='Division Name' Error=@notValidDivisionName ErrorText="Required*"
-                    HelperText="Required*"/>
+                        HelperText="Required*" Margin='Margin.Dense' />
                 </MudItem>
-                <MudItem xs='9'>
+                <MudItem xs='12' sm='3'>
                     <MudTextField @bind-Value='@GlobalClass.division.shortcutName' Label='Short Name' Error=@notValidShortName ErrorText="Required*"
-                    HelperText="Required*"/>
-                </MudItem>
-                <MudItem Class='d-flex align-center' xs='3'>
-                    <MudCheckBox @bind-Checked='@GlobalClass.division.IsActive' Label='Active' ReadOnly=@isReadOnly/>
+                        HelperText="Required*" Margin='Margin.Dense' />
                 </MudItem>
             </MudGrid>
-        </div>
+        </MudPaper>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
-        <MudButton OnClick="Submit" Variant='Variant.Filled' Color="@color">@buttonText</MudButton>
+        @if(GlobalClass.division.Id != 0)
+        {
+            <MudCheckBox @bind-Checked='@GlobalClass.division.IsActive' Label='Active' 
+                ReadOnly=@isReadOnly Size='Size.Small' Color='Color.Dark' Dense />
+        }
+        <MudSpacer />
+        <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text' Size='Size.Small' DisableElevation>Cancel</MudButton>
+        <MudButton Class='btn-ios-d font12' OnClick="Submit" Variant='Variant.Filled' Color='@(!GlobalClass.division.IsActive ? Color.Error : @color)' Size='Size.Small' DisableElevation>
+            @(!GlobalClass.division.IsActive ? "Deactivate" : @buttonText)
+        </MudButton>
     </DialogActions>
 </MudDialog>
 @code{
@@ -43,9 +48,9 @@
     [Parameter] public Color color { get; set; }
     [Parameter] public string dialogTitle { get; set; } = string.Empty;
     [Parameter] public string buttonText { get; set; } = string.Empty;
+    [Parameter] public Enums.ActionMode currentAction { get; set; }
     private bool isReadOnly = false;
     private bool notValidDivisionName,notValidShortName;
-    private Enums.ActionMode currentAction {get;set;}
      protected override async Task OnInitializedAsync()
     {
         if (GlobalClass.division.Id == 0)
@@ -58,6 +63,7 @@
     }   
     void Cancel() 
     {
+        GlobalClass.division.IsActive = !GlobalClass.division.IsActive ? true : true;
         MudDialog.Cancel();
     }
 
@@ -68,35 +74,22 @@
             currentAction = Enums.ActionMode.Deactivate;
             await Prompt();
         }
-        else 
+        else if (IsValidated())
         {
-            if(IsValidated())
-            {
-                if(GlobalClass.division.Id == 0)
-                    currentAction = Enums.ActionMode.Create;
-                else
-                    currentAction = Enums.ActionMode.Update;
-                await Prompt();
-            }
-            else 
-                Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" division"+GlobalVariable.errorPromptText,Variant.Filled,snackbar,Severity.Error);
+            await Prompt();
         }
+         else 
+            Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" division"+GlobalVariable.errorPromptText,Variant.Filled,snackbar,Severity.Error);
     }
     private async Task Prompt()
     {
         var parameters = new DialogParameters();
         string contentText = " Division";
-        string dialogTitle = currentAction+ contentText;
+        string dialogTitle = currentAction.ToString();
         parameters.Add("contentText", contentText);
+        parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("actionMode", currentAction);
-        var options = new DialogOptions()
-        {
-            CloseButton = false,
-            MaxWidth = MaxWidth.ExtraSmall,
-            FullWidth = true,
-            NoHeader = false,
-            DisableBackdropClick = true
-        };
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
         if (!resultDialog.Cancelled) 
         {   
@@ -105,19 +98,20 @@
                 if (currentAction == Enums.ActionMode.Create) {
                     GlobalClass.division = await divisionService.AddDivision(GlobalClass.division, GlobalClass.token);
                     GlobalClassList.divisionList.Add(GlobalClass.division);
-                    MudDialog.Close(DialogResult.Ok(0));
-                } else {
+                } 
+                else 
                     await divisionService.UpdateDivision(GlobalClass.division, GlobalClass.token);
-                    if(currentAction == Enums.ActionMode.Deactivate)
-                        MudDialog.Close(DialogResult.Ok(2));
-                    else
-                        MudDialog.Close(DialogResult.Ok(1));
-                }
                 if(GlobalVariable.AMSHubConnection != null)
                     await GlobalVariable.AMSHubConnection.InvokeAsync("SaveDivision",GlobalClass.division);
+                 MudDialog.Close(DialogResult.Ok(currentAction));
             } catch (Exception ex) {
                 Extensions.ShowAlert(ex.Message,Variant.Filled,snackbar,Severity.Info);
             }
+        }
+        else if (currentAction == Enums.ActionMode.Deactivate)
+        {
+            GlobalClass.division.IsActive = !GlobalClass.division.IsActive;
+            MudDialog.Cancel();
         }
     }
     private bool IsValidated()

@@ -4,6 +4,7 @@
 @inject NavigationManager navigationManager
 @inject IDialogService dialogService
 @inject ISnackbar snackbarService
+@inject ApplicationState AppState
 
 <div class='page-cont'>
   <div class='drawer-right'>
@@ -47,6 +48,10 @@
             <MudDateRangePicker Class='txtfield-75' @bind-DateRange='dateRange' Disabled='!filterParameter.IsDate' Variant='Variant.Outlined' ></MudDateRangePicker>
           </div>
           <div class='d-flex align-center justify-end pt-1'>
+            <div class='d-flex align-center justify-end'>
+                <MudButton Class='wspace-nowrap' Variant='Variant.Filled' Color='Color.Secondary' OnClick='(()=> RealoadTable())' Disabled=!EnableClearButton()>Clear filter</MudButton> 
+              </div>
+            &nbsp;
             <MudButton Class='wspace-nowrap' OnClick='FilterItems' Variant='Variant.Filled' Color='Color.Secondary'>Apply Filter</MudButton>
           </div>
         </div>
@@ -57,28 +62,28 @@
   <MudContainer Class='voucherlist' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
     @if (!dataFetched)
     {
-      <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
-        <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='calc(100vh - 135px)' Animation='Animation.Wave' />
-      </MudPaper>
+      <SkeletonPageList />
     }
     else
     {
-      <MudPaper>
-        <MudTable Class='configtables' ServerData='new Func<TableState, Task<TableData<VoucherModel>>>(LoadVoucherServer)' Hover='true' Height='calc(100vh - 150px)'
-        Breakpoint='Breakpoint.Sm' FixedHeader FixedFooter Dense Striped='false' MultiSelection="true" @bind-SelectedItems="GlobalClassList.selectedVoucherToRoute"
-        RowsPerPage='30' @ref='tableVariable'>
+      <MudTable Class='configtables row-popup-anim-2px' ServerData='new Func<TableState, Task<TableData<VoucherModel>>>(LoadVoucherServer)' Hover='true' Height='calc(100vh - 150px)'
+          Breakpoint='Breakpoint.Sm' Bordered FixedHeader FixedFooter Dense MultiSelection="true" @bind-SelectedItems="GlobalClassList.selectedVoucherToRoute"
+          RowsPerPage='30' @ref='tableVariable'>
           <ToolBarContent>
             <MudText Typo='Typo.caption'>
               @totalItems
-              @(totalItems == 1 ? "item" : "items")
+              @(totalItems == 1 ? "Item" : "Items")
               in Total
             </MudText>
             <MudSpacer />
-              <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft'
-              TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small' Label='More'>
-                  <MudMenuItem OnClick="(()=>OpenRouters())">
-                      <div class='d-flex align-center gap-2'>
-                          <MudIcon Icon='@Icons.Filled.Route' Size='Size.Medium' />
+            <MudTooltip Text="Refresh Table">
+              <MudIconButton Icon="@Icons.Filled.Refresh" Size="Size.Small" OnClick='(()=>RealoadTable())' ></MudIconButton>
+            </MudTooltip>
+              <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
+                TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
+                  <MudMenuItem OnClick="(()=>RouteVouchers())">
+                      <div class='d-flex align-center gap-2 menu-grow-anim'>
+                          <MudIcon Icon='@Icons.Filled.Route' Size='Size.Small' />
                           <MudText Typo='Typo.body2'>Route Vouchers</MudText>
                       </div>
                   </MudMenuItem>
@@ -88,12 +93,11 @@
             <col style='width: 20px' />
             <col style='width: 20px' />
             <col />
+            <col />
             <col style='width: 20px' />
-            <col style='width: 20px' />
-            @* <col />
-            <col /> *@
             <col style='width: 20px' />
             <col style='width: 10%' />
+            <col style='width: 20px' />
             <col style='width: 20px' />
           </ColGroup>
           <HeaderContent>
@@ -112,13 +116,11 @@
             </MudTh>
             <MudTh Class='customheader-1'>Payee</MudTh>
             <MudTh Class='customheader-1'>Description</MudTh>
-            <MudTh Class='customheader-1 text-center'>Signatories</MudTh>
-            @* <MudTh Class='customheader-1'>Verified by</MudTh>
-            <MudTh Class='customheader-1'>Approved by</MudTh> *@
+            <MudTh Class='customheader-1 text-center pa-2'></MudTh>
             <MudTh Class='customheader-1 text-center'>Status</MudTh>
-            <MudTh Class='customheader-1 text-right'>Amount</MudTh>
             <MudTh Class='customheader-1 text-right'>Checks</MudTh>
-            <MudTh Class='customheader-1'>Action</MudTh>
+            <MudTh Class='customheader-1 text-right'>Amount</MudTh>
+            <MudTh Class='customheader-1 text-center pa-2'>Action</MudTh>
           </HeaderContent>
           <RowTemplate>
             <MudTd DataLabel='control no.'>
@@ -131,54 +133,81 @@
                   </MudChip>
               </div>
             </MudTd>
-            <MudTd Class='wspace-nowrap font12'>@context.PayeeName</MudTd>
-            <MudTd Class='wbreak-breakword font12'>@context.Description</MudTd>
-            <MudTd Class='wspace-nowrap font12'>
-              <div class='d-flex flex-column align-start flex-initial'>
-                <div class='d-flex'>
-                  <MudText Class='font12 font-bold pr-1'>Prepared:</MudText>
-                  <MudText Class='font12'>@context.PreparedByName</MudText>
-                </div>
-                <div class='d-flex'>
-                  <MudText Class='font12 font-bold pr-1'>Verified:</MudText>
-                  <MudText Class='font12'> @context.VerifiedByName</MudText>
-                </div>
-                <div class='d-flex'>
-                  <MudText Class='font12 font-bold pr-1'>Approved:</MudText>
-                  <MudText Class='font12'> @context.ApprovedByName</MudText>
-                </div>
-              </div>
+            <MudTd Class='wspace-nowrap font12' DataLabel='Payee'>@context.PayeeName</MudTd>
+            <MudTd Class='wbreak-breakword font12' DataLabel='Description'>@context.Description</MudTd>
+            <MudTd Class='wspace-nowrap text-center pa-2' DataLabel='Signatories'>
+              <MudTooltip Text='Signatories' Placement='Placement.Top'>
+                <MudMenu Icon="@Icons.Filled.Groups" AnchorOrigin='Origin.BottomRight' ActivationEvent='MouseEvent.MouseOver'
+                  TransformOrigin='Origin.TopLeft' Dense Size='Size.Small'>
+                  <MudMenuItem>
+                    <MudPaper class='pa-2 bgc-e7f2fb min-width200px'>
+                      <MudText Class='font10 font-bold'>Prepared By:</MudText>
+                      <SignatoriesComponent employeeId='@context.PreparedById' />
+                    </MudPaper>
+                  </MudMenuItem>
+                  <MudMenuItem>
+                    <MudPaper class='pa-2 bgc-e7f2fb min-width200px'>
+                      <MudText Class='font10 font-bold'>Verified By:</MudText>
+                      <SignatoriesComponent employeeId='@context.VerifiedById' />
+                    </MudPaper>
+                  </MudMenuItem>
+                  <MudMenuItem>
+                    <MudPaper class='pa-2 bgc-e7f2fb min-width200px'>
+                      <MudText Class='font10 font-bold'>Approved By:</MudText>
+                      <SignatoriesComponent employeeId='@context.ApprovedById' />
+                    </MudPaper>
+                  </MudMenuItem>
+                </MudMenu>
+              </MudTooltip>
             </MudTd>
-            @* <MudTd Class='wspace-nowrap font12'>@context.VerifiedByName</MudTd>
-            <MudTd Class='wspace-nowrap font12'>@context.ApprovedByName</MudTd> *@
             <MudTd Class='text-left' DataLabel='Status'>
-              <MudChip Class='chip-radius-5 font-bold font10' Color='Color.Info' Variant='Variant.Filled' Size='Size.Small'>
-                @context.StatusName
-              </MudChip>
+              @if (dataFetched) 
+              {
+                <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Filled' Size='Size.Small'
+                  Style="@Extensions.GetAcctgStatusColor(context.AccountingStatusId)">
+                  @context.StatusName
+                </MudChip>
+              }
+            </MudTd>
+            <MudTd Class='text-center' DataLabel='Checks'>
+              @if (!string.IsNullOrWhiteSpace(context.CheckNumber)) {
+                <MudToggleIconButton @bind-Toggled='context.isShowChild'
+                  Icon="@Icons.Filled.ExpandMore" Color="@Color.Default" Title="Expand" Size='Size.Small' ToggledSize='Size.Small'
+                  ToggledIcon="@Icons.Filled.ExpandLess" ToggledColor="@Color.Info" ToggledTitle="Collapse"/>
+                } else {
+                  <MudText Class='font12'> - </MudText>
+                }
             </MudTd>
             <MudTd Class='wspace-nowrap text-right' DataLabel='Amount'>
-              @if (context.TotalAmount > 0)
-              {
-                <MudText Class='font-bold color-green' Typo='Typo.body2'>
-                  @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.TotalAmount.ToString("N2")
-                </MudText>
-              }
-              else
-              {
-                <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
-                  @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.TotalAmount.ToString("N2")
-                </MudText>
-              }
+              <div class='d-flex align-center gap-2'>
+                @if (context.TotalAmount > 0)
+                {
+                  <MudText Class='font-bold color-green font12'>
+                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) 
+                  </MudText>
+                  <MudSpacer />
+                  <MudText Class='font-bold color-green font12'>
+                    @context.TotalAmount.ToString("N2")
+                  </MudText>
+                }
+                else
+                {
+                  <MudText Class='font-bold font12' Color='Color.Error'>
+                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) 
+                  </MudText>
+                  <MudSpacer />
+                  <MudText Class='font-bold font12' Color='Color.Error'>
+                    @context.TotalAmount.ToString("N2")
+                  </MudText>
+                }
+              </div>
             </MudTd>
-            <MudTd Class='text-center'>
-                <MudIconButton OnClick='(() => context.isShowChild = !context.isShowChild)' Icon="@Icons.Filled.PriceCheck" aria-label="Details" Size='Size.Small' />
-              </MudTd>
-            <MudTd Class='text-center pa-0' DataLabel='Action'>
-              <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
+            <MudTd Class='text-center pa-2' DataLabel='Action'>
+              <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
               TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
                   <MudMenuItem OnClick='(() => NavigateToRoute(context))'>
-                    <a class='d-flex align-center gap-2'>
-                      <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small' />
+                    <a class='d-flex align-center gap-2 menu-grow-anim'>
+                      <MudIcon Icon='fa-solid fa-route' Size='Size.Small' />
                       <MudText Typo='Typo.body2'>Route</MudText>
                     </a>
                   </MudMenuItem>
@@ -189,17 +218,29 @@
             <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No records found</MudText>
           </NoRecordsContent>
           <ChildRowContent>
-            @if(context.isShowChild)
-            {
-              <td colspan="8">
-                <MudTr Class='d-flex align-stretch justify-center'>
-                  <CheckListComponent stringChecks=@context.CheckNumber />
-                </MudTr>
+            <MudTr>
+              <td colspan="9">
+                <div class='transition-05s-ease overflow-hidden border-thick-left' style='@(context.isShowChild ? "max-height:100vh" : "max-height:0px")'>
+                  @if (!string.IsNullOrWhiteSpace(context.CheckNumber))
+                  {
+                    <CheckListComponent stringChecks=@context.CheckNumber />
+                  }
+                </div>
               </td>
-            }
-            </ChildRowContent>
-        </MudTable>
-      </MudPaper>
+            </MudTr>
+            @* @if(context.isShowChild)
+            {
+              <MudTr>
+                <td colspan="9">
+                    <CheckListComponent stringChecks=@context.CheckNumber />
+                </td>
+              </MudTr>
+            } *@
+          </ChildRowContent>
+          <PagerContent>
+            <MudTablePager PageSizeOptions="@pageSize" />
+          </PagerContent>
+      </MudTable>
     }
   </MudContainer>
 </div>
@@ -213,7 +254,7 @@
     private IEnumerable<VoucherModel>? pageData;
     private MudTable<VoucherModel>? tableVariable;
     private FilterParameter filterParameter = new();
-    private AccountingStatusModel selectedStatus = new();
+    private AccountingStatusModel selectedStatus = new AccountingStatusModel();
     private IEnumerable<AccountingStatusModel> hasAccountingStatus = new HashSet<AccountingStatusModel>();
     private DateRange dateRange = new DateRange(DateTime.Now, DateTime.Now);
     private HashSet<VoucherModel> selectedVouchers = new HashSet<VoucherModel>();
@@ -222,10 +263,18 @@
         GlobalClass.pageTitle = "Check Voucher List";
         if(GlobalClassList.selectedVoucherToRoute == null)
           GlobalClassList.selectedVoucherToRoute = new();
-        if(GlobalClass.currentUserAccount == null || GlobalClassList.accountingStatusList == null)
+        if(GlobalClass.currentUserAccount == null || GlobalClassList.accountingStatusList == null 
+        || GlobalClassList.accountingStatusList.Count() == 0 || GlobalClassList.Vouchers == null)
           await Task.Delay(1);
-        dataFetched = true;
+        CompletedFetch();
     }
+
+    void CompletedFetch()
+    {
+      dataFetched = true;
+      StateHasChanged();
+    }
+
     private async Task<TableData<VoucherModel>> LoadVoucherServer(TableState tableState)
     {
         IEnumerable<VoucherModel> data = await voucherService.LoadVouchers(filterParameter, GlobalClass.token);
@@ -331,5 +380,54 @@
     }
     else
       Extensions.ShowAlert("Please select a voucher/s to be routed",Variant.Filled,snackbarService,Severity.Error);
+  }
+  private async Task RealoadTable()
+  {
+      filterParameter = new();
+      if(tableVariable != null)
+        await tableVariable.ReloadServerData();
+  }
+  private bool EnableClearButton()
+  {
+    if(filterParameter.IsControlNumber) 
+      return true;
+    if(filterParameter.IsAccountingStatus)
+      return true;
+    if(filterParameter.IsDate)
+      return true;
+    if(filterParameter.IsPayee)
+      return true;
+    return false;
+  }
+  private async Task RouteVouchers()
+  {
+    if(GlobalClassList.selectedVoucherToRoute.Count != 0)
+    {
+      await RoutesDialog();
+    }
+    else
+      Extensions.ShowAlert("Please select a voucher/s to be routed",Variant.Filled,snackbarService,Severity.Error);
+  }
+  private async Task RoutesDialog()
+  {
+    GlobalClass.voucherRoute.VoucherList = GlobalClassList.selectedVoucherToRoute.ToList();
+    var options = new DialogOptions()
+      {
+          CloseButton = false,
+          MaxWidth = MaxWidth.ExtraSmall,
+          FullWidth = true,
+          NoHeader = false,
+          DisableBackdropClick = false
+      };
+      var resultDialog = await dialogService.Show<Shared.Dialogs.VouchersRouteDialogs.VouchersRouteDialog>("", options).Result;
+      if (!resultDialog.Cancelled)
+      {
+        //Extensions.ShowAlert("Voucher/s has been routed.",Variant.Filled,snackbarService,Severity.Info);
+      }
+  }
+  public async Task UpdateState()
+  {
+    await AppState.UpdateCheckListCompState(!AppState._checkListCompState);
+    Console.WriteLine("Current State: " + AppState._checkListCompState.ToString());
   }
 }

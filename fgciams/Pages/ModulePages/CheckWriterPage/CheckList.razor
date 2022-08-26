@@ -53,15 +53,18 @@
                         <MudSelect Class='txtfield-75' MultiSelectionTextFunc='@(new Func<List<string>, string>(AccountingStatus))' @bind-SelectedValues='hasAccountingStatus' IconSize='Size.Small'
                             @bind-Value="selectedStatus" Dense="true" MultiSelection=true Disabled='!filterParameter.IsAccountingStatus' Placeholder='Accounting Status' Variant='Variant.Outlined'>
                                 @if(GlobalClassList.accountingStatusList != null)
-                                    @foreach (var item in GlobalClassList.accountingStatusList.Where(x=> (int)x.StatusEnumCategoryId == 0 || 
-                                    (int)x.StatusEnumCategoryId == 1 || (int)x.StatusEnumCategoryId == 2 || (int)x.StatusEnumCategoryId == 3 ||
-                                    (int)x.StatusEnumCategoryId == 10))
+                                    @foreach (var item in GlobalClassList.accountingStatusList.Where(x=> (int)x.StatusEnumCategoryId == 14 || 
+                                    (int)x.StatusEnumCategoryId == 15 || (int)x.StatusEnumCategoryId == 16 || (int)x.StatusEnumCategoryId == 17))
                                     {
                                     <MudSelectItem Value="@item">@item.StatusName</MudSelectItem>
                                     }
                         </MudSelect>
                     </div>
                     <div class='d-flex align-center justify-end pt-1'>
+                        <div class='d-flex align-center justify-end'>
+                            <MudButton Class='wspace-nowrap' Variant='Variant.Filled' Color='Color.Secondary' OnClick='(()=> ReloadTable())' Disabled=!EnableClearButton()>Clear filter</MudButton> 
+                        </div>
+                        &nbsp;
                         <MudButton Class='wspace-nowrap' OnClick="(() => FilterTable())" Variant='Variant.Filled' Color='Color.Secondary'>Apply Filter</MudButton>
                     </div>
                 </div>
@@ -78,28 +81,25 @@
         }
         else
         {
-            <MudTable Class='configtables' ServerData='new Func<TableState, Task<TableData<CheckModel>>>(LoadCheck)' Hover="true" 
+            <MudTable Class='configtables row-popup-anim-2px' ServerData='new Func<TableState, Task<TableData<CheckModel>>>(LoadCheck)' Hover="true" 
             Breakpoint="Breakpoint.Sm" FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
-            RowsPerPage='10' Striped='true' Filter='new Func<CheckModel,bool>(FilterItems)' @ref='tableVariable'>
+            RowsPerPage='10' Filter='new Func<CheckModel,bool>(FilterItems)' @ref='tableVariable'>
                 <ToolBarContent>
                     <MudText Typo='Typo.caption'>
                         @GlobalClassList.listOfChecks.Count() 
-                        @(GlobalClassList.listOfChecks.Count() == 1 ? "item" : "items") 
+                        @(GlobalClassList.listOfChecks.Count() == 1 ? "Item" : "Items") 
                         in Total
                     </MudText>
                     <MudSpacer/>
-                    <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' 
-                    TransformOrigin='Origin.TopCenter' Dense='true' Size='Size.Small' Label='More'>
+                    <MudTooltip Text="Refresh Table">
+                        <MudIconButton Icon="@Icons.Filled.Refresh" Size="Size.Small" OnClick='(()=>ReloadTable())' ></MudIconButton>
+                    </MudTooltip>
+                    <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                    TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
                          <MudMenuItem OnClick='(() => AddCheck())'>
-                            <div class='d-flex align-center gap-2'>
+                            <div class='d-flex align-center gap-2 menu-grow-anim'>
                                 <MudIcon Icon='@Icons.Filled.Add' Size='Size.Small' />
                                 <MudText Typo='Typo.body2'>Add</MudText>
-                            </div>
-                        </MudMenuItem>
-                         <MudMenuItem OnClick='OpenSideFilter'>
-                            <div class='d-flex align-center gap-2'>
-                                <MudIcon Icon='@Icons.Filled.FilterList' />
-                                <MudText Typo='Typo.body2'>Filter</MudText>
                             </div>
                         </MudMenuItem>
                     </MudMenu>
@@ -146,14 +146,14 @@
                     <MudTd Class='text-center pa-2' DataLabel='Date'>
                         <MudText Class='font12 wspace-nowrap'>@(context.CheckDate?.ToString("MM/dd/yyyy"))</MudText>
                     </MudTd>
-                    <MudTd Class='pa-2' DataLabel='Date Issued'>
+                    <MudTd Class='pa-2 text-center' DataLabel='Date Issued'>
                          <MudText Class='font12 wspace-nowrap'>@context.IssuedDate?.ToString("MM/dd/yyyy")</MudText>          
                     </MudTd>
                     <MudTd Class='pa-2' DataLabel='Payee Name'>
-                        <MudText Class='font12 font-bold wspace-nowra pt-1'>@context.PayeeName</MudText>
+                        <MudText Class='font12 wspace-nowra pt-1'>@context.PayeeName</MudText>
                     </MudTd>
                     <MudTd Class='pa-2' DataLabel='Bank Name'>
-                        <MudText Class='font12 font-bold wspace-nowra pt-1'>@context.BankName</MudText>
+                        <MudText Class='font12 wspace-nowra pt-1'>@context.BankName</MudText>
                     </MudTd>
                     <MudTd Class='pa-2' DataLabel='Status'>
                         <div class='d-flex align-center'>
@@ -163,7 +163,7 @@
                                     @context.CheckCategory
                                 </MudChip>
                                 <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@GetAcctgStatusColor(context.AccountingStatusId)'>
-                                    @Extensions.GetEnumDescription((Enums.AccountingStatusEnumCategory)context.AccountingStatusId)
+                                    @GlobalClassList.accountingStatusList.Where(x=>(int)x.StatusEnumCategoryId == context.AccountingStatusId).Select(y=>y.StatusName).FirstOrDefault()
                                 </MudChip>
                             }
                         </div>
@@ -171,16 +171,16 @@
                     <MudTd Class='pa-2' DataLabel='Amount'>
                         <div class='d-flex align-center gap-2'>
                             @if (context.Amount > 0) {
-                                <MudText Class='wspace-nowrap font-bold font12 color-green'>
-                                 @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                                <MudText Class='wspace-nowrap font-bold color-green font12'>
+                                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
                                 </MudText>
                                 <MudSpacer />
-                                <MudText Class='wspace-nowrap font-bold font12 color-green'>
+                                <MudText Class='wspace-nowrap font-bold color-green font12'>
                                     @context.Amount.ToString("N2")
                                 </MudText>
                             } else {
-                                 <MudText Class='wspace-nowrap font-bold font12' Color='Color.Error'>
-                                 @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                                <MudText Class='wspace-nowrap font-bold font12' Color='Color.Error'>
+                                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
                                 </MudText>
                                 <MudSpacer />
                                 <MudText Class='wspace-nowrap font-bold font12' Color='Color.Error'>
@@ -190,34 +190,37 @@
                         </div>
                     </MudTd>
                     <MudTd Class='text-center pa-2' DataLabel='Actions'>
-                        <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
-                        TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
+                        <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                            TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
+                            @if(context.StatusName == "C-Issued")
+                            {
                             <MudMenuItem OnClick="(()=>EditCheck(context))">
-                                <div class='d-flex align-center gap-2'>
+                                <div class='d-flex align-center gap-2 menu-grow-anim'>
                                     <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small' />
                                     <MudText Typo='Typo.body2'>Edit</MudText>
                                 </div>
                             </MudMenuItem>
+                            }
                              <MudMenuItem OnClick="(()=>UpdateStatus(context,Enums.AccountingStatusEnumCategory.CCLRD,Enums.ActionMode.Cleared))">
-                                <div class='d-flex align-center gap-2'>
+                                <div class='d-flex align-center gap-2 menu-grow-anim'>
                                     <MudIcon Icon='@Icons.Filled.ClearAll' Size='Size.Small' />
                                     <MudText Typo='Typo.body2'>Clear Check</MudText>
                                 </div>
                             </MudMenuItem>
                             <MudMenuItem OnClick="(()=>UpdateStatus(context,Enums.AccountingStatusEnumCategory.CC,Enums.ActionMode.Cancel))">
-                                <div class='d-flex align-center gap-2'>
+                                <div class='d-flex align-center gap-2 menu-grow-anim'>
                                     <MudIcon Icon='@Icons.Filled.Cancel' Size='Size.Small' />
                                     <MudText Typo='Typo.body2'>Cancel</MudText>
                                 </div>
                             </MudMenuItem>
                             <MudMenuItem OnClick="(()=>UpdateStatus(context,Enums.AccountingStatusEnumCategory.CR,Enums.ActionMode.Released))">
-                                <div class='d-flex align-center gap-2'>
+                                <div class='d-flex align-center gap-2 menu-grow-anim'>
                                     <MudIcon Icon='fa-solid fa-check-double' Size='Size.Small' />
                                     <MudText Typo='Typo.body2'>Release</MudText>
                                 </div>
                             </MudMenuItem>
                             <MudMenuItem OnClick="(() => context.showReport = ShowReport(context.showReport,context))">
-                                <div class='d-flex align-center gap-2'>
+                                <div class='d-flex align-center gap-2 menu-grow-anim'>
                                     <MudIcon Icon='@Icons.Filled.PictureAsPdf' Size='Size.Small' />
                                     <MudText Typo='Typo.body2'>Show Report</MudText>
                                 </div>
@@ -361,7 +364,7 @@
             check.StatusName = status.ToString();
             check.AccountingStatusId = (int) status;
             await UpdateCheckStatus(check);
-            Extensions.ShowAlert("Check has been "+Extensions.GetEnumDescription(actionMode),Variant.Filled,snackBarService,Severity.Success);
+            Extensions.ShowAlert("Check updated successfully.",Variant.Filled,snackBarService,Severity.Success);
         }
     }
     private async Task UpdateCheckStatus(CheckModel check)
@@ -493,4 +496,27 @@
         filterParameter.BankId = string.Join(",", hasBanks.Select(x => x.Id));
         await tableVariable.ReloadServerData();
     }
+    private async Task ReloadTable()
+    {
+        filterParameter = new();
+        await tableVariable.ReloadServerData();
+    }
+    private bool EnableClearButton()
+    {
+      if(filterParameter.IsCheckNumber)
+        return true;
+      if(filterParameter.IsControlNumber) 
+        return true;
+      if(filterParameter.IsAccountingStatus)
+        return true;
+      if(filterParameter.IsDate)
+        return true;
+      if(filterParameter.IsRequestor)
+        return true;
+      if(filterParameter.IsPayee)
+        return true;
+      if(filterParameter.IsBank)
+        return true;
+      return false;
+  }
 }
