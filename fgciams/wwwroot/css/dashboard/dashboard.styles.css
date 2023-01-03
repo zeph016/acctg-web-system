@@ -1,20 +1,37 @@
-.dashboard-container {
+.dboard-container {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr;
-  gap: 10px;
-  grid-template-areas: "topdash topdash topdash topdash topdash topdash" "topdash topdash topdash topdash topdash topdash" "bodydash bodydash bodydash bodydash sidedash sidedash" "bodydash bodydash bodydash bodydash sidedash sidedash" "bodydash bodydash bodydash bodydash sidedash sidedash" "bodydash bodydash bodydash bodydash sidedash sidedash";
+  grid-template-rows: 30px 0.75fr 1fr 1fr 1fr 1fr;
+  gap: 5px;
+  grid-auto-flow: row;
+  grid-template-areas: "dboard-settings dboard-settings dboard-settings dboard-settings dboard-settings dboard-settings" "dboard-top dboard-top dboard-top dboard-top dboard-top dboard-top" "dboard-body-left dboard-body-left dboard-body dboard-body dboard-body-right dboard-body-right" "dboard-body-left dboard-body-left dboard-body dboard-body dboard-body-right dboard-body-right" "dboard-bottom-left dboard-bottom-left dboard-bottom-right dboard-bottom-right dboard-bottom-right dboard-bottom-right" "dboard-bottom-left dboard-bottom-left dboard-bottom-right dboard-bottom-right dboard-bottom-right dboard-bottom-right";
   height: calc(100vh - 105px);
 }
 
-.topdash {
-  grid-area: topdash;
+.dboard-settings {
+  grid-area: dboard-settings;
 }
 
-.bodydash {
-  grid-area: bodydash;
+.dboard-top {
+  grid-area: dboard-top;
 }
 
-.sidedash {
-  grid-area: sidedash;
+.dboard-body-left {
+  grid-area: dboard-body-left;
+}
+
+.dboard-body {
+  grid-area: dboard-body;
+}
+
+.dboard-body-right {
+  grid-area: dboard-body-right;
+}
+
+.dboard-bottom-left {
+  grid-area: dboard-bottom-left;
+}
+
+.dboard-bottom-right {
+  grid-area: dboard-bottom-right;
 }/*# sourceMappingURL=dashboard.styles.css.map */

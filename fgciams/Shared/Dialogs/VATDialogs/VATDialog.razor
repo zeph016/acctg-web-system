@@ -1,28 +1,34 @@
 @inject IVATService vatService
 
-<MudDialog Class='customdialog'>
+<MudDialog Class='customdialog2'>
     <TitleContent>
         <div class='d-flex align-center'>
-                <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3" />
-            <MudText Typo='Typo.h6'>Change VAT</MudText>
+                <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" />
+            <MudText  Class='txt-uppercase' Typo='Typo.h6'>Change VAT</MudText>
         </div>
     </TitleContent>
     <DialogContent>
         @if(datafetch)
         {
-        <div class='customdialog__content-container'>
-            <MudGrid Spacing='1'>
-                <MudItem xs='12'>
-                    <MudNumericField Format="N2" T="decimal" @bind-Value='@vat.VATValue' Text="@(vat.VATValue.ToString())" Label='VAT Value (%)' ErrorText="Required*"
-                    HelperText="Required*"/>
-                </MudItem>
-            </MudGrid>
-        </div>
-          }
+            <MudPaper Class='pa-2' Elevation='0'>
+                <MudGrid Class='pa-2' Spacing='1'>
+                    <MudItem xs='12'>
+                        <MudNumericField Format="N2" T="decimal" @bind-Value='@vat.VATValue' Text="@(vat.VATValue.ToString())" Label='VAT Value (%)' ErrorText="Required*"
+                            HelperText="Required*" Margin='Margin.Dense' />
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        }
+        else
+        {
+            <MudPaper Class='d-flex flex-column align-center pa-2' Elevation='0' Width='100%' Height='100px'>
+                <MudSkeleton Width='100%' Height='100%' Animation='Animation.Wave' />
+            </MudPaper>
+        }
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
-        <MudButton OnClick="Submit" Variant='Variant.Filled' Color="Color.Info">SAVE</MudButton>
+        <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text' Size='Size.Small' DisableElevation>Cancel</MudButton>
+        <MudButton Class='btn-ios-d font12' OnClick="Submit" Variant='Variant.Filled' Color="Color.Info" Size='Size.Small' DisableElevation>SAVE</MudButton>
     </DialogActions>
   
 </MudDialog>
@@ -47,14 +53,14 @@
         if(vat.Id == 0)
         {
             await vatService.AddVAT(vat,GlobalClass.token);
-            MudDialog.Close(DialogResult.Ok(0));
+            MudDialog.Close(DialogResult.Ok(Enums.ActionMode.Create));
         } else {
             await vatService.UpdateVAT(vat,GlobalClass.token);
-            MudDialog.Close(DialogResult.Ok(1));
+            MudDialog.Close(DialogResult.Ok(Enums.ActionMode.Update));
         }
     }
     private void Cancel()
     {
-        MudDialog.Close(DialogResult.Ok(3));
+        MudDialog.Cancel();
     }
 }

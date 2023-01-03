@@ -2,10 +2,87 @@
   border-radius: 0px !important;
 }
 
-.chip-radius-5 {
+.chip-radius-5, .mudchip-tbl-nw, .mudchip-tbl {
   border-radius: 5px !important;
 }
 
 .chip-uppercase .mud-chip .mud-chip-content {
   text-transform: uppercase;
+}
+
+.chiplbl, .mudchip-tbl-nw, .mudchip-tbl {
+  font-size: 10px !important;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.mudchip-tbl {
+  min-width: 100px;
+}
+
+.custom-chip1 {
+  display: inline-block;
+  padding: 0 25px;
+  height: 50px;
+  font-size: 16px;
+  line-height: 50px;
+  border-radius: 25px;
+  background-color: #f1f1f1;
+}
+
+.custom-chip-small, .custom-chip-dr-outlined, .custom-chip-small-outlined, .custom-chip-daterange {
+  align-items: center;
+  background-color: var(--mud-palette-action-disabled-background);
+  border-radius: 5px;
+  color: var(--mud-palette-text-primary);
+  display: flex;
+  font-size: 12px;
+  font-weight: 400;
+  height: 25px;
+  justify-content: center;
+  letter-spacing: 0.01071em;
+  max-width: 100px;
+  padding: 0 8px;
+}
+
+.custom-chip-daterange {
+  max-width: unset;
+  width: 175px;
+}
+.custom-chip-daterange .mud-picker .mud-input-slot {
+  padding: 0px !important;
+}
+
+.custom-chip-small-outlined {
+  border: solid thin lightgray;
+  background-color: unset;
+  height: 24px;
+  max-width: unset;
+  white-space: nowrap;
+}
+
+.custom-chip-dr-outlined {
+  background-color: unset;
+  border: solid thin lightgray;
+  max-width: unset;
+  width: 195px;
+}
+.custom-chip-dr-outlined .mud-picker .mud-input-slot {
+  padding: 0px !important;
+}
+
+.custom-chip-filter {
+  align-items: center;
+  background-color: var(--mud-palette-action-disabled-background);
+  border-radius: 4px;
+  color: var(--mud-palette-text-primary);
+  cursor: pointer;
+  display: flex;
+  font-size: 10px;
+  font-weight: 400;
+  height: 25px;
+  justify-content: center;
+  letter-spacing: 0.01071em;
+  padding: 0 8px;
+  white-space: nowrap;
 }/*# sourceMappingURL=chip.styles.css.map */

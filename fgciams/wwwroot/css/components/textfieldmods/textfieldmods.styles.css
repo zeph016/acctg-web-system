@@ -1,3 +1,29 @@
+.dflex-row-align-center, .amount-container, .amt-container-voucher {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+}
+
+.dflex-row {
+  align-items: center;
+  display: flex;
+}
+
+.dflex-col {
+  flex-direction: column;
+  display: flex;
+}
+
+.dflex-ac {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+}
+
+.flex-full {
+  flex: 1 1 0%;
+} /*# sourceMappingURL=flexgridmods.styles.css.map */
 .txtdate-noline .mud-input-slot {
   text-align: right !important;
 }
@@ -8,7 +34,7 @@
   border-bottom: 0px !important;
 }
 
-.txtfield-right .mud-input-slot {
+.txtfield-right .mud-input-slot, .txtnumeric-green-1 .mud-input-slot, .txtnumeric-red-1 .mud-input-slot {
   text-align: right;
 }
 
@@ -16,7 +42,7 @@
   text-align: center;
 }
 
-.txt-search-overflow .mud-input-slot {
+.txt-search-overflow .mud-input-slot, .txtnumeric-green-1 .mud-input-slot, .txtnumeric-red-1 .mud-input-slot {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -36,7 +62,8 @@
   margin-top: 0px !important;
 }
 
-.txt-oflow-el {
+.txt-oflow-el, .vrfp-amt, .txt-green,
+.txt-red, .amt-container-voucher, .amount-container {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -54,4 +81,133 @@
 .txtfield-padlr-4px .mud-input-slot {
   padding-right: 8px !important;
   padding-left: 8px !important;
+}
+
+.txt-bold .mud-input {
+  font-weight: bold !important;
+}
+
+.numerictxt-right-10px-w75px {
+  margin-top: 0px !important;
+}
+.numerictxt-right-10px-w75px .mud-input-control,
+.numerictxt-right-10px-w75px .mud-input {
+  margin-top: 0px !important;
+}
+.numerictxt-right-10px-w75px .mud-input {
+  font-size: 12px;
+  font-weight: bold;
+}
+.numerictxt-right-10px-w75px .mud-input-slot {
+  overflow: hidden !important;
+  text-align: right;
+  text-overflow: ellipsis;
+  width: 75px !important;
+  white-space: nowrap !important;
+}
+
+.chargingline-txtcont {
+  font-size: 12px !important;
+  white-space: nowrap !important;
+}
+
+.expenseline-txtcont {
+  font-size: 12px !important;
+}
+
+.lbl10 {
+  font-size: 10px !important;
+  font-weight: bold !important;
+  text-transform: uppercase !important;
+  white-space: nowrap;
+}
+
+.lblhelper-type {
+  font-size: 12px !important;
+  color: #767676;
+}
+
+.lblamount-red-10px {
+  font-size: 10px !important;
+  font-weight: bold !important;
+}
+
+.lbl-ellipsis-w320px {
+  font-size: 12px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.txtfield-font12-no-margin, .txtnumeric-green-1, .txtnumeric-red-1 {
+  margin-top: 0px !important;
+}
+.txtfield-font12-no-margin .mud-input-control, .txtnumeric-green-1 .mud-input-control, .txtnumeric-red-1 .mud-input-control,
+.txtfield-font12-no-margin .mud-input,
+.txtnumeric-green-1 .mud-input,
+.txtnumeric-red-1 .mud-input {
+  font-size: 12px;
+  margin-top: 0px !important;
+}
+
+.txtfield-font14-no-margin {
+  margin-top: 0px !important;
+}
+.txtfield-font14-no-margin .mud-input-control,
+.txtfield-font14-no-margin .mud-input {
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: 0px !important;
+}
+
+.amount-container {
+  gap: 2px;
+  justify-content: right;
+  max-width: 110px;
+  width: 100%;
+}
+
+.amt-container-voucher {
+  gap: 2px;
+  max-width: 120px;
+  width: 100%;
+}
+
+.txt-green {
+  color: green;
+}
+
+.txt-red {
+  color: red;
+}
+
+.txt-green,
+.txt-red {
+  font-weight: bold;
+}
+
+.globalrfp-amt-indialog {
+  display: block;
+  font-weight: bold;
+  max-width: 100px;
+  overflow: hidden;
+  padding-left: 4px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.txtnumeric-red-1 .mud-input {
+  color: red;
+  font-weight: bold;
+}
+
+.txtnumeric-green-1 .mud-input {
+  color: green;
+  font-weight: bold;
+}
+
+.vrfp-amt {
+  display: block;
+  font-weight: bold;
+  max-width: 100px;
 }/*# sourceMappingURL=textfieldmods.styles.css.map */

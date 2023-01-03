@@ -4,77 +4,87 @@
 @inject ISnackbar snackBarService
 @inject IDialogService dialogService
 
-<MudDialog Class='customdialog'>
+<MudDialog Class='customdialog3'>
     <TitleContent>
         <div class='d-flex align-center'>
-            <MudIcon Icon="@Icons.Filled.Route" Class="mr-3" />
-            <MudText Typo='Typo.h6'>Route Vouchers</MudText>
+            <MudIcon Icon="@Icons.Material.Filled.Route" Class="mr-1"  Size='Size.Medium' />
+            <MudText Typo='Typo.button'>Route Vouchers</MudText>
         </div>
     </TitleContent>
     <DialogContent>
-        <div class='customdialog__content-container pa-0'>
-            <MudGrid Spacing='1'>
-                <MudItem xs="6">
-                    <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
-                        Date
-                        <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
-                    </MudText>
-                    <MudDatePicker Class='txt-top-0 font14-txtfield txtfield-right' @bind-Date='GlobalClass.voucherRoute.RouteDate' IconSize='Size.Small' />
-                </MudItem>
-                <MudItem xs=6></MudItem>
-                <MudItem xs="12">
-                    <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
-                        Location
-                        <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
-                    </MudText>
-                    <BlazoredTypeahead SearchMethod='LoadRoutes' DisableClear placeholder='Route to'
-                    @bind-Value='locationRoute' Debounce='500' MaximumSuggestions='5'>
-                        <SelectedTemplate>
-                            @if (locationRoute.ProjectId != 0) {
-                                <MudText Class='font12'>@context.ProjectName | @context.Location</MudText>
-                            } else if (notValidLocation) {
-                            <MudText Class='font12 font-bold txt-uppercase' Color='Color.Error'>Required</MudText>
-                            } else {
-                                <MudText Class='font12'> - </MudText>
-                            }
-                        </SelectedTemplate>
-                        <ResultTemplate>
-                            @context.ProjectName | @context.Location    
-                        </ResultTemplate>
-                    </BlazoredTypeahead>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
-                        Reason
-                    </MudText>
-                    <MudTextField @bind-Value="@GlobalClass.voucherRoute.Reason"  Variant="Variant.Outlined" Margin="Margin.Dense"
-                        Lines='2' />
-                </MudItem>
-                <MudItem xs="12">
-                    <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
-                       Remarks
-                    </MudText>
-                    <MudTextField @bind-Value="@GlobalClass.voucherRoute.Remarks"  Variant="Variant.Outlined" Margin="Margin.Dense"
-                        Lines='2' />
-                </MudItem>
-                <MudItem xs="12">
-                    <MudText Class='font12 font-bold'>Vouchers:</MudText>
-                    <div class='d-flex align-center'>
-                        @if(GlobalClassList.selectedVoucherToRoute.Count != 0)
+        <div class='d-flex align-start gap-2'>
+            <MudPaper Class='d-flex justify-center pa-2' Elevation='1'>
+                <MudGrid Spacing='1'>
+                    <MudItem Class='d-flex align-center justify-start' xs="6">
+                        <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
+                            Date
+                            <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                        </MudText>
+                        <MudDatePicker Class='txt-top-0 font14-txtfield txtfield-right mt-1' @bind-Date='GlobalClass.voucherRoute.RouteDate' IconSize='Size.Small' 
+                            Margin='Margin.Dense' DisableToolbar DisableUnderline />
+                    </MudItem>
+                    <MudItem xs=6></MudItem>
+                    <MudItem xs="12">
+                        <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
+                            Location
+                            <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                        </MudText>
+                        <BlazoredTypeahead SearchMethod='LoadRoutes' DisableClear placeholder='Route to'
+                        @bind-Value='locationRoute' Debounce='500' MaximumSuggestions='5'>
+                            <SelectedTemplate>
+                                @if (locationRoute.ProjectId != 0) {
+                                    <MudText Class='font12'>@context.ProjectName | @context.Location</MudText>
+                                } else if (notValidLocation) {
+                                <MudText Class='font12 font-bold txt-uppercase' Color='Color.Error'>Required</MudText>
+                                } else {
+                                    <MudText Class='font12'> - </MudText>
+                                }
+                            </SelectedTemplate>
+                            <ResultTemplate>
+                                @context.ProjectName | @context.Location    
+                            </ResultTemplate>
+                        </BlazoredTypeahead>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
+                            Reason
+                        </MudText>
+                        <MudTextField @bind-Value="@GlobalClass.voucherRoute.Reason"  Variant="Variant.Outlined" Margin="Margin.Dense"
+                            Lines='2' />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
+                            Remarks
+                        </MudText>
+                        <MudTextField @bind-Value="@GlobalClass.voucherRoute.Remarks"  Variant="Variant.Outlined" Margin="Margin.Dense"
+                            Lines='2' />
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+            <MudPaper Class='d-flex flex-column pa-2 overflow-auto' Elevation='1' MinWidth='250px' MaxWidth='300px' Height='281px'>
+                <small>
+                    Vouchers: <strong>(@GlobalClassList.selectedVoucherToRoute.Count())</strong>
+                </small>
+                <div class='d-flex flex-column mt-1'>
+                    @if(GlobalClassList.selectedVoucherToRoute.Count != 0)
+                    {
+                        foreach(var vouchers in GlobalClassList.selectedVoucherToRoute)
                         {
-                            foreach(var vouchers in GlobalClassList.selectedVoucherToRoute)
-                            {
-                                <MudChip Size='Size.Small'>@vouchers.ControlNumber</MudChip>
-                            }
+                            <MudChip Size='Size.Small' Color='Color.Tertiary' Label Variant='Variant.Outlined'>
+                                @vouchers.ControlNumber
+                            </MudChip>
                         }
-                    </div>
-                </MudItem>
-            </MudGrid>
+                    }
+                </div>
+            </MudPaper>
         </div>
     </DialogContent>
     <DialogActions>
-        <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text'>Cancel</MudButton>
-        <MudButton Class='btn-ios-d font12' OnClick="(()=>Validate())" Variant='Variant.Filled' Color="Color.Info">Route</MudButton>
+        <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text' Size='Size.Small' DisableElevation>Cancel</MudButton>
+        <MudButton Class='btn-ios-d font12' OnClick="(()=>Validate())" Variant='Variant.Filled' Color="Color.Info" 
+            Size='Size.Small' DisableElevation>
+            Route
+        </MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -139,6 +149,7 @@
         string contentText = "Voucher/s";
         string dialogTitle = Enums.ActionMode.Route + contentText;
         parameters.Add("contentText", contentText);
+        parameters.Add("dialogTitle", "Route Vouchers");
         parameters.Add("actionMode", Enums.ActionMode.Route);
         var options = new DialogOptions()
         {
@@ -149,7 +160,7 @@
             DisableBackdropClick = true
         };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Cancelled)
+        if (!resultDialog.Canceled)
         {   
             await SaveVoucherRoute();
             Extensions.ShowAlert("Voucher/s has been routed.",Variant.Filled,snackBarService,Severity.Info);

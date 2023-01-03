@@ -10,11 +10,11 @@
     <div class='d-flex align-center'>
       @if (GlobalClass.subConGeneralInformation.Id != 0)
       {
-        <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3 mb-n1ank" />
+        <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1ank" />
       }
       else
       {
-        <MudIcon Icon="@Icons.Filled.Add" Class="mr-3 mb-n1" />
+        <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-3 mb-n1" />
       }
       <MudText Class='txt-uppercase' Typo='Typo.h6'>@dialogTitle</MudText>
     </div>
@@ -155,7 +155,7 @@
                 <MudItem Class='d-flex align-center justify-end' xs=4>
                   <div class='d-flex align-center pt-4 gap-2'>
                     <MudSpacer/>
-                    <MudButton Class='btn-ios-d font12' OnClick="(()=>Reset())" Icon="@Icons.Filled.Refresh" Variant='Variant.Text' Size='Size.Small' Color='Color.Error' DisableElevation>Clear</MudButton>
+                    <MudButton Class='btn-ios-d font12' OnClick="(()=>Reset())" Icon="@Icons.Material.Filled.Refresh" Variant='Variant.Text' Size='Size.Small' Color='Color.Error' DisableElevation>Clear</MudButton>
                     <MudButton Class='btn-ios-d font12' OnClick="(()=>SaveSubConProject())" Variant="Variant.Filled" 
                       Margin="Margin.Dense"  Color='Color.Tertiary' Size='Size.Small' DisableElevation>@(subConAction == Enums.ActionMode.Create? "Add":"Update")</MudButton>
                   </div>
@@ -190,17 +190,17 @@
                       </div>
                     </MudTd>
                     <MudTd Class='text-center pa-2'>
-                        <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                        <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
                         TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
                             <MudMenuItem OnClick="(()=>EditSubCon(context))">
                                 <div class='d-flex align-center gap-2'>
-                                    <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Medium' />
+                                    <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Medium' />
                                     <MudText Typo='Typo.body2'>Edit</MudText>
                                 </div>
                             </MudMenuItem>
                             <MudMenuItem OnClick="(()=>RemoveProject(context))">
                                 <div class='d-flex align-center gap-2'>
-                                    <MudIcon Icon='@Icons.Filled.DeleteForever' Size='Size.Medium' />
+                                    <MudIcon Icon='@Icons.Material.Filled.DeleteForever' Size='Size.Medium' />
                                     <MudText Typo='Typo.body2'>Remove</MudText>
                                 </div>
                             </MudMenuItem>
@@ -366,7 +366,7 @@
       parameters.Add("contentText", contentText);
       var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
       var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-      if (!resultDialog.Cancelled)
+      if (!resultDialog.Canceled)
       {
         try
         {
@@ -493,7 +493,7 @@
           DisableBackdropClick = true
       };
       var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-      if (!resultDialog.Cancelled) 
+      if (!resultDialog.Canceled) 
       {   
         await subConGeneralInformationService.UpdateSubConProjects(sub,GlobalClass.token);
         Extensions.ShowAlert("Sub contractor successfully removed.",Variant.Filled,snackbarService,Severity.Success);

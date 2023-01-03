@@ -1,0 +1,289 @@
+@inject ICollectionService collectionService
+@inject IDialogService dialogService
+@inject IGlobalService globalService
+@inject ISnackbar snackbarService
+
+<EditForm Model="@GlobalClass.collection" OnValidSubmit="OnValidSubmit" OnInvalidSubmit='OnInvalidInput'>
+<DataAnnotationsValidator/>
+<MudDialog Class='customdialog2'>
+    <TitleContent>
+        <div class='d-flex align-center'>
+            @if (GlobalClass.collection.Id != 0)
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" />
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-3" />
+            }
+            <MudText Class='txt-uppercase' Typo='Typo.h6'>@dialogTitle</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudPaper Class='pa-2' Elevation='0'>
+            <MudGrid Class='pa-2' Spacing='1'>
+                <MudItem xs='4'>
+                    <MudTextField Class='tfield-color-blred' @bind-Value='GlobalClass.collection.ControlNumber' Label='Control No.' Text='@(GlobalClass.collection.Id != 0 ? GlobalClass.collection.ControlNumber:"Auto")' Variant='Variant.Outlined'
+                        Margin='Margin.Dense' ReadOnly />                    
+                </MudItem>
+                <MudItem xs='4'>
+                    <MudDatePicker @bind-Date='GlobalClass.collection.TransactionDate' Label='Trasaction Date' IconSize='Size.Small' DisableToolbar Variant='Variant.Outlined'
+                        HelperText='Required*' Margin='Margin.Dense' For='@(()=>GlobalClass.collection.TransactionDate)'/>
+                </MudItem>
+                <MudItem xs='4'>
+                    <MudSelect @bind-Value="GlobalClass.collection.CollectionCategoryId"  Label='Collection Category' Variant='Variant.Outlined'
+                        Text="@Extensions.GetEnumDescription(GlobalClass.collection.CollectionCategoryId)" Placeholder="Collection Category" Margin='Margin.Dense'
+                        AnchorOrigin="Origin.BottomCenter" HelperText='Required*' >
+                        @foreach (Enums.CollectionCategory collectionCategory in Enum.GetValues(typeof(Enums.CollectionCategory)))
+                        {
+                            <MudSelectItem Value="@collectionCategory">@Extensions.GetEnumDescription(collectionCategory)</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs='12'>
+                    <MudText Class='lblhelper-type'>Customer</MudText>
+                    <BlazoredTypeahead SearchMethod='LoadCharging' Context='customer'
+                        ValueChanged='((Project p) => OnCustomerValueChanged(p))'
+                        ValueExpression='(()=> currentCustomer)'
+                        Value='currentCustomer'
+                        Debounce='500' MaximumSuggestions='10' Placeholder='Customer' DisableClear>
+                        <SelectedTemplate>
+                            <div class='overflow-hidden'>
+                            @if (customer.ProjectId != 0) {
+                                    <MudTooltip Class='wspace-nowrap' Text="@customer.ProjectName">
+                                        <MudText Class='font12'>@customer.ProjectName</MudText>
+                                    </MudTooltip>
+                            } else {
+                                    <MudText Class='font12'> - </MudText>
+                            }
+                            </div>
+                        </SelectedTemplate>
+                        <ResultTemplate>
+                            @customer.ProjectName
+                        </ResultTemplate>
+                    </BlazoredTypeahead>
+                </MudItem>
+                <MudItem xs='8'>
+                    <MudText Class='lblhelper-type'>Project/Charging</MudText>
+                    <BlazoredTypeahead SearchMethod='LoadCharging' Context='proj'
+                        ValueChanged="((Project p)=>OnRowProjectValueChanged(p))" 
+                        Value="charging" 
+                        ValueExpression="(()=>charging)"
+                        Debounce='500' MaximumSuggestions='5' Placeholder='Project/Charging' DisableClear>
+                        <SelectedTemplate>
+                            <div class='overflow-hidden'>
+                            @if (proj.ProjectId != 0) {
+                                    <MudTooltip Class='wspace-nowrap' Text="@proj.ProjectName">
+                                        <MudText Class='font12'>@proj.ProjectName</MudText>
+                                    </MudTooltip>
+                            } else {
+                                    <MudText Class='font12'> - </MudText>
+                            }
+                            </div>
+                        </SelectedTemplate>
+                            <ResultTemplate>
+                                @proj.ProjectName | @proj.Location
+                            </ResultTemplate>
+                    </BlazoredTypeahead>
+                    <div class="validation-font12">
+                        <ValidationMessage For="@(() => GlobalClass.collection.ChargeName)" />
+                    </div>
+                </MudItem>
+                <MudItem xs='4'>
+                    <MudText Class='lblhelper-type'>Expense</MudText>
+                    <BlazoredTypeahead SearchMethod='LoadExpenseLine' Context='rowExpenseLine'
+                        ValueChanged='((ExpenseLineModel exp) => OnRowSelectedExpenseLine(exp))'
+                        ValueExpression='(()=>expenseLine)'
+                        Value='expenseLine'
+                        Debounce='500' MaximumSuggestions='5' Placeholder='Expense line' DisableClear>
+                        <SelectedTemplate>
+                            <div class='overflow-hidden wspace-nowrap'>
+                                @if (!String.IsNullOrEmpty(rowExpenseLine.ExpenseName)) {
+                                <MudText Class='font12'>@rowExpenseLine.ExpenseName</MudText>
+                                } else {
+                                <MudText Class='font12'> - </MudText>
+                                }
+                            </div>
+                        </SelectedTemplate>
+                        <ResultTemplate>
+                            @rowExpenseLine.ExpenseName
+                        </ResultTemplate>
+                    </BlazoredTypeahead>
+                    <div class="validation-font12">
+                        <ValidationMessage For="@(() => GlobalClass.collection.ExpenseName)" />
+                    </div>
+                </MudItem>
+                @* <MudItem xs='4'>
+                    <MudNumericField Class='txtfield-right' @bind-Value='GlobalClass.collection.Tax' Format="N2" Label='Tax %' HideSpinButtons 
+                        Variant='Variant.Outlined' Margin='Margin.Dense' />
+                </MudItem> *@
+                <MudItem xs='6'>
+                    <div class='@(GlobalClass.collection.GrossAmount > 0 ? "tfield-color-green":"tfield-color-red")'>
+                        <MudNumericField Class='txtfield-right' @bind-Value='GlobalClass.collection.NetAmount' Format='N2' Label='Gross Amount' HideSpinButtons
+                        Variant='Variant.Outlined' Margin='Margin.Dense' For='@(()=>GlobalClass.collection.GrossAmount)' ReadOnly/>
+                    </div>
+                </MudItem>
+                <MudItem xs='6'>
+                    <div class='@(GlobalClass.collection.NetAmount > 0 ? "tfield-color-green":"tfield-color-red")'>
+                        <MudNumericField Class='txtfield-right' @bind-Value='GlobalClass.collection.NetAmount' Format='N2' Label='Net Amount' HideSpinButtons
+                        Variant='Variant.Outlined' Margin='Margin.Dense' For='@(()=>GlobalClass.collection.NetAmount)'/>
+                    </div>
+                </MudItem>
+                <MudItem xs=4>
+                     <MudTextField @bind-Value='GlobalClass.collection.ReferenceNo' Label='Reference No.' Variant='Variant.Outlined' Placeholder='@(string.IsNullOrWhiteSpace(GlobalClass.collection.ReferenceNo) ? "None":"")'
+                        HelperText='Required*' Margin='Margin.Dense' For='@(()=>GlobalClass.collection.ReferenceNo)' />
+                </MudItem>
+                <MudItem xs='8'>
+                    <MudTextField @bind-Value='GlobalClass.collection.Description' Label='Description/Particulars' Placeholder='@(string.IsNullOrWhiteSpace(GlobalClass.collection.Description) ? "None":"")' HelperText='Optional' 
+                        HideSpinButtons Variant='Variant.Outlined' Margin='Margin.Dense' />
+                </MudItem>
+                <MudItem xs='12'>
+                    <MudTextField @bind-Value='GlobalClass.collection.Remarks' Lines='2' Label='Remarks' Placeholder='' HelperText='Optional' 
+                        HideSpinButtons Variant='Variant.Outlined' />
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </DialogContent>
+    <DialogActions>
+        <MudSpacer />
+        <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text' Size='Size.Small' DisableElevation>Cancel</MudButton>
+        <MudButton Class='btn-ios-d font12' ButtonType="ButtonType.Submit" Variant='Variant.Filled' Color='@(currentAction == Enums.ActionMode.Create ? Color.Success:Color.Info)' Size='Size.Small' DisableElevation>
+            @(currentAction == Enums.ActionMode.Create ? "Add" : currentAction == Enums.ActionMode.Update ? "Update" : "")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+</EditForm>
+@code
+{
+    [CascadingParameter] public MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public Color color { get; set; }
+    [Parameter] public string dialogTitle { get; set; } = string.Empty;
+    [Parameter] public string buttonText { get; set; } = string.Empty;
+    [Parameter] public Enums.ActionMode currentAction { get; set; }
+    private Project charging = new();
+    private ExpenseLineModel expenseLine = new();
+    private Project currentCustomer = new();
+    private bool isReadOnlyCheckNumber {get;set;}
+    protected override async Task OnInitializedAsync()
+    {
+        DefualtProperties();
+        if(GlobalClass.collection.Id != 0)
+        {
+            await RemapProperties();
+        }
+    }
+    private async Task Submit()
+    {
+        var parameters = new DialogParameters();
+        string contentText = " Collection";
+        string dialogTitle = "Add";
+        parameters.Add("contentText", contentText);
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("actionMode", GlobalClass.collection.Id == 0? Enums.ActionMode.Create : Enums.ActionMode.Update);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Canceled) 
+        {   
+            GlobalClass.collection.UserId = GlobalClass.currentUserAccount.EmployeeId;
+            GlobalClass.collection.CollectionId = GlobalClass.collection.Id;
+            GlobalClass.collection.IsBilling = true;
+            GlobalClass.collection.GrossAmount = GlobalClass.collection.NetAmount;
+            GlobalClass.collection.TransactionDate = Convert.ToDateTime(GlobalClass.collection.TransactionDate?.ToString("yyyy-MM-dd HH:mm:ss tt"));
+            if(GlobalClass.collection.Id == 0)
+            {
+                GlobalClass.collection.Activity = "Add Billing";
+                GlobalClass.collection = await collectionService.SaveCollection(GlobalClass.collection,GlobalClass.token);
+            } else {
+                GlobalClass.collection.Activity = "Update Billing";
+                GlobalClass.collection = await collectionService.UpdateCollection(GlobalClass.collection,GlobalClass.token);
+            }
+            MudDialog.Cancel();
+            Extensions.ShowAlert("Billing successfully save.",Variant.Filled,snackbarService,Severity.Success);
+        }
+    }
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+    private async Task<IEnumerable<Project>> LoadCharging(string chargingName)
+    {
+      var filterParameter = new FilterParameter()
+      {
+        IsProject = true,
+        ProjectName = chargingName,
+        IsId = false
+      };
+      var charging = await globalService.LoadChargeProjectLine(filterParameter, GlobalClass.token);
+      return charging;
+    }
+    private void OnCustomerValueChanged(Project p)
+    {
+        currentCustomer = p;
+        GlobalClass.collection.CustomerId = p.ProjectId;
+        GlobalClass.collection.CustomerCategoryId = p.ProjectCategoryId;
+    }
+    private void OnRowProjectValueChanged(Project project)
+    {
+        charging = project;
+        GlobalClass.collection.rowCharging = project;
+        GlobalClass.collection.ChargeId = project.ProjectId;
+        GlobalClass.collection.ChargeName = project.ProjectName;
+        GlobalClass.collection.ChargeCategoryId = project.ProjectCategoryId;
+    }
+    private async Task<IEnumerable<ExpenseLineModel>> LoadExpenseLine(string expenseName)
+    {
+      return await Task.Run(() => 
+      GlobalClassList.expenseLineList
+        .Where(exp => exp.WithLedger && exp.ExpenseName.ToLower().Contains(expenseName.ToLower()))
+        .ToList());
+    }
+    private void OnRowSelectedExpenseLine(ExpenseLineModel exp)
+    {
+        expenseLine = exp;
+        GlobalClass.collection.ExpenseName = exp.ExpenseName;
+        GlobalClass.collection.ExpenseId = expenseLine.Id;
+    }
+    private async Task OnValidSubmit()
+    {
+        if(GlobalClass.collection.CollectionExpenses.Any(exp => exp.isAmountNotValid || exp.isExpenseNameEmpty))
+        {
+            Extensions.ShowAlert("Please fill the requried field in collection expense.", Variant.Filled, snackbarService,Severity.Error);
+        } else {
+            await Submit();
+        }
+    }
+    private void OnInvalidInput()
+    {
+        Extensions.ShowAlert("Please fill the requried field.", Variant.Filled, snackbarService,Severity.Error);
+    }
+    private void BankPaymentTypeOnClick(Enums.CollectionPaymentType type)
+    {
+        CollectionPaymentTypeState(type);
+    }
+    private void CollectionPaymentTypeState(Enums.CollectionPaymentType c)
+    {
+        GlobalClass.collection.PaymentTypeId = c;
+        isReadOnlyCheckNumber = GlobalClass.collection.PaymentTypeId == Enums.CollectionPaymentType.Cash ? true : false;
+        if(isReadOnlyCheckNumber)
+            GlobalClass.collection.CheckNumber = string.Empty;
+        StateHasChanged();
+    }
+    private void DefualtProperties()
+    {
+        GlobalClass.collection.Remarks = (string.IsNullOrWhiteSpace(GlobalClass.collection.Remarks) ? "None" : GlobalClass.collection.Remarks);
+        GlobalClass.collection.IsBilling = true;
+        GlobalClass.collection.CollectionType = Enums.CollectionType.Billing;
+        GlobalClass.collection.CollectionTypeId = Enums.CollectionType.Billing;
+        GlobalClass.collection.OfficialReceipt = "0";
+        GlobalClass.collection.CheckNumber ="0";
+    }
+    private async Task RemapProperties()
+    {
+        charging = (await LoadCharging(GlobalClass.collection.ChargeName)).FirstOrDefault()?? new();
+        currentCustomer = (await LoadCharging(GlobalClass.collection.CustomerName)).FirstOrDefault()?? new();
+        expenseLine = (await LoadExpenseLine(GlobalClass.collection.ExpenseName)).FirstOrDefault()?? new();
+        GlobalClass.collection.CollectionExpenses = (await collectionService.GetCollection(GlobalClass.collection.Id,GlobalClass.token)).CollectionExpenses;
+        CollectionPaymentTypeState(GlobalClass.collection.PaymentTypeId);
+        GlobalClass.collection.CheckNumber = "None";
+    }
+}

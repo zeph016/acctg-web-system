@@ -1,5 +1,6 @@
 ﻿using fgciams.bll;
 using fgciams.domain.clsEnums;
+using fgciams.domain.clsVoucherRouteTag;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,6 +76,8 @@ namespace fgciams.domain.clsVoucher
         public byte[] VerifiedByPicture { get; set; } = new byte[] { };
         public byte[] ApprovedByPicture { get; set; } = new byte[] { };
         public bool WithSubLedger { get; set; }
+        public List<VoucherRouteTagModel> VoucherRouteTags { get; set; } = new();
+        public List<VoucherRouteTagModel> RemovedVoucherRouteTags { get; set; } = new();
         private decimal _VATValue;
         public decimal VATValue
         {

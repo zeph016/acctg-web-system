@@ -3,7 +3,7 @@
 <MudDialog Class='customdialog-table-only'>
     <TitleContent>
         <div class='d-flex align-center'>
-                <MudIcon Icon="@Icons.Filled.Preview" Class="mr-3" />
+                <MudIcon Icon="@Icons.Material.Filled.Preview" Class="mr-3" />
             <MudText Typo='Typo.h6'>Previous vouchers</MudText>
         </div>
     </TitleContent>
@@ -16,12 +16,12 @@
                 <ToolBarContent>
                     <MudText Typo='Typo.caption'>
                         @GlobalClassList.previousVouchers.Count() 
-                        @(GlobalClassList.previousVouchers.Count() == 1 ? "Item" : "Items") 
-                        in Total
+                        @(GlobalClassList.previousVouchers.Count() == 1 ? "item" : "items") 
+                        in total
                     </MudText>
                     <MudSpacer/>
                     @* <MudTooltip Text="Refresh Table">
-                        <MudIconButton Icon="@Icons.Filled.Refresh" Size="Size.Small" OnClick='(()=>{searchTerm = "";})' ></MudIconButton>
+                        <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='(()=>{searchTerm = "";})' ></MudIconButton>
                     </MudTooltip> *@
                 </ToolBarContent>
                 <ColGroup>
@@ -53,7 +53,7 @@
                             <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'>
                                 @context.ControlNumber
                             </MudChip>
-                            <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Text' Icon='@Icons.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
+                            <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Text' Icon='@Icons.Material.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
                                 @Convert.ToDateTime(context.VoucherDate).ToShortDateString()
                             </MudChip>
                         </MudTd>
@@ -64,7 +64,7 @@
                         </MudTd> *@
                         <MudTd DataLabel="Payee">@context.PayeeName</MudTd>
                         <MudTd DataLabel='Period'>
-                            <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Text' Icon='@Icons.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
+                            <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Text' Icon='@Icons.Material.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
                                 @Convert.ToDateTime(context.PeriodFrom).ToShortDateString() - @Convert.ToDateTime(context.PeriodTo).ToShortDateString()
                             </MudChip>
                         </MudTd>

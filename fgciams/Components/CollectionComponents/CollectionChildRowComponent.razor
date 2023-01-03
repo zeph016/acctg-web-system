@@ -1,0 +1,93 @@
+
+<MudContainer Class='py-2' Fixed='false' MaxWidth='MaxWidth.Large'>
+    <MudGrid Spacing='1'>
+        <MudItem xs='@(!moduleName.Contains("or-list", StringComparison.InvariantCultureIgnoreCase) ? 6:12)'>
+            <MudPaper Height='165px'>
+                <div class="colsubtbl">
+                    <div class="colsubtbl-orno">
+                        <MudText Class='font12 '>OR:</MudText>
+                        <MudChip Class='chiplbl rounded' Color='Color.Default' Size='Size.Small'>
+                            @collOR
+                        </MudChip>
+                    </div>
+                    <div class="colsubtbl-checkno">
+                        <MudText Class='font12'>Check No:</MudText>
+                        <MudChip Class='chiplbl rounded' Color='Color.Default' Size='Size.Small'>
+                            @collCN
+                        </MudChip>
+                    </div>
+                    <div class="colsubtbl-remarks">
+                        <MudText Class='font12'>Remarks:</MudText>
+                        <MudText Class='font12'>@collRemarks</MudText>
+                    </div>
+                    <div class="colsubtbl-tax">
+                        <MudText Class='font12'>Tax:</MudText>
+                        <MudText Class='font-bold font12'>
+                            @collTax.ToString("N2")%
+                        </MudText>
+                    </div>
+                    <div class="colsubtbl-gross">
+                        <MudText Class='font12'>Gross Amount:</MudText>
+                        <MudText Class='font-bold font12' Style='@(collGrossAmt > 0 ? "color:green":"color:red")'>
+                            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @collGrossAmt.ToString("N2")
+                        </MudText>
+                    </div>
+                    <div class="colsubtbl-netamt">
+                        <MudText Class='font12'>Net Amount:</MudText>
+                        <MudText Class='font-bold font12' Style='@(collNetAmt > 0 ? "color:green":"color:red")'>
+                            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @collNetAmt.ToString("N2")
+                        </MudText>
+                    </div>
+                </div>
+            </MudPaper>
+        </MudItem>
+        @if(IsCollection)
+        {
+            <MudItem xs=6>
+                <MudTable Class='tbl-minwidth-0 ' Items="@CollectionExpenses" Hover
+                    Breakpoint="Breakpoint.Xs" FixedHeader FixedFooter Bordered Dense Height='125px'>
+                    <ToolBarContent>
+                        <MudText Typo='Typo.caption'>
+                            Collection Expenses
+                        </MudText>
+                        <MudSpacer/>
+                    </ToolBarContent>
+                    <ColGroup>
+                        <col style='width:1%' />
+                        <col style='width:1%'/>
+                    </ColGroup>
+                    <HeaderContent>
+                        <MudTh Class='customheader-6'>
+                            <small>Expense</small>
+                        </MudTh>
+                        <MudTh Class='customheader-6 text-center'>
+                            <small>Amount</small>
+                        </MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd Class='text-left pa-2 font12'>@context.ExpenseName</MudTd>
+                        <MudTd Class='text-right pa-2 font12'>
+                            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)  @context.Amount.ToString("N2")
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudItem>
+        }
+    </MudGrid>
+</MudContainer>
+@code {
+    [Parameter] public string collOR { get; set; } = string.Empty;
+    [Parameter] public string collCN { get; set; } = string.Empty;
+    [Parameter] public string collRemarks { get; set; } = string.Empty;
+    [Parameter] public string moduleName { get; set; } = string.Empty;
+    [Parameter] public decimal collDebit { get; set; }
+    [Parameter] public decimal collCredit { get; set; }
+    [Parameter] public decimal collTax { get; set; }
+    [Parameter] public decimal collMob { get; set; }
+    [Parameter] public decimal collRet { get; set; }
+    [Parameter] public decimal collOthers { get; set; }
+    [Parameter] public decimal collGrossAmt { get; set; }
+    [Parameter] public decimal collNetAmt { get; set; }
+    [Parameter] public bool IsCollection { get; set; }
+    [Parameter] public List<CollectionExpenseModel> CollectionExpenses { get; set; } = new List<CollectionExpenseModel>();
+}

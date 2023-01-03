@@ -27,11 +27,14 @@
 @inject ITermsOfPaymentService termsOfPaymentService
 @inject IMuniCityService muniCityService
 @inject ITaxCodeService taxCodeService
+@inject IGlobalService GlobalService
 @inject IConfiguration config
 @inject ISnackbar Snackbar
 @inject ICheckService checkService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IScopeOfWorkService scopeOfWorkService
+@inject ICollectionService collectionService
+@inject IVoucherService voucherService
 
 @inject ApplicationState AppState
 @implements IDisposable
@@ -41,9 +44,6 @@
 <MudSnackbarProvider/>
 
 <MudLayout>
-    @* <MudOverlay Visible='showLoadingOverlay' Absolute='true' DarkBackground='true'>
-         <MudProgressCircular class='loader-2' Size="Size.Large" Indeterminate="true"/>
-    </MudOverlay> *@
     <MudAppBar Class='topbar' Fixed='true' Elevation='0' Dense='true'>
         <AuthorizeView>
             <Authorized>
@@ -77,12 +77,12 @@
                             <ChildContent>
                                 <div><hr class='horizline'></div>
                                 <MudContainer Class='d-flex usercp__btncontainer' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
-                                    <MudButton Class='usercp__btnsettings' Href='/configurations' Variant='Variant.Text' StartIcon='@Icons.Filled.Settings' Size='Size.Medium'>Settings</MudButton>
+                                    <MudButton Class='usercp__btnsettings' Href='/configurations' Variant='Variant.Text' StartIcon='@Icons.Material.Filled.Settings' Size='Size.Medium'>Settings</MudButton>
                                     <MudSpacer/>
-                                    <MudButton Class='usercp__btntohub' OnClick='() => LogOut(false)' Variant='Variant.Text' StartIcon='@Icons.Filled.ExitToApp' Size='Size.Medium'>Back to Hub</MudButton>
+                                    <MudButton Class='usercp__btntohub' OnClick='() => LogOut(false)' Variant='Variant.Text' StartIcon='@Icons.Material.Filled.ExitToApp' Size='Size.Medium'>Back to Hub</MudButton>
                                 </MudContainer>
                                 <div><hr class='horizline'></div>
-                                <MudButton Class='usercp__btnlogout' OnClick='() => LogOut(true)' Variant='Variant.Filled' StartIcon='@Icons.Filled.Logout' Color='Color.Error'>Log Out</MudButton>
+                                <MudButton Class='usercp__btnlogout' OnClick='() => LogOut(true)' Variant='Variant.Filled' StartIcon='@Icons.Material.Filled.Logout' Color='Color.Error'>Log Out</MudButton>
                             </ChildContent>
                         </MudExpansionPanel>
                     </MudExpansionPanels>
@@ -93,43 +93,61 @@
     <MudDrawer Class='main-drawer' @bind-Open="_drawerOpen" Fixed='true' Elevation='0' Variant='@DrawerVariant.Mini' OpenMiniOnHover='false'>
         <MudDrawerHeader Class='drawer-header'>
             <MudIconButton OnClick="@((e) => DrawerToggle())" Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" />
-            <MudText Class='drawer-header__header-text text-center'>ACCOUNTING INTEGRATED SYSTEM</MudText>
+            <MudText Class='drawer-header__header-text text-center'>ACCOUNTING INTEGRATED</MudText>
         </MudDrawerHeader>
         <AuthorizeView>
             <Authorized>
                 <MudNavMenu>
-                    <MudNavLink Href='/dashboard' Match="NavLinkMatch.All" Icon="@Icons.Filled.Dashboard">
+                    <MudNavLink Href='/dashboard' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">
                         <MudText Class='fweight500 fontpad-t-2px' Typo='Typo.body2'>DASHBOARD</MudText>
                     </MudNavLink>    
-                    <MudNavGroup Title='PETTY CASH' Icon='fa-solid fa-coins' HideExpandIcon='true' style='@HidePettyCash'>
-                        <MudNavLink Href='/pettycash/create' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck" style='@HideEntry'>PETTY CASH ENTRY</MudNavLink>
-                        <MudNavLink Href='/pettycash-list' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList" >PETTY CASH LIST</MudNavLink>
+                    <MudNavGroup Title='PETTY CASH' Icon='fa-solid fa-coins' HideExpandIcon style='@HidePettyCash'>
+                        <MudNavLink Href='/petty-cash' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck" style='@HideEntry'>PETTY CASH ENTRY</MudNavLink>
+                        <MudNavLink Href='/petty-cash/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >PETTY CASH LIST</MudNavLink>
                     </MudNavGroup>
-                    <MudNavGroup Title='LIQUIDATION' Icon='@Icons.Filled.ReceiptLong' HideExpandIcon='true' style='@HideLiquidation'>
-                        <MudNavLink Href='/liquidation/create' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck" style='@HideEntry'>LIQUIDATION ENTRY</MudNavLink>
-                        <MudNavLink Href='/liquidation/list' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList">LIQUIDATION LIST</MudNavLink>
+                    <MudNavGroup Title='LIQUIDATION' Icon='@Icons.Material.Filled.ReceiptLong' HideExpandIcon style='@HideLiquidation'>
+                        <MudNavLink Href='/liquidation' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck" style='@HideEntry'>LIQUIDATION ENTRY</MudNavLink>
+                        <MudNavLink Href='/liquidation/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList">LIQUIDATION LIST</MudNavLink>
                     </MudNavGroup>
-                    <MudNavGroup Title='REQUEST FOR PAYMENT' Icon='@Icons.Filled.Payments' HideExpandIcon='true' style='@HideRFP'>
-                        <MudNavLink Href='/requestpayment/create' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck"style='@HideEntry'>RFP ENTRY</MudNavLink>
-                        <MudNavLink Href='/requestpayment/list' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList">RFP LIST</MudNavLink>
+                    <MudNavGroup Title='REQUEST FOR PAYMENT' Icon='@Icons.Material.Filled.Payments' HideExpandIcon style='@HideRFP'>
+                        <MudNavLink Href='/request-payment/create' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck"style='@HideEntry'>RFP ENTRY</MudNavLink>
+                        <MudNavLink Href='/request-payment/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList">RFP LIST</MudNavLink>
                     </MudNavGroup>
-                    <MudNavGroup Title='VOUCHER' Icon='fa-solid fa-receipt' HideExpandIcon='true' style='@HideVoucher'>
-                        <MudNavLink Href='/voucher/create' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck" style='@HideEntry'>VOUCHER ENTRY</MudNavLink>
-                        <MudNavLink Href='/voucher/list' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList" >VOUCHER LIST</MudNavLink>
+                    <MudNavGroup Title='VOUCHER' Icon='fa-solid fa-receipt' HideExpandIcon style='@HideVoucher'>
+                        <MudNavLink Href='/voucher' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck" style='@HideEntry'>VOUCHER ENTRY</MudNavLink>
+                        <MudNavLink Href='/voucher/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >VOUCHER LIST</MudNavLink>
+                </MudNavGroup>
+                    <MudNavGroup Title='CHECK WRITER' Icon='@Icons.Material.Filled.CreditScore' HideExpandIcon style='@HideVoucher'>
+                        <MudNavLink Href='/check/create' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck" style='@HideEntry'>CHECK ENTRY</MudNavLink>
+                        <MudNavLink Href='/check/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" style='@HideEntry'>CHECK LIST</MudNavLink>
+                        <MudNavLink Href='/debit/create' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck" style='@HideEntry'>DEBIT ENTRY</MudNavLink>
+                        <MudNavLink Href='/debit/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" style='@HideEntry'>DEBIT LIST</MudNavLink>
                     </MudNavGroup>
-                    <MudNavGroup Title='CHECK WRITER' Icon='@Icons.Filled.CreditScore' HideExpandIcon='true' style='@HideVoucher'>
-                        <MudNavLink Href='/check/create' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck" style='@HideEntry'>CHECK ENTRY</MudNavLink>
-                        <MudNavLink Href='/check/list' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList" style='@HideEntry'>CHECK LIST</MudNavLink>
+                    <MudNavGroup Title='VOUCHER ROUTE' Icon='fa-solid fa-route' HideExpandIcon style='@HideVoucher'>
+                        <MudNavLink Href='/voucher/route/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Route" style='@HideEntry'>VOUCHER ROUTING</MudNavLink>
+                        <MudNavLink Href='/voucher/batch' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck">BATCH ENTRY</MudNavLink>
+                        <MudNavLink Href='/voucher/batch/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >BATCH LIST</MudNavLink>
                     </MudNavGroup>
-                    <MudNavGroup Title='VOUCHER ROUTE' Icon='fa-solid fa-route' HideExpandIcon='true' style='@HideVoucher'>
-                        <MudNavLink Href='/voucher/route/list' Match="NavLinkMatch.All" Icon="@Icons.Filled.Route" style='@HideEntry'>VOUCHER ROUTING</MudNavLink>
-                        <MudNavLink Href='/voucher/batch' Match="NavLinkMatch.All" Icon="@Icons.Filled.LibraryAddCheck">BATCH ENTRY</MudNavLink>
-                        <MudNavLink Href='/voucher/batch/list' Match="NavLinkMatch.All" Icon="@Icons.Filled.ViewList" >BATCH LIST</MudNavLink>
+                    <MudNavGroup Title='COLLECTIONS' Icon='icon-stack1' HideExpandIcon style='@HideVoucher'>
+                        <MudNavLink Href='/collection/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList">COLLECTIONS</MudNavLink>
+                        <MudNavLink Href='/billing/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList">BILLINGS</MudNavLink>
+                        <MudNavLink Href='/bank-deposit/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList">BANK DEPOSITS</MudNavLink>
+                    </MudNavGroup>
+                    <MudNavGroup Title='LEDGERS' Icon='icon-book' HideExpandIcon style='@HideVoucher'>
+                        <MudNavLink Href='/ar-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >AR LEDGER</MudNavLink>
+                        <MudNavLink Href='/ap-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >AP LEDGER</MudNavLink>
+                        <MudNavLink Href='/bank-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >BANK LEDGER</MudNavLink>
+                        <MudNavLink Href='/subcon-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >SUB-CON LEDGER</MudNavLink>
+                        <MudNavLink Href='/subcon-ar-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >SUB-CON AR LEDGER</MudNavLink>
+                        <MudNavLink Href='/subcon-ap-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >SUB-CON AP LEDGER</MudNavLink>
+                        <MudNavLink Href='/or/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >OR LISTING</MudNavLink>
+                        <MudNavLink Href='/project-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >PROJECT LEDGER</MudNavLink>
+                        <MudNavLink Href='/journal' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >JOURNAL</MudNavLink>
                     </MudNavGroup>
                 </MudNavMenu>
-                <MudSpacer />
+                <MudSpacer />           
                 <MudNavMenu Class='pb-2'>
-                    <MudNavLink Class='pb-2' OnClick='NavigateToConfig' Match='NavLinkMatch.All' Icon='@Icons.Filled.Settings'>
+                    <MudNavLink Class='pb-2' OnClick='NavigateToConfig' Match='NavLinkMatch.All' Icon='@Icons.Material.Filled.Settings'>
                         <MudText Class='fweight500 fontpad-t-2px' Typo='Typo.body2'>SETTINGS</MudText>
                     </MudNavLink>
                     @* <div class='d-flex align-center justify-center'>
@@ -139,7 +157,7 @@
             </Authorized>
            <NotAuthorized>
                     <MudNavMenu Class='pb-2'>
-                         <MudNavLink Class='txt-uppercase' Href='http://10.0.0.7:8000' Match='NavLinkMatch.All' Icon='@Icons.Filled.Home'>
+                         <MudNavLink Class='txt-uppercase' Href='http://10.0.0.7:8000' Match='NavLinkMatch.All' Icon='@Icons.Material.Filled.Home'>
                             Back To Hub
                          </MudNavLink>
                     </MudNavMenu>
@@ -150,7 +168,7 @@
         @* <MudContainer Class='main-body' Fixed='true'>
             @Body@
         </MudContainer> *@
-        <div Class='main-body overflow-hidden'>
+        <div class='main-body overflow-hidden'>
             @* <CascadingValue Value=UpdateLayout> *@
                 @Body
             @* </CascadingValue> *@
@@ -158,7 +176,7 @@
     </MudMainContent>
     <MudAppBar Class='footerbar' Fixed='true' Elevation='0' Dense='true' Bottom='true'>
         <MudText>
-            v1.0.0.1
+            v1.0.0.1-testbuild-01032023
         </MudText>
         <MudIconButton Class='footerbar__btn-hardreload' OnClick='RefreshPage' Icon='@Icons.Material.Filled.Refresh' aria-label='Refresh Page'>
         </MudIconButton>
@@ -183,6 +201,7 @@
     ElementReference timeElement;
     EventCallback UpdateLayout => EventCallback.Factory.Create(this, UpdateAlert);
     string updateStyleStr = string.Empty;
+    FilterParameter filterParameter = new FilterParameter();
     #endregion
 
     public override async Task SetParametersAsync(ParameterView parameters)
@@ -201,6 +220,7 @@
     }
     protected override async Task OnInitializedAsync()
     {
+        await LoadServerTime();
         if (GlobalClass.currentUserAccount != null)
         {
             await LoadGlobalLists();
@@ -226,7 +246,7 @@
         LoadPayees(), LoadPayeeCategories(), LoadChargingLines(),
         LoadSubContractors(), LoadSubConGenInfos(), LoadSubConPositions(), LoadNotRFPLiquidation(),
         LoadExpenseLine(), LoadAccountLineGroup(),LoadAccountType(),LoadAccountLineType(),SignalRHubConnection(),LoadCheck(),
-        LoadTerms(),LoadMunicipalityCities(),LoadTaxCode(),LoadScopeOfWorkList());
+        LoadTerms(),LoadMunicipalityCities(),LoadTaxCode(),LoadScopeOfWorkList(),LoadCollections());
         await t;
     }
     private async Task LoadScopeOfWorkList()
@@ -267,6 +287,7 @@
     private async Task LoadBillingDocs()
     {
         GlobalClassList.billingDocumentList = await billingDocumentService.LoadListOfBillingDocuments(GlobalClass.token);
+        GlobalClassList.billingDocumentList = GlobalClassList.billingDocumentList.OrderBy(x=>x.Id).ToList();
     }
 
     private async Task LoadBanks()
@@ -328,6 +349,14 @@
       GlobalClassList.termsOfPayments = await termsOfPaymentService.LoadTermsOfPayment(GlobalClass.token);
       GlobalClassList.termsOfPayments = GlobalClassList.termsOfPayments.OrderBy(x => x.Id).ToList();
     }
+    private async Task LoadCollections()
+    {
+        GlobalClassList.collectionList = await collectionService.GetCollections(filterParameter,GlobalClass.token);
+    }
+    private async Task LoadVouchers()
+    {
+        GlobalClassList.Vouchers = await voucherService.LoadVouchers(filterParameter, GlobalClass.token);
+    }
     private async Task SignalRHubConnection()
     {
       try
@@ -367,7 +396,7 @@
         };
 
         var resultDialog = await dialogService.Show<Shared.Dialogs.LogOut.LogOutDialog>(dialogTitle,parameters,options).Result;
-        if (!resultDialog.Cancelled)
+        if (!resultDialog.Canceled)
         {
             if (isLogOut) {
                 await localStorageService.RemoveItemAsync("token");
@@ -493,7 +522,7 @@
             DisableBackdropClick = false
         };
         var resultDialog = await dialogService.Show<Shared.Dialogs.VATDialogs.VATDialog>("", options).Result;
-        if (!resultDialog.Cancelled)
+        if (!resultDialog.Canceled)
         {
             if ((int)resultDialog.Data == 0)
                 Extensions.ShowAlert("VAT successfully added.", Variant.Filled, Snackbar, Severity.Success);
@@ -513,5 +542,14 @@
         {
             updateStyleStr = "";
         }
+    }
+
+    private async Task LoadServerTime()
+    {
+        var result = await GlobalService.GetServerTime();
+        if (result != null)
+            GlobalVariable.ServerTime = result.Value;
+        else
+            Extensions.ShowAlertV2("Cannot get server time. Please check connections", Variant.Filled,Snackbar,Severity.Warning,Icons.Material.Filled.Cancel,Defaults.Classes.Position.BottomCenter);
     }
 }

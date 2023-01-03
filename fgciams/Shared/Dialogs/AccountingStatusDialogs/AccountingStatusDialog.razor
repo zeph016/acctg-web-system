@@ -8,11 +8,11 @@
         <div class='d-flex align-center'>
             @if (GlobalClass.acctgStatus.Id != 0)
             {
-                <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3" />
+                <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" />
             }
             else
             {
-                <MudIcon Icon="@Icons.Filled.Add" Class="mr-3" />
+                <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-3" />
             }
             <MudText Class='txt-uppercase' Typo='Typo.h6'>@dialogTitle</MudText>
         </div>
@@ -31,14 +31,14 @@
                 <MudItem Class='d-flex align-center' xs='2'>
                     <div class='smallColorBox text-left' style='@($"background-color:{GlobalClass.acctgStatus.StatusColor};")' />
                 </MudItem>
-                <MudItem xs='10'>
+                @* <MudItem xs='10'>
                     <MudTextField @bind-Value="@GlobalClass.acctgStatus.StatusIcon" HelperText="Required*" class="mud-grid-item mud-grid-item-xs-9" Label="Icon" Variant="Variant.Text"
-                        Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.InsertEmoticon" OnAdornmentClick="(() => ShowIcons())" Error=@notValidStatusIcon ErrorText="Required*" 
+                        Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.InsertEmoticon" OnAdornmentClick="(() => ShowIcons())" Error=@notValidStatusIcon ErrorText="Required*" 
                         Margin='Margin.Dense' />
                 </MudItem>
                 <MudItem Class='d-flex align-center justify-center' xs='2'>
                     <MudIcon Icon="@GlobalClass.selectedIcon" Color="Color.Primary" Size='Size.Medium' />
-                </MudItem>
+                </MudItem> *@
                 <MudItem xs='12'>
                     <MudSelect Label="Category" @bind-Value="GlobalClass.acctgStatus.StatusEnumCategoryId" AnchorOrigin="Origin.BottomCenter">
                         @foreach (var items in SortedCategory())
@@ -78,7 +78,7 @@
             isReadOnly = true;
             GlobalClass.acctgStatus.IsActive = true;
             GlobalClass.acctgStatus.StatusColor = "#FFFF00";
-            GlobalClass.selectedIcon = Icons.Filled.NotInterested;
+            GlobalClass.selectedIcon = Icons.Material.Filled.NotInterested;
             GlobalClass.acctgStatus.StatusIcon = string.Empty;
             GlobalClass.acctgStatus.StatusEnumCategoryId = SortedCategory()[0];//Get the first item of sorted category
         } else {
@@ -117,7 +117,7 @@
             DisableBackdropClick = true
         };
         var resultDialog = await dialogService.Show<Shared.Dialogs.IconsDialogs.IconsDialog>("",options).Result;
-        if(resultDialog.Cancelled)
+        if(resultDialog.Canceled)
             if(resultDialog.Data.Equals(101))
                 Console.WriteLine(GlobalClass.acctgStatus.StatusIcon);
     }
@@ -131,7 +131,7 @@
         parameters.Add("contentText", contentText);
         var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = false, NoHeader = false, DisableBackdropClick = true };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Cancelled) 
+        if (!resultDialog.Canceled) 
         {   
             try
             {

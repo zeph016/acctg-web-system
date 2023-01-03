@@ -1,0 +1,656 @@
+
+@inject IGlobalService GlobalService
+@inject IDialogService DialogService
+
+<div class='drawer-right__filtercont'>
+    <div class='icon-area d-flex align-center @(contentVisible ? "pl-3":"")'>
+        <MudTooltip Text='Filter' Arrow Placement='Placement.Left'>
+            <MudIconButton OnClick='OpenFilter' Icon='@Icons.Material.Filled.FilterList' arial-label='Close Filter' Size='Size.Small' />
+        </MudTooltip>
+    </div>
+    <div class='filter-title d-flex align-center'>
+        <MudText Typo='Typo.button'>Filter</MudText>
+        <MudSpacer />
+        <MudIconButton OnClick='OpenFilter' Icon='@Icons.Material.Filled.Close' aria-label='Close Filter' Size='Size.Small' />
+    </div>
+    <div class='filter-content @(contentVisible ? "fade-in":"fade-out")'>
+        <MudGrid Spacing='1'>
+            @if(!moduleName.Contains("check-list", StringComparison.InvariantCultureIgnoreCase) 
+            && !moduleName.Contains("voucherroute-list", StringComparison.InvariantCultureIgnoreCase)
+            && !moduleName.Contains("collection-list", StringComparison.InvariantCultureIgnoreCase)
+            && !moduleName.Contains("or-list", StringComparison.InvariantCultureIgnoreCase)
+            && !moduleName.Contains("liquidation-list", StringComparison.InvariantCultureIgnoreCase)
+            && !moduleName.Contains("debit-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                <MudItem class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        requestor = new();
+                        filterParameter.IsRequestor = !filterParameter.IsRequestor;
+                    })' Checked='filterParameter.IsRequestor' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem Class='pr-3' xs=10>
+                    <div class='blzrtheadfilter-lbl-req @(!filterParameter.IsRequestor ? "color-gray":"")'>
+                        <small>Requestor</small>
+                    </div>
+                    <div class='blzrthead-disabled-minheight15'>
+                        <BlazoredTypeahead SearchMethod='LoadEmployee' Disabled='@(!filterParameter.IsRequestor)' Context='reqby'
+                            Debounce='500' placeholder='Requestor' Value='requestor' ValueExpression='(() => requestor)'
+                            ValueChanged='((UserAccount userAccount) =>
+                            {
+                                requestor = userAccount;
+                                filterParameter.RequestorId = requestor.EmployeeId;
+                            })'>
+                            <SelectedTemplate>
+                                <MudAvatar Class='avatar-20px' Image='@(requestor.Picture.Count() > 0 ? 
+                                    $"data:image/png;base64, {Convert.ToBase64String(@requestor.Picture)}":"images/fglogo/fgci1-gs.png")' Size='Size.Small' />
+                                <small class='blzsmallreq-160px ml-2'>@requestor.EmployeeName</small>
+                            </SelectedTemplate>
+                            <ResultTemplate>
+                                <div class='d-flex align-center gap-2'>
+                                    <MudAvatar Class='avatar-20px' Image='@(reqby.Picture.Count() > 0 ? 
+                                        $"data:image/png;base64, {Convert.ToBase64String(@reqby.Picture)}":"images/fglogo/fgci1-gs.png")' Size='Size.Small'/>
+                                    <div class='d-flex flex-column'>
+                                        <small class='font-bold'>@reqby.EmployeeName</small>
+                                        <small>@reqby.Designation</small>
+                                    </div>
+                                </div>
+                            </ResultTemplate>
+                        </BlazoredTypeahead>
+                    </div>
+                </MudItem>
+            } else if(moduleName.Contains("liquidation-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                <MudItem class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        requestor = new();
+                        filterParameter.IsPreparedBy = !filterParameter.IsPreparedBy;
+                    })' Checked='filterParameter.IsPreparedBy' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem Class='pr-3' xs=10>
+                    <div class='blzrtheadfilter-lbl-req @(!filterParameter.IsPreparedBy ? "color-gray":"")'>
+                        <small>Prepared by</small>
+                    </div>
+                    <div class='blzrthead-disabled-minheight15'>
+                        <BlazoredTypeahead SearchMethod='LoadEmployee' Disabled='@(!filterParameter.IsPreparedBy)' Context='reqby'
+                            Debounce='500' placeholder='Requestor' Value='requestor' ValueExpression='(() => requestor)'
+                            ValueChanged='((UserAccount userAccount) =>
+                            {
+                                requestor = userAccount;
+                                filterParameter.PreparedById = requestor.EmployeeId;
+                            })'>
+                            <SelectedTemplate>
+                                <MudAvatar Class='avatar-20px' Image='@(requestor.Picture.Count() > 0 ? 
+                                    $"data:image/png;base64, {Convert.ToBase64String(@requestor.Picture)}":"images/fglogo/fgci1-gs.png")' Size='Size.Small' />
+                                <small class='blzsmallreq-160px ml-2'>@requestor.EmployeeName</small>
+                            </SelectedTemplate>
+                            <ResultTemplate>
+                                <div class='d-flex align-center gap-2'>
+                                    <MudAvatar Class='avatar-20px' Image='@(reqby.Picture.Count() > 0 ? 
+                                        $"data:image/png;base64, {Convert.ToBase64String(@reqby.Picture)}":"images/fglogo/fgci1-gs.png")' Size='Size.Small'/>
+                                    <div class='d-flex flex-column'>
+                                        <small class='font-bold'>@reqby.EmployeeName</small>
+                                        <small>@reqby.Designation</small>
+                                    </div>
+                                </div>
+                            </ResultTemplate>
+                        </BlazoredTypeahead>
+                    </div>
+                </MudItem>
+            }
+            @if(!moduleName.Contains("liquidation-list", StringComparison.InvariantCultureIgnoreCase) &&
+                !moduleName.Contains("debit-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+            <MudItem class='d-flex align-center justify-center' xs=2>
+                @if (moduleName.Contains("or-list", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        currentProject = new();
+                        filterParameter.IsProject = !filterParameter.IsProject;
+                    })' Checked='filterParameter.IsProject' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                }
+                else
+                {
+                     <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        project = new();
+                        filterParameter.IsPayee = !filterParameter.IsPayee;
+                    })' Checked='filterParameter.IsPayee' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                }
+            </MudItem>
+            <MudItem Class='pr-3' xs=10>
+                <div class='@(moduleName.Contains("check-list", StringComparison.InvariantCultureIgnoreCase) ? "blzrtheadfilter-lbl-req":
+                    (moduleName.Contains("voucherroute-list", StringComparison.InvariantCultureIgnoreCase) ? "blzrtheadfilter-lbl-req":
+                    (moduleName.Contains("collection-list", StringComparison.InvariantCultureIgnoreCase) ? "blzrtheadfilter-lbl-req":
+                    (moduleName.Contains("or-list", StringComparison.InvariantCultureIgnoreCase) ? "blzrtheadfilter-lbl-req":"blztheadfilter-lbl-payproj")))) 
+                    @(!filterParameter.IsPayee ? "color-gray":"")'>
+                    <small>Project/Payee</small>
+                </div>
+                <div class='blzrthead-disabled-minheight15'>
+                    @if (moduleName.Contains("or-list", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        <BlazoredTypeahead SearchMethod='LoadCharging' Context='proj' 
+                            ValueChanged="((Project p)=> OnProjectSelected(p))" 
+                            Value="currentProject" 
+                            ValueExpression="(()=>currentProject)"
+                            Debounce='500' MaximumSuggestions='5' aria-placeholder="Charge to" Disabled='!filterParameter.IsProject'>
+                            <SelectedTemplate>
+                                <small class='blzsmallpayproj-170px ml-2 pt-1'>@currentProject.ProjectName</small>
+                            </SelectedTemplate>
+                            <ResultTemplate>
+                                 <div class='d-flex flex-column'>
+                                    <small>@proj.ProjectName</small>
+                                    <small>@proj.Location</small>
+                                 </div>
+                            </ResultTemplate>
+                        </BlazoredTypeahead>
+                    }
+                    else
+                    {
+                        <BlazoredTypeahead SearchMethod='LoadProject' Disabled='@(filterParameter.IsPayee ? !filterParameter.IsPayee:!filterParameter.IsProject)' Context='proj'
+                            Debounce="500" placeholder='Project / Charge to' Value='project' ValueExpression='(() => project)'
+                            ValueChanged='((Project selProject) => 
+                            {
+                                project = selProject;
+                                filterParameter.PayeeId = project.ProjectId;
+                                filterParameter.PayeeCategoryId = project.ProjectCategoryId;
+                            })'>
+                            <SelectedTemplate>
+                                <small class='blzsmallpayproj-170px ml-2 pt-1'>@project.ProjectName</small>
+                            </SelectedTemplate>
+                            <ResultTemplate>
+                                <div class='d-flex flex-column'>
+                                    <small>@proj.ProjectName</small>
+                                    <small>@proj.Location</small>
+                                </div>
+                            </ResultTemplate>
+                        </BlazoredTypeahead>
+                    }   
+                </div>
+            </MudItem>
+            }
+            <MudItem Class='d-flex align-center justify-center' xs=2>
+                <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        filterParameter.ControlNumber = string.Empty;
+                        filterParameter.IsControlNumber = !filterParameter.IsControlNumber;
+                    })' Checked='filterParameter.IsControlNumber' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+            </MudItem>
+            <MudItem xs=10>
+                <MudTextField Class='txtfield-75 mr-2' @bind-Value='filterParameter.ControlNumber' Label='Control Number' Placeholder='Control Number' Immediate
+                    Clearable Disabled="@(!filterParameter.IsControlNumber)" Variant='Variant.Outlined' Margin='Margin.Dense'/>
+            </MudItem>
+            @if(moduleName.Contains("liquidation-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                <MudItem class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        filterParameter.PettyCash = string.Empty;
+                        filterParameter.IsPettyCash = !filterParameter.IsPettyCash;
+                    })' Checked='filterParameter.IsPettyCash' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem xs=10>
+                    <MudTextField Class='txtfield-75 mr-2' @bind-Value='filterParameter.PettyCash' Label='Petty Cash No.' Placeholder='Petty Cash Control Number' Immediate
+                        Clearable Disabled="@(!filterParameter.IsPettyCash)" Variant='Variant.Outlined' Margin='Margin.Dense' />
+                </MudItem>
+            }
+            @if(moduleName.Contains("rfp-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                <MudItem Class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        filterParameter.POBillingControlNumber = string.Empty;
+                        filterParameter.IsPOBillingControlNumber = !filterParameter.IsPOBillingControlNumber;
+                    })' Checked='filterParameter.IsPOBillingControlNumber' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem xs=10>
+                    <MudTextField Class='txtfield-75 mr-2' @bind-Value='filterParameter.POBillingControlNumber' Label='PO Billing Control No.' Placeholder='PO Billing Control No.' Immediate
+                        Clearable Disabled="@(!filterParameter.IsPOBillingControlNumber)" Variant='Variant.Outlined' Margin='Margin.Dense' />
+                </MudItem>
+                <MudItem Class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        filterParameter.POControlNumber = string.Empty;
+                        filterParameter.IsPOControlNumber = !filterParameter.IsPOControlNumber;
+                    })' Checked='filterParameter.IsPOControlNumber' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem xs=10>
+                    <MudTextField Class='txtfield-75 mr-2' @bind-Value='filterParameter.POControlNumber' Label='PO Control No.' Placeholder='PO Control No.' Immediate
+                        Clearable Disabled="@(!filterParameter.IsPOControlNumber)" Variant='Variant.Outlined' Margin='Margin.Dense' />
+                </MudItem>
+                <MudItem Class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        filterParameter.LiquidationControlNumber = string.Empty;
+                        filterParameter.IsLiqudationControlNumber = !filterParameter.IsLiqudationControlNumber;
+                    })' Checked='filterParameter.IsLiqudationControlNumber' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem xs=10>
+                    <MudTextField Class='txtfield-75 mr-2' @bind-Value='filterParameter.LiquidationControlNumber' Label='Liquidation Control No.' Placeholder='Liquidation Control No.' Immediate
+                        Clearable Disabled="@(!filterParameter.IsLiqudationControlNumber)" Variant='Variant.Outlined' Margin='Margin.Dense' />
+                </MudItem>
+            }
+            @if(moduleName.Contains("check-list", StringComparison.InvariantCultureIgnoreCase) 
+            || moduleName.Contains("collection-list", StringComparison.InvariantCultureIgnoreCase)
+            || moduleName.Contains("or-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                <MudItem Class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        filterParameter.CheckNumber = string.Empty;
+                        filterParameter.IsCheckNumber = !filterParameter.IsCheckNumber;
+                    })' Checked='filterParameter.IsCheckNumber' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem xs=10>
+                    <MudTextField Class='txtfield-75 mr-2' @bind-Value='filterParameter.CheckNumber' Label='Check No.' Placeholder='Check No.' Immediate
+                        Clearable Disabled="@(!filterParameter.IsCheckNumber)" Variant='Variant.Outlined' Margin='Margin.Dense' />
+                </MudItem>
+            }
+            @if(moduleName.Contains("or-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                <MudItem Class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        filterParameter.OR = string.Empty;
+                        filterParameter.IsOR = !filterParameter.IsOR;
+                    })' Checked='filterParameter.IsOR' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem xs=10>
+                    <MudTextField Class='txtfield-75 mr-2' @bind-Value='filterParameter.OR' Label='Official Receipt' Placeholder='Official Receipt' Immediate
+                            Clearable Disabled="@(!filterParameter.IsOR)" Variant='Variant.Outlined' Margin='Margin.Dense' />
+                </MudItem>
+            }
+            @if(moduleName.Contains("collection-list", StringComparison.InvariantCultureIgnoreCase)
+            || moduleName.Contains("or-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                <MudItem Class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        filterParameter.Name = string.Empty;
+                        filterParameter.IsName = !filterParameter.IsName;
+                    })' Checked='filterParameter.IsName' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem xs=10>
+                    <MudTextField Class='txtfield-75 mr-2' @bind-Value='filterParameter.Name' Label='Reference No.' Placeholder='Reference No.' Immediate
+                        Clearable Disabled="@(!filterParameter.IsName)" Variant='Variant.Outlined' Margin='Margin.Dense' />
+                </MudItem>
+            }
+            <MudItem class='d-flex align-center justify-center' xs=2>
+                <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        dateRangeFilter = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
+                        filterParameter.IsDate = !filterParameter.IsDate;
+                    })' Checked='filterParameter.IsDate' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+            </MudItem>
+            <MudItem xs=10>
+                <MudDateRangePicker Class='txtfield-75 mr-1' @bind-DateRange=@dateRangeFilter @ref="@_dateRangeFilter" Label='@(moduleName.Contains("or-list",StringComparison.InvariantCultureIgnoreCase) ? "Collection Date":"Date Range")' 
+                    IconSize='Size.Small' DisableToolbar  AnchorOrigin='Origin.BottomLeft' TransformOrigin='Origin.BottomRight'
+                    Placeholder="Date Range" Disabled="@(!filterParameter.IsDate)" Variant='Variant.Outlined' Margin='Margin.Dense'>
+                    <PickerActions>
+                        <MudButton Class='btn-ios-d font12' OnClick='(() => DateRangeToday(dateRangeFilter))' Size='Size.Small' DisableElevation Variant='Variant.Text'>
+                            Today
+                        </MudButton>
+                        <MudSpacer />
+                        <MudButton Class='btn-ios-d font12' OnClick='(() => CancelDatePicker(_dateRangeFilter))' Size='Size.Small' DisableElevation>
+                            Cancel
+                        </MudButton>
+                        <MudButton Class='btn-ios-d font12' OnClick='(() => SubmitDatePicker(_dateRangeFilter))' Variant='Variant.Filled' Size='Size.Small' DisableElevation Color='Color.Primary'>
+                            Submit
+                        </MudButton>
+                    </PickerActions>   
+                </MudDateRangePicker>
+            </MudItem>
+            @if(moduleName.Contains("liquidation-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                <MudItem class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        datePeriodRange = new DateRange(DateTime.Now.Date,DateTime.Now.Date);
+                        filterParameter.IsPeriodDate = !filterParameter.IsPeriodDate;
+                    })' Checked='filterParameter.IsPeriodDate' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem xs=10>
+                    <MudDateRangePicker Class='txtfield-75 mr-1' @bind-DateRange=@datePeriodRange Label='Period Date' @ref='@_datePeriodRange' IconSize='Size.Small' DisableToolbar
+                        Placeholder="Date Range" Disabled="@(!filterParameter.IsPeriodDate)" Variant='Variant.Outlined' Margin='Margin.Dense'>
+                        <PickerActions>
+                            <MudButton Class='btn-ios-d font12' OnClick='(() => DateRangeToday(datePeriodRange))' Size='Size.Small' DisableElevation Variant='Variant.Text'>
+                                Today
+                            </MudButton>
+                            <MudSpacer />
+                            <MudButton Class='btn-ios-d font12' OnClick='(() => CancelDatePicker(_datePeriodRange))' Size='Size.Small' DisableElevation>
+                                Cancel
+                            </MudButton>
+                            <MudButton Class='btn-ios-d font12' OnClick='(() => SubmitDatePicker(_datePeriodRange))' Variant='Variant.Filled' Size='Size.Small' DisableElevation Color='Color.Primary'>
+                                Submit
+                            </MudButton>
+                        </PickerActions>    
+                    </MudDateRangePicker>
+                </MudItem>
+            }
+            @if(moduleName.Contains("collection-list", StringComparison.InvariantCultureIgnoreCase) 
+            || moduleName.Contains("collectiondeposit-list", StringComparison.InvariantCultureIgnoreCase)
+            || moduleName.Contains("or-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                <MudItem class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        dateDepositRange = new DateRange(DateTime.Now.Date,DateTime.Now.Date);
+                        filterParameter.IsDepositDate = !filterParameter.IsDepositDate;
+                    })' Checked='filterParameter.IsDepositDate' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem xs=10>
+                    <MudDateRangePicker Class='txtfield-75 mr-1' @bind-DateRange='dateDepositRange' Label='Deposit Date' @ref='@_dateDepositRange' IconSize='Size.Small' DisableToolbar
+                        Placeholder="Date Range" Disabled="@(!filterParameter.IsPeriodDate)" Variant='Variant.Outlined' Margin='Margin.Dense'>
+                        <PickerActions>
+                            <MudButton Class='btn-ios-d font12' OnClick='(() => DateRangeToday(dateDepositRange))' Size='Size.Small' DisableElevation Variant='Variant.Text'>
+                                Today
+                            </MudButton>
+                            <MudSpacer />
+                            <MudButton Class='btn-ios-d font12' OnClick='(() => CancelDatePicker(_dateDepositRange))' Size='Size.Small' DisableElevation>
+                                Cancel
+                            </MudButton>
+                            <MudButton Class='btn-ios-d font12' OnClick='(() => SubmitDatePicker(_dateDepositRange))' Variant='Variant.Filled' Size='Size.Small' DisableElevation Color='Color.Primary'>
+                                Submit
+                            </MudButton>
+                        </PickerActions>    
+                    </MudDateRangePicker>
+                </MudItem>
+            }
+            @if(moduleName.Contains("check-list", StringComparison.InvariantCultureIgnoreCase)
+            || moduleName.Contains("collection-list", StringComparison.InvariantCultureIgnoreCase)
+            || moduleName.Contains("or-list", StringComparison.InvariantCultureIgnoreCase)
+            || moduleName.Contains("debit-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                <MudItem class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        hasBanks = new HashSet<BankModel>();
+                        filterParameter.IsBank = !filterParameter.IsBank;
+                    })' Checked='filterParameter.IsBank' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem xs=10>
+                    <MudSelect Class='txtfield-75 mr-2' MultiSelectionTextFunc='@(new Func<List<string>, string>(SelectedBanks))' @bind-SelectedValues=hasBanks Label='Banks' 
+                        @bind-Value='selectedBanks'  Clearable  
+                        IconSize='Size.Small' Dense MultiSelection Disabled='!filterParameter.IsBank'  Placeholder='Banks' Variant='Variant.Outlined'
+                        AnchorOrigin='Origin.BottomCenter' TransformOrigin='Origin.TopCenter'>
+                        @foreach (var item in bankList)
+                        {
+                            <MudSelectItem  Value="@item">@item.BankName</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            }
+            @if(moduleName.Contains("rfp-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                <MudItem class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        hasRFPDetail = new HashSet<RequestTypeModel>();
+                        filterParameter.IsRequestType = !filterParameter.IsRequestType;
+                    })' Checked='filterParameter.IsRequestType' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem xs=10>
+                    <MudSelect Class='txtfield-75 mr-2' MultiSelectionTextFunc='@(new Func<List<string>, string>(SelectedRFPDetails))' @bind-SelectedValues=hasRFPDetail  Label='Category' 
+                        @bind-Value='selectedRequestType'  Clearable  
+                        IconSize='Size.Small' Dense MultiSelection Disabled='!filterParameter.IsRequestType'  Placeholder='Category' Variant='Variant.Outlined'
+                        AnchorOrigin='Origin.BottomCenter' TransformOrigin='Origin.TopCenter'>
+                        @foreach (var item in requestTypes)
+                        {
+                            <MudSelectItem Value="@item">@item.TypeName</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            }
+            @if(moduleName.Contains("collection-list", StringComparison.InvariantCultureIgnoreCase)
+            || moduleName.Contains("or-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                <MudItem class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        filterParameter.ExpenseId = 0;
+                        filterParameter.IsExpense = !filterParameter.IsExpense;
+                    })' Checked='filterParameter.IsExpense' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem xs=10>
+                    <MudSelect Class='txtfield-75 mr-2' Label='Expense' @bind-Value='filterParameter.ExpenseId'  Clearable Text=''
+                        IconSize='Size.Small' Dense Disabled='!filterParameter.IsExpense'  Placeholder='Expense' Variant='Variant.Outlined'
+                        AnchorOrigin='Origin.BottomCenter' TransformOrigin='Origin.TopCenter'>
+                        @foreach (var item in expenseLineList)
+                        {
+                            <MudSelectItem Value="@item.Id">@item.ExpenseName</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            }
+            @if(!moduleName.Contains("collection-list", StringComparison.InvariantCultureIgnoreCase)
+            && !moduleName.Contains("or-list", StringComparison.InvariantCultureIgnoreCase)
+            && !moduleName.Contains("debit-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                <MudItem class='d-flex align-center justify-center' xs=2>
+                    <small><MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        hasAccountingStatus = new HashSet<AccountingStatusModel>();
+                        filterParameter.IsAccountingStatus = !filterParameter.IsAccountingStatus;
+                    })' Checked='filterParameter.IsAccountingStatus' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' /></small>
+                </MudItem>
+                <MudItem class='d-flex align-center justify-center' xs=10>
+                    <MudSelect Class='txtfield-75 mr-2' MultiSelectionTextFunc='@(new Func<List<string>, string>(SelectedAccountingStatus))' @bind-SelectedValues='hasAccountingStatus' Label='Status' 
+                        @bind-Value='selectedStatus' Clearable
+                        IconSize='Size.Small' Dense MultiSelection Disabled='!filterParameter.IsAccountingStatus' Placeholder='Status' Variant='Variant.Outlined'
+                        AnchorOrigin='Origin.BottomCenter' TransformOrigin='Origin.TopCenter'>
+                        @if(GlobalClassList.accountingStatusList != null)
+                        @foreach (var item in acctgStatusList)
+                        {
+                            <small><MudSelectItem Value="@item">@item.StatusName</MudSelectItem></small>
+                        }
+                    </MudSelect>
+                </MudItem>
+            }
+            <MudItem Class='d-flex align-center justify-end gap-2' xs=12>
+                <MudButton Class='btn-ios-d font12' OnClick='ResetTable' Variant='Variant.Text' Size='Size.Small' DisableElevation Color='Color.Error'>
+                    Reset
+                </MudButton> 
+                <MudSpacer />
+                <MudButton Class='btn-ios-d font12' OnClick='OpenFilter' Variant='Variant.Text' Size='Size.Small' DisableElevation>
+                    Cancel
+                </MudButton> 
+                <MudButton Class='btn-ios-d font12 mr-2' OnClick='MapToGlobalFilter' Variant='Variant.Filled' Color='Color.Secondary' Size='Size.Small' DisableElevation>
+                    Filter
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OpenSideFilterClick { get; set; }
+    [Parameter] public EventCallback FilterClick { get; set; }
+    [Parameter] public EventCallback ResetTableClick { get; set; }
+    [Parameter] public FilterParameter filterParameter { get; set; } = new FilterParameter();
+    [Parameter] public bool openSideFilter { get; set; }
+    [Parameter] public string moduleName { get; set; } = string.Empty;
+    [Parameter] public bool contentVisible { get; set; }
+    private bool dataFetched = true;
+    private DateRange dateRangeFilter = new DateRange(DateTime.Now.Date, DateTime.Now.Date), 
+        datePeriodRange = new DateRange(DateTime.Now.Date, DateTime.Now.Date),
+        dateDepositRange = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
+    private UserAccount requestor  = new UserAccount();
+    private Project project = new Project();
+    private Project currentProject = new();
+    private RequestTypeModel selectedRequestType = new RequestTypeModel();
+    private AccountingStatusModel selectedStatus = new AccountingStatusModel();
+    private BankModel selectedBanks = new BankModel();
+    private List<RequestTypeModel> requestTypes = new List<RequestTypeModel>();
+    private List<AccountingStatusModel> acctgStatusList = new List<AccountingStatusModel>();
+    private List<BankModel> bankList = new List<BankModel>();
+    private List<ExpenseLineModel> expenseLineList = new List<ExpenseLineModel>();
+    private IEnumerable<AccountingStatusModel> hasAccountingStatus {get; set;} = new HashSet<AccountingStatusModel>();
+    private IEnumerable<RequestTypeModel> hasRFPDetail {get; set;} = new HashSet<RequestTypeModel>();
+    private IEnumerable<BankModel> hasBanks {get; set;} = new HashSet<BankModel>();
+    private MudDateRangePicker _dateRangeFilter = new MudDateRangePicker(), _datePeriodRange = new MudDateRangePicker(),
+    _dateDepositRange = new MudDateRangePicker();
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        while (GlobalClassList.requestTypes == null || GlobalClassList.accountingStatusList == null)
+            await Task.Delay(1);
+
+        await Task.Run(() => {
+            requestTypes = GlobalClassList.requestTypes.ToList();
+            if (moduleName.Contains("rfp-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                acctgStatusList = GlobalClassList.accountingStatusList.Where(x=>x.StatusName.Contains("rfp", StringComparison.InvariantCultureIgnoreCase)).ToList();
+            }
+            else if (moduleName.Contains("liquidation-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                acctgStatusList = GlobalClassList.accountingStatusList.Where(x=>x.StatusName.Contains("L-", StringComparison.InvariantCultureIgnoreCase)).ToList();
+            }
+            else
+            {
+                acctgStatusList = GlobalClassList.accountingStatusList.Where(x=> (int)x.StatusEnumCategoryId == 0 || 
+                (int)x.StatusEnumCategoryId == 1 || (int)x.StatusEnumCategoryId == 2 || (int)x.StatusEnumCategoryId == 3 ||
+                (int)x.StatusEnumCategoryId == 10).ToList();
+            }
+            
+            bankList = GlobalClassList.banks.ToList();
+            expenseLineList = GlobalClassList.expenseLineList.ToList();
+        });
+        CompletedFetch();
+    }
+
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+    protected async Task OpenFilter()
+    {
+        contentVisible = !contentVisible;
+        await OpenSideFilterClick.InvokeAsync();
+    }
+
+    private async Task<IEnumerable<UserAccount>> LoadEmployee(string employeeName)
+    {
+        var filterParameter = new FilterParameter()
+        {
+            IsName = true,
+            Name = employeeName,
+            IsLookUp = true
+        };
+        var employee = await GlobalService.LoadAllEmployee(filterParameter, GlobalClass.token);
+        return employee;
+    }
+    private async Task<IEnumerable<Project>> LoadProject(string projectName)
+    {
+      var filterParameter = new FilterParameter()
+      {
+        IsProject = true,
+        ProjectName = projectName,
+        IsId = false
+      };
+      var projects = await GlobalService.LoadPayees(filterParameter,GlobalClass.token);
+      return projects;
+    }
+    private async Task<IEnumerable<Project>> LoadCharging(string chargingName)
+    {
+      var filterParameter = new FilterParameter()
+      {
+        IsProject = true,
+        ProjectName = chargingName,
+        IsId = false
+      };
+      var charging = await GlobalService.LoadChargeProjectLine(filterParameter, GlobalClass.token);
+      return charging;
+    }
+     private string SelectedRFPDetails(List<string> selectedDetail)
+    {
+      var RFP = "";
+      foreach (var item in hasRFPDetail)
+      {
+        RFP = string.Join(", ", hasRFPDetail.Select(x=> x.TypeName));      
+      }
+      return $"{RFP}";
+
+    }
+    private string SelectedAccountingStatus(List<string> selectedStatus)
+    {
+        var status = "";
+        foreach (var item in hasAccountingStatus)
+        {
+            status = string.Join(", ", hasAccountingStatus.Select(x => x.StatusName));      
+        }
+        return $"{status}";
+    }
+
+    private string SelectedBanks(List<string> selectedBanks)
+    {
+        var status = "";
+        foreach (var item in hasBanks)
+        {
+        status = string.Join(", ", hasBanks.Select(x => x.BankName));      
+        }
+        return $"{status}";
+    }
+    private void OnProjectSelected(Project p)
+    {
+        currentProject = p;
+        filterParameter.ProjectName = p.ProjectName;
+        filterParameter.ProjectId = p.ProjectId;
+        filterParameter.ProjectCategoryId = p.ProjectCategoryId;
+    }
+
+    protected async Task MapToGlobalFilter()
+    {
+        GlobalVariable.filterParameter.ControlNumber = GlobalVariable.filterParameter.ControlNumber.Replace(" ","");//Remove white space in control number
+        GlobalVariable.filterParameter = filterParameter;
+        GlobalVariable.filterParameter.DateFrom = Convert.ToDateTime(dateRangeFilter.Start);
+        GlobalVariable.filterParameter.DateTo = Convert.ToDateTime(dateRangeFilter.End);
+        GlobalVariable.filterParameter.PeriodDateFrom = Convert.ToDateTime(datePeriodRange.Start);
+        GlobalVariable.filterParameter.PeriodDateTo = Convert.ToDateTime(datePeriodRange.End);
+        GlobalVariable.filterParameter.DepositDateFrom = Convert.ToDateTime(dateDepositRange.Start);
+        GlobalVariable.filterParameter.DepositDateTo = Convert.ToDateTime(dateDepositRange.End);
+        if(filterParameter.IsRequestType)
+            GlobalVariable.filterParameter.RequestTypeId = string.Join(", ", hasRFPDetail.Select(x=> x.Id));
+        if(filterParameter.IsAccountingStatus)
+            GlobalVariable.filterParameter.AccountingStatusId = string.Join(",", hasAccountingStatus.Select(x=>x.Id));
+        if(filterParameter.IsBank)
+            GlobalVariable.filterParameter.BankId = string.Join(",", hasBanks.Select(x => x.Id));
+        await FilterClick.InvokeAsync();
+    }
+
+    protected async Task ResetTable()
+    {
+        filterParameter = new FilterParameter();
+        requestor = new UserAccount();
+        project = new Project();
+        hasRFPDetail = new List<RequestTypeModel>();
+        hasAccountingStatus = new List<AccountingStatusModel>();
+        dateRangeFilter = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
+        datePeriodRange = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
+        dateDepositRange = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
+        await ResetTableClick.InvokeAsync();
+    }
+    
+    private void DateRangeToday(DateRange dateRangeName)
+    {
+        if (dateRangeName == dateRangeFilter)
+            dateRangeFilter = new DateRange(DateTime.Now.AddDays(-1).Date, DateTime.Now.Date);
+        if (dateRangeName == datePeriodRange)
+            datePeriodRange = new DateRange(DateTime.Now.AddDays(-1).Date, DateTime.Now.Date);
+        if (dateRangeName == dateDepositRange)
+            dateDepositRange = new DateRange(DateTime.Now.AddDays(-1).Date, DateTime.Now.Date);
+    }
+    private void SubmitDatePicker(MudDateRangePicker dateRangePickerName)
+    {
+        dateRangePickerName.Close(true);
+    }
+    private void CancelDatePicker(MudDateRangePicker dateRangePickerName)
+    {
+        dateRangePickerName.Close(false);
+    }
+}

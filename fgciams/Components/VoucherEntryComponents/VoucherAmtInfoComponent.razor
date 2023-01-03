@@ -1,0 +1,198 @@
+
+<div class="vou-entry-amtinfo-grid">
+  <div class="amtinfo-cont1">
+    <small>Misc:</small>
+  </div>
+  <div class="amtinfo-cont2">
+    <MudCheckBox Class='chkbox20px' @bind-Checked='@withSubLedger' ReadOnly Size='Size.Small' Dense Color='Color.Dark'
+        Label='Sub Ledger' />
+  </div>
+  <div class='amtinfo-tags'>
+     <div class='amtinfo-tags__chkbxcont'>
+        <small>Tags:</small>
+        <MudGrid Spacing='0'>
+            <MudItem xs=2>
+                <MudCheckBox Class='chkbox20px' Checked='isNone' CheckedChanged='(async (bool b)=> { isNone = !isNone;  await TagsCheckChanged(b,Enums.RouteTag.None); } )' Size='Size.Small' Dense
+                    Label='@Extensions.GetEnumDescription(Enums.RouteTag.None)' Color='Color.Dark' />
+            </MudItem>
+            <MudItem xs=4>
+                <MudCheckBox Class='chkbox20px' Checked='isGov' CheckedChanged='(async (bool b)=> { isGov = !isGov; await TagsCheckChanged(b,Enums.RouteTag.GovEBenefit); } )' Size='Size.Small' Dense Disabled='isReadonly'
+                    Label='@Extensions.GetEnumDescription(Enums.RouteTag.GovEBenefit)' Color='Color.Dark'/>
+            </MudItem>
+            <MudItem xs=6>
+                <MudCheckBox Class='chkbox20px' Checked='isIssuance' CheckedChanged='(async (bool b)=> { isIssuance = !isIssuance; await TagsCheckChanged(b,Enums.RouteTag.IssuanceAndProcessing); } )' Size='Size.Small' Dense Disabled='isReadonly'
+                    Label='@Extensions.GetEnumDescription(Enums.RouteTag.IssuanceAndProcessing)' Color='Color.Dark'/>
+            </MudItem>
+            <MudItem xs=2>
+                <MudCheckBox Class='chkbox20px' Checked='isBilling' CheckedChanged='(async (bool b)=> { isBilling = !isBilling; await TagsCheckChanged(b,Enums.RouteTag.Billing); } )' Size='Size.Small' Dense Disabled='isReadonly'
+                    Label='@Extensions.GetEnumDescription(Enums.RouteTag.Billing)' Color='Color.Dark'/>
+            </MudItem>
+            <MudItem xs=4>
+                <MudCheckBox Class='chkbox20px' Checked='isOthers' CheckedChanged='(async (bool b)=> { isOthers =! isOthers; await TagsCheckChanged(b,Enums.RouteTag.Others); } )' Size='Size.Small' Dense Disabled='isReadonly'
+                    Label='@Extensions.GetEnumDescription(Enums.RouteTag.Others)' Color='Color.Dark'/>
+            </MudItem>
+        </MudGrid>
+    </div>
+  </div>
+  <div class="amtinfo-cont3">
+    <MudGrid Spacing='0'>
+        <MudItem xs=12>
+            <small>VAT:</small>
+        </MudItem>
+        <MudItem xs=12>
+            <small>EWT:</small>
+        </MudItem>
+          <MudItem xs=12>
+            <small>Total Excluded:</small>
+        </MudItem>
+    </MudGrid>
+  </div>
+  <div class="amtinfo-cont4">
+    <MudGrid Spacing='0'>
+        <MudItem xs=12>
+            <small class='font-bold px-1 @(voucherVatValue > 0 ? "color-green":"color-red")'>
+                @voucherVatValue.ToString("N2") %
+            </small>
+        </MudItem>
+        <MudItem xs=12>
+            <small class='font-bold px-1 @(voucherEWTValue > 0 ? "color-green":"color-red")'>
+                 @voucherEWTValue.ToString("N2") %
+            </small>
+        </MudItem>
+        <MudItem xs=12>
+            <small class='font-bold px-1 @(voucherTotalExcl > 0 ? "color-green":"color-red")'>
+                 @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @voucherTotalExcl.ToString("N2")
+            </small>
+        </MudItem>
+    </MudGrid>
+  </div>
+  <div class="amtinfo-cont5">
+    <MudGrid Spacing='0'>
+        <MudItem xs=12>
+            <small class='txt-uppercase font-bold px-1'>Net Total Amount:</small>
+        </MudItem>
+        <MudItem xs='12'>
+            <small>Total Gross Amount:</small>
+        </MudItem>
+        <MudItem xs='12'>
+            <small>VAT Amount:</small>
+        </MudItem>
+         <MudItem xs='12'>
+            <small>Tax Base:</small>
+        </MudItem>
+         <MudItem xs='12'>
+            <small>WHT %:</small>
+        </MudItem>
+         <MudItem xs='12'>
+            <small>Withholding Tax Amount:</small>
+        </MudItem>
+    </MudGrid>
+  </div>
+  <div class="amtinfo-cont6">
+    <MudGrid Spacing='0'>
+        <MudItem xs=12>
+            <small class='font-bold px-1 @(voucherTotalAmt > 0 ? "color-green":"color-red")'>
+                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @voucherTotalAmt.ToString("N2")
+            </small>
+        </MudItem>
+        <MudItem xs=12>
+            <small class='font-bold px-1 @(voucherGrossIncome > 0 ? "color-green":"color-red")'>
+                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @voucherGrossIncome.ToString("N2")
+            </small>
+        </MudItem>
+        <MudItem xs=12>
+            <small class='font-bold px-1 @(voucherVatInput > 0 ? "color-green":"color-red")'>
+                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @voucherVatInput.ToString("N2")
+            </small>
+        </MudItem>
+        <MudItem xs=12>
+            <small class='font-bold px-1 @(voucherVatNet > 0 ? "color-green":"color-red")'>
+                 @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @voucherVatNet.ToString("N2")
+            </small>
+        </MudItem>
+        <MudItem xs=12>
+            <small class='font-bold px-1 @(voucherEWTValue > 0 ? "color-green":"color-red")'>
+                @voucherEWTValue %
+            </small>
+        </MudItem>
+        <MudItem xs=12>
+            <small class='font-bold px-1 @(voucherWHTTaxAmt > 0 ? "color-green":"color-red")'>
+                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @voucherWHTTaxAmt.ToString("N2")
+            </small>
+        </MudItem>
+    </MudGrid>
+  </div>
+</div>
+@code {
+    [Parameter] public bool withSubLedger { get; set; }
+    [Parameter] public decimal voucherTotalAmt { get; set; }
+    [Parameter] public decimal voucherGrossIncome { get; set; }
+    [Parameter] public decimal voucherVatInput { get; set; }
+    [Parameter] public decimal voucherVatNet { get; set; }
+    [Parameter] public decimal voucherEWTValue { get; set; }
+    [Parameter] public decimal voucherWHTTaxAmt { get; set; }
+    [Parameter] public decimal voucherVatValue { get; set;}
+    [Parameter] public decimal voucherTotalExcl { get; set; }
+    [Parameter] public List<VoucherRouteTagModel> RouteTags { get; set; } = new List<VoucherRouteTagModel>();
+    [Parameter] public EventCallback<(bool,Enums.RouteTag)> TagCheckChanged { get; set; }//multiple arguments to pass in parent
+    private bool isReadonly { get; set; } = false;
+    private bool isNone = false, isBilling = false, isGov = false, isIssuance = false, isOthers = false;
+
+    protected override void OnInitialized()
+    {
+        if(GlobalClass.voucher.Id == 0)
+            GlobalClass.voucher.VoucherRouteTags.Add(NoneTag());
+        DisplayRouteTags();
+    }
+    private async Task TagsCheckChanged(bool b, Enums.RouteTag tag)
+    {
+        //Readonly others if tag is none
+        if(tag == Enums.RouteTag.None)
+        {
+            isReadonly =  !isReadonly;
+            isBilling = isGov = isIssuance = isOthers = false;
+        }
+        else
+            isReadonly = isReadonly;
+        StateHasChanged();
+        await TagCheckChanged.InvokeAsync((b,tag));
+    }
+    private void DisplayRouteTags()
+    {
+        //displaying route tags
+        RouteTags.ForEach( tags =>
+        {
+            if(tags.RouteTagId.Equals(Enums.RouteTag.None))
+            {
+                TagDefault();
+            }
+            else
+            {
+                if(tags.RouteTagId.Equals(Enums.RouteTag.Billing))
+                    isBilling = !isBilling;
+                else if(tags.RouteTagId.Equals(Enums.RouteTag.GovEBenefit))
+                    isGov = !isGov;
+                else if(tags.RouteTagId.Equals(Enums.RouteTag.IssuanceAndProcessing))
+                    isIssuance = !isIssuance;
+                else
+                    isOthers = !isOthers;
+            }
+        });
+        StateHasChanged();
+    } 
+    private void TagDefault()
+    {
+        isNone = !isNone;
+        isReadonly =  !isReadonly;
+        isBilling = isGov = isIssuance = isOthers = false;
+    }
+    private VoucherRouteTagModel NoneTag()
+    {
+        return new VoucherRouteTagModel()
+        {
+            IsActive = true,
+            RouteTagId = Enums.RouteTag.None,
+            IsRouted = true
+        };
+    }
+}

@@ -1,8 +1,93 @@
-.default-report-container { height: calc(100vh - 300px); }
-.default-report-viewscreen { height: calc(100vh - 120px); }
+@use "../flexgridmods/flexgridmods.styles.css";
+@use "../animations/animation.styles.css";
+
+.default-report-container { 
+    height: calc(100vh - 300px); 
+}
+.default-report-viewscreen { 
+    height: calc(100vh - 120px); 
+}
 .default-report-view {
     transform-origin: 0px 0px 0px; 
     // transform: scale(0.5); 
     width: 1200px; 
     height: 500px;
+}
+
+.rpt-container {
+    @extend .dflex-col, .flex-full, .fade-in;
+    padding: 4px;
+    &__document-cont {
+        @extend .dflex-col, .flex-full, .fade-in;
+        padding: 4px;
+    }
+    &__iframe-cont {
+        @extend .dflex-col, .flex-full, .fade-in;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+.rpt-container-listview {
+    @extend .dflex-col, .flex-full, .fade-in;
+    height: 600px;
+    padding: 4px;
+    &__document-cont {
+        @extend .dflex-col, .flex-full, .fade-in;
+        background-color: #2A2A2E !important;
+        padding: 4px;
+    }
+    &__iframe-cont {
+        @extend .dflex-col, .flex-full, .fade-in;
+        align-items: center;
+        justify-content: center;
+    }
+    &__iframe-scaled  {
+        zoom: 0.75;
+    }
+}
+.rptctrls-container {
+    border-radius: 5px;
+    &__controls {
+        @extend .dflex-row, .fade-in;
+        background-color: transparent;
+        padding: 4px;
+        gap: 4px;
+    }
+}
+
+.rptctrls-bottom {
+    bottom: 5%;
+    position: absolute;
+    right: 50%;
+    left: 50%;
+    width: max-content;
+}
+
+.rptctrls-side-bottom {
+    bottom: 4%;
+    position: absolute;
+    right: 3%;
+    width: max-content;
+}
+
+.rptctrls-side-bottom-list {
+    bottom: 10%;
+    position: relative;
+    left: 40%;
+    width: max-content;
+}
+
+.rptctrls-side-top {
+    position: absolute;
+    top: 15%;
+    right: 5%;
+    width: max-content;
+}
+
+.rptctrls-side-top-rel {
+    position: relative;
+    bottom: 80%;
+    left: 41%;
+    width: max-content;
 }

@@ -1,0 +1,260 @@
+@page "/debit/create"
+@page "/debit"
+
+@inject IDialogService dialogService
+@inject IBankService bankService
+@inject IDebitService debitService
+@inject ISnackbar snackBarService
+@inject IGlobalService globalService
+@inject NavigationManager navigationManager
+
+<div class='page-cont d-flex justify-center'>
+    @if (!dataFetched)
+    {
+       <div class='flex-1 pa-2'>
+            <SkeletonPageList />
+        </div>
+    }
+    else
+    {
+        <MudContainer Class='pa-2' Fixed='false' MaxWidth='MaxWidth.Medium'>
+            <EditForm Model="@GlobalClass.debit" OnValidSubmit="OnValidSubmit" OnInvalidSubmit='OnInvalidInput'>
+                <DataAnnotationsValidator/>
+                <MudPaper Class="debit-container" Elevation='1'>
+                    <div class="debit-header">
+                        <MudGrid Spacing='1'>
+                            <MudItem Class='d-flex align-center justify-start gap-1' xs=4>
+                                <MudImage Class='fgcilogocont__imglogo' Src='images/fglogo/fgci1.png' Alt='fgci logo' Height='30' Width='30'/>
+                                <MudText Class='fgcilogocont__lblfirst'>F. GURREA</MudText>
+                                <MudText Class='fgcilogocont__lblsecond'>Construction, Inc.</MudText>
+                            </MudItem>
+                            <MudItem Class='d-flex align-center justify-center' xs=4>
+                                <MudText Class='txt-uppercase font-1-1rem ff-theramin'>@GlobalClass.pageTitle</MudText>
+                            </MudItem>
+                            <MudItem Class='d-flex align-center justify-end' xs=4>
+                                <MudTooltip Text='Create new debit' Arrow Placement='Placement.Top'>
+                                    <MudButton Class='btn-ios-d pa-1 font12' OnClick='New' StartIcon="@Icons.Material.Filled.Add" Variant='Variant.Filled'
+                                    Color='Color.Info' Size='Size.Small' DisableElevation>new</MudButton>
+                                </MudTooltip>
+                            </MudItem>
+                        </MudGrid>
+                    </div>
+                    <div class="debit-bank">
+                        <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>
+                            Bank:
+                            <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                        </MudText>
+                        <BlazoredTypeahead SearchMethod=Extensions.SearchBank ValueChanged="((BankModel bank)=>SelectedBank(bank))" ValueExpression='(()=>bank)' Value="bank"
+                            Context='selbank' Debounce="500" placeholder='BANK & ACCOUNT NO.'>
+                            <SelectedTemplate>
+                                <MudText Class='font12'>@selbank.ShortcutName</MudText>
+                            </SelectedTemplate>
+                            <ResultTemplate>
+                                @selbank.ShortcutName
+                            </ResultTemplate>
+                        </BlazoredTypeahead>
+                        <div class="validation-font12">
+                            <ValidationMessage For="@(() => GlobalClass.debit.BankId)" />
+                        </div>
+                    </div>
+                    <div class="debit-date">
+                        <MudText Class='d-flex txt-uppercase font-bold font10'>
+                            Debit Date: 
+                            <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                        </MudText>
+                        <MudDatePicker Class='txt-top-0 font14-txtfield txtfield-right' @bind-Date='GlobalClass.debit.DebitDate' IconSize='Size.Small' Margin='Margin.Dense' DisableToolbar Color='Color.Dark' />
+                    </div>
+                    <div class="debit-amount">
+                        <MudText Class='d-flex txt-uppercase font-bold font10'>
+                            Amount: 
+                            <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                        </MudText>
+                        <div class='debit-amount__amtcont d-flex align-center gap-2'>
+                            <MudText Typo='Typo.body2' Class='font-bold pl-2' Style='@(GlobalClass.debit.Amount > 0 ? "color:green":"color:red")'>
+                                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                            </MudText>
+                            <MudNumericField Class='txtfield-font14-no-margin txtfield-right' @bind-Value='GlobalClass.debit.Amount' Culture='CultureInfo.GetCultureInfo("en-PH")'
+                                Format='N2' Variant='Variant.Text' HideSpinButtons Style='@(GlobalClass.debit.Amount > 0 ? "color:green":"color:red")'/>
+                        </div>
+                    </div>
+                    <div class='debit-controlno'>
+                        <MudText Class='wspace-nowrap txt-uppercase font-bold font10'>Control No:</MudText>
+                        <MudChip Class='chip-radius-5 txt-uppercase font-bold font12' Color='Color.Error' Size='Size.Medium' Variant='Variant.Outlined'>
+                            @(GlobalClass.debit.Id == 0 ? "Auto":GlobalClass.debit.ControlNumber)
+                        </MudChip>
+                    </div>
+                    <div class="debit-remarks">
+                            <MudText Class='d-flex txt-uppercase font-bold font10'>
+                            Remarks: 
+                            <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                        </MudText>
+                        <MudTextField Class='txtfield-overflow-ellipsis font14-txtfield txt-top-0' @bind-Value="@GlobalClass.debit.Remarks" Margin='Margin.Dense' Variant='Variant.Outlined' 
+                            Lines='7' />
+                    </div>
+                    <div class="debit-sidebar">
+                        <MudCardHeader Class='pa-2 border-thin-bottom bgc-F4F5FB height2-05rem'>
+                            <MudText Class='txt-uppercase font12 font-bold'>Signatory</MudText>
+                            <MudSpacer />
+                            <MudIcon Icon='@Icons.Material.Filled.PersonPin' Size='Size.Small' />
+                        </MudCardHeader>
+                        <MudCardContent Class='d-flex align-center pa-2 gap-2'>
+                            <MudAvatar Class='mb-1' Image='@(preparedBy.Picture.Count() != 0 ? ($"data:image/png;base64, {Convert.ToBase64String(preparedBy.Picture)}"):"images/fglogo/fgci1-gs.png")' Size='Size.Medium' />
+                            <div class='d-flex flex-grow-1 flex-column blzrthead-disabled-minheight15'>
+                                <BlazoredTypeahead SearchMethod='LoadEmployee' Context='selprep' placeholder='Prepared By' Disabled
+                                    ValueChanged='( (UserAccount user)=> PreparedbyEmployee(user) )'
+                                    ValueExpression='( ()=> preparedBy )'
+                                    Value='preparedBy'
+                                    Debounce='500'>
+                                    <SelectedTemplate>
+                                        <small class='blzsmallreq-170px'>@preparedBy.EmployeeName</small>
+                                    </SelectedTemplate>
+                                    <ResultTemplate>
+                                        <div class='d-flex align-center gap-2'>
+                                            <MudAvatar Class='mb-1' Image='@(selprep.Picture.Count() != 0 ? ($"data:image/png;base64, {Convert.ToBase64String(selprep.Picture)}"):"images/fglogo/fgci1-gs.png")' Size='Size.Medium' />
+                                                <div class='d-flex flex-column'>
+                                                <MudText Class='font-bold' Typo='Typo.body2'>
+                                                    @selprep.EmployeeName
+                                                </MudText>
+                                                <MudText Typo='Typo.body2'>
+                                                    @selprep.Designation
+                                                </MudText>
+                                            </div>
+                                        </div>
+                                    </ResultTemplate>
+                                </BlazoredTypeahead>
+                                <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
+                                    Prepared By
+                                    <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                                </MudText>
+                            </div>
+                        </MudCardContent>
+                        <MudSpacer />
+                        <MudCardActions Class='d-flex gap-2 border-thin-top'>
+                            <MudSpacer />
+                            <MudButton Class='btn-ios-d font12' OnClick='(() => 
+                                {
+                                    New();
+                                    navigationManager.NavigateTo("/debit/list");
+                                })' 
+                                Variant='Variant.Text' Size='Size.Medium' DisableElevation>Cancel</MudButton>
+                            <MudButton Class='btn-ios-d font12' ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color='Color.Primary' Size='Size.Medium' DisableElevation>
+                                @(currentActionMode == Enums.ActionMode.Create ? "SAVE" : "UPDATE")
+                            </MudButton>
+                        </MudCardActions>
+                    </div>
+                </MudPaper>
+            </EditForm>
+        </MudContainer>
+    }
+</div>
+
+@code {
+    private bool dataFetched, _processing;
+    private BankModel bank = new();
+    private UserAccount preparedBy = new UserAccount();
+    public static Enums.ActionMode currentActionMode { get;set; }
+    protected override async Task OnInitializedAsync()
+    {   
+        GlobalClass.pageTitle = "Debit Entry";
+        if(currentActionMode != Enums.ActionMode.Create)
+            await DisplayProperties();//Edit
+        else
+        {
+            currentActionMode = Enums.ActionMode.Create;
+            preparedBy = GlobalClass.currentUserAccount;
+        }
+        dataFetched =true;
+        StateHasChanged();
+    }
+    private async Task New()
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("contentText", "create new debit entry");
+        parameters.Add("dialogTitle", "Create New");
+        parameters.Add("buttonText", "Create New");
+        parameters.Add("actionMode", Enums.ActionMode.Prompt);
+        parameters.Add("controlNumber", GlobalClass.debit.ControlNumber);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.Small, FullWidth = false, NoHeader = false };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(string.Empty,parameters,options).Result;
+        if(!resultDialog.Canceled)
+        {
+            string thisPage = "debit-create";
+            navigationManager.NavigateTo($"/refresh/{thisPage}");
+        }
+    }
+    private async Task DisplayProperties()
+    {
+        bank = GlobalClassList.banks.Where( b => b.Id == GlobalClass.debit.BankId).FirstOrDefault()?? new();
+        Console.WriteLine(GlobalClass.debit.PreparedById);
+        preparedBy = await globalService.GetEmployeeById(GlobalClass.debit.PreparedById,GlobalClass.token);
+    }
+    private async Task<IEnumerable<UserAccount>> LoadEmployee(string employeeName)
+    {
+        var filterParameter = new FilterParameter()
+        {
+            IsName = true,
+            Name = employeeName,
+            IsLookUp = true
+        };
+        var employee = await globalService.LoadAllEmployee(filterParameter, GlobalClass.token);
+        return employee;
+    }
+    private void PreparedbyEmployee(UserAccount employee)
+    {
+        if(employee == null)
+            employee = new();
+        preparedBy = employee;
+        GlobalClass.debit.PreparedById = employee.EmployeeId;
+        GlobalClass.debit.UserId = employee.EmployeeId;
+    }
+    private void SelectedBank(BankModel model)
+    {
+        if(model == null)
+            model = new();
+        bank = model;
+        GlobalClass.debit.BankId = model.Id;
+    }
+    private async Task Prompt()
+    {
+        var parameters = new DialogParameters();
+        string contentText = "Debit";
+        string dialogTitle = DebitEntry.currentActionMode +" "+ contentText;
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("actionMode", DebitEntry.currentActionMode);
+        parameters.Add("contentText", contentText);
+        parameters.Add("controlNumber", GlobalClass.debit.ControlNumber);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Canceled)
+        {   
+            DebitModel returnedModel = new DebitModel();
+            GlobalClass.debit.UserId = GlobalClass.currentUserAccount.EmployeeId;
+            if (DebitEntry.currentActionMode == Enums.ActionMode.Create)
+            {
+                GlobalClass.debit.Activity = "Create debit";
+                returnedModel = await debitService.SaveDebit(GlobalClass.debit,GlobalClass.token);
+                Extensions.ShowAlert("Debit successfully added",Variant.Filled,snackBarService,Severity.Success);
+            }
+            else
+            {
+                GlobalClass.debit.Activity = "Update debit";
+                returnedModel = await debitService.UpdateDebit(GlobalClass.debit,GlobalClass.token);
+                Extensions.ShowAlert("Debit has been updated successfully",Variant.Filled,snackBarService,Severity.Success);
+            }
+            if(GlobalVariable.AMSHubConnection != null)
+                await GlobalVariable.AMSHubConnection.InvokeAsync("SaveDebit",returnedModel);    
+            navigationManager.NavigateTo($"/debit/list");
+        }
+        else
+            Extensions.ShowAlertV2("Action Cancelled.", Variant.Filled,snackBarService,Severity.Normal,Icons.Material.Filled.Cancel,Defaults.Classes.Position.BottomCenter);
+
+    }
+    private async Task OnValidSubmit()
+    {
+        await Prompt();
+    }
+    private void OnInvalidInput()
+    {
+        Extensions.ShowAlert("Please fill the required field", Variant.Filled, snackBarService, Severity.Error);
+    }
+}

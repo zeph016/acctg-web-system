@@ -1,4 +1,4 @@
-<div class="container" style="width: 800px;">
+@* <div class="container" style="width: 800px;">
     @foreach(var icons in Icons())
         {
             <MudIcon Icon="@icons" Color="Color.Primary"></MudIcon>
@@ -8,8 +8,8 @@
 @code{
     List<string> Icons(){
         List<string> values = new List<string>();
-        foreach (var properties in MudBlazor.Icons.Filled.GetType().GetProperties())
-                values.Add(properties.GetValue(MudBlazor.Icons.Filled).ToString());
+        foreach (var properties in MudBlazor.Icons.Material.Filled.GetType().GetProperties())
+                values.Add(properties.GetValue(MudBlazor.Icons.Material.Filled).ToString());
         return values;
     }
-}
+} *@

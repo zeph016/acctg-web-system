@@ -1,0 +1,204 @@
+@inject IGlobalService globalService
+@inject ICollectionService collectionService
+
+<MudTd Class='text-center' DataLabel="Division Name">
+        <MudDatePicker @bind-Date='CollectionModel.TransactionDate' Margin='Margin.Dense'></MudDatePicker>
+</MudTd>
+<MudTd Class='text-center' DataLabel="Short Name">
+    <div class="voucher-desc d-flex align-center pa-2 gap-2">
+        <MudTextField Class='txtfield-overflow-ellipsis font14-txtfield txt-top-0' @bind-Value='CollectionModel.ReferenceNo' />
+    </div>
+</MudTd>
+<MudTd>
+    <BlazoredTypeahead SearchMethod='LoadCharging' Context='rowProject'
+        ValueChanged="((Project p)=>OnRowProjectValueChanged(CollectionModel,p))" 
+        Value="CollectionModel.rowCharging" 
+        ValueExpression="(()=>CollectionModel.rowCharging)"
+        Debounce='500' MaximumSuggestions='5' Placeholder='Project/Charging' DisableClear>
+        <SelectedTemplate>
+            <div class='overflow-hidden'>
+            @if (rowProject.ProjectId != 0) {
+                    <MudTooltip Class='wspace-nowrap' Text="@rowProject.ProjectName">
+                        <MudText Class='font12'>@rowProject.ProjectName</MudText>
+                    </MudTooltip>
+            } else {
+                    <MudText Class='font12'> - </MudText>
+            }
+            </div>
+        </SelectedTemplate>
+            <ResultTemplate>
+                @rowProject.ProjectName | @rowProject.Location
+            </ResultTemplate>
+    </BlazoredTypeahead>
+</MudTd>
+<MudTd>
+    <BlazoredTypeahead SearchMethod='LoadExpenseLine' Context='rowExpenseLine'
+        ValueChanged='((ExpenseLineModel exp) => OnRowSelectedExpenseLine(CollectionModel,exp))'
+        ValueExpression='(()=>CollectionModel.rowExpenseLine)'
+        Value='CollectionModel.rowExpenseLine'
+        Debounce='500' MaximumSuggestions='5' DisableClear>
+        <SelectedTemplate>
+            <div class='overflow-hidden wspace-nowrap'>
+                @if (!String.IsNullOrEmpty(rowExpenseLine.ExpenseName)) {
+                <MudText Class='font12'>@rowExpenseLine.ExpenseName</MudText>
+                } else {
+                <MudText Class='font12'> - </MudText>
+                }
+            </div>
+        </SelectedTemplate>
+        <ResultTemplate>
+            @rowExpenseLine.ExpenseName
+        </ResultTemplate>
+    </BlazoredTypeahead>
+</MudTd>
+<MudTd>
+    <MudSelect @bind-Value="CollectionModel.CollectionCategoryId" Text="@Extensions.GetEnumDescription(CollectionModel.CollectionCategoryId)" Placeholder="Expense Line Category" Margin='Margin.Dense'
+    AnchorOrigin="Origin.BottomCenter">
+    @foreach (Enums.CollectionCategory collectionCategory in Enum.GetValues(typeof(Enums.CollectionCategory)))
+    {
+        <MudSelectItem Value="@collectionCategory">@Extensions.GetEnumDescription(collectionCategory)</MudSelectItem>
+    }
+</MudSelect>
+</MudTd>
+<MudTd DataLabel="Division Name">
+    <div class="voucher-desc d-flex align-center pa-2 gap-2">
+        <MudTextField Class='txtfield-overflow-ellipsis font14-txtfield txt-top-0' @bind-Value='CollectionModel.Mobilization' />
+    </div>
+</MudTd>
+<MudTd DataLabel="Division Name">
+    <div class="voucher-desc d-flex align-center pa-2 gap-2">
+        <MudTextField Class='txtfield-overflow-ellipsis font14-txtfield txt-top-0' @bind-Value='CollectionModel.Retention' />
+    </div>
+</MudTd>
+<MudTd DataLabel="Division Name">
+    <div class="voucher-desc d-flex align-center pa-2 gap-2">
+        <MudTextField Class='txtfield-overflow-ellipsis font14-txtfield txt-top-0' @bind-Value='CollectionModel.Others' />
+    </div>
+</MudTd>
+<MudTd DataLabel="Division Name">
+    <div class="voucher-desc d-flex align-center pa-2 gap-2">
+        <MudTextField Class='txtfield-overflow-ellipsis font14-txtfield txt-top-0' @bind-Value='CollectionModel.CheckNumber' />
+    </div>
+</MudTd>
+<MudTd DataLabel="Division Name">
+    <div class="voucher-desc d-flex align-center pa-2 gap-2">
+        <MudTextField Class='txtfield-overflow-ellipsis font14-txtfield txt-top-0' @bind-Value='CollectionModel.OfficialReceipt' />
+    </div>
+</MudTd>
+<MudTd DataLabel="Division Name">
+    <div class="voucher-desc d-flex align-center pa-2 gap-2">
+        <MudTextField Class='txtfield-overflow-ellipsis font14-txtfield txt-top-0' @bind-Value='CollectionModel.Remarks' />
+    </div>
+</MudTd>
+<MudTd Class='wspace-nowrap text-right' DataLabel='Amount'>
+    <div class='d-flex align-center gap-2'>
+        <MudText Class='font-bold font12' Color='Color.Error' >
+            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+        </MudText>
+        <MudNumericField Class='txtfield-overflow-ellipsis txt-top-0 tfield-color-red txtfield-right font12-txtfield'
+        @bind-Value='CollectionModel.Debit' Margin='Margin.None' Format='N2' HideSpinButtons Variant='Variant.Text' ></MudNumericField>
+    </div>
+</MudTd>
+<MudTd Class='wspace-nowrap text-right' DataLabel='Amount'>
+    <div class='d-flex align-center gap-2'>
+        <MudText Class='font-bold font12' Color='Color.Error' >
+            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+        </MudText>
+        <MudNumericField Class='txtfield-overflow-ellipsis txt-top-0 tfield-color-red txtfield-right font12-txtfield'
+        @bind-Value='CollectionModel.Credit' Margin='Margin.None' Format='N2' HideSpinButtons Variant='Variant.Text' ></MudNumericField>
+    </div>
+</MudTd>
+<MudTd Class='wspace-nowrap text-right' DataLabel='Amount'>
+    <div class='d-flex align-center gap-2'>
+        <MudText Class='font-bold font12' Color='Color.Error' >
+            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+        </MudText>
+        <MudNumericField Class='txtfield-overflow-ellipsis txt-top-0 tfield-color-red txtfield-right font12-txtfield'
+        @bind-Value='CollectionModel.GrossAmount' Margin='Margin.None' Format='N2' HideSpinButtons Variant='Variant.Text' ></MudNumericField>
+    </div>
+</MudTd>
+<MudTd Class='wspace-nowrap text-right' DataLabel='Amount'>
+    <div class='d-flex align-center gap-2'>
+        <MudText Class='font-bold font12' Color='Color.Error' >
+            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+        </MudText>
+        <MudNumericField Class='txtfield-overflow-ellipsis txt-top-0 tfield-color-red txtfield-right font12-txtfield'
+        @bind-Value='CollectionModel.Tax' Margin='Margin.None' Format='N2' HideSpinButtons Variant='Variant.Text' ></MudNumericField>
+    </div>
+</MudTd>
+<MudTd Class='wspace-nowrap text-right' DataLabel='Amount'>
+    <div class='d-flex align-center gap-2'>
+        <MudText Class='font-bold font12' Color='Color.Error' >
+            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+        </MudText>
+        <MudNumericField Class='txtfield-overflow-ellipsis txt-top-0 tfield-color-red txtfield-right font12-txtfield'
+        @bind-Value='CollectionModel.Amount' Margin='Margin.None' Format='N2' HideSpinButtons Variant='Variant.Text' ></MudNumericField>
+    </div>
+</MudTd>
+<MudTd Class='wspace-nowrap text-right' DataLabel='Amount'>
+    <div class='d-flex align-center gap-2'>
+        <MudText Class='font-bold font12' Color='Color.Error' >
+            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+        </MudText>
+        <MudNumericField Class='txtfield-overflow-ellipsis txt-top-0 tfield-color-red txtfield-right font12-txtfield'
+        @bind-Value='CollectionModel.NetAmount' Margin='Margin.None' Format='N2' HideSpinButtons Variant='Variant.Text' ></MudNumericField>
+    </div>
+</MudTd>
+<MudTd>
+    <MudIconButton OnClick='(() => CancelEdit() )' Icon='@Icons.Material.Filled.Close' Color='Color.Error'
+        Size='Size.Small'></MudIconButton>
+    <MudIconButton OnClick='(() => SaveChanges() )' Icon='@Icons.Material.Filled.Save' Color='Color.Primary'
+        Size='Size.Small'></MudIconButton>
+</MudTd>
+
+@code
+{
+    [Parameter] public CollectionModel CollectionModel  {get;set;}= new();
+    [Parameter] public EventCallback<bool> OnCancelEdit {get;set;}
+    [Parameter] public EventCallback OnPromptNotCancelled {get;set;}
+    protected override async Task OnInitializedAsync()
+    {
+        CollectionModel.rowCharging = (await LoadCharging(CollectionModel.ChargeName)).FirstOrDefault()?? new();
+        CollectionModel.rowExpenseLine = (await LoadExpenseLine(CollectionModel.ExpenseName)).FirstOrDefault()?? new();
+    }
+    private async Task<IEnumerable<Project>> LoadCharging(string chargingName)
+    {
+      var filterParameter = new FilterParameter()
+      {
+        IsProject = true,
+        ProjectName = chargingName,
+        IsId = false
+      };
+      var charging = await globalService.LoadChargeProjectLine(filterParameter, GlobalClass.token);
+      return charging;
+    }
+    private async Task<IEnumerable<ExpenseLineModel>> LoadExpenseLine(string expenseName)
+    {
+      return await Task.Run(() => 
+      GlobalClassList.expenseLineList
+        .Where(exp => exp.WithLedger && exp.ExpenseName.ToLower().Contains(expenseName.ToLower()))
+        .ToList());
+    }
+    private void OnRowProjectValueChanged(CollectionModel collection,Project project)
+    {
+        collection.rowCharging = project;
+        collection.ChargeId = project.ProjectId;
+        collection.ChargeCategoryId = project.ProjectCategoryId;
+    }
+    private void OnRowSelectedExpenseLine(CollectionModel collectionModel, ExpenseLineModel expenseLine)
+    {
+        collectionModel.rowExpenseLine = expenseLine;
+        collectionModel.ExpenseId = expenseLine.Id;
+    }
+    private async Task CancelEdit()
+    {
+        await OnCancelEdit.InvokeAsync();
+    }
+    private async Task SaveChanges()
+    {
+         await OnPromptNotCancelled.InvokeAsync();
+        @* CollectionModel.UserId = GlobalClass.currentUserAccount.EmployeeId;
+        CollectionModel.Activity = "Update Collection";
+        await collectionService.UpdateCollection(CollectionModel,GlobalClass.token); *@
+    }
+}

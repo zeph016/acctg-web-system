@@ -1,0 +1,265 @@
+.width100 {
+  width: 100% !important;
+}
+
+.width90 {
+  width: 90% !important;
+}
+
+.width75 {
+  width: 75% !important;
+}
+
+.width70 {
+  width: 70% !important;
+}
+
+.width50 {
+  width: 50% !important;
+}
+
+.width40 {
+  width: 40% !important;
+}
+
+.width35 {
+  width: 35% !important;
+}
+
+.width30 {
+  width: 30% !important;
+}
+
+.width25 {
+  width: 25% !important;
+}
+
+.width20 {
+  width: 20% !important;
+}
+
+.width15 {
+  width: 15% !important;
+}
+
+.width10 {
+  width: 10% !important;
+}
+
+.width5 {
+  width: 5% !important;
+}
+
+.width300px {
+  width: 300px;
+}
+
+.width295px {
+  width: 295px;
+}
+
+.width250px {
+  width: 250px;
+}
+
+.width210px {
+  width: 210px;
+}
+
+.width150px {
+  width: 150px;
+}
+
+.width120px {
+  width: 120px;
+}
+
+.width100px {
+  width: 100px;
+}
+
+.width75px {
+  width: 75px;
+}
+
+.height100 {
+  height: 100% !important;
+}
+
+.height50 {
+  height: 50% !important;
+}
+
+.height50px {
+  height: 50px !important;
+}
+
+.height36px {
+  height: 36px !important;
+}
+
+.height35px {
+  height: 35px !important;
+}
+
+.height32px {
+  height: 32px !important;
+}
+
+.height18 {
+  height: 18px;
+}
+
+.min-height20px {
+  min-height: 20px;
+}
+
+.min-width75 {
+  min-width: 75%;
+}
+
+.min-width50 {
+  min-width: 50%;
+}
+
+.min-width40 {
+  min-width: 40%;
+}
+
+.min-width25 {
+  min-width: 25%;
+}
+
+.min-width20 {
+  min-width: 20%;
+}
+
+.min-width15 {
+  min-width: 15%;
+}
+
+.max-width50 {
+  max-width: 50%;
+}
+
+.max-width55 {
+  max-width: 55%;
+}
+
+.max-width90 {
+  max-width: 90%;
+}
+
+.max-width100 {
+  max-width: 100%;
+}
+
+.max-width100px {
+  max-width: 100px !important;
+}
+
+.max-width250px {
+  max-width: 250px;
+}
+
+.min-width200px {
+  min-width: 200px;
+}
+
+.min-width100px {
+  min-width: 100px !important;
+}
+
+.min-width44px {
+  min-width: 44px;
+}
+
+.height2-45rem {
+  height: 2.45rem;
+}
+
+.height2-5rem {
+  height: 2.5rem;
+}
+
+.height2-05rem {
+  height: 2.05rem;
+}
+
+.zindex1 {
+  z-index: 1;
+}
+
+.top10 {
+  top: 10%;
+}
+
+.top15 {
+  top: 15%;
+}
+
+.tooltipw100 .mud-tooltip-root {
+  width: 100% !important;
+}
+
+.r-0 {
+  right: 0 !important;
+}
+
+.pad-bott05px {
+  padding-bottom: 0.5px !important;
+}
+
+.chkbox20px {
+  height: 20px !important;
+  width: 20px !important;
+}
+
+.chkbox20px .mud-typography {
+  font-size: 10px !important;
+  white-space: nowrap !important;
+}
+
+.dynamic-width-1, .jrnl-td-width {
+  max-width: calc(80vw - 760px);
+  align-items: center;
+  display: flex;
+}
+
+@media only screen and (max-width: 1366px) {
+  .dynamic-width-1, .jrnl-td-width {
+    max-width: calc(40vw - 250px);
+  }
+}
+.dynamic-width-1 small, .jrnl-td-width small {
+  flex: 1 1 0%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.dynamic-td-amtwidth, .jrnl-td-amtwidth {
+  max-width: calc(80vw - 900px);
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  min-width: 90px;
+}
+
+@media only screen and (max-width: 1366px) {
+  .dynamic-td-amtwidth, .jrnl-td-amtwidth {
+    max-width: calc(40vw - 300px);
+  }
+}
+.dynamic-td-amtwidth small, .jrnl-td-amtwidth small {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+} /*# sourceMappingURL=heightwidth.styles.css.map */
+.jrnl-td-width {
+  justify-content: space-between;
+}
+
+.jrnl-td-amtwidth {
+  justify-content: space-between;
+}/*# sourceMappingURL=journal.styles.css.map */

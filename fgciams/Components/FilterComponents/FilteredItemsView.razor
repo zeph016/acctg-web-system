@@ -1,0 +1,69 @@
+@inject IJSRuntime JSRuntime
+
+
+@if(filterParameter.IsCharged || filterParameter.IsReferenceNumber ||
+    filterParameter.IsDate || filterParameter.IsExpense)
+{
+    <MudIcon Class='mx-1' Icon="@Icons.Material.Filled.FilterAlt" Title="Filter" Color='Color.Dark' Size='Size.Small' />
+    <div class='selfiltereditems-container'>
+        @if(filterParameter.IsCharged)
+        {
+            <MudPaper>
+                <p class='custom-chip-filter' @onclick="OpenFilter">@filterParameter.PayeeName</p>
+            </MudPaper>
+        }
+        @if(filterParameter.IsReferenceNumber)
+        {
+            <MudPaper>
+                <p class='custom-chip-filter' OnClick='OpenFilter'>@filterParameter.ReferenceNumber</p>
+            </MudPaper>
+        }
+        @if(filterParameter.IsDate)
+        {
+            <MudPaper>
+                <p class='custom-chip-filter' @onclick="OpenFilter">
+                    <MudIcon Icon='@Icons.Material.Filled.DateRange' Size='Size.Small' />
+                    @filterParameter.DateFrom.ToShortDateString()
+                    -
+                    @filterParameter.DateTo.ToShortDateString()
+                </p>
+            </MudPaper>
+        }
+        @if(filterParameter.IsExpense)
+        {
+            <MudPaper>
+                <p class='custom-chip-filter' @onclick="OpenFilter">
+                    @GetCurrentExpense(filterParameter.ExpenseId)
+                </p>
+            </MudPaper>
+        }
+    </div>
+}
+
+
+@code {
+    [Parameter] public FilterParameter filterParameter { get; set; } = default!;
+    [Parameter] public EventCallback OpenSideFilter { get; set; }
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+    private async Task OpenFilter()
+    {
+        await OpenSideFilter.InvokeAsync();
+    }
+
+    private string GetCurrentExpense(long expenseId)
+    {
+        var result = GlobalClassList.expenseLineList.Where(x=>x.Id == filterParameter.ExpenseId).FirstOrDefault();
+        if (result != null)
+            return result.ExpenseName;
+        else
+            return string.Empty;
+    }
+}

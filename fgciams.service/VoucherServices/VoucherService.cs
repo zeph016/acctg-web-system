@@ -2,6 +2,7 @@
 using fgciams.domain.clsPayee;
 using fgciams.domain.clsProject;
 using fgciams.domain.clsRequest;
+using fgciams.domain.clsSubContractProject;
 using fgciams.domain.clsVoucher;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -169,6 +170,41 @@ namespace fgciams.service.VoucherServices
               voucherModel = await responseMessage.Content.ReadAsAsync<VoucherModel>();
           return voucherModel;
         }
+
+        public async Task<List<VoucherDetailModel>> GetProjectSubledgers(FilterParameter param, string token)
+        {
+            List<VoucherDetailModel> subledgers = new List<VoucherDetailModel>();
+          _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+          HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("subledger/list", param);
+          if (responseMessage.IsSuccessStatusCode)
+              subledgers = await responseMessage.Content.ReadAsAsync<List<VoucherDetailModel>>();
+          return subledgers;
+        }
+
+        public async Task<SubContractorProjectModel> GetContractAmount(long subContractorId, long projectId, long SOWId, string token)
+        {
+            try
+            {
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                HttpResponseMessage responseMessage = await _client.GetAsync(String.Format("subcon-projects/project/{0}/{1}/{2}",subContractorId,projectId,SOWId));
+                responseMessage.EnsureSuccessStatusCode();
+                return await responseMessage.Content.ReadAsAsync<SubContractorProjectModel>();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        public async Task<List<VoucherDetailModel>> GetSunbConProjects(FilterParameter param, string token)
+        {
+            List<VoucherDetailModel> subcons = new List<VoucherDetailModel>();
+          _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+          HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("/ledger/subcon", param);
+          if (responseMessage.IsSuccessStatusCode)
+              subcons = await responseMessage.Content.ReadAsAsync<List<VoucherDetailModel>>();
+          return subcons;
+        }
+
         #endregion
     }
 }

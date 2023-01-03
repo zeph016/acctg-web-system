@@ -36,29 +36,30 @@
     {
         PDFContent = await checkService.GetCheckReport(GlobalClass.checkModel);
         StateHasChanged();
+        //For saveing status save or update
+        if(GlobalClass.checkModel.Id == 0)
+            CheckWriter.currentActionMode = Enums.ActionMode.Create;
     }
     private void Back()
     {
+        //For remapping
+        CheckWriter.currentActionMode = Enums.ActionMode.Update;
+        
         navigationManager.NavigateTo($"/check/create");
     }
     private async Task Prompt()
     {
         var returnedModel = new CheckModel();
         var parameters = new DialogParameters();
-        string contentText = "Check ";
+        string contentText = " Check";
         string dialogTitle = CheckWriter.currentActionMode + contentText;
-        parameters.Add("contentText", contentText);
+        parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("actionMode", CheckWriter.currentActionMode);
-        var options = new DialogOptions()
-        {
-            CloseButton = false,
-            MaxWidth = MaxWidth.ExtraSmall,
-            FullWidth = true,
-            NoHeader = false,
-            DisableBackdropClick = true
-        };
+        parameters.Add("contentText", contentText);
+        parameters.Add("controlNumber", GlobalClass.checkModel.ControlNumber);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Cancelled)
+        if (!resultDialog.Canceled)
         {   
             if (CheckWriter.currentActionMode == Enums.ActionMode.Create)
             {

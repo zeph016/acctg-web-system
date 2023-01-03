@@ -7,11 +7,11 @@
         <div class='d-flex align-center'>
             @if (GlobalClass.division.Id != 0)
             {
-                <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3" />
+                <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" />
             }
             else
             {
-                <MudIcon Icon="@Icons.Filled.Add" Class="mr-3" />
+                <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-3" />
             }
             <MudText Class='txt-uppercase' Typo='Typo.h6'>@dialogTitle</MudText>
         </div>
@@ -91,7 +91,7 @@
         parameters.Add("actionMode", currentAction);
         var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Cancelled) 
+        if (!resultDialog.Canceled) 
         {   
             try
             {
@@ -99,8 +99,12 @@
                     GlobalClass.division = await divisionService.AddDivision(GlobalClass.division, GlobalClass.token);
                     GlobalClassList.divisionList.Add(GlobalClass.division);
                 } 
-                else 
+                else
+                {
                     await divisionService.UpdateDivision(GlobalClass.division, GlobalClass.token);
+                    if(!GlobalClass.division.IsActive)
+                        GlobalClassList.divisionList.Remove(GlobalClass.division);
+                }
                 if(GlobalVariable.AMSHubConnection != null)
                     await GlobalVariable.AMSHubConnection.InvokeAsync("SaveDivision",GlobalClass.division);
                  MudDialog.Close(DialogResult.Ok(currentAction));

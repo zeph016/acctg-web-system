@@ -96,5 +96,22 @@ namespace fgciams.service.CheckServices
                 pdfContent += Convert.ToBase64String(await responseMessage.Content.ReadAsByteArrayAsync());
             return pdfContent;
         }
+
+        public async Task<List<CheckAuditTrailModel>> GetAudiTrail(long ID, string token)
+        {
+            try
+            {
+                var auditTrails = new List<CheckAuditTrailModel>();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",token);
+                HttpResponseMessage responseMessage = await client.GetAsync(String.Format("check/audit-trail/{0}",ID));
+                if(responseMessage.IsSuccessStatusCode){
+                    auditTrails = await responseMessage.Content.ReadAsAsync<List<CheckAuditTrailModel>>();
+                }
+                return auditTrails;
+            }catch(Exception ee){
+                  Console.WriteLine(ee.Message);
+                  throw ee;
+            }
+        }
     }
 }

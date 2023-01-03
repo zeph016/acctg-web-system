@@ -1,0 +1,52 @@
+
+@if(!dataFetched)
+{
+    <MudSkeleton Height='32px' Animation='Animation.Wave' />
+}
+else
+{
+    <MudChip Class='chip-radius-5 font-bold font12' Size='Size.Medium' Style="@Extensions.BorderColor(currentAcctgStatus.Id)" Variant='Variant.Outlined'>
+        @currentAcctgStatus.StatusName
+    </MudChip>
+}
+
+
+@code {
+    [Parameter] public long acctgStatusId { get; set; }
+    [Parameter] public string keywordStr { get; set; } = string.Empty;
+    private bool dataFetched;
+
+    private AccountingStatusModel currentAcctgStatus = new();
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Task t = Task.WhenAll(GetAcctgStatus());
+        await t;
+        if (t.Status == TaskStatus.RanToCompletion)
+            CompletedFetch();
+    }
+
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+    private async Task GetAcctgStatus()
+    {
+        await Task.Run(()=> 
+        {
+            var result = new AccountingStatusModel();
+            if(acctgStatusId != 0)
+                result = GlobalClassList.accountingStatusList.Where(x=>x.Id == acctgStatusId).FirstOrDefault();
+            else if (!string.IsNullOrWhiteSpace(keywordStr))
+                result = GlobalClassList.accountingStatusList.Where(x=>x.StatusName.Contains(keywordStr, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+            if (result != null)
+                currentAcctgStatus = result;
+        });
+    }
+}

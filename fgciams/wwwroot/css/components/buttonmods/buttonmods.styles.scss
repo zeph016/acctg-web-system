@@ -11,3 +11,17 @@
     margin-right: 0px !important;
   }
 }
+
+.btn-lbl-font12 {
+  .mud-button-label {
+    font-size: 10px !important;
+  }
+}
+
+.btn-tbl-link {
+  border-radius: 5px;
+  font-size: 10px !important;
+  font-weight: bold;
+  text-transform: uppercase !important;
+  white-space: nowrap;
+}

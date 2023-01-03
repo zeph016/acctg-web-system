@@ -10,10 +10,10 @@ namespace fgciams.domain.clsProject
     public class Project
     {
         public Int64 ProjectId { get; set; }
-        public string ProjectName { get; set; } = default!;
+        public string ProjectName { get; set; } = string.Empty;
         public string ProjectNameFormat { get 
         {
-                return (ProjectName != null ? ProjectName.Length > 30 ? ProjectName.Substring(0,15)+"...":ProjectName:"");
+            return (ProjectName != null ? ProjectName.Length > 30 ? ProjectName.Substring(0,15)+"...":ProjectName:"");
         } set{} }
         public Enums.ProjectCategory ProjectCategoryId { get; set; }
         public Enums.ProjectCategory ProjectCategory { get; set; }
@@ -31,8 +31,8 @@ namespace fgciams.domain.clsProject
                     return Convert.ToDateTime(ActualEndDate);
             }
         }
-        public string ProjectStatus { get; set; } = default!;
-        public string Area { get; set; } = default!;
+        public string ProjectStatus { get; set; } = string.Empty;
+        public string Area { get; set; } = string.Empty;
         public Int64 SubLedgerId { get; set; }
         public Enums.ProjectCategory SubLedgerCategoryId { get; set; }
         public string SubLedgerName { get; set; } = String.Empty;

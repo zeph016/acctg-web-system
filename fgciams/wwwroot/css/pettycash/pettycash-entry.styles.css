@@ -1,15 +1,18 @@
 .pettycashpage__grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 130px 1fr;
+  grid-template-columns: 1fr 1fr 150px 150px;
   grid-template-rows: 40px 50px 1fr;
   gap: 0px 0px;
-  grid-template-areas: "pcash-header pcash-header pcash-header pcash-header" "pcash-payee pcash-payee pcash-controlno pcash-controlno" "pcash-details pcash-details pcash-details pcash-details";
+  grid-template-areas: "pcash-header pcash-header pcash-header pcash-header pcash-header" "pcash-payee pcash-payee pcash-date pcash-controlno pcash-controlno" "pcash-details pcash-details pcash-details pcash-details pcash-details";
 }
 .pettycashpage .pcash-header {
   grid-area: pcash-header;
 }
 .pettycashpage .pcash-payee {
   grid-area: pcash-payee;
+}
+.pettycashpage .pcash-date {
+  grid-area: pcash-date;
 }
 .pettycashpage .pcash-controlno {
   grid-area: pcash-controlno;
@@ -23,6 +26,7 @@
   border-right: solid thin lightgray;
   border-left: solid thin lightgray;
 }
+.pettycashpage .pcash-payee,
 .pettycashpage .pcash-controlno {
   border-left: solid thin lightgray;
   border-right: solid thin lightgray;
@@ -31,6 +35,12 @@
 .pettycashpage .pcash-details {
   border-bottom: solid thin lightgray;
 }
-.pettycashpage .pcash-payee {
-  border-left: solid thin lightgray;
+.pettycashpage .pcash-date,
+.pettycashpage .pcash-controlno {
+  display: flex;
+  align-items: center;
+  padding: 0px 8px 0px 8px;
+}
+.pettycashpage .pcash-details {
+  display: flex;
 }/*# sourceMappingURL=pettycash-entry.styles.css.map */

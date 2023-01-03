@@ -1,0 +1,109 @@
+@inject ISnackbar snackbarService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager navigationManager
+
+<MudPaper Elevation='1'>
+    @if(isDataFetch)
+    {
+        <MudTable Class='small-toolbar-gutter2 row-popup-anim-2px' Items="@GlobalClassList.selectedCollections" Hover 
+            Breakpoint="Breakpoint.Xs" RowsPerPage='30' ApplyButtonPosition='TableApplyButtonPosition.End' Height='@Height'
+            CanCancelEdit FixedHeader FixedFooter Bordered Dense Elevation='0'>
+            <ToolBarContent>
+                <MudText Class='pa-2' Typo='Typo.body2'>Collections: </MudText>
+                <MudText Typo='Typo.caption'>
+                    @GlobalClassList.selectedCollections.Count() 
+                    @(GlobalClassList.selectedCollections.Count() == 1 ? "item" : "items") 
+                    in total
+                </MudText>
+                <MudSpacer/>
+                @if(HideCloseButton)
+                {
+                    <MudButton Class='btn-ios-d font12' OnClick="(() => Close())" EndIcon="@Icons.Material.Filled.Close" Size='Size.Small' >
+                        Close View
+                    </MudButton>
+                }
+            </ToolBarContent>
+            <ColGroup>
+                <col />
+                <col />
+                <col />
+                <col />
+            </ColGroup>
+            <HeaderContent>
+                <MudTh Class='customheader-1'>
+                    <small>Control No.</small>
+                </MudTh>
+                <MudTh Class='customheader-1'>
+                    <small>Type</small>
+                </MudTh>
+                <MudTh Class='customheader-1 text-center pa-2'>
+                    <small>Check No.</small>
+                </MudTh>
+                <MudTh Class='customheader-1 text-center pa-2'>
+                    <small>Net Amount</small>
+                </MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                    <MudTd Class='text-left pa-2 font10'>
+                        <div class='d-flex align-center'>
+                            <MudButton Class='chip-radius-5 txt-uppercase font-bold font10'
+                                Href='@FindReference(context)' Target='_blank'
+                                Color='Color.Info' Variant='Variant.Filled' Size='Size.Small' DisableElevation>
+                                    @context.ControlNumber
+                            </MudButton>
+                        </div>
+                    </MudTd>
+                    <MudTd Class='text-left pa-2 font10'>@Extensions.GetEnumDescription(context.PaymentTypeId)</MudTd>
+                    <MudTd Class='text-left pa-2 font10'>@(context.CheckNumber == "0"? "NA":context.CheckNumber)</MudTd>
+                    <MudTd Class='text-right pa-2 font10'>
+                        <div class='tooltipw100'>
+                            <MudTooltip Class='flex-1' Text='@(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + context.NetAmount.ToString("N2"))' 
+                                Arrow Placement='Placement.Top' Style='@(context.NetAmount > 0 ? "font-bold color-green":"font-bold color-red")'>
+                                <div class='amount-container'>
+                                    <MudText Class='@(context.NetAmount > 0 ? "font-bold color-green":"font-bold color-red")'
+                                        Typo='Typo.caption'>
+                                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                                    </MudText>
+                                    <MudSpacer />
+                                    <MudText Class='@(context.NetAmount > 0 ? "font-bold txt-green":"font-bold txt-red")' Typo='Typo.caption'>
+                                        @context.NetAmount.ToString("N2")
+                                    </MudText>
+                                </div>
+                            </MudTooltip>
+                        </div>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    } else {
+        <SkeletonBankDialog/>
+    }
+</MudPaper>
+
+@code
+{
+    [Parameter] public string Height {get;set;} = string.Empty;
+    [Parameter] public EventCallback<bool> OnClose { get; set; }
+    [Parameter] public bool HideCloseButton { get; set; } = false;
+    private bool isDataFetch = false;
+    protected override void OnInitialized()
+    {
+        isDataFetch = true;
+    }
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+    private string FindReference(CollectionModel collectionModel)
+    {
+        string url = "";
+        if(collectionModel.ControlNumber.StartsWith("CL"))
+        {
+            url = String.Format("{0}collection/list/{1}", navigationManager.BaseUri, collectionModel.ControlNumber);
+        }
+        else
+        {
+            url = String.Format("{0}voucher/list/{1}", navigationManager.BaseUri, collectionModel.ControlNumber);
+        }
+        return url;
+    }
+}

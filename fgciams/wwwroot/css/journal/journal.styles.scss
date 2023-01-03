@@ -1,0 +1,12 @@
+@use '../components/heightwidth/heightwidth.styles.css';
+
+.jrnl-td-width {
+    @extend .dynamic-width-1;
+    justify-content: space-between;
+}
+
+
+.jrnl-td-amtwidth {
+    @extend .dynamic-td-amtwidth;
+    justify-content: space-between;
+}

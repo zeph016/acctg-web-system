@@ -1,3 +1,31 @@
+.dflex-row-align-center {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+}
+
+.dflex-row, .pcview-dialog__crumb, .pcview-dialog .pcgrid-lblstatus, .pcview-dialog .pcgrid-lbldate, .pcview-dialog .pcgrid-lblpayee,
+.pcview-dialog .pcgrid-lblamt, .pcview-dialog .pcgrid-status, .pcview-dialog .pcgrid-date, .pcview-dialog .pcgrid-payee,
+.pcview-dialog .pcgrid-amt, .pcview-dialog .pcgrid-controls {
+  align-items: center;
+  display: flex;
+}
+
+.dflex-col, .pcview-dialog .pcgrid-signatories {
+  flex-direction: column;
+  display: flex;
+}
+
+.dflex-ac {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+}
+
+.flex-full {
+  flex: 1 1 0%;
+} /*# sourceMappingURL=flexgridmods.styles.css.map */
 .customdialog .mud-dialog-title,
 .customdialog-table-only .mud-dialog-title {
   background-color: #542d6f !important;
@@ -18,17 +46,120 @@
   padding: 0px !important;
 }
 
-.customdialog2 .mud-dialog-title {
+.customdialog2 .mud-dialog-title, .customdialog3 .mud-dialog-title {
   background-color: #542d6f !important;
   color: white;
 }
-.customdialog2 .mud-dialog-title .mud-typography {
+.customdialog2 .mud-dialog-title .mud-typography, .customdialog3 .mud-dialog-title .mud-typography {
   font-family: "Theramin";
 }
-.customdialog2 .mud-dialog-content {
+.customdialog2 .mud-dialog-content, .customdialog3 .mud-dialog-content {
+  padding: 8px !important;
   background-color: rgba(238, 238, 238, 0.6274509804) !important;
 }
 
-.customdialog2 .mud-dialog-content {
+.customdialog3 .mud-dialog-title {
   padding: 8px !important;
+}
+
+.pcview-dialog .mud-dialog-title {
+  background-color: #542D6F;
+}
+.pcview-dialog__title {
+  color: white;
+  font-size: 1.25rem;
+  font-family: "Theramin";
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.pcview-dialog__crumb {
+  gap: 4px;
+}
+.pcview-dialog__crumb--prefix {
+  color: white;
+}
+.pcview-dialog__crumb--prefix, .pcview-dialog__crumb--suffix {
+  font-size: 12px;
+  text-transform: uppercase;
+}
+.pcview-dialog__crumb--suffix {
+  font-weight: bold;
+}
+.pcview-dialog__grid {
+  display: grid;
+  grid-template-columns: 75px 1fr 1fr 1fr;
+  grid-template-rows: 35px 35px minmax(35px, auto) 35px minmax(70px, auto) minmax(70px, auto);
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas: "pcgrid-lblstatus pcgrid-status pcgrid-status pcgrid-controls" "pcgrid-lbldate pcgrid-date pcgrid-date pcgrid-date" "pcgrid-lblpayee pcgrid-payee pcgrid-payee pcgrid-payee" "pcgrid-lblamt pcgrid-amt pcgrid-amt pcgrid-amt" "pcgrid-particulars pcgrid-particulars pcgrid-particulars pcgrid-signatories" "pcgrid-remarks pcgrid-remarks pcgrid-remarks pcgrid-signatories";
+  max-height: 1024px;
+}
+.pcview-dialog .pcgrid-lblstatus {
+  grid-area: pcgrid-lblstatus;
+}
+.pcview-dialog .pcgrid-lbldate {
+  grid-area: pcgrid-lbldate;
+}
+.pcview-dialog .pcgrid-lblpayee {
+  grid-area: pcgrid-lblpayee;
+}
+.pcview-dialog .pcgrid-lblamt {
+  grid-area: pcgrid-lblamt;
+}
+.pcview-dialog .pcgrid-status {
+  grid-area: pcgrid-status;
+}
+.pcview-dialog .pcgrid-date {
+  grid-area: pcgrid-date;
+}
+.pcview-dialog .pcgrid-payee {
+  grid-area: pcgrid-payee;
+}
+.pcview-dialog .pcgrid-amt {
+  grid-area: pcgrid-amt;
+}
+.pcview-dialog .pcgrid-controls {
+  grid-area: pcgrid-controls;
+  gap: 4px;
+  justify-content: end;
+}
+.pcview-dialog .pcgrid-signatories {
+  border: solid thin lightgray;
+  border-radius: 5px;
+  grid-area: pcgrid-signatories;
+  gap: 4px;
+  justify-content: center;
+  padding: 8px;
+  margin: 4px 4px 0px 4px;
+}
+.pcview-dialog .pcgrid-particulars {
+  grid-area: pcgrid-particulars;
+}
+.pcview-dialog .pcgrid-remarks {
+  grid-area: pcgrid-remarks;
+}
+.pcview-dialog .pcgrid-status, .pcview-dialog .pcgrid-date, .pcview-dialog .pcgrid-payee,
+.pcview-dialog .pcgrid-amt {
+  border-bottom: solid thin lightgray;
+}
+.pcview-dialog .pcgrid-particulars, .pcview-dialog .pcgrid-remarks {
+  border-bottom: dotted thin black;
+  padding: 8px;
+}
+.pcview-dialog__label {
+  font-size: 10px;
+  color: #9F9F9F;
+  text-transform: uppercase;
+}
+.pcview-dialog__txt, .pcview-dialog__txt--content-title {
+  font-size: 12px;
+  margin: 4px;
+  padding: 0px 12px;
+}
+.pcview-dialog__txt--content-title {
+  font-family: "R-Flex Bold";
+  font-size: 14px;
+}
+.pcview-dialog__btn-circular {
+  border-radius: 24px !important;
 }/*# sourceMappingURL=dialog.styles.css.map */

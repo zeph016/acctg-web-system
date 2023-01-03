@@ -9,10 +9,59 @@
   height: 2.5rem;
 }
 .configtables .mud-table-head {
+  position: relative;
   white-space: nowrap;
+  z-index: 1;
 }
-.configtables .mud-table-root {
+.configtables .mud-toolbar {
   border-bottom: solid thin lightgray;
+}
+
+.configtables-noheight .mud-table-pagination-caption {
+  font-size: 12px;
+}
+.configtables-noheight .mud-toolbar-gutters {
+  height: 2.5rem;
+}
+.configtables-noheight .mud-table-head {
+  position: relative;
+  white-space: nowrap;
+  z-index: 1;
+}
+.configtables-noheight .mud-toolbar {
+  border-bottom: solid thin lightgray;
+}
+
+.table-style-1 .mud-table-container {
+  height: calc(100vh - 190px);
+  min-width: 75vh;
+}
+.table-style-1 .mud-table-pagination-caption {
+  font-size: 12px;
+}
+.table-style-1 .mud-toolbar-gutters {
+  height: 2.5rem;
+}
+.table-style-1 .mud-table-head {
+  position: relative;
+  white-space: nowrap;
+  z-index: 1;
+}
+.table-style-1 .mud-table-head th {
+  padding: 4px !important;
+}
+.table-style-1 .mud-toolbar {
+  border-bottom: solid thin lightgray;
+}
+.table-style-1 .mud-table-body .mud-table-cell {
+  padding: 4px !important;
+}
+.table-style-1 .mud-checkbox {
+  margin: unset !important;
+}
+
+.tbl-minwidth-0 .mud-table-container {
+  min-width: unset;
 }
 
 .customheader-1 {
@@ -41,12 +90,23 @@
   text-transform: uppercase;
 }
 
+.customheader-6 {
+  border-radius: 0px !important;
+  font-size: 10px !important;
+  text-transform: uppercase;
+  white-space: nowrap !important;
+  padding: 4px;
+}
+
 .small-toolbar-gutter .mud-toolbar-gutters {
   height: 2.45rem;
 }
 
 .small-toolbar-gutter2 .mud-toolbar-gutters {
-  height: 2rem;
+  height: 2.05rem;
+}
+.small-toolbar-gutter2 .mud-toolbar {
+  border-bottom: solid thin lightgray;
 }
 
 .small-toolbar-gutter3 .mud-toolbar-gutters {
@@ -55,6 +115,10 @@
 
 .small-toolbar-gutter4 .mud-toolbar-gutters {
   height: 2.1rem;
+}
+
+.sm-tbar-gutter .mud-toolbar-gutters {
+  height: 33px;
 }
 
 .toolbar-pad-0 .mud-toolbar-gutters {
@@ -71,4 +135,123 @@
 
 .table-bottom-border .mud-table-root {
   border-bottom: solid thin lightgray;
+}
+
+.table-bottom-border .mud-toolbar {
+  border-bottom: solid thin lightgray;
+}
+
+.mudtd-mw-40vw300px {
+  max-width: calc(40vw - 300px);
+  overflow: hidden;
+}
+
+.mudtd-mw-30vw300px {
+  max-width: calc(30vw - 300px);
+  overflow: hidden;
+}
+
+.mudtd-mw-150px {
+  font-size: 12px !important;
+  max-width: calc(35vw - 300px);
+  overflow: hidden;
+  text-align: center !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dynamic-div-1 {
+  max-width: calc(80vw - 900px);
+  align-items: center;
+  display: flex;
+}
+@media only screen and (max-width: 1366px) {
+  .dynamic-div-1 {
+    max-width: calc(40vw - 300px);
+  }
+}
+.dynamic-div-1 small {
+  flex: 1 1 0%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.dynamic-div-onglobalrfp {
+  max-width: calc(80vw - 900px);
+  align-items: center;
+  display: flex;
+}
+@media only screen and (max-width: 1366px) {
+  .dynamic-div-onglobalrfp {
+    max-width: calc(50vw - 300px);
+  }
+}
+.dynamic-div-onglobalrfp small {
+  flex: 1 1 0%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.th-sticky-left {
+  border-right: solid thin lightgray;
+  left: 0 !important;
+}
+
+.th-sticky-amt, .th-sticky-amt-vl {
+  border-right: solid thin lightgray;
+  border-left: solid thin lightgray;
+  right: 51px !important;
+}
+
+.th-sticky-action {
+  right: 0 !important;
+}
+
+.th-sticky-left,
+.th-sticky-amt,
+.th-sticky-amt-vl,
+.th-sticky-action {
+  background-color: white !important;
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  z-index: 3 !important;
+}
+
+.col-sticky-left {
+  left: 0;
+}
+
+.col-sticky-amt, .col-sticky-amt-vl {
+  border-right: solid thin lightgray;
+  border-left: solid thin lightgray;
+  right: 51px;
+}
+
+.col-sticky-action {
+  right: 0 !important;
+}
+
+.col-sticky-left,
+.col-sticky-amt,
+.col-sticky-amt-vl,
+.col-sticky-action {
+  background-color: white;
+  position: -webkit-sticky;
+  position: sticky;
+}
+
+.th-sticky-amt-vl {
+  right: 45px !important;
+}
+
+.col-sticky-amt-vl {
+  right: 45px !important;
+}
+
+tr td.unselectable-row {
+  background-color: #ddd;
+  cursor: not-allowed;
+  pointer-events: none;
 }/*# sourceMappingURL=configtables.styles.css.map */

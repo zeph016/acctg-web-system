@@ -2,53 +2,57 @@
 @inject ISnackbar snackbarService
 @inject IDialogService dialogService
 
-<MudDialog Class="customdialog">
+<MudDialog Class="customdialog2">
   <TitleContent>
     <div class='d-flex align-center'>
       @if (GlobalClass.taxCode.Id != 0)
       {
-        <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3 mb-n1" />
+        <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1" />
       }
       else
       {
-        <MudIcon Icon="@Icons.Filled.Add" Class="mr-3 mb-n1" />
+        <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-3 mb-n1" />
       }
-      <MudText Typo='Typo.h6'>@dialogTitle</MudText>
+      <MudText Class='txt-uppercase' Typo='Typo.h6'>@dialogTitle</MudText>
     </div>
   </TitleContent>
   <DialogContent>
-    <div class='customdialog__content-container'>
-      <MudGrid Spacing='1'>
+    <MudPaper Class='pa-2' Elevation='0'>
+      <MudGrid Class='pa-2' Spacing='1'>
         <MudItem xs='6'>
-          <MudTextField @bind-Value='@GlobalClass.taxCode.Description' Adornment='Adornment.Start'
-            AdornmentIcon='@Icons.Filled.Description' Label='Description' Error=@reqDesc  ErrorText='Description is requred'/>
-        </MudItem>
-        <MudItem xs='4'>
-          <MudNumericField @bind-Value='@GlobalClass.taxCode.TaxRate' Adornment='Adornment.Start' Format='#0.0'
-            AdornmentIcon='@Icons.Filled.ShortText' Label="Tax rate" Error=@reqTax ErrorText='Tax rate is required'/>
-        </MudItem>
-        @if(GlobalClass.taxCode.Id != 0) {
-        <MudItem xs='2'>
-          <MudCheckBox @bind-Checked='@GlobalClass.taxCode.IsActive' Label='Active' />
-        </MudItem>
-        }
-        <MudItem xs='6'>
-          <MudTextField @bind-Value='@GlobalClass.taxCode.ATCInd' Adornment='Adornment.Start'
-            AdornmentIcon='@Icons.Filled.Numbers' Label="ATC Ind." Error=@reqATCInd ErrorText='ATC Ind. is required'/>
+          <MudTextField @bind-Value='@GlobalClass.taxCode.Description' Label='Description' Error=@reqDesc ErrorText='Description is requred'
+           HelperText='Required*' Margin='Margin.Dense' />
         </MudItem>
         <MudItem xs='6'>
-          <MudTextField @bind-Value='@GlobalClass.taxCode.ATCCorp'
-            Adornment='Adornment.Start' AdornmentIcon='@Icons.Filled.Numbers' Error=@reqATCCorp ErrorText='ATC Corp. is required' Label="ATC Corp." />
+          <MudNumericField @bind-Value='@GlobalClass.taxCode.TaxRate' Format='#0.0' Label="Tax rate" Error=@reqTax ErrorText='Tax rate is required'
+            HelperText='Required*' Margin='Margin.Dense' HideSpinButtons />
+        </MudItem>
+        
+        <MudItem xs='6'>
+          <MudTextField @bind-Value='@GlobalClass.taxCode.ATCInd' Label="ATC Ind." Error=@reqATCInd ErrorText='ATC Ind. is required'
+            HelperText='Required*' Margin='Margin.Dense' />
+        </MudItem>
+        <MudItem xs='6'>
+          <MudTextField @bind-Value='@GlobalClass.taxCode.ATCCorp' Error=@reqATCCorp ErrorText='ATC Corp. is required' Label="ATC Corp." 
+            HelperText='Required*' Margin='Margin.Dense' />
         </MudItem>
         <MudItem xs="12">
-          <MudTextField @bind-Value='@GlobalClass.taxCode.Remarks' Variant='Variant.Filled' Label="Remarks" Lines='2' />
+          <MudTextField @bind-Value='@GlobalClass.taxCode.Remarks' Variant='Variant.Filled' Label="Remarks" Lines='2' 
+            HelperText='Optional' Margin='Margin.Dense' />
         </MudItem>
       </MudGrid>
-    </div>
+    </MudPaper>
   </DialogContent>
     <DialogActions>
-      <MudButton OnClick='Cancel' Variant='Variant.Text'>Cancel</MudButton>
-      <MudButton OnClick='Submit' Variant='Variant.Filled' Color="@color">@buttonText</MudButton>
+      @if(GlobalClass.taxCode.Id != 0) {
+          <MudCheckBox @bind-Checked='@GlobalClass.taxCode.IsActive' Label='Active' 
+            Size='Size.Small' Color='Color.Dark' Dense />
+      }
+      <MudSpacer />
+      <MudButton Class='btn-ios-d font12' OnClick='Cancel' Variant='Variant.Text' Size='Size.Small' DisableElevation>Cancel</MudButton>
+      <MudButton Class='btn-ios-d font12' OnClick='Submit' Variant='Variant.Filled' Color='@(!GlobalClass.taxCode.IsActive ? Color.Error : @color)' Size='Size.Small' DisableElevation>
+        @(!GlobalClass.taxCode.IsActive ? "Deactivate" : @buttonText)
+      </MudButton>
   </DialogActions>
 </MudDialog>
 @code {
@@ -56,50 +60,31 @@
   [Parameter] public Color color { get; set; }
   [Parameter] public string dialogTitle { get; set; } = string.Empty;
   [Parameter] public string buttonText { get; set; } = string.Empty;
+  [Parameter] public Enums.ActionMode currentAction { get; set; }
   private bool reqDesc, reqTax, reqATCInd, reqATCCorp;
 
   protected override async Task OnInitializedAsync()
   {
-    while(GlobalClass.taxCode == null)
+    if (currentAction == Enums.ActionMode.Create)
+      GlobalClass.taxCode.IsActive = true;
     await Task.Delay(1);
   }
   void Cancel()
   {
+    GlobalClass.taxCode.IsActive = !GlobalClass.taxCode.IsActive ? true : true;
     MudDialog.Cancel();
   }
   private async Task Submit()
   {
-    if(GlobalClass.taxCode.IsActive == false)
+    if (!GlobalClass.taxCode.IsActive)
     {
-      if(await PromptMessage(Enums.ActionMode.Deactivate)) {
-          GlobalClass.taxCode = await taxCodeService.UpdateTaxCode(GlobalClass.taxCode, GlobalClass.token);
-          MudDialog.Close(DialogResult.Ok(1));
-
-        if(GlobalVariable.AMSHubConnection != null && ValidateEntries())
-          await GlobalVariable.AMSHubConnection.InvokeAsync("SaveTaxCode", GlobalClass.taxCode);
-        }
-    } else {
-      if(GlobalClass.taxCode.Id <= 0 && ValidateEntries()) {
-        if(await PromptMessage(Enums.ActionMode.Create)) {
-          GlobalClass.taxCode = await taxCodeService.AddTaxCode(GlobalClass.taxCode, GlobalClass.token);
-          MudDialog.Close(DialogResult.Ok(0));
-
-        if(GlobalVariable.AMSHubConnection != null && ValidateEntries())
-          await GlobalVariable.AMSHubConnection.InvokeAsync("SaveTaxCode", GlobalClass.taxCode);
-        }
-      } else if(GlobalClass.taxCode.Id > 0 && ValidateEntries()) {
-        if(await PromptMessage(Enums.ActionMode.Update)) {
-          GlobalClass.taxCode = await taxCodeService.UpdateTaxCode(GlobalClass.taxCode, GlobalClass.token);
-          MudDialog.Close(DialogResult.Ok(1));
-
-        if(GlobalVariable.AMSHubConnection != null && ValidateEntries())
-          await GlobalVariable.AMSHubConnection.InvokeAsync("SaveTaxCode", GlobalClass.taxCode);
-        }
-
-      } else {
-        Extensions.ShowAlert("Cannot create Tax Code, Incomplete fields.__arg3", Variant.Filled, snackbarService, Severity.Error);
-      }
+      currentAction = Enums.ActionMode.Deactivate;
+      await PromptMessage();
     }
+    else if (ValidateEntries())
+      await PromptMessage();
+    else
+      Extensions.ShowAlert("Cannot create Tax Code, Incomplete fields.__arg3", Variant.Filled, snackbarService, Severity.Error);
   }
   private bool ValidateEntries()
   {
@@ -123,35 +108,39 @@
     
     return valid;
   }
-    private async Task<bool> PromptMessage(Enums.ActionMode actionMode)
+    private async Task PromptMessage()
     {
-        bool isNotCancel;
         var parameters = new DialogParameters();
         string contentText = "tax code ";
-        string dialogTitle = actionMode == Enums.ActionMode.Create ? "Create " + contentText 
-        :  "Update " + contentText;
-
-        parameters.Add("actionMode", actionMode);
-
+        string dialogTitle = currentAction.ToString();
+        parameters.Add("actionMode", currentAction);
+        parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("contentText", contentText);
-
-        var options = new DialogOptions()
-        {
-            CloseButton = false,
-            MaxWidth = MaxWidth.ExtraSmall,
-            FullWidth = false,
-            NoHeader = false,
-            DisableBackdropClick = true
-        };
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true};
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Cancelled)
-            isNotCancel = true;
-        else
-            isNotCancel = false;
+        if (!resultDialog.Canceled)
+        {
+          try
+          {
+            if (currentAction == Enums.ActionMode.Create) {
+              GlobalClass.taxCode = await taxCodeService.AddTaxCode(GlobalClass.taxCode, GlobalClass.token);
+              GlobalClassList.taxCodes.Add(GlobalClass.taxCode);
+            } else
+              GlobalClass.taxCode = await taxCodeService.UpdateTaxCode(GlobalClass.taxCode, GlobalClass.token);
+            if(GlobalVariable.AMSHubConnection != null)
+              await GlobalVariable.AMSHubConnection.InvokeAsync("SaveTaxCode", GlobalClass.taxCode);
+            MudDialog.Close(DialogResult.Ok(currentAction));
+          }
+          catch
+          {
 
-        StateHasChanged();
-
-        return isNotCancel;
+          }
+        }
+        else if (currentAction == Enums.ActionMode.Deactivate)
+        {
+          GlobalClass.taxCode.IsActive = !GlobalClass.taxCode.IsActive;
+          MudDialog.Cancel();
+        }
     }
 
 }

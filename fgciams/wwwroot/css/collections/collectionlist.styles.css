@@ -1,0 +1,51 @@
+.colsubtbl {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+  grid-template-rows: 39px 1fr 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas: "colsubtbl-orno colsubtbl-orno colsubtbl-orno colsubtbl-checkno colsubtbl-checkno colsubtbl-checkno" "colsubtbl-remarks colsubtbl-remarks colsubtbl-remarks colsubtbl-remarks colsubtbl-remarks colsubtbl-remarks" "colsubtbl-tax colsubtbl-tax colsubtbl-gross colsubtbl-gross colsubtbl-netamt colsubtbl-netamt";
+  width: 100%;
+  height: 100%;
+}
+.colsubtbl .colsubtbl-orno {
+  grid-area: colsubtbl-orno;
+}
+.colsubtbl .colsubtbl-checkno {
+  grid-area: colsubtbl-checkno;
+}
+.colsubtbl .colsubtbl-remarks {
+  grid-area: colsubtbl-remarks;
+  overflow: auto;
+}
+.colsubtbl .colsubtbl-tax {
+  grid-area: colsubtbl-tax;
+}
+.colsubtbl .colsubtbl-gross {
+  grid-area: colsubtbl-gross;
+}
+.colsubtbl .colsubtbl-netamt {
+  grid-area: colsubtbl-netamt;
+}
+.colsubtbl .colsubtbl-remarks {
+  border-top: solid thin lightgray;
+  border-bottom: solid thin lightgray;
+}
+.colsubtbl .colsubtbl-orno,
+.colsubtbl .colsubtbl-checkno {
+  display: flex;
+  align-items: center;
+}
+.colsubtbl .colsubtbl-orno,
+.colsubtbl .colsubtbl-checkno,
+.colsubtbl .colsubtbl-remarks,
+.colsubtbl .colsubtbl-tax,
+.colsubtbl .colsubtbl-gross,
+.colsubtbl .colsubtbl-netamt {
+  padding: 8px;
+}
+.colsubtbl .colsubtbl-checkno,
+.colsubtbl .colsubtbl-gross,
+.colsubtbl .colsubtbl-netamt {
+  border-left: solid thin lightgray;
+}/*# sourceMappingURL=collectionlist.styles.css.map */

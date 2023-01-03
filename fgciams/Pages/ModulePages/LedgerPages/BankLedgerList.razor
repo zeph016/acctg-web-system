@@ -1,0 +1,247 @@
+@page "/bank-ledger/list"
+
+@inject IGlobalService globalService
+@inject IVoucherService voucherService
+@inject ISnackbar snackbarService
+@inject ILedgerService ledgerService
+@inject NavigationManager navigationManager
+
+<div class='page-cont'>
+    <div class='drawer-right-min'>
+        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <LedgerFilterComponent OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
+                FilterClick='FilterTable' ResetTableClick='ReloadTable'
+                contentVisible='openSideFilter' moduleName="bankledger-list"/>
+        </MudDrawer>
+    </div>
+    <MudContainer Class='py-2 pl-2 pr-10  table-toolbar-custom1' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+        @if(isPrint)
+        {
+            <div class="d-flex align-items-end flex-column mb-2">
+                <MudButton Class='align-self-end mb-2' OnClick='( ()=> isPrint = false )' EndIcon='@Icons.Material.Filled.Close' Variant='Variant.Filled' Color='Color.Default' Size='Size.Small' DisableElevation>
+                    Close Report
+                </MudButton>
+                <iframe style='height:calc(100vh - 235px);' src='@PDFContent'/>
+            </div>
+        }
+        else 
+        {
+        <MudTable Class='table-style-1 overflow-hidden' ServerData='new Func<TableState, Task<TableData<BankLedgerModel>>>(LoadBankLedgerList)' @ref='tableVariable' Hover Loading='isLoading'
+            Breakpoint="Breakpoint.Xs" FixedHeader FixedFooter CustomFooter Bordered Dense Virtualize Height='calc(100vh - 235px)'
+            RowsPerPage='15' Elevation='1'>
+            <ToolBarContent>
+                <MudText Typo='Typo.caption'>
+                    @listOfBankLedgers.Count() 
+                    @(listOfBankLedgers.Count() == 1 ? "item" : "items") 
+                    in total
+                </MudText>
+                <MudSpacer/>
+                <MudTooltip Text="Refresh Table" Arrow Placement='Placement.Top'>
+                    <MudIconButton Class='@(isLoading ? "mudbtnico-rotate":"")' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='(()=>ReloadTable())' 
+                        Color='@(isLoading ? Color.Info : Color.Default)'/>
+                </MudTooltip>
+                <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' ActivationEvent="MouseEvent.MouseOver"
+                    TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
+                     <MudMenuItem OnClick="( async () => await GetReport() )"  >
+                        <div class='d-flex align-center gap-2 '>
+                            <MudIcon Icon='@Icons.Material.Filled.PictureAsPdf' Size='Size.Small' Color='Color.Dark' />
+                            <MudText Typo='Typo.body2' Color='Color.Dark'>Print</MudText>
+                        </div>
+                    </MudMenuItem>
+                    <MudMenuItem OnClick="(() => openSideFilter = !openSideFilter)"  >
+                        <div class='d-flex align-center gap-2 '>
+                            <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
+                            <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
+                        </div>
+                    </MudMenuItem>
+                </MudMenu>
+            </ToolBarContent>
+            <ColGroup>
+                <col />
+                <col />
+                <col />
+                <col />
+                <col />
+                <col />
+                <col />
+            </ColGroup>
+            <HeaderContent>
+                <MudTh Class='customheader-6 text-left pa-2'>
+                    <MudTableSortLabel SortLabel='SortBankName' T='CollectionModel'
+                        InitialDirection='SortDirection.Descending'>
+                            Bank Account
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh Class='customheader-6 text-right'>Bank Balance</MudTh>
+                <MudTh Class='customheader-6 text-right'>Check in Transit</MudTh>
+                <MudTh Class='customheader-6 text-right'>Book Balance</MudTh>
+                <MudTh Class='customheader-6 text-right'>Unclaimed Deposit</MudTh>
+                <MudTh Class='customheader-6 text-right'>PDC Due</MudTh>
+                <MudTh Class='customheader-6 text-right'>W Balance</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd  DataLabel='Bank Name'>
+                    <div class='dynamic-div-1'>
+                        <a href='/bank-ledger/detail/list/@context.Id'>
+                            <small>@context.BankAccountName</small>
+                        </a>
+                    </div>
+                </MudTd>
+                <MudTd Class='text-right' DataLabel='Running Balance'>
+                    <small class='font-bold' Style='@(context.BankBalance > 0 ? "color:green":"color:red")'>
+                        @(context.BankBalance > 0 ? (Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + context.BankBalance.ToString("N2")) : "-")
+                    </small>
+                </MudTd>
+                <MudTd Class='text-right' DataLabel='Check in Transit'>
+                    <small class='font-bold font12' Style='@(context.CheckInTransit > 0 ? "color:green":"color:red")'>
+                        @(context.CheckInTransit > 0 ? (Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + context.CheckInTransit.ToString("N2")) : "-")
+                    </small>
+                </MudTd>
+                <MudTd Class='text-right' DataLabel='Balance Book'>
+                    <small class='font-bold font12' Style='@(context.BookBalance > 0 ? "color:green":"color:red")'>
+                        @(context.BookBalance > 0 ? (Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + context.BookBalance.ToString("N2")) : "-")
+                    </small>
+                </MudTd>
+                <MudTd Class='text-right' DataLabel='Uncl Deposit'>
+                    <small class='font-bold font12' Style='color:red'>
+                        @* @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) 0.00 *@
+                        -
+                    </small>
+                </MudTd>
+                <MudTd Class='text-right' DataLabel='PDC Due'>
+                    <small Class='font-bold font12' Style='@(context.PDCDue > 0 ? "color:green":"color:red")'>
+                        @(context.PDCDue > 0 ? (Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + context.PDCDue.ToString("N2")) : "-")
+                    </small>
+                </MudTd>
+                <MudTd Class='text-right' DataLabel='Balance Book'>
+                    <small Class='font-bold font12' Style='@(context.Balance > 0 ? "color:green":"color:red")'>
+                        @(context.Balance > 0 ? (Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + context.Balance.ToString("N2")) : "-")
+                    </small>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                    <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No records found</MudText>
+            </NoRecordsContent>
+            <PagerContent>
+                <div class='d-flex align-center gap-4 overflow-auto border-thin-top bgc-F4F5FB'>
+                    <MudSpacer />
+                    <div class='d-flex align-center justify-end'>
+                        <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>Total Balance: </MudText>
+                        <div class='d-flex align-center gap-2'>
+                            <MudChip Class='rounded' Color='Color.Default' Size='Size.Small'>
+                                <MudText Class='font-bold color-green font12'>
+                                    @(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) +" "+
+                                        TotalBalance().ToString("N2"))
+                                </MudText>
+                            </MudChip>
+                        </div>
+                    </div> 
+                </div> 
+                <MudTablePager PageSizeOptions='@GlobalVariable.pageSize' />
+            </PagerContent>
+        </MudTable>
+        }
+    </MudContainer>
+</div>
+
+@code
+{
+    private bool isLoading, toggleSidebar = true, openSideFilter;
+    private FilterParameter filterParameter = new();
+    private List<BankLedgerModel> listOfBankLedgers = new();
+    private BankModel bank = new();
+    private IEnumerable<BankLedgerModel> pageData =  new List<BankLedgerModel>();
+    private DateRange? dateRange = new DateRange(DateTime.Now, DateTime.Now);
+    private MudTable<BankLedgerModel> tableVariable = new MudTable<BankLedgerModel>();
+    private bool isPrint = false;
+    private string PDFContent = default!;
+    protected override void OnInitialized()
+    {
+        GlobalClass.pageTitle = "BANK LEDGERS";
+        StateHasChanged();
+
+        //Pass validation not required by Bank Ledger
+        filterParameter.ExpenseId = 1;
+        filterParameter.ProjectId = 1;
+        filterParameter.SubledgerId = 1;
+        filterParameter.ScopeOfWorkId = 1;
+    }
+    private async Task OnBankSelected(BankModel b)
+    {
+        bank = b;
+        filterParameter.IsBank = true;
+        filterParameter.BankId = b.Id.ToString();
+        await Search();
+    }
+    private async Task Search()
+    {
+        isLoading = true;
+        //This will work if filterParameter isDate = true
+        filterParameter.DateFrom = dateRange.Start.GetValueOrDefault();
+        filterParameter.DateTo = dateRange.End.GetValueOrDefault();
+        listOfBankLedgers = await ledgerService.GetBankLedger(filterParameter, GlobalClass.token);
+        StateHasChanged();
+        isLoading = !isLoading;
+    }
+
+    private async Task<TableData<BankLedgerModel>> LoadBankLedgerList(TableState tableState)
+    {
+        isLoading = true;
+        filterParameter.ExpenseId = 1;
+        filterParameter.ProjectId = 1;
+        filterParameter.SubledgerId = 1;
+        filterParameter.ScopeOfWorkId = 1;
+        IEnumerable<BankLedgerModel> data = await ledgerService.GetBankLedger(filterParameter, GlobalClass.token);
+        listOfBankLedgers = data.ToList();
+        pageData = data.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
+        var total = data.Count();
+        isLoading = !isLoading;
+        return new TableData<BankLedgerModel>()
+        {
+            TotalItems = total,
+            Items = pageData
+        };
+    }
+
+    private async Task FilterTable()
+    {
+        filterParameter = GlobalVariable.filterParameter;
+        await tableVariable.ReloadServerData();
+    }
+
+    private async Task ReloadTable()
+    {
+        filterParameter = new FilterParameter();
+        await tableVariable.ReloadServerData();
+    }
+    private void ResetValues()
+    {
+        bank = new BankModel();
+        listOfBankLedgers.Clear();
+    }
+    private decimal TotalBalance()
+    {
+        return  listOfBankLedgers.Sum(amount => amount.Balance);
+    }
+    private void ClearFilter()
+    {
+        filterParameter.IsReferenceNumber = false;
+        filterParameter.ReferenceNumber = string.Empty;
+        filterParameter.IsDate = false;
+        dateRange = new DateRange(DateTime.Now, DateTime.Now);
+        listOfBankLedgers.Clear();
+    }
+    private void InvalidSearch()
+    {
+        Extensions.ShowAlert("Please complete search filters", Variant.Filled,snackbarService,Severity.Error);
+    }
+    private void NavigateToBankDetails(long bankID)
+    {
+        navigationManager.NavigateTo(String.Format("/bank-ledger/detail/list/{0}",bankID));
+    }
+    private async Task GetReport()
+    {
+        PDFContent = await ledgerService.GetBankLedgerReport(listOfBankLedgers);
+        isPrint = true;
+    }
+}

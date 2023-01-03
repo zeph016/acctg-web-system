@@ -18,6 +18,7 @@ using System.IdentityModel.Tokens.Jwt;
 using MudBlazor;
 using System.Net;
 using Microsoft.AspNetCore.SignalR.Client;
+using fgciams.domain.clsBank;
 
 using Microsoft.AspNetCore.Components;
 
@@ -134,6 +135,18 @@ public static class Extensions
         snackbarService.Configuration.VisibleStateDuration = 2000;
         snackbarService.Add($"{message}", severityType);
     }
+    public static void ShowAlertV2(string message, Variant variant, ISnackbar snackbarService, Severity severityType, string iconString, string position)
+    {
+        snackbarService.Clear();
+        snackbarService.Configuration.PositionClass = position;
+        snackbarService.Configuration.SnackbarVariant = variant;
+        snackbarService.Configuration.MaxDisplayedSnackbars = 10;
+        snackbarService.Configuration.VisibleStateDuration = 2000;
+        snackbarService.Add($"{message}", severityType, config => 
+        {
+            if (!string.IsNullOrWhiteSpace(iconString)) config.Icon = iconString;
+        });
+    }
 
     public static bool CheckUrlType(string url)
     {
@@ -145,16 +158,16 @@ public static class Extensions
     {
         return iconType.GetType().GetProperty(iconName)?.GetValue(iconType, null)?.ToString() ?? string.Empty;
     }
-    public static List<object> IconTypes()
-    {
-        List<object> icons = new List<object>();
-            icons.Add(MudBlazor.Icons.Filled);
-            icons.Add(MudBlazor.Icons.Outlined);
-            icons.Add(MudBlazor.Icons.Rounded);
-            icons.Add(MudBlazor.Icons.Sharp);
-            icons.Add(MudBlazor.Icons.TwoTone);
-        return icons;
-    }
+    // public static List<object> IconTypes()
+    // {
+    //     List<object> icons = new List<object>();
+    //         icons.Add(.Icons.Material.Filled);
+    //         icons.Add(Icons.Material.Outlined);
+    //         icons.Add(Icons.Material.Rounded);
+    //         icons.Add(Icons.Material.Sharp);
+    //         icons.Add(Icons.Material.TwoTone);
+    //     return icons;
+    // }
     public static string GetIconPrefix(string iconName)
     {
         return iconName.Split('.')[0]+"."+iconName.Split('.')[1]?? string.Empty;
@@ -163,26 +176,34 @@ public static class Extensions
     {
         return iconName.Split(".")[2];
     }
-    public static object GetIconType(string iconName){
-        object obj = new();
-        foreach(var icons in IconTypes())
-        {
-            if(icons.ToString() == GetIconPrefix(iconName)){
-                obj =  icons;
-                break;
-            }
-        }
-        return obj;
-    }
+    // public static object GetIconType(string iconName){
+    //     object obj = new();
+    //     foreach(var icons in IconTypes())
+    //     {
+    //         if(icons.ToString() == GetIconPrefix(iconName)){
+    //             obj =  icons;
+    //             break;
+    //         }
+    //     }
+    //     return obj;
+    // }
     public static string Icon(string iconName)
     {
-        return GetIconValue(GetIconType(iconName),GetIconName(iconName));
+        // return GetIconValue(GetIconType(iconName),GetIconName(iconName));
+        return string.Empty;
     }
     public static string GetAcctgStatusColor(long acctgStatusId)
     {
         var acctgStatus = new AccountingStatusModel();
         acctgStatus = GlobalClassList.accountingStatusList.Where(x => x.Id == acctgStatusId).FirstOrDefault();
         return "background-color:" + acctgStatus?.StatusColor;
+    }
+    public static string BorderColor(long statusId)
+    {
+        var acctgStatus = GlobalClassList.accountingStatusList.Where(x=>x.Id == statusId).FirstOrDefault();
+        if (acctgStatus != null)
+            return "border-color:" + acctgStatus.StatusColor;
+        return string.Empty;
     }
     public static HubConnection ConnectionBuilder(string connection)
     {
@@ -211,5 +232,47 @@ public static class Extensions
         };
         var employee = await globalService.LoadAllEmployee(filterParameter, GlobalClass.token);
         return employee;
+    }
+
+    public static async Task CopyTextToClipboard(string strToCopy, ISnackbar snackbarService, IJSRuntime JSRuntime)
+    {
+        await JSRuntime.InvokeAsync<object>("copyToClipboard", strToCopy);
+        ShowAlert("Copied to clipboard.", Variant.Filled, snackbarService, Severity.Normal);
+    }
+    public static string BankShortCutName(long bankID)
+    {
+        return GlobalClassList.banks.Where( bank => bank.Id == bankID)
+            .SelectMany( bank => new List<string> { bank.ShortcutName, bank.AccountNo })
+            .Aggregate( ( shortcutName, accountNumber ) => shortcutName+" | "+accountNumber);
+    }
+    public static async Task<IEnumerable<BankModel>> SearchBank(string bankAccount)
+    {
+        var banks = GlobalClassList.banks;
+        return await Task.FromResult(banks.Where(x => x.AccountNo.Contains(bankAccount, StringComparison.OrdinalIgnoreCase)
+        || x.BankName.Contains(bankAccount, StringComparison.OrdinalIgnoreCase) || x.ShortcutName.Contains(bankAccount, StringComparison.OrdinalIgnoreCase)).ToList());
+    }
+    public static Enums.SupplierCategory POSupplierCategory(Enums.ProjectCategory cat)
+    {
+        if(cat == Enums.ProjectCategory.Project)
+            return Enums.SupplierCategory.Project;
+        else if(cat == Enums.ProjectCategory.FGDepartment)
+            return Enums.SupplierCategory.Department;
+        else if(cat == Enums.ProjectCategory.Section)
+            return Enums.SupplierCategory.Section;
+        else if(cat == Enums.ProjectCategory.OtherProject)
+            return Enums.SupplierCategory.OtherProject;
+        return Enums.SupplierCategory.Supplier;
+    }
+    //Usage Extensions.InvokeSignalR<ModelName>(arguments);
+    public static void InvokeSignalR<T>(string endPoint, MudTable<T> tableVariable, Action refresh)
+    {
+        if(GlobalVariable.AMSHubConnection != null)
+            GlobalVariable.AMSHubConnection.On<T>(endPoint, async (modelName) => 
+            {
+                //this method is working but reload table not working
+                await tableVariable.ReloadServerData();
+                refresh.Invoke();
+                Console.WriteLine("Test");
+            });
     }
 }

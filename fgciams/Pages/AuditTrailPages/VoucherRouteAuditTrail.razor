@@ -10,10 +10,10 @@
                 <MudPaper Elevation="3">
                     <MudCard Elevation="2">
                         <div style="display: flex; align-items: center;">
-                            <MudIcon Size="Size.Medium" style="margin-right: 10px;" Icon="@Icons.Filled.Timeline"></MudIcon>
+                            <MudIcon Size="Size.Medium" style="margin-right: 10px;" Icon="@Icons.Material.Filled.Timeline"></MudIcon>
                              <MudText Typo="Typo.body1">Timeline</MudText>
                         </div>
-                        <MudButton Size="Size.Small" StartIcon="@Icons.Filled.ArrowBackIos" title="Back" class="btn btn-primary" OnClick="(() => BackToList())"><MudText Typo="Typo.caption">Back</MudText></MudButton>
+                        <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.ArrowBackIos" title="Back" class="btn btn-primary" OnClick="(() => BackToList())"><MudText Typo="Typo.caption">Back</MudText></MudButton>
                     </MudCard>
                     <MudTimeline TimelinePosition="TimelinePosition.Start">            
                             @foreach(var auditTrail in GlobalClassList.voucherRouteAuditTrail)
@@ -117,7 +117,7 @@
         AccountingStatusModel accountingStatusModel = new();
         accountingStatusModel.StatusName = "Update";
         accountingStatusModel.StatusColor = "LIME";
-        accountingStatusModel.StatusIcon = Icons.Filled.CheckCircleOutline;
+        accountingStatusModel.StatusIcon = Icons.Material.Filled.CheckCircleOutline;
         return accountingStatusModel;
     }
 }

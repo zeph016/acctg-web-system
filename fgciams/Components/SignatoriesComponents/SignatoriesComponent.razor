@@ -1,0 +1,80 @@
+@inject IGlobalService globalService
+
+
+@if (!dataFetched)
+{
+    if (isSingleLine)
+    {
+        <div class='d-flex align-center gap-2 '>
+            <MudSkeleton SkeletonType='SkeletonType.Circle' Width="40px" Height="40px" Animation='Animation.Wave' />
+            <MudSkeleton Width='150px' Height='32px' Animation='Animation.Wave' /> 
+            <MudSkeleton Width='50px' Height='16px' Animation='Animation.Wave' />
+        </div>
+    }
+    else
+    {
+        <div class='d-flex align-center gap-2 '>
+            <MudSkeleton SkeletonType='SkeletonType.Circle' Width="40px" Height="40px" Animation='Animation.Wave' />
+            <div class='d-flex align-start flex-column'>
+                <MudSkeleton Width='150px' Height='32px' Animation='Animation.Wave' />
+                <MudSkeleton Width='50px' Height='16px' Animation='Animation.Wave' />
+            </div>
+        </div>
+    }
+    
+    
+}
+else if (dataFetched && isSingleLine)
+{
+    <div class='d-flex align-center gap-2 '>
+        @if (employeeDetails.Picture.Count() == 0) {
+            <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Small' />
+        } else {
+            <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(employeeDetails.Picture)}")' Size='Size.Small' />
+        }
+        <MudText Class='font12'>@employeeDetails.EmployeeName</MudText> |
+        <MudText Class='font10'>@employeeDetails.Designation</MudText>
+    </div>
+}
+else
+{
+    <div class='d-flex align-center gap-2 '>
+        @if (employeeDetails.Picture.Count() == 0) {
+            <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
+        } else {
+            <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(employeeDetails.Picture)}")' Size='Size.Medium' />
+        }
+        <div class='d-flex flex-column'>
+            <MudText Class='font12'>@employeeDetails.EmployeeName</MudText>
+            <MudText Class='font10'>@employeeDetails.Designation</MudText>
+        </div>
+    </div>
+}
+
+
+@code {
+    
+    [Parameter] public bool isSingleLine { get; set; }
+    [Parameter] public long employeeId { get; set; }
+    private bool dataFetched;
+    private UserAccount employeeDetails = new UserAccount();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Task t = Task.WhenAll(GetEmployeeDetails());
+        await t;
+        if (t.Status == TaskStatus.RanToCompletion)
+            CompeletedFetch();
+    }
+
+    void CompeletedFetch()
+    {
+        dataFetched = true;
+    }
+
+    private async Task GetEmployeeDetails()
+    {
+        var response = await globalService.GetEmployeeById(employeeId, GlobalClass.token);
+        employeeDetails = response;
+    }
+}

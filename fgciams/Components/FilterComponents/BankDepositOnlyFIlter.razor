@@ -1,0 +1,169 @@
+
+<div class='drawer-right__filtercont'>
+    <div class='icon-area d-flex align-center @(contentVisible ? "pl-3":"")'>
+        <MudTooltip Text='Filter' Arrow Placement='Placement.Left'>
+            <MudIconButton OnClick='OpenFilter' Icon='@Icons.Material.Filled.FilterList' arial-label='Close Filter' Size='Size.Small' />
+        </MudTooltip>
+    </div>
+    <div class='filter-title d-flex align-center'>
+        <MudText Typo='Typo.button'>Filter</MudText>
+        <MudSpacer />
+        <MudIconButton OnClick='OpenFilter' Icon='@Icons.Material.Filled.Close' aria-label='Close Filter' Size='Size.Small' />
+    </div>
+    <div class='filter-content @(contentVisible ? "fade-in":"fade-out")'>
+          <MudGrid Spacing='1'>
+            <MudItem class='d-flex align-center justify-center' xs=2>
+                <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        dateDepositRange = new DateRange(DateTime.Now.Date,DateTime.Now.Date);
+                        filterParameter.IsDepositDate = !filterParameter.IsDepositDate;
+                    })' Checked='filterParameter.IsDepositDate' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+            </MudItem>
+            <MudItem xs=10>
+                <MudDateRangePicker Class='txtfield-75 mr-1' @bind-DateRange='dateDepositRange' Label='Deposit Date' @ref='@_dateDepositRange' IconSize='Size.Small' DisableToolbar
+                    Placeholder="Date Range" Disabled="@(!filterParameter.IsDepositDate)" Variant='Variant.Outlined' Margin='Margin.Dense'>
+                    <PickerActions>
+                        <MudButton Class='btn-ios-d font12' OnClick='(() => DateRangeToday(dateDepositRange))' Size='Size.Small' DisableElevation Variant='Variant.Text'>
+                            Today
+                        </MudButton>
+                        <MudSpacer />
+                        <MudButton Class='btn-ios-d font12' OnClick='(() => CancelDatePicker(_dateDepositRange))' Size='Size.Small' DisableElevation>
+                            Cancel
+                        </MudButton>
+                        <MudButton Class='btn-ios-d font12' OnClick='(() => SubmitDatePicker(_dateDepositRange))' Variant='Variant.Filled' Size='Size.Small' DisableElevation Color='Color.Primary'>
+                            Submit
+                        </MudButton>
+                    </PickerActions>    
+                </MudDateRangePicker>
+            </MudItem>
+             <MudItem class='d-flex align-center justify-center' xs=2>
+                <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        filterParameter.DepositCategoryId = 0;
+                        filterParameter.IsDepositCategoryId = !filterParameter.IsDepositCategoryId;
+                    })' Checked='filterParameter.IsDepositCategoryId' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+            </MudItem>
+            <MudItem xs=10>
+                <MudSelect Class='txtfield-75 mr-2' Label='Payment' 
+                    @bind-Value='filterParameter.DepositCategoryId'  
+                    IconSize='Size.Small' Dense Disabled='!filterParameter.IsDepositCategoryId' Placeholder='Payment' Variant='Variant.Outlined'
+                    AnchorOrigin='Origin.BottomCenter' TransformOrigin='Origin.TopCenter'>
+                    @foreach(Enums.CollectionPaymentType category in Enum.GetValues(typeof(Enums.CollectionPaymentType)))
+                    {
+                        <MudSelectItem Value="@category">@Extensions.GetEnumDescription(category)</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        hasBanks = new HashSet<BankModel>();
+                        filterParameter.IsBank = !filterParameter.IsBank;
+                    })' Checked='filterParameter.IsBank' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+            </MudItem>
+            <MudItem xs=10>
+                <MudSelect Class='txtfield-75 mr-2' MultiSelectionTextFunc='@(new Func<List<string>, string>(SelectedBanks))' @bind-SelectedValues='hasBanks' Label='Banks' 
+                    @bind-Value='selectedBanks'  Clearable  
+                    IconSize='Size.Small' Dense MultiSelection Disabled='!filterParameter.IsBank'  Placeholder='Banks' Variant='Variant.Outlined'
+                    AnchorOrigin='Origin.BottomCenter' TransformOrigin='Origin.TopCenter'>
+                    @foreach (var item in bankList)
+                    {
+                        <MudSelectItem Value="@item">@item.BankName</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem Class='d-flex align-center justify-end gap-2' xs=12>
+                <MudButton Class='btn-ios-d font12' OnClick='ResetTable' Variant='Variant.Text' Size='Size.Small' DisableElevation Color='Color.Error'>
+                    Reset
+                </MudButton> 
+                <MudSpacer />
+                <MudButton Class='btn-ios-d font12' OnClick='OpenFilter' Variant='Variant.Text' Size='Size.Small' DisableElevation>
+                    Cancel
+                </MudButton> 
+                <MudButton Class='btn-ios-d font12 mr-2' OnClick='MapToGlobalFilter' Variant='Variant.Filled' Color='Color.Secondary' Size='Size.Small' DisableElevation>
+                    Filter
+                </MudButton>
+            </MudItem>
+          </MudGrid>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OpenSideFilterClick { get; set; }
+    [Parameter] public EventCallback FilterClick { get; set; }
+    [Parameter] public EventCallback ResetTableClick { get; set; }
+    [Parameter] public FilterParameter filterParameter { get; set; } = new FilterParameter();
+    [Parameter] public bool openSideFilter { get; set; }
+    [Parameter] public string moduleName { get; set; } = string.Empty;
+    [Parameter] public bool contentVisible { get; set; }
+    private bool dataFetched;
+    private DateRange dateDepositRange = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
+    private MudDateRangePicker _dateDepositRange = new MudDateRangePicker();
+    private BankModel selectedBanks = new BankModel();
+    private List<BankModel> bankList = new List<BankModel>();
+    private IEnumerable<BankModel> hasBanks {get; set;} = new HashSet<BankModel>();
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        while (GlobalClassList.banks == null)
+            await Task.Delay(1);
+        await Task.Run(() => {
+            bankList = GlobalClassList.banks.ToList();
+        });
+        CompletedFetch();
+    }
+
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+    protected async Task OpenFilter()
+    {
+        contentVisible = !contentVisible;
+        await OpenSideFilterClick.InvokeAsync();
+    }
+
+    private string SelectedBanks(List<string> selectedBanks)
+    {
+        var status = "";
+        foreach (var item in hasBanks)
+        {
+        status = string.Join(", ", hasBanks.Select(x => x.BankName));      
+        }
+        return $"{status}";
+    }
+    protected async Task MapToGlobalFilter()
+    {
+        GlobalVariable.filterParameter = filterParameter;
+        GlobalVariable.filterParameter.DepositDateFrom = Convert.ToDateTime(dateDepositRange.Start);
+        GlobalVariable.filterParameter.DepositDateTo = Convert.ToDateTime(dateDepositRange.End);
+        if(filterParameter.IsBank)
+            GlobalVariable.filterParameter.BankId = string.Join(",", hasBanks.Select(x => x.Id));
+        await FilterClick.InvokeAsync();
+    }
+    protected async Task ResetTable()
+    {
+        filterParameter = new FilterParameter();
+        dateDepositRange = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
+        await ResetTableClick.InvokeAsync();
+    }
+    private void DateRangeToday(DateRange dateRangeName)
+    {
+        if (dateRangeName == dateDepositRange)
+            dateDepositRange = new DateRange(DateTime.Now.AddDays(-1).Date, DateTime.Now.Date);
+    }
+    private void SubmitDatePicker(MudDateRangePicker dateRangePickerName)
+    {
+        dateRangePickerName.Close(true);
+    }
+    private void CancelDatePicker(MudDateRangePicker dateRangePickerName)
+    {
+        dateRangePickerName.Close(false);
+    }
+}

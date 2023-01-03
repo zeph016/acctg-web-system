@@ -35,9 +35,6 @@ namespace fgciams.domain.clsLiquidation
             RequestedByDepartment = "";
             RequestedBySection = "";
             RequestedByPosition = "";
-            RequestedByDepartment = "";
-            RequestedBySection = "";
-            RequestedByPosition = "";
             ApprovedById = 0;
             ApprovedByName = "";
             ApprovedByDepartment = "";
@@ -51,7 +48,6 @@ namespace fgciams.domain.clsLiquidation
             ChargingId = 0;
             ChargingName = "";
             TemporaryId = 0;
-            StatusId = 0;
             Remarks = "";
             ChargingCategoryId = Enums.ProjectCategory.Company;
         }
@@ -69,7 +65,7 @@ namespace fgciams.domain.clsLiquidation
         public string Remarks { get; set; } = string.Empty;
         
         ////
-        public bool ShowSubTable { get; set; }
+        public bool ShowSubTable { get; set; } = true;
         public int TemporaryId {get; set;}
         public bool ShowParticulars { get; set; }
         public bool ShowRemarks { get; set; }

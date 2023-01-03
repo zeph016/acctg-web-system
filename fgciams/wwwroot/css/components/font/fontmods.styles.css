@@ -116,6 +116,10 @@
   text-transform: uppercase !important;
 }
 
+.txt-lowercase {
+  text-transform: lowercase !important;
+}
+
 .fweight500 {
   font-weight: 500 !important;
 }
@@ -143,4 +147,38 @@
 
 .ltr-spacing-1px {
   letter-spacing: 1px !important;
+}
+
+.validation-font12 .validation-message {
+  font-size: 12px !important;
+}
+
+.txt-datepicker-custom-small .mud-input {
+  font-size: 10px;
+  font-weight: bold;
+  margin-top: 0px !important;
+}
+
+.txt-label10px .mud-input {
+  margin-top: 10px !important;
+}
+.txt-label10px .mud-input-label {
+  font-size: 12px !important;
+}
+
+.title-rfp {
+  font-family: "Theramin" !important;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.rflex-bold-title {
+  font-family: "R-Flex Bold";
+  font-size: 14px;
+  text-transform: uppercase;
+}
+.rflex-bold-title .rflex-regular {
+  font-family: "R-Flex Regular";
+  font-size: 14px;
+  text-transform: uppercase;
 }/*# sourceMappingURL=fontmods.styles.css.map */

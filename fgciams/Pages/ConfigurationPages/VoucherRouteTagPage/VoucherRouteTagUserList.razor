@@ -1,0 +1,258 @@
+@page "/voucher-route-users"
+
+@inject IVoucherRouteTagUserService voucherRouteTagUserService
+@inject IDialogService dialogService
+@inject ISnackbar snackbarService
+@inject ApplicationState AppState
+
+<div class='page-cont'>
+    <div class='drawer-right'>
+        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <div class='drawer-right__filtercont'>
+                <div class="icon-area d-flex align-center">
+                    <MudIconButton OnClick='OpenSideFilter' Icon="@Icons.Material.Filled.FilterList" aria-label="Filter" Size='Size.Medium' />
+                </div>
+                <div class="filter-title d-flex align-center">
+                    <p class='title875'>Filter</p>
+                    <MudSpacer />
+                    <MudIconButton OnClick='OpenSideFilter' Icon="@Icons.Material.Filled.Close" aria-label="Close Filter" Size='Size.Medium' />
+                </div>
+                <div class='filter-content d-flex flex-column pl-4 pr-4 gap-1 @visibility'>
+                    <MudTextField Class='txtfield-75' @bind-Value='searchTerm' Placeholder='Employee name'
+                    Adornment='Adornment.Start' AdornmentIcon='@Icons.Material.Filled.Search' IconSize='Size.Small'
+                    Clearable='true' Variant='Variant.Outlined' />
+                    <MudButton Variant='Variant.Filled' Color='Color.Secondary'>Apply Filter</MudButton>
+                </div>
+            </div>
+        </MudDrawer>
+    </div>
+    <MudContainer Class='divisionpage' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+        @if(!dataFetched)
+        {
+            <SkeletonPageList />
+        }
+        else
+        {
+            <MudTable Class='table-style-1' Items="@GlobalClassList.routeTagUserList" Hover="true"
+                Breakpoint="Breakpoint.Xs" FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
+                RowsPerPage='15' Filter='new Func<VoucherRouteTagUserModel,bool>(FilterItems)'>
+                <ToolBarContent>
+                    <MudText Typo='Typo.caption'>
+                        @GlobalClassList.routeTagUserList.Count()
+                        @(GlobalClassList.routeTagUserList.Count() == 1 ? "item" : "items") 
+                        in Total
+                    </MudText>
+                    <MudSpacer/>
+                    <MudTooltip Text="Refresh Table">
+                        @if(badgeNumber == 0)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='(() => LoadUserRoutes())'/>
+                        }
+                        else
+                        {
+                            <MudBadge Content="@badgeNumber" Overlap="true" Class="mx-6 my-4" Color='Color.Error'>
+                                <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='(() => LoadUserRoutes())'/>
+                            </MudBadge>
+                        }
+                    </MudTooltip>
+                    @* <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                        TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
+                        <MudMenuItem>
+                            <div class='d-flex align-center gap-2 '>
+                                <MudIcon Icon='@Icons.Material.Filled.Add' Size='Size.Small' />
+                                <MudText Typo='Typo.body2'>Add</MudText>
+                            </div>
+                        </MudMenuItem>
+                    </MudMenu> *@
+                </ToolBarContent>
+                <ColGroup>
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                    <col style='width: 20px' />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh Class='customheader-6'>
+                        <MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<VoucherRouteTagUserModel, object>(x=>x.EmployeeName)">
+                            Employee
+                        </MudTableSortLabel>
+                    </MudTh>
+                    <MudTh Class='customheader-6'>Department</MudTh>
+                    <MudTh Class='customheader-6'>Section</MudTh>
+                    <MudTh Class='customheader-6'>Designation</MudTh>
+                    <MudTh Class='customheader-6'>Route Tags</MudTh>
+                    <MudTh Class='customheader-6 text-center pa-2'>Action</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                        <MudTd DataLabel="Division Name">
+                            <div class='dynamic-div-1'>
+                                <small>@context.EmployeeName</small>
+                            </div>
+                        </MudTd>
+                        <MudTd DataLabel="Short Name">
+                            <div class='dynamic-div-1'>
+                                <small>@context.DepartmentName</small>
+                            </div>
+                        </MudTd>
+                        <MudTd DataLabel="Division Name">
+                            <div class='dynamic-div-1'>
+                                <small>@context.SectionName</small>
+                            </div>
+                        </MudTd>
+                        <MudTd DataLabel="Short Name">
+                            <div class='dynamic-div-1'>
+                                <small>@context.Designation</small>
+                            </div>
+                        </MudTd>
+                        <MudTd DataLabel="Division Name">
+                            <div class='dynamic-div-1'>
+                                <small>@context.VoucherRouteTags</small>
+                            </div>
+                        </MudTd>
+                        <MudTd Class='text-center pa-2'>
+                            <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent="MouseEvent.MouseOver"
+                            TransformOrigin='Origin.TopRight' Dense Size='Size.Small'>
+                                <MudMenuItem>
+                                    <div class='d-flex align-center gap-4'>
+                                        <MudCheckBox Class='chkbox20px' Checked='context.isNone' CheckedChanged='( (bool b)=>  TagsCheckChanged(context, b,Enums.RouteTag.None) )' Dense Color='Color.Info'  UnCheckedColor='Color.Dark'/>
+                                        <small>@Extensions.GetEnumDescription(Enums.RouteTag.None)</small>
+                                    </div>
+                                </MudMenuItem>
+                                <MudMenuItem>
+                                    <div class='d-flex align-center gap-4'>
+                                        <MudCheckBox Class='chkbox20px' Checked='context.isBilling' CheckedChanged='( (bool b)=> TagsCheckChanged(context, b, Enums.RouteTag.Billing))' Dense Color='Color.Info'  UnCheckedColor='Color.Dark'/>
+                                        <small>@Extensions.GetEnumDescription(Enums.RouteTag.Billing)</small>
+                                    </div>
+                                </MudMenuItem>
+                                <MudMenuItem>
+                                    <div class='d-flex align-center gap-4'>
+                                        <MudCheckBox Class='chkbox20px' Checked='context.isGovernment' CheckedChanged='( (bool b)=> TagsCheckChanged(context, b, Enums.RouteTag.GovEBenefit) )' Dense Color='Color.Info'  UnCheckedColor='Color.Dark'/>
+                                        <small>@Extensions.GetEnumDescription(Enums.RouteTag.GovEBenefit)</small>
+                                    </div>
+                                </MudMenuItem>
+                                <MudMenuItem>
+                                    <div class='d-flex align-center gap-4'>
+                                        <MudCheckBox Class='chkbox20px' Checked='context.isIssuance' CheckedChanged='( (bool b)=> TagsCheckChanged(context, b, Enums.RouteTag.IssuanceAndProcessing) )' Dense Color='Color.Info'  UnCheckedColor='Color.Dark's/>
+                                        <small>@Extensions.GetEnumDescription(Enums.RouteTag.IssuanceAndProcessing)</small>
+                                    </div>
+                                </MudMenuItem>
+                                <MudMenuItem>
+                                    <div class='d-flex align-center gap-4'>
+                                        <MudCheckBox Class='chkbox20px' Checked='context.isOthers' CheckedChanged='( (bool b)=>  TagsCheckChanged(context, b, Enums.RouteTag.Others) )' Dense Color='Color.Info'  UnCheckedColor='Color.Dark'/>
+                                        <small>@Extensions.GetEnumDescription(Enums.RouteTag.Others)</small>
+                                    </div>
+                                </MudMenuItem>
+                            </MudMenu>
+                        </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions='@GlobalVariable.pageSize' />
+                </PagerContent>
+            </MudTable>
+        }
+    </MudContainer>
+</div>
+
+@code{
+    private bool dataFetched, openSideFilter;
+    private string searchTerm = string.Empty, visibility = "visibility-animation-hide";
+    private int badgeNumber {get;set;}= 0;
+    private bool isCurrent = false;
+    private bool loadTable = true;
+    protected override async Task OnInitializedAsync()
+    {
+        GlobalClass.pageTitle = "Configuration - VOUCHER TAGS";
+        await LoadUserRoutes();
+        await AppState.UpdateMainLayoutComponent(true);
+        CompletedFetch();
+        SignalR();
+    }
+
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+    private bool FilterItems(VoucherRouteTagUserModel items)
+    {
+        if (string.IsNullOrEmpty(searchTerm))
+            return true;
+        if (items.EmployeeName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase))
+            return true;
+        return false;
+    }
+
+    private void OpenSideFilter()
+    {
+        openSideFilter = !openSideFilter;
+        if(openSideFilter)
+        visibility = "visibility-animation-show";
+        if(!openSideFilter)
+        visibility = "visibility-animation-hide";
+    }
+    private async Task LoadUserRoutes()
+    {
+        GlobalClassList.routeTagUserList = await voucherRouteTagUserService.GetVoucherTagUsers(GlobalClass.token);
+        badgeNumber = 0;
+        StateHasChanged();
+    }
+    private async Task TagsCheckChanged(VoucherRouteTagUserModel tagModel, bool b, Enums.RouteTag tag)
+    {
+        loadTable = false;
+        List<string> tags = tagModel.VoucherRouteTags.Split(", ").ToList();
+        tagModel.RouteTagId = tag;
+        
+        List<VoucherRouteTagUserModel> userTags = await voucherRouteTagUserService.GetUserTags(tagModel.EmployeeId,GlobalClass.token);
+        
+        if(b)
+        {
+            tagModel.IsActive = true;
+            tags.Add(Extensions.GetEnumDescription(tag));
+            await voucherRouteTagUserService.AddUserTagVoucher(tagModel,GlobalClass.token);
+        }
+        else
+        {
+            //Avoid null
+            if(userTags.Any( t => t.RouteTagId == tag))
+            {
+                tagModel.Id = (userTags.Where( t => t.RouteTagId == tag).FirstOrDefault()?? new()).Id;
+                tagModel.RouteTagId = tag;
+            }
+          
+            tagModel.IsActive = false;
+            tags.Remove(Extensions.GetEnumDescription(tag));
+            await voucherRouteTagUserService.UpdateUSerTagVoucher(tagModel,GlobalClass.token);
+        }
+
+        //Remove blank item in list
+        if(tags.Contains(""))
+            tags.Remove(tags.Single( tag => tag == "") );
+        tagModel.VoucherRouteTags = String.Join(", ", tags);
+
+        if(GlobalVariable.AMSHubConnection != null)
+            await GlobalVariable.AMSHubConnection.InvokeAsync("SaveVoucherRouteTagUser",tagModel);
+        StateHasChanged();
+    }
+    private void SignalR()
+    {
+        try
+        {
+            if(GlobalVariable.AMSHubConnection != null)
+                GlobalVariable.AMSHubConnection.On<VoucherRouteTagModel>("SaveVoucherRouteTagUser", async (tagUserModel) => 
+                {
+                    if(loadTable)
+                    {
+                        await LoadUserRoutes();
+                        StateHasChanged();
+                    }
+                    loadTable = true;
+                });
+        }catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            throw;
+        }
+    }
+}

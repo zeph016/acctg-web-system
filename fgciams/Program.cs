@@ -40,6 +40,12 @@ using fgciams.service.MuniCityServices;
 using fgciams.service.VATServices;
 using fgciams.service.BIRServices;
 using fgciams.service.ScopeOfWorkServices;
+using fgciams.service.CollectionServices;
+using fgciams.service.BankDepositServices;
+using fgciams.service.LedgerServices;
+using fgciams.service.DebitServices;
+using fgciams.service.VoucherRouteTagServices;
+using fgciams.service.JournalServices;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -83,6 +89,12 @@ builder.Services.AddScoped<IMuniCityService, MuniCityService>();
 builder.Services.AddScoped<IVATService, VATService>();
 builder.Services.AddScoped<IBIRService,BIRService>();
 builder.Services.AddScoped<IScopeOfWorkService,ScopeOfWorkService>();
+builder.Services.AddScoped<ICollectionService,CollectionService>();
+builder.Services.AddScoped<IBankDepositService,BankDepositService>();
+builder.Services.AddScoped<ILedgerService,LedgerService>();
+builder.Services.AddScoped<IDebitService,DebitService>();
+builder.Services.AddScoped<IVoucherRouteTagUserService,VoucherRouteTagUserService>();
+builder.Services.AddScoped<IJournalService,JournalService>();
 
 //Microsoft.AspNetCore.Components.Authorization;
 builder.Services.AddOptions();

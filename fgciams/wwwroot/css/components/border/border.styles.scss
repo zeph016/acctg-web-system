@@ -26,8 +26,29 @@
   border: solid thin #778899b0 !important;
 }
 
+.border-thin-notop {
+  border-right: solid thin lightgray;
+}
+
+.border-thin-topbot {
+  @extend .border-thin-bottom;
+  @extend .border-thin-top;
+}
+
 .border-bottom-only {
   border-top: none;
   border-right: none;
   border-left: none;
+}
+
+.br-none {
+  border-right: none !important;
+}
+
+.bl-thin {
+  border-left: solid thin lightgray;
+}
+
+.br-thin {
+  border-right: solid thin lightgray;
 }

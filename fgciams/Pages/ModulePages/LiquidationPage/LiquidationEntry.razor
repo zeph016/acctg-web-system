@@ -1,5 +1,4 @@
 @page "/liquidation"
-@page "/liquidation/create"
 
 @inject IGlobalService globalService
 @inject IAccountingStatusService accountingStatusService
@@ -15,9 +14,9 @@
 <div class='page-cont d-flex'>
     @if (!dataFetched)
     {
-      <MudPaper Class='d-flex flex-1 ma-2 pa-2'>
-        <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='100%' Width='100%' Animation='Animation.Wave' />
-      </MudPaper>
+      <div class='flex-1 pa-2'>
+        <SkeletonPageList />
+      </div>
     }
     else
     {
@@ -35,35 +34,51 @@
                   <MudItem Class='d-flex align-center justify-center' xs=4>
                      <MudText Class='txt-uppercase font-1-1rem ff-theramin'>@GlobalClass.pageTitle</MudText>
                   </MudItem>
-                  <MudItem Class='d-flex align-center justify-end' xs=4>
-                    <MudTooltip Text='New Voucher'>
-                      <MudButton Class='btn-ios-d pa-1 font12' OnClick='New' StartIcon="@Icons.Filled.Add" Variant='Variant.Filled'
-                      Color='Color.Info' Size='Size.Small' DisableElevation>new</MudButton>
+                  <MudItem Class='d-flex align-center justify-end pr-2' xs=4>
+                    <MudTooltip Text='Create new liquidation' Arrow Placement='Placement.Left'>
+                      <MudButton Class='btn-ios-d pa-1 font12' OnClick='New' StartIcon="@Icons.Material.Filled.Add" Variant='Variant.Filled'
+                        Color='Color.Info' Size='Size.Small' DisableElevation>new</MudButton>
                     </MudTooltip>
                   </MudItem>
                 </MudGrid>
               </div>
-              <div class="liq-period d-flex align-center justify-end gap-2">
-                <div class='flex-1 border-thin-right bgc-f2f2f2 height100'></div>
-                <MudText Class='wspace-nowrap font10 font-bold txt-uppercase'>Period: </MudText>
-                <div class='d-flex align-center pa-2 width30'>
-                  <MudDateRangePicker Class='txt-top-0 font14-txtfield txtfield-right' @bind-DateRange=@periodLiquidation IconSize='Size.Small'></MudDateRangePicker>
+              <div class="liq-period">
+                <div class='liq-period__daterange-cont'>
+                  <MudText Class='d-flex wspace-nowrap font10 font-bold txt-uppercase'>
+                    Period: 
+                    <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                  </MudText>
+                  <MudDateRangePicker Class='txtfield-font12-no-margin txtfield-right' @bind-DateRange='@periodLiquidation' IconSize='Size.Small' Margin='Margin.Dense' DisableToolbar
+                    @ref='@dateRangePeriod'>
+                    <PickerActions>
+                      <MudButton Class='btn-ios-d font12' OnClick='(() => DateRangeToday(new(), dateRangePeriod))' Size='Size.Small' DisableElevation>
+                        Today
+                      </MudButton>
+                      <MudSpacer />
+                      <MudButton Class='btn-ios-d font12' OnClick='(() => CancelDateRangePicker(new(), dateRangePeriod))' Size='Size.Small' DisableElevation>
+                        Cancel
+                      </MudButton>
+                      <MudButton Class='btn-ios-d font12' OnClick='(() => SubmitDateRangePicker(new(), dateRangePeriod))' Size='Size.Small' DisableElevation Color='Color.Primary' Variant='Variant.Filled'>
+                        Submit
+                      </MudButton>
+                    </PickerActions>
+                  </MudDateRangePicker>
                 </div>
               </div>
-              <div class="liq-controlno d-flex align-center justify-space-around pa-2 gap-2 overflow-hidden">
-                <div class='d-flex align-center gap-2 width40'>
-                  <MudText Class='txt-uppercase font-bold font10'>Date:</MudText>
-                  <MudDatePicker Class='txt-top-0 font14-txtfield txtfield-right' @bind-Date='@liquidationDate' IconSize='Size.Small' ReadOnly />
+              <div class="liq-blank bgc-F4F5FB">
+              </div>
+              <div class='liq-date'>
+                <div class='liq-date__date-cont'>
+                  <MudText Class='d-flex txt-uppercase font-bold font10'>Date:</MudText>
+                  <MudDatePicker Class='txtfield-font12-no-margin txtfield-right' @bind-Date='@liquidationDate' IconSize='Size.Small' Margin='Margin.Dense' 
+                    DisableToolbar ReadOnly />
                 </div>
+              </div>
+              <div class="liq-controlno">
                 <MudText Class='wspace-nowrap txt-uppercase font-bold font10'>Control No:</MudText>
-                @if (GlobalClass.liquidation.Id == 0)
-                {
-                  <MudChip Class='chip-radius-5 txt-uppercase font-bold font12' Color='Color.Error' Size='Size.Medium' Variant='Variant.Outlined'>Auto Generated</MudChip>
-                }
-                else
-                {
-                  <MudChip Class='chip-radius-5 txt-uppercase font-bold font12' Color='Color.Error' Size='Size.Medium' Variant='Variant.Outlined'>@GlobalClass.liquidation.ControlNumber</MudChip>
-                }
+                <MudChip Class='chip-radius-5 txt-uppercase font-bold font12' Color='Color.Error' Size='Size.Medium' Variant='Variant.Outlined'>
+                   @(currActionMode == Enums.ActionMode.Create ? "Auto":GlobalClass.liquidation.ControlNumber)
+                </MudChip>
               </div>
               <div class="liq-remarks d-flex align-center pa-2 gap-2">
                 <MudText Class='txt-uppercase font-bold font10'>Remarks:</MudText>
@@ -71,15 +86,16 @@
               </div>
               <div class="liq-details d-flex rounded-br rounded-bl overflow-hidden">
                 <div class='d-flex flex-1 flex-column'>
-                  <MudTable Class='small-toolbar-gutter2 toolbar-pad-0 flex-1 mudtoolbar-bg-F4F5FB oveflow-auto' Items="GlobalClass.liquidation.LiquidationDetails" Bordered
-                    Dense Elevation='0' FixedHeader FixedFooter CustomFooter Hover Square Height='calc(100vh - 324px)'>
+                  <MudTable Class='table-style-1 mudtoolbar-bg-F4F5FB table-bottom-border sm-tbar-gutter' Items="GlobalClass.liquidation.LiquidationDetails" Bordered
+                    Dense Elevation='0' FixedHeader FixedFooter CustomFooter Hover Square Height='calc(100vh - 295px)'>
                     <ToolBarContent>
-                      <div class='d-flex flex-1 align-center pr-2 pl-2 gap-2'>
-                        <MudText Class='txt-uppercase font-bold font12'>Liquidation Detail :</MudText>
-                        <MudText Class='txt-uppercase font-bold font10'>
-                          @GlobalClass.liquidation.LiquidationDetails.Count()
-                          @(GlobalClass.liquidation.LiquidationDetails.Count() == 1 ? "item" : "items")
-                        </MudText>
+                        <div class='d-flex align-center gap-2'>
+                          <MudText Class='txt-uppercase font-bold font12'>Liquidation Detail :</MudText>
+                          <MudText Class='txt-uppercase font-bold font10'>
+                            @GlobalClass.liquidation.LiquidationDetails.Count()
+                            @(GlobalClass.liquidation.LiquidationDetails.Count() <= 1 ? "item" : "items")
+                          </MudText>
+                        </div>
                         <MudSpacer />
                           @foreach (var item in GlobalClass.liquidation.LiquidationDetails)
                           {
@@ -92,15 +108,22 @@
                               }
                           }
                         <MudSpacer />
-                        <MudTooltip Text='Add Details'>
-                          <MudButton OnClick='AddPettyCash' StartIcon="@Icons.Filled.Add" aria-label="add" 
-                          Size='Size.Small' Variant='Variant.Text' DisableElevation Color='Color.Info'>Detail</MudButton>
+                        <MudTooltip Text='Add Details' Arrow Placement='Placement.Top'>
+                          <MudButton OnClick='AddPettyCash' StartIcon="@Icons.Material.Filled.AddCircle" aria-label="add" 
+                            Size='Size.Small' Variant='Variant.Text' DisableElevation Color='Color.Info'>
+                            <small>Detail</small>
+                          </MudButton>
                         </MudTooltip>
-                        <MudTooltip Text='Reset Details'>
-                          <MudButton OnClick='ResetLiquidationDetails' StartIcon="@Icons.Filled.Refresh" aria-label="reset" 
-                          Size='Size.Small' Variant='Variant.Text' DisableElevation Color='Color.Warning'>Reset</MudButton>
+                        <MudTooltip Text='Reset Details' Arrow Placement='Placement.Top'>
+                          <MudButton OnClick='ResetLiquidationDetails' StartIcon="@Icons.Material.Filled.Refresh" aria-label="reset" 
+                            Size='Size.Small' Variant='Variant.Text' DisableElevation Color='Color.Warning'>
+                            <small>Reset</small>
+                          </MudButton>
                         </MudTooltip>
-                      </div>
+                        <MudDivider Class='mr-2' Vertical/>
+                        <MudToggleIconButton @bind-Toggled="isSideBarExpanded" Size='Size.Small' ToggledSize='Size.Small'
+                          Icon="@Icons.Material.Filled.ToggleOff" Color="@Color.Tertiary" Title="Expand Sub Details"
+                          ToggledIcon="@Icons.Material.Filled.ToggleOn" ToggledColor="@Color.Info" ToggledTitle="Collapse Details"/>
                     </ToolBarContent>
                     <ColGroup>
                       <col style="width:20px"/>
@@ -121,7 +144,7 @@
                     <RowTemplate>
                       <MudTd Class='pa-2 text-center' DataLabel='Action'>
                          <MudTooltip Text='Remove Detail'>
-                            <MudIconButton OnClick='(() => RemovePettyCash(context))' Icon='@Icons.Filled.RemoveCircle' Color='Color.Error' Size='Size.Small' />
+                            <MudIconButton OnClick='(() => RemovePettyCash(context))' Icon='@Icons.Material.Filled.RemoveCircle' Color='Color.Error' Size='Size.Small' />
                           </MudTooltip>
                       </MudTd>
                       <MudTd Class='pa-2' DataLabel='Expense'>
@@ -173,8 +196,8 @@
                       </MudTd>
                       <MudTd Class='pa-2'>
                         <MudToggleIconButton @bind-Toggled='context.ShowSubTable'
-                          Icon="@Icons.Filled.ExpandMore" Color="@Color.Tertiary" Title="Expand" Size='Size.Small' ToggledSize='Size.Small'
-                          ToggledIcon="@Icons.Filled.ExpandLess" ToggledColor="@Color.Info" ToggledTitle="Collapse"/>
+                          Icon="@Icons.Material.Filled.ExpandMore" Color="@Color.Tertiary" Title="Expand" Size='Size.Small' ToggledSize='Size.Small'
+                          ToggledIcon="@Icons.Material.Filled.ExpandLess" ToggledColor="@Color.Info" ToggledTitle="Collapse"/>
                       </MudTd>
                       <MudTd Class='pa-2' DataLabel='Amount'>
                         <div class='d-flex align-center pt-2 pr-2 gap-2'>
@@ -200,9 +223,11 @@
                           <MudPaper Elevation='1' Square>
                             <div class='d-flex flex-column transition-05s-ease overflow-hidden bgc-F4F5FB' style='@(context.ShowSubTable ? "max-height:500px" : "max-height:0px")'>
                               <div class='d-flex align-center pa-2'>
-                                <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'>@context.ControlNumber</MudChip>
-                                <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Size='Size.Small' Style='@Extensions.GetAcctgStatusColor(context.StatusId)'>@context.StatusName</MudChip>
-                                <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Icon='@Icons.Filled.CalendarMonth' Color='Color.Default' Size='Size.Small'>@Convert.ToDateTime(context.RequestDate).ToShortDateString()</MudChip>
+                                <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small' Variant='Variant.Outlined'>@context.ControlNumber</MudChip>
+                                <MudChipAcctgStatus moduleName='pettycash' itemId='context.PettyCashId' />
+                                <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Icon='@Icons.Material.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small' Variant='Variant.Outlined'>
+                                  @Convert.ToDateTime(context.RequestDate).ToShortDateString()
+                                </MudChip>
                                 <MudSpacer />
                                 <MudText Class='font10 txt-uppercase font-bold'>Petty Cash Amount:</MudText>
                                 @if (context.Amount <= 0)
@@ -257,122 +282,115 @@
                       <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No details added</MudText>
                     </NoRecordsContent>
                   </MudTable>
-                  <MudGrid Class='border-thin-top height50px' Spacing='0'>
-                    <MudItem Class='d-flex align-center pa-2 gap-2 bgc-F4F5FB border-thin-right' xs=9>
+                  <div class='d-flex align-center gap-4 overflow-auto border-thin-top bgc-F4F5FB'>
+                    <MudSpacer />
+                    <small Class='txt-uppercase font12 font-bold'>Total amount:</small>
+                    <div class='d-flex align-center px-2'>
+                      <MudIcon Class='@(GlobalClass.liquidation.TotalAmount > 0 ? "color-green":"color-red")' Icon='@Icons.Outlined.LabelImportant' Size='Size.Small'/>
                       <MudSpacer />
-                      <MudText Class='txt-uppercase font12 font-bold'>Total amount</MudText>
-                      <MudIcon Icon='@Icons.Filled.Equalizer' Size='Size.Small' />
-                    </MudItem>
-                    <MudItem Class='d-flex align-center pa-2 gap-2 wspace-nowrap overflow-auto' xs=3>
-                     @if (GlobalClass.liquidation.TotalAmount > 0) {
-                          <MudIcon Class='color-green' Icon='@Icons.Outlined.LabelImportant' Size='Size.Small'/>
-                          <MudSpacer />
-                          <MudText Class='font-bold color-green' Typo='Typo.body2' >
-                          @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.liquidation.TotalAmount.ToString("N2")
-                          </MudText>
-                      } else {
-                          <MudIcon Icon='@Icons.Outlined.LabelImportant' Size='Size.Small' Color='Color.Error' />
-                          <MudSpacer />
-                          <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error' >
-                              @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.liquidation.TotalAmount.ToString("N2")
-                          </MudText>
-                      }
-                    </MudItem>
-                  </MudGrid>
+                      <small Class='font-bold @(GlobalClass.liquidation.TotalAmount > 0 ? "color-green":"color-red")' Typo='Typo.body2' >
+                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) 
+                        @(GlobalClass.liquidation.TotalAmount > 0 ? GlobalClass.liquidation.TotalAmount.ToString("N2"):"-")
+                      </small>
+                    </div>
+                  </div>
                 </div>
-                <div class='d-flex flex-column border-thin-left min-width20'>
-                  <MudCardHeader Class='pa-2 border-thin-bottom bgc-F4F5FB height2-05rem'>
+                <div class='d-flex flex-column border-thin-left transition-05s-ease width300px' style='@(isSideBarExpanded ? "max-width:300px" : "max-width:57px")'>
+                  <MudCardHeader Class='d-flex align-center justify-center pa-2 border-thin-bottom bgc-F4F5FB height2-05rem cursor-pointer'
+                    @onclick='(() => isSigExpanded = !isSigExpanded)'>
+                    <div class='d-flex align-center transition-05s-ease overflow-hidden @(isSideBarExpanded ? "fade-in flex-1" : "fade-out")' style='@(isSideBarExpanded ? "max-width:500px" : "max-width:0px")'>
                       <MudText Class='txt-uppercase font12 font-bold'>Signatories</MudText>
-                      <MudSpacer />
-                      <MudIcon Icon='@Icons.Filled.PersonPin' Size='Size.Small' />
+                    </div>
+                    <MudIconButton OnClick='(() => isSigExpanded = !isSigExpanded)' Icon='@Icons.Material.Filled.PersonPin' Size='Size.Small' Color='Color.Dark' />
                   </MudCardHeader>
-                  <MudCardContent Class='d-flex flex-column pa-2 gap-2'>
-                    <div class='d-flex align-center gap-2 min-width25'>
-                      @if (preparedBy.Picture.Count() == 0) {
-                        <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
-                      } else {
-                        <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(preparedBy.Picture)}")' Size='Size.Medium' />
-                      }
-                      <div class='d-flex flex-grow-1 flex-column'>
-                        <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear placheold='Prepared By'
-                        @bind-Value='preparedBy' Debounce='500' MaximumSuggestions='5'>
-                          <SelectedTemplate>
-                            <div class='overflow-hidden wspace-nowrap'>
-                              @if (context.EmployeeId != 0) {
-                                <MudText Class='font12'>@context.EmployeeName</MudText>
-                              } else if (requiredPreparedBy) {
-                                <MudText Class='font12 font-bold txt-uppercase' Color='Color.Error'>Required</MudText>
-                              } else {
-                                <MudText Class='font12'> - </MudText>
-                              }
-                            </div>
-                          </SelectedTemplate>
-                          <ResultTemplate>
-                            <div class='ddavatar'>
-                              <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@context.Picture)}")' Size='Size.Small'/>
-                              @context.EmployeeName | @context.Designation
-                            </div>
-                          </ResultTemplate>
-                        </BlazoredTypeahead>
-                        <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
-                            Prepared By
+                  <div class='transition-05s-ease @(isSideBarExpanded ? "":"overflow-hidden") @(isSigExpanded ? "fade-in":"overflow-hidden")' style='@(isSigExpanded ? "max-height:245px" : "max-height:0px")'>
+                    <MudCardContent Class='d-flex flex-column pa-2 gap-2'>
+                      <div class='d-flex align-center gap-2'>
+                        @if (preparedBy.Picture.Count() == 0) {
+                          <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
+                        } else {
+                          <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(preparedBy.Picture)}")' Size='Size.Medium' />
+                        }
+                        <div class='d-flex flex-grow-1 flex-column blzrthead-disabled-minheight15'>
+                          <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear placheold='Prepared By'
+                            @bind-Value='preparedBy' Debounce='500' MaximumSuggestions='5' Disabled>
+                            <SelectedTemplate>
+                              <div class='overflow-hidden wspace-nowrap'>
+                                @if (context.EmployeeId != 0) {
+                                  <MudText Class='font12'>@context.EmployeeName</MudText>
+                                } else if (requiredPreparedBy) {
+                                  <MudText Class='font12 font-bold txt-uppercase' Color='Color.Error'>Required</MudText>
+                                } else {
+                                  <MudText Class='font12'> - </MudText>
+                                }
+                              </div>
+                            </SelectedTemplate>
+                            <ResultTemplate>
+                              <div class='ddavatar'>
+                                <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@context.Picture)}")' Size='Size.Small'/>
+                                @context.EmployeeName | @context.Designation
+                              </div>
+                            </ResultTemplate>
+                          </BlazoredTypeahead>
+                          <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
+                              Prepared By
+                              <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                            </MudText>
+                        </div>
+                      </div>
+                      <div class='d-flex align-center gap-2'>
+                        @if (approvedBy.Picture.Count() == 0) {
+                          <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
+                        } else {
+                          <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(approvedBy.Picture)}")' Size='Size.Medium' />
+                        }
+                        <div class='d-flex flex-grow-1 flex-column'>
+                          <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear placeholder='Approved By'
+                          @bind-Value='approvedBy' Debounce='500' MaximumSuggestions='5'>
+                            <SelectedTemplate>
+                              <div class='overflow-hidden wspace-nowrap'>
+                                @if (context.EmployeeId != 0) {
+                                  <MudText Class='font12'>@context.EmployeeName</MudText>
+                                } else if (requiredApprover) {
+                                  <MudText Class='font12 font-bold txt-uppercase' Color='Color.Error'>Required</MudText>
+                                } else {
+                                  <MudText Class='font12'> - </MudText>
+                                }
+                              </div>
+                            </SelectedTemplate>
+                            <ResultTemplate>
+                              <div class='ddavatar'>
+                                <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@context.Picture)}")' Size='Size.Small' />
+                                @context.EmployeeName | @context.Designation
+                              </div>
+                            </ResultTemplate>
+                          </BlazoredTypeahead>
+                          <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
+                            Approved By
                             <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
                           </MudText>
+                        </div>
                       </div>
-                    </div>
-                    <div class='d-flex align-center gap-2 min-width25'>
-                      @if (approvedBy.Picture.Count() == 0) {
-                        <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
-                      } else {
-                        <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(approvedBy.Picture)}")' Size='Size.Medium' />
-                      }
-                      <div class='d-flex flex-grow-1 flex-column'>
-                        <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear placeholder='Approved By'
-                        @bind-Value='approvedBy' Debounce='500' MaximumSuggestions='5'>
-                          <SelectedTemplate>
-                            <div class='overflow-hidden wspace-nowrap'>
-                              @if (context.EmployeeId != 0) {
-                                <MudText Class='font12'>@context.EmployeeName</MudText>
-                              } else if (requiredApprover) {
-                                <MudText Class='font12 font-bold txt-uppercase' Color='Color.Error'>Required</MudText>
-                              } else {
-                                <MudText Class='font12'> - </MudText>
-                              }
-                            </div>
-                          </SelectedTemplate>
-                          <ResultTemplate>
-                            <div class='ddavatar'>
-                              <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@context.Picture)}")' Size='Size.Small' />
-                              @context.EmployeeName | @context.Designation
-                            </div>
-                          </ResultTemplate>
-                        </BlazoredTypeahead>
-                        <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
-                          Approved By
-                          <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
-                        </MudText>
-                      </div>
-                    </div>
-                  </MudCardContent>
+                    </MudCardContent>
+                  </div>
                   <MudDivider />
-                  <MudCardHeader Class='pa-2 border-thin-bottom bgc-F4F5FB height2-05rem'>
-                    <MudText Class='txt-uppercase font12 font-bold'>Status</MudText>
-                    <MudSpacer />
-                    <MudIcon Icon='@Icons.Filled.FactCheck' Size='Size.Small' />
+                  <MudCardHeader Class='d-flex align-center justify-center pa-2 border-thin-bottom bgc-F4F5FB height2-05rem cursor-pointer'
+                     @onclick='(() => isStatusExpanded = !isStatusExpanded)'>
+                    <div class='d-flex align-center transition-05s-ease overflow-hidden @(isSideBarExpanded ? "fade-in flex-1" : "fade-out")' style='@(isSideBarExpanded ? "max-width:500px" : "max-width:0px")'>
+                      <MudText Class='txt-uppercase font12 font-bold'>Status</MudText>
+                    </div>
+                    <MudIconButton OnClick='(() => isStatusExpanded = !isStatusExpanded)' Icon='@Icons.Material.Filled.FactCheck' Size='Size.Small' Color='Color.Dark' />
                   </MudCardHeader>
-                  @if (GlobalClass.liquidation.Id != 0) {
-                     <MudCardContent Class='d-flex flex-column align-center pa-2'>
-                        <MudChip Class='chip-radius-5 font-bold font12 txt-uppercase' Size='Size.Medium' Variant='Variant.Outlined'Style='@Extensions.GetAcctgStatusColor(GlobalClass.liquidation.StatusId)'>
-                          @GlobalClass.liquidation.StatusName
-                        </MudChip>
-                      </MudCardContent>
-                  } else {
-                      <MudCardContent Class='d-flex flex-column align-center pa-2'>
-                          <MudChip Class='chip-radius-5 font-bold font12' Size='Size.Medium' Variant='Variant.Outlined' Color='Color.Error'>
-                              TO BE GENERATED
-                          </MudChip>
-                      </MudCardContent>
-                  }
+                  <div class='d-flex align-start justify-center overflow-hidden @(isStatusExpanded ? "fade-in" : "fade-out")' style='@(isStatusExpanded && isSideBarExpanded ? "max-height:500px" : "max-height:0px")'>
+                    @* <MudCardContent Class='d-flex flex-column align-center pa-2'> *@
+                      <MudChip Class='chip-radius-5 font-bold font12 txt-uppercase' Size='Size.Medium' Variant='Variant.Outlined'
+                        Color='@(GlobalClass.liquidation.Id == 0 ? Color.Error:Color.Default)'
+                        Style='@(GlobalClass.liquidation.Id != 0 ? Extensions.BorderColor(GlobalClass.liquidation.StatusId):"")'>
+                        @(GlobalClass.liquidation.Id != 0 ? GlobalClass.liquidation.StatusName:"To be generated")
+                      </MudChip>
+                    @* </MudCardContent> *@
+                  </div>
+                  <MudDivider/>
                   <MudSpacer />
                   <MudCardActions Class='d-flex align-center justify-end gap-2 border-thin-top'>
                     <MudSpacer />
@@ -399,22 +417,19 @@
 
 
 @code{
-    Project project = new();
     private DateTime? liquidationDate = DateTime.Now;
     private DateRange periodLiquidation = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
     private UserAccount selectedApprover = new();
     private UserAccount preparedBy = new UserAccount(); private UserAccount approvedBy = new UserAccount();
     private Project payee = new(); private Project selectedProj = new Project();
-    private ExpenseLineModel expenseLine = new();
-    private LiquidationDetailModel selectedLiqDetModel = new LiquidationDetailModel();
-    private int tempId;
     private decimal totalAmount;
     private bool dataFetched, requiredApprover, requiredPreparedBy, openControlDrawer, isLiqTableCollapsed, modifyRemarks, collapseLiqDetails, 
-    openEditDrawer, _processing;
+    openEditDrawer, _processing, isSideBarExpanded = true, isSigExpanded = true, isStatusExpanded = true;
     private string _preparedBy = string.Empty, _approvedBy = string.Empty, submitText = "GENERATE", detailCountStatus = string.Empty;
     private string? pettyControl;
-    private byte[] preparedByImg = new byte[] { }, approverImg = new byte[] { };
     public static Enums.ActionMode currActionMode { get; set; }
+    private MudDatePicker datePicker = new MudDatePicker();
+    private MudDateRangePicker dateRangePeriod = new MudDateRangePicker();
 
     public override async Task SetParametersAsync(ParameterView parameters)
     {
@@ -425,7 +440,7 @@
     protected override async Task OnInitializedAsync()
     {
         GlobalClass.pageTitle = "liquidation entry";
-        while (GlobalClass.currentUserAccount == null || preparedBy == null)
+        while (GlobalClass.currentUserAccount == null || preparedBy == null || GlobalVariable.ServerTime == null)
             await Task.Delay(1);
 
         Task t = Task.WhenAll(InitializeComponents());
@@ -455,15 +470,13 @@
                 _preparedBy = GlobalClass.currentUserAccount.EmployeeName;
                 preparedBy.EmployeeId = GlobalClass.currentUserAccount.EmployeeId;
                 preparedBy = GlobalClass.currentUserAccount;
+                approvedBy = new();
              break;
 
              default :
                 _preparedBy = GlobalClass.forPrintingOrSaveLiquidation.PreparedByName;
-                preparedBy.Picture = GlobalClass.forPrintingOrSaveLiquidation.PreparedByPicture;
-                preparedBy.EmployeeId = GlobalClass.forPrintingOrSaveLiquidation.PreparedById;
-                _approvedBy = GlobalClass.forPrintingOrSaveLiquidation.ApprovedByName;
-                approvedBy.Picture = GlobalClass.forPrintingOrSaveLiquidation.ApprovedByPicture;
-                selectedApprover.EmployeeId = GlobalClass.forPrintingOrSaveLiquidation.ApprovedById;
+                preparedBy  = GlobalClass.currentUserAccount;
+                approvedBy = await GetEmployeeDetails(GlobalClass.liquidation.ApprovedById);
              break;
           }
             
@@ -481,7 +494,6 @@
     }
     void HandleIntervalElapsed(string debouncedText)
     {
-      Console.WriteLine(debouncedText);
       TotalAmount();
     }
     
@@ -542,7 +554,7 @@
   async void AddPettyCash()
   {
       var parameters = new DialogParameters();
-      string dialogTitle = "Petty Cash";
+      string dialogTitle = "Petty Cash look up";
       parameters.Add("dialogTitle", dialogTitle);
       parameters.Add("buttonText", "Select");
       parameters.Add("color", Color.Success);
@@ -557,7 +569,7 @@
           DisableBackdropClick = true
       };
       var resultDialog = await dialogService.Show<Shared.Dialogs.GlobalRFPLiquidationLookUp.GlobalRFPLiquidationLookUp>(dialogTitle, parameters, options).Result;
-      if (!resultDialog.Cancelled)
+      if (!resultDialog.Canceled)
       {
           StateHasChanged();
           TotalAmount();
@@ -570,7 +582,7 @@
 
   LiquidationModel MapProperties()
   {
-      GlobalClass.liquidation.LiquidationDate = Convert.ToDateTime(liquidationDate);
+      GlobalClass.liquidation.LiquidationDate = GlobalVariable.ServerTime;
       GlobalClass.liquidation.PreparedById = preparedBy.EmployeeId;
       GlobalClass.liquidation.PreparedByName = _preparedBy;
       GlobalClass.liquidation.PreparedByPicture = preparedBy.Picture;
@@ -702,6 +714,7 @@
         var parameters = new DialogParameters();
         string contentText = "Petty Cash ";
         string dialogTitle = "Remove " + contentText;
+        parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("contentText", contentText);
         parameters.Add("actionMode", Enums.ActionMode.Delete);
         var options = new DialogOptions()
@@ -713,7 +726,7 @@
             DisableBackdropClick = true
         };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-        if(!resultDialog.Cancelled)
+        if(!resultDialog.Canceled)
         {
             liquidationDetail.IsActive = false;
             GlobalClass.liquidation.RemovedLiquidationDetails.Add(liquidationDetail);
@@ -759,9 +772,20 @@
       return employeeDetail;
   }
   
-  private void New()
+  private async Task New()
   {
-    GlobalClass.liquidation = new LiquidationModel();
+    var parameters = new DialogParameters();
+    parameters.Add("contentText", "create new liquidaiton");
+    parameters.Add("dialogTitle", "Create New");
+    parameters.Add("buttonText", "Create New");
+    parameters.Add("actionMode", Enums.ActionMode.Prompt);
+    var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.Small, FullWidth = false, NoHeader = false };
+    var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(string.Empty,parameters,options).Result;
+    if(!resultDialog.Canceled)
+    {
+        string thisPage = "liq-create";
+        navigationManager.NavigateTo($"/refresh/{thisPage}");
+    }
   }
 
   private void ResetLiquidationDetails()
@@ -775,5 +799,33 @@
     detailCountStatus = string.Empty;
     requiredPreparedBy = false;
     requiredApprover = false;
+  }
+
+  private void DateRangeToday(MudDatePicker datePickerName, MudDateRangePicker dateRangePickerName)
+  {
+    if(datePickerName == datePicker)
+    {
+      liquidationDate = DateTime.Now;
+      SubmitDateRangePicker(datePickerName, new());
+    }
+    if(dateRangePickerName == dateRangePeriod)
+    {
+      periodLiquidation = new DateRange(DateTime.Now.AddDays(-1).Date, DateTime.Now.Date);
+      SubmitDateRangePicker(new(), dateRangePickerName);
+    }
+  }
+  private void CancelDateRangePicker(MudDatePicker datePickerName, MudDateRangePicker dateRangePickerName)
+  {
+    if(datePickerName == datePicker)
+      datePickerName.Close(false);
+    if(dateRangePickerName == dateRangePeriod)
+      dateRangePickerName.Close(false);
+  }
+  private void SubmitDateRangePicker(MudDatePicker datePickerName, MudDateRangePicker dateRangePickerName)
+  {
+    if(datePickerName == datePicker)
+      datePickerName.Close(true);
+    if(dateRangePickerName == dateRangePeriod)
+      dateRangePickerName.Close(true);
   }
 }

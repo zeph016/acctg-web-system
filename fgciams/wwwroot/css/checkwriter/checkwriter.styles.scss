@@ -1,14 +1,17 @@
+@use "../components/flexgridmods/flexgridmods.styles.css";
+
 .checkwriterpage {
   &__grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 130px 1fr;
-    grid-template-rows: 40px 50px 40px 40px 1fr;
+    grid-template-rows: 40px 50px 50px 40px 40px 1fr;
     gap: 0px 0px;
     grid-template-areas:
       "chkw-header chkw-header chkw-header chkw-header chkw-header"
-      "chkw-payee chkw-payee chkw-banks chkw-banks chkw-checkno"
+      "chkw-payee chkw-payee chkw-payee chkw-payee chkw-blankcont"
+      "chkw-banks chkw-banks chkw-checkno chkw-checkno chkw-checkdate"
       "chkw-voucher chkw-voucher chkw-voucher chkw-voucher chkw-voucher"
-      "chkw-desc chkw-desc chkw-remarks chkw-remarks chkw-remarks"
+      "chkw-desc chkw-desc chkw-desc chkw-desc chkw-desc"
       "chkw-details chkw-details chkw-details chkw-details chkw-details";
   }
   .chkw-header {
@@ -20,8 +23,14 @@
   .chkw-banks {
     grid-area: chkw-banks;
   }
+  .chkw-checkdate {
+    grid-area: chkw-checkdate;
+  }
   .chkw-checkno {
     grid-area: chkw-checkno;
+  }
+  .chkw-blankcont {
+    grid-area: chkw-blankcont;
   }
   .chkw-voucher {
     grid-area: chkw-voucher;
@@ -29,31 +38,51 @@
   .chkw-desc {
     grid-area: chkw-desc;
   }
-  .chkw-remarks {
-    grid-area: chkw-remarks;
-  }
   .chkw-details {
     grid-area: chkw-details;
   }
 
   .chkw-header,
-  .chkw-voucher,
   .chkw-details {
-    border-top: solid thin lightgray;
+    border: solid thin lightgray;
+  }
+  .chkw-payee,
+  .chkw-checkdate,
+  .chkw-banks,
+  .chkw-checkno,
+  .chkw-blankcont,
+  .chkw-voucher {
     border-bottom: solid thin lightgray;
   }
-
-  .chkw-header,
   .chkw-payee,
-  .chkw-checkno,
+  .chkw-banks,
   .chkw-voucher,
-  .chkw-desc,
-  .chkw-details {
+  .chkw-desc {
     border-right: solid thin lightgray;
     border-left: solid thin lightgray;
   }
-
-  .chkw-remarks {
+  .chkw-checkdate,
+  .chkw-checkno,
+  .chkw-blankcont {
     border-right: solid thin lightgray;
+  }
+
+  .chkw-checkdate,
+  .chkw-checkno,
+  .chkw-banks,
+  .chkw-checkdate {
+    @extend .dflex-row;
+    gap: 8px;
+    padding: 8px;
+  }
+  .chkw-payee {
+    @extend .dflex-row;
+    gap: 2px;
+    padding: 8px;
+  }
+  .amountwords {
+    font-size: 16px;
+    font-family: "R-Flex Regular";
+    font-weight: bold;
   }
 }

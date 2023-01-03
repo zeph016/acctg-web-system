@@ -1,0 +1,271 @@
+@page "/debit/list"
+@inject IDebitService debitService
+@inject NavigationManager navigationManager
+@inject IDialogService dialogService
+@inject ISnackbar snackBarService
+
+<div class='page-cont'>
+    <div class='drawer-right-min'>
+        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <FilterComponent OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
+                FilterClick='FilterTable' ResetTableClick='ReloadTable'
+                contentVisible='openSideFilter' moduleName="debit-list" />
+          
+        </MudDrawer>
+    </div>
+    <MudContainer Class='py-2 pl-2 pr-10  table-toolbar-custom1' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+        @if(!dataFetched)
+        {
+            <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
+                <MudSkeleton SkeletonType='SkeletonType.Text' Height='100px' Animation='Animation.Wave' />
+                <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='71vh' Animation='Animation.Wave' />
+            </MudPaper>
+        }
+        else
+        {
+            <MudTable Class='table-style-1 ' ServerData='new Func<TableState, Task<TableData<DebitModel>>>(LoadDebit)'
+                Breakpoint="Breakpoint.Xs" Hover FixedHeader FixedFooter Bordered Dense Loading='isLoading'
+                RowsPerPage='15' @ref='tableVariable'>
+                <ToolBarContent>
+                    <MudText Typo='Typo.caption'>
+                        @GlobalClassList.debitList.Count() 
+                        @(GlobalClassList.debitList.Count() == 1 ? "item" : "items") 
+                        in total
+                    </MudText>
+                    <MudSpacer/>
+                    <MudTooltip Text="Refresh Table" Arrow Placement='Placement.Top'>
+                        <MudIconButton Class='@(isLoading ? "mudbtnico-rotate":"")' OnClick='ReloadTable' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" 
+                            Color='@(isLoading ? Color.Info : Color.Default)'/>
+                        </MudTooltip>
+                    <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' ActivationEvent="MouseEvent.MouseOver"
+                        TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
+                         <MudMenuItem OnClick='AddDebit'>
+                            <div class='d-flex align-center gap-2 '>
+                                <MudIcon Icon='@Icons.Material.Filled.Add' Size='Size.Small' Color='Color.Dark' />
+                                <MudText Typo='Typo.body2' Color='Color.Dark'>Add Debit</MudText>
+                            </div>
+                        </MudMenuItem>
+                        <MudMenuItem OnClick="(() => openSideFilter = !openSideFilter)"  >
+                            <div class='d-flex align-center gap-2 '>
+                                <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
+                                <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
+                            </div>
+                        </MudMenuItem>
+                    </MudMenu>
+                </ToolBarContent>
+                <ColGroup>
+                    <col style='width:1%;' />
+                    <col />
+                    <col />
+                    <col style='width:115px' />
+                    <col style="width:50px" />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh Class='@(isPinnedCtrlNo ? "th-sticky-left customheader-6":"customheader-6")'>
+                        <div class='d-flex align-center justify-space-around gap-2'>
+                            <MudTableSortLabel SortLabel='SortControlNumber' T='DebitModel' 
+                                InitialDirection="SortDirection.Descending">
+                                Control No.
+                            </MudTableSortLabel>
+                            <MudTableSortLabel SortLabel='SortDate' T='DebitModel' 
+                                InitialDirection="SortDirection.None">
+                                Debit Date
+                            </MudTableSortLabel>
+                        </div>
+                    </MudTh>
+                    <MudTh Class='customheader-6'>Bank</MudTh>
+                    <MudTh Class='customheader-6'>Remarks</MudTh>
+                    <MudTh Class='@(isPinnedAmt ? "th-sticky-amt customheader-6 text-right":"customheader-6 text-right")'>
+                        <MudTooltip Text='Pin amount column' Arrow Placement='Placement.Top'>
+                            <MudIconButton Class='ico-15x15' OnClick='(() => isPinnedAmt = !isPinnedAmt)' Color='@(isPinnedAmt ? Color.Info:Color.Dark)' 
+                                Icon='@Icons.Material.Filled.PushPin' Size='Size.Small'/>
+                        </MudTooltip>
+                        <MudTableSortLabel SortLabel='SortAmount' T='CheckModel'
+                            InitialDirection="SortDirection.Descending">
+                            Amount
+                        </MudTableSortLabel>
+                    </MudTh>
+                    <MudTh Class='@(isPinnedAmt ? "th-sticky-action customheader-6":"customheader-6")'>Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd Class='@(isPinnedCtrlNo ? "col-sticky-left":"")' DataLabel='Control No.'>
+                        <div class='d-flex align-center justify-start'>
+                            <MudChip Class='mudchip-tbl' Color='Color.Error' Size='Size.Small' Variant='Variant.Outlined'>
+                                @context.ControlNumber
+                            </MudChip>
+                            <MudChip Class='mudchip-tbl' Icon='@Icons.Material.Filled.CalendarMonth' Variant='Variant.Outlined' Color='Color.Dark' Size='Size.Small'>
+                                @(context.DebitDate?.ToShortDateString())
+                            </MudChip>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel='Bank Name'>
+                        <div class='dynamic-width-1'>
+                            <small>@context.BankName</small>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel='Remarks'>
+                        <div class='dynamic-width-1'>
+                            <small>@context.Remarks</small>
+                        </div>
+                    </MudTd>
+                    <MudTd Class='@(isPinnedAmt ? "col-sticky-amt":"")' DataLabel='Amount'>
+                        <div class='tooltipw100'>
+                            <MudTooltip Class='flex-1' Text='@(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + context.Amount.ToString("N2"))' 
+                                Arrow Placement='Placement.Top' Color='Color.Success'>
+                                <div class='amount-container'>
+                                    <small class='@(context.Amount > 0 ? "font-bold color-green":"font-bold color-red")'>
+                                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                                    </small>
+                                    <MudSpacer />
+                                    <small class='@(context.Amount > 0 ? "txt-green":"txt-red")'>
+                                        @context.Amount.ToString("N2")
+                                    </small>
+                                </div>
+                            </MudTooltip>
+                        </div>
+                    </MudTd>
+                    <MudTd Class='@(isPinnedAmt ? "col-sticky-action text-center":"text-center")' DataLabel='Actions'>
+                        <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent="MouseEvent.MouseOver"
+                            TransformOrigin='Origin.TopRight' Dense Size='Size.Small'>
+                                <MudMenuItem OnClick='( ()=> EditDebit(context) )'>
+                                    <div class='d-flex align-center gap-2 '>
+                                        <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' Color='Color.Dark' />
+                                        <MudText Typo='Typo.body2' Color='Color.Dark'>Edit</MudText>
+                                    </div>
+                                </MudMenuItem>
+                                <MudMenuItem OnClick='( ()=> Prompt(context) )'>
+                                    <div class='d-flex align-center gap-2 '>
+                                        <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small' Color='Color.Dark' />
+                                        <MudText Typo='Typo.body2' Color='Color.Dark'>Cancel</MudText>
+                                    </div>
+                                </MudMenuItem>
+                                <MudMenuItem OnClick="(() => GoToAuditTrail(context))">
+                                <div class='d-flex align-center gap-2 '>
+                                    <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' Color='Color.Dark'/>
+                                    <MudText Typo='Typo.body2' Color='Color.Dark'>Audit Trail</MudText>
+                                </div>
+                            </MudMenuItem>
+                        </MudMenu>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No records found</MudText>
+                </NoRecordsContent>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions='@GlobalVariable.pageSize' />
+                </PagerContent>
+            </MudTable>
+        }
+    </MudContainer>
+</div>
+
+@code
+{
+    private bool dataFetched, openSideFilter, isLoading = true, isPinnedCtrlNo = true, isPinnedAmt = true;
+    private string searchTerm = string.Empty;
+    private IEnumerable<DebitModel>? pageData;
+    private MudTable<DebitModel> tableVariable = new MudTable<DebitModel>();
+    private FilterParameter filterParameter = new();
+
+    protected override void OnInitialized()
+    {
+        GlobalClass.pageTitle = "Debit List";
+        DebitEntry.currentActionMode = Enums.ActionMode.Create;
+        CompletedFetch();
+        SignalR();
+    }
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+    private async Task<TableData<DebitModel>> LoadDebit(TableState tableState)
+    {
+        isLoading = true;
+        IEnumerable<DebitModel> data = await debitService.GetDebits(filterParameter, GlobalClass.token);
+        switch (tableState.SortLabel)
+        {
+            case "SortControlNumber":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.ControlNumber);
+                break;
+            case "SortDate":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.DebitDate);
+                break;
+        }
+        GlobalClassList.debitList = data.ToList();
+        pageData = GlobalClassList.debitList.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
+        var total = GlobalClassList.debitList.Count();
+        isLoading = !isLoading;
+        return new TableData<DebitModel>()
+        {
+            TotalItems = total,
+            Items = pageData
+        };
+    }
+    private async Task FilterTable()
+    {
+        filterParameter = GlobalVariable.filterParameter;
+        await tableVariable.ReloadServerData();
+    }
+    private async Task ReloadTable()
+    {
+        filterParameter = new();
+        await tableVariable.ReloadServerData();
+    }
+    private void GoToAuditTrail(DebitModel debit)
+    {
+        GlobalClass.debit = debit;
+        navigationManager.NavigateTo("/debit/trail");
+    }
+    private void AddDebit()
+    {
+        DebitEntry.currentActionMode = Enums.ActionMode.Create;
+        GlobalClass.debit = new();
+        navigationManager.NavigateTo($"/debit");
+    }
+    private void EditDebit(DebitModel debit)
+    {
+        DebitEntry.currentActionMode = Enums.ActionMode.Update;
+        GlobalClass.debit = debit;
+        navigationManager.NavigateTo($"/debit");
+    }
+    private async Task Prompt(DebitModel debit)
+    {
+        var parameters = new DialogParameters();
+        string contentText = "Debit ";
+        string dialogTitle = Enums.ActionMode.Cancel +" "+ contentText;
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("actionMode", Enums.ActionMode.Cancel);
+        parameters.Add("contentText", contentText);
+        parameters.Add("controlNumber", debit.ControlNumber);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Canceled)
+        {   
+            debit.IsActive = false;
+            debit.UserId = GlobalClass.currentUserAccount.EmployeeId;
+            debit.Activity = "Cancel debit";
+            await debitService.UpdateDebit(debit,GlobalClass.token);
+            Extensions.ShowAlert("Debit successfully cancelled",Variant.Filled,snackBarService,Severity.Error);
+
+            if(GlobalVariable.AMSHubConnection != null)
+                await GlobalVariable.AMSHubConnection.InvokeAsync("SaveDebit",debit);    
+        }
+    }
+    private void SignalR()
+    {
+        try
+        {
+            if(GlobalVariable.AMSHubConnection != null)
+                GlobalVariable.AMSHubConnection.On<DebitModel>("SaveDebit", async (debitModel) => 
+                {
+                    await tableVariable.ReloadServerData();
+                    StateHasChanged();
+                });
+        }catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            throw;
+        }
+    }
+}

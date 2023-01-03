@@ -1,0 +1,13 @@
+.selfiltereditems-container {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  max-width: 70%;
+  margin: 0px 5px;
+  padding: 5px 0px;
+  overflow: auto;
+}
+.selfiltereditems-container .mud-chip-content {
+  font-size: 10px;
+}/*# sourceMappingURL=filtercomponents.styles.css.map */

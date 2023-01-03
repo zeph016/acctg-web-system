@@ -2,7 +2,7 @@ using fgciams.domain.clsEnums;
 
 namespace fgciams.domain.clsCheck
 {
-    public class CheckModel
+    public class CheckModel : CheckAuditTrailModel
     {
         public CheckModel()
         {
@@ -34,15 +34,16 @@ namespace fgciams.domain.clsCheck
         public string Description {get;set;} = string.Empty;
         public bool isShowChild {get;set;}
         public bool showReport {get;set;}
+        public DateTime? StatusDate {get;set;} = DateTime.Now;
         public string CheckCategory
         {
             get
             {
                 DateTime checkDate = Convert.ToDateTime(CheckDate?.ToString("MM/dd/yyyy"));
                 var months = (DateTime.Now.Year - checkDate.Year) * 12 + DateTime.Now.Month - checkDate.Month + (checkDate.Day >= DateTime.Now.Day ? 0 : -1);
-                if(AccountingStatusId != 16 && months > 6) //Check not cleared and greater then 6 months
+                if(AccountingStatusId == 17  && months > 6) //Check not cleared and greater then 6 months, 17 is C-Issued
                     return "Stale Check";
-                if(AccountingStatusId != 16 && months < 6 && checkDate > DateTime.Now) //Check not cleared and within 6months
+                if(AccountingStatusId == 17 && months < 6 && checkDate > DateTime.Now) //Check not cleared and within 6months
                     return "In-Transit";
                 return "Post-Dated";
             }

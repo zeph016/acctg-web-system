@@ -38,6 +38,12 @@ using fgciams.domain.clsMuniCity;
 using fgciams.domain.clsBIR;
 using fgciams.domain.clsScopeOfWork;
 using fgciams.domain.clsSubContractProject;
+using fgciams.domain.clsCollection;
+using fgciams.domain.clsBankDeposit;
+using fgciams.domain.clsFilterParameter;
+using fgciams.domain.clsCheckLedger;
+using fgciams.domain.clsDebit;
+using fgciams.domain.clsVoucherRouteTag;
 
 namespace fgciams.Common
 {
@@ -62,7 +68,7 @@ namespace fgciams.Common
         public static SubContractorCompanyModel subContractorCompany {get; set;} = default!;
         public static SubContractorPositionModel subContractorPosition {get; set;} = default!;
         public static SubConGeneralInformationModel subConGeneralInformation {get; set; } = default!;
-        public static PettyCashModel pettyCash { get; set; } = default!;
+        public static PettyCashModel pettyCash { get; set; } = new();
         public static LiquidationModel liquidation {get; set;} = default!;
         public static ExpenseLineModel expenseLine {get; set;} = default!;
         public static LiquidationModel forPrintingOrSaveLiquidation {get; set;} = default!;
@@ -73,7 +79,7 @@ namespace fgciams.Common
         public static AccountLineGroupModel accountLineGroup {get; set;} = default!;
         public static AccountLineTypeModel accountLineType {get; set;} = default!;
         public static LiquidationModel liquidationAudit {get; set;} = default!;
-        public static CheckModel checkModel {get;set;} = default!;
+        public static CheckModel checkModel {get;set;} = new();
         public static CheckVoucherModel checkVoucher {get;set;} = new();
         public static VoucherRouteBatchModel voucherRouteBatch {get; set; } = default!;
         public static VoucherRouteModel voucherRoute {get;set;} = new();
@@ -87,6 +93,9 @@ namespace fgciams.Common
         public static BankCheckNumberModel bankCheckNumberModel  {get;set;} = new();
         public static SubContractorProjectModel subContractProject  {get;set;} = new();
         public static Project project  {get;set;} = new();
+        public static CollectionModel collection {get;set;} = new();
+        public static BankDepositModel bankDeposit {get;set;} = new();
+        public static DebitModel debit {get;set;} = new();
     }
     public static class GlobalClassList
     {
@@ -113,14 +122,14 @@ namespace fgciams.Common
         public static List<PettyCashModel> notLiquidatedPettyCashList {get; set;} = default!;
         public static List<PettyCashAuditTrail> currrentAuditTrail {get; set;} = default!;
         public static List<ExpenseLineModel> expenseLineList {get; set;} = default!;
-         public static List<RequestForPaymentAuditTrailModel> rfpAuditTrailList {get; set;} = default!;
+        public static List<RequestForPaymentAuditTrailModel> rfpAuditTrailList {get; set;} = default!;
         public static List<LiquidationModel> LiquidationNotInRFP {get;set;} = default!;
         public static List<AccountingPOBillingModel> POBillingList {get; set;} = default!;
         public static List<VoucherModel> Vouchers {get; set;} = new();
         public static List<AccountTypeModel> listOfAccountTypes {get;set;} = default!;
         public static List<AccountLineGroupModel> accountLineGroups {get; set;} = default!;
         public static List<AccountLineTypeModel> accountLineTypes {get; set;} = default!;
-        public static List<CheckModel> listOfChecks {get; set;} = default!;
+        public static List<CheckModel> listOfChecks {get; set;} = new();
         public static List<CheckVoucherModel> listOfCheckVouchers {get; set;} =  default!;
         public static List<VoucherModel> BatchVouchers {get; set;} = default!;
         public static List<VoucherRouteBatchDetailModel> VoucherBatchList {get; set;} = default!;
@@ -128,7 +137,7 @@ namespace fgciams.Common
         public static List<VoucherRouteModel> currentVoucherRoutes {get; set;} =  new();
         public static List<VoucherRouteAuditTrailModel> voucherRouteAuditTrail {get;set;} = default!;
         public static List<TaxCodeModel> taxCodes {get; set;} = default!;
-        public static HashSet<VoucherModel> selectedVoucherToRoute {get;set;} = default!;
+        public static List<VoucherModel> selectedVoucherToRoute {get;set;} = new();
         public static List<SupplierModel> supplierList {get; set;} = default!;
         public static List<TermsOfPaymentModel> termsOfPayments {get; set;} = default!;
         public static List<MuniCityModel>  muniCityList {get;set;} = default!;
@@ -138,13 +147,25 @@ namespace fgciams.Common
         public static List<SubContractorProjectModel> subContractorProjectist  {get;set;} = default!;
         public static List<Project> projectList  {get;set;} = default!;
         public static List<Project> subConProjectList  {get;set;} = default!;
+        public static List<CollectionModel> collectionList {get;set;} = new();
+        public static List<CollectionExpenseModel> collectionExpenses {get;set;} = new();
+        public static HashSet<CollectionModel> selectedCollections {get;set;} = new();
+        public static List<BankDepositModel> bankDepositList {get;set;} = new();
+        public static List<CollectionModel> projectLedgerList {get;set;} = new();
+        public static List<CheckLedgerModel> checkLegderList {get;set;} = new();
+        public static List<DebitModel> debitList {get;set;} = new();
+        public static List<VoucherRouteTagUserModel> routeTagUserList {get;set;} = new();
+        public static List<VoucherDetailModel> journalList {get;set;} = new();
+        public static List<VoucherDetailModel> subconARList {get;set;} = new();
+        public static List<VoucherDetailModel> subconAPList {get;set;} = new();
     }
     public static class GlobalVariable
     {
-        public static bool drawerOpen { get; set; } = true;
+        public static FilterParameter filterParameter = new FilterParameter();
         public static bool hideExpandIcon { get; set; }
-        public static Enums.ActionMode CRUDMode {get; set;}
         public static HubConnection? AMSHubConnection {get; set;}
         public static string errorPromptText {get;set;} = string.Empty;
+        public static int[] pageSize = new int[] { 15, 30, 45, 60, 75, 90, 100 };
+        public static DateTime ServerTime { get; set; } = default!;
     }
 }

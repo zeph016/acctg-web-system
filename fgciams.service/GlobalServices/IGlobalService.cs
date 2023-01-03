@@ -13,6 +13,7 @@ using fgciams.domain.clsPO;
 using fgciams.domain.clsScopeOfWork;
 using fgciams.domain.clsSubConGeneralInformation;
 using fgciams.domain.clsSubContractProject;
+using fgciams.domain.clsCollection;
 
 namespace fgciams.service.GlobalServices
 {
@@ -30,5 +31,6 @@ namespace fgciams.service.GlobalServices
         Task<List<Project>> SubConProjects(FilterParameter filterParameter, string token);
         Task<List<ScopeOfWorkModel>> SubConScopeOfWorks(FilterParameter filterParameter, string token);
         Task<List<SubContractorProjectModel>> VoucherDetailsSubCon(long projectID, string token);
+        Task<DateTime?> GetServerTime();
     }
 }

@@ -126,5 +126,7 @@ namespace fgciams.domain.clsRequest
         public byte[] ApprovedByPicture {get;set;} = new byte[]{};
         public string StatusName {get;set;} = string.Empty;
         public Enums.AccountingStatusEnumCategory StatusEnumCategoryId {get;set;}
+        public DateTime? PeriodDateFrom { get; set; } = DateTime.Now;
+        public DateTime? PeriodDateTo { get; set; } = DateTime.Now;
     }
 }

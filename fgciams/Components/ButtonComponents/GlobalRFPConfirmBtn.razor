@@ -1,0 +1,24 @@
+
+
+ <MudButton Class='btn-ios-d font12' OnClick='(()=> CloseDialog())' Variant='Variant.Filled' 
+    DisableElevation Size='Size.Small'
+    Color='@(itemCount > 0 ? Color.Success:Color.Default)'>
+    @if(itemCount > 0)
+    {
+        <small>Add</small>
+    } 
+    else
+    {
+        <small>Close</small>
+    }
+</MudButton>
+
+@code {
+    [Parameter] public EventCallback CloseDialogClick { get; set; }
+    [Parameter] public long itemCount { get; set; }
+
+    protected async Task CloseDialog()
+    {
+        await CloseDialogClick.InvokeAsync();
+    }
+}

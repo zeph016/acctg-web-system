@@ -6,32 +6,33 @@
 @inject IRequestForPaymentService requestForPaymentService
 @inject IVoucherService voucherService
 @inject NavigationManager navigationManager
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject IDialogService dialogService
 @inject IGlobalService globalService
+@inject IJSRuntime JSRuntime
 
 <MudDialog Class="customdialog-table-only">
   <TitleContent>
     <div class='d-flex align-center'>
-      <MudIcon Icon='@Icons.Filled.FormatListBulleted' Class="mr-3 mb-n1" />
-      <MudText Class='txt-uppercase' Typo='Typo.h6'>
+      <MudIcon Class='pr-2' Icon='@Icons.Material.Filled.FormatListBulleted' Size='Size.Medium' />
+      <MudText Class='txt-uppercase' Typo='Typo.button'>
         @dialogTitle
       </MudText>
       <MudSpacer />
-      <MudToggleIconButton @bind-Toggled='openSideFilter'
-      Icon='@Icons.Filled.FilterList' Color="Color.Tertiary" ToggledSize='Size.Medium'
-      ToggledIcon='@Icons.Filled.FilterList' ToggledColor="Color.Error" Size='Size.Medium' />
     </div>
   </TitleContent>
   <DialogContent>
-    <div class='drawer-right pa-2 gap-2'>
-      <MudDrawer Class='gap-2 pa-2' @bind-Open='openSideFilter' Anchor='Anchor.Right' Elevation='2' Variant='DrawerVariant.Persistent' Width='290px'>
-        <div class='d-flex align-center'>
+    <div class='drawer-right-min'>
+      <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+        <GlobalTableFilterComponent OpenSideFilterClick='(() => openSideFilter = !openSideFilter)'
+          FilterClick='FilterTable' ResetTableClick='ReloadTable'
+          contentVisible='openSideFilter' lookUpType='lookUpType'/>
+        @* <div class='d-flex align-center'>
           <MudSpacer />
           <MudText Class='font-bold' Typo='Typo.caption'>CLOSE FILTER</MudText>
           <MudToggleIconButton @bind-Toggled='openSideFilter' Title='Close Filter'
-          Icon='@Icons.Filled.Close' Color="Color.Tertiary" ToggledSize='Size.Small'
-          ToggledIcon='@Icons.Filled.Close' ToggledColor="Color.Error" Size='Size.Small' />
+          Icon='@Icons.Material.Filled.Close' Color="Color.Tertiary" ToggledSize='Size.Small'
+          ToggledIcon='@Icons.Material.Filled.Close' ToggledColor="Color.Error" Size='Size.Small' />
         </div>
         <div class='d-flex flex-column gap-2'>
           @if(lookUpType != Enums.LookUpType.Voucher)
@@ -99,586 +100,614 @@
           <div class='d-flex align-center justify-end pt-1'>
             <MudButton OnClick='(()=> ApplyFilter())' Variant='Variant.Filled' Color='Color.Secondary'>Apply Filter</MudButton>
           </div>
-        </div>
+        </div> *@
       </MudDrawer>
     </div>
-    @if (!dataFetched)
-    {
-      <SkeletonGlobalRFP />
-    }
-    else
-    {
-      @if(lookUpType == Enums.LookUpType.PettyCash)
+    <div class='pr-8' >
+      @if (!dataFetched)
       {
-        <MudTable Class='configtables overflow-auto' Items="GlobalClassList.notLiquidatedPettyCashList" Bordered=true ReadOnly=false 
-          Dense=true Elevation='0' Height='calc(100vh - 270px)' Square='true' FixedHeader='true'>
-          <ColGroup>
-            <col style='width: 20px' />
-            <col style='width: 1%' />
-            <col />
-            <col />
-            <col />
-            <col style='width: 1%' />
-            <col style='width: 1%' />
-          </ColGroup>
-          <HeaderContent>
-              <MudTh Class='customheader-1 text-center pa-2'>Select</MudTh>
-              <MudTh Class='customheader-1 text-center'>
-                <MudTableSortLabel InitialDirection='SortDirection.Descending'
-                SortBy='new Func<PettyCashModel, object>(x=>x.ControlNumber)'>
-                   Control #
-                </MudTableSortLabel>
+        <SkeletonGlobalRFP />
+      }
+      else
+      {
+        @if(lookUpType == Enums.LookUpType.PettyCash)
+        {
+          <MudTable Class='table-style-1' Items="GlobalClassList.notLiquidatedPettyCashList" Bordered ReadOnly='false'
+            Dense Elevation='0' Height='calc(100vh - 380px)' FixedHeader FixedFooter>
+            <ColGroup>
+              <col style='width: 1%' />
+              <col style='width: 1%' />
+              <col />
+              <col />
+              <col />
+              <col style='width: 1%' />
+              <col style='width: 1%' />
+            </ColGroup>
+            <HeaderContent>
+              <MudTh Class='customheader-6 text-center'>
+                Select
               </MudTh>
-              <MudTh Class='customheader-1'>Payee Name</MudTh>
-              <MudTh Class='customheader-1'>Particulars</MudTh>
-              <MudTh Class='customheader-1 text-right'>Requested by</MudTh>
-              <MudTh Class='customheader-1 text-center'>Status</MudTh>
-              <MudTh Class='customheader-1 text-center'>
-                <MudTableSortLabel InitialDirection='SortDirection.None'
+              <MudTh Class='customheader-6 text-center'>
+                <div class='d-flex align-center justify-space-around'>
+                  <MudTableSortLabel Class='mudsort-icon-15px pad-bott05px' InitialDirection='SortDirection.Descending'
+                    SortBy='new Func<PettyCashModel, object>(x=>x.ControlNumber)'>
+                      Control No.
+                  </MudTableSortLabel>
+                  <MudTableSortLabel Class='mudsort-icon-15px pad-bott05px' InitialDirection='SortDirection.None'
+                    SortBy='new Func<PettyCashModel, object>(x=>x.RequestDate)'>
+                      Date
+                  </MudTableSortLabel>
+                </div>
+              </MudTh>
+              <MudTh Class='customheader-6'>Payee Name</MudTh>
+              <MudTh Class='customheader-6'>Particulars</MudTh>
+              <MudTh Class='customheader-6'>Requested by</MudTh>
+              <MudTh Class='customheader-6 text-center'>Status</MudTh>
+              <MudTh Class='customheader-6 text-center'>
+                <MudTableSortLabel Class='mudsort-icon-15px pad-bott05px' InitialDirection='SortDirection.None'
                 SortBy='new Func<PettyCashModel, object>(x=>x.Amount)'>
-                   Amount
-                </MudTableSortLabel>
-              </MudTh>
-          </HeaderContent>
-          <RowTemplate>
-            <MudTd Class='text-center pa-2'>
-              <MudIconButton OnClick='(()=> SelectPettyCash(context))' Icon='@Icons.Filled.AddCircle' aria-label="Select" Color='Color.Success' Size='Size.Small' />
-            </MudTd>
-            <MudTd DataLabel='ControlNumber'>
-              <div class='d-flex align-center'>
-                 <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'>
-                    @context.ControlNumber
-                 </MudChip>
-                  <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Text' Icon='@Icons.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
-                    @Convert.ToDateTime(context.RequestDate).ToShortDateString()
-                  </MudChip>
-              </div>
-            </MudTd>
-            <MudTd Class='wbreak-breakword font12' DataLabel='Payee'>@context.PayeeName</MudTd>
-            <MudTd Class='wbreak-breakword font12' DataLabel='Particulars'>@context.Particular</MudTd>
-            <MudTd Class='wbreak-breakword font12' DataLabel='Requested by'>@context.RequestedByName</MudTd>
-            <MudTd Class='text-center wspace-nowrap' DataLabel='Status'>
-               <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@Extensions.GetAcctgStatusColor(context.StatusId)'>
-                  @context.StatusName
-               </MudChip>
-            </MudTd>
-            <MudTd Class='wspace-nowrap text-right' DataLabel='Amount'>
-              <div class='d-flex align-center gap-2'>
-                @if (context.Amount > 0)
-                {
-                  <MudText Class='font-bold color-green' Typo='Typo.body2'>
-                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
-                  </MudText>
-                  <MudSpacer />
-                  <MudText Class='font-bold color-green' Typo='Typo.body2'>
-                    @context.Amount.ToString("N2")
-                  </MudText>
-                }
-                else
-                {
-                  <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
-                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
-                  </MudText>
-                  <MudSpacer />
-                  <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
-                    @context.Amount.ToString("N2")
-                  </MudText>
-                }
-              </div>
-            </MudTd>
-          </RowTemplate>
-        </MudTable>
-      }
-      @if(lookUpType == Enums.LookUpType.Liquidation)
-      {
-        <MudTable Class='configtables overflow-auto' Items="GlobalClassList.LiquidationNotInRFP" Bordered=true ReadOnly=false 
-          Dense=true Elevation='0' Height='calc(100vh - 270px)' Square='true' FixedHeader='true'>
-          <ColGroup>
-            <col style='width: 50px' />
-            <col style='width: 1%' />
-            <col />
-            <col style='width: 50px'/>
-            <col style='width: 1%' />
-            <col style='width: 1%' />
-          </ColGroup>
-          <HeaderContent>
-            <MudTh Class='customheader-1 pa-2'>Select</MudTh>
-            <MudTh Class='customheader-1 text-center'>
-                <MudTableSortLabel InitialDirection='SortDirection.Ascending'
-                SortBy='new Func<LiquidationModel, object>(x=>x.ControlNumber)'>
-                  Control No.
-                </MudTableSortLabel>
-            </MudTh>
-            <MudTh Class='customheader-1 text-left'>Prepared By</MudTh>
-            <MudTh Class='customheader-1 text-center'>
-              <MudToggleIconButton Toggled='isSubTableCollaped' ToggledChanged='() => TableCollapse(Enums.LookUpType.Liquidation)'
-              Icon='@Icons.Filled.ExpandMore' Color="Color.Tertiary" ToggledSize='Size.Small'
-              ToggledIcon="@Icons.Filled.ExpandLess" ToggledColor="Color.Info" Size='Size.Small' />
-            </MudTh>
-            <MudTh Class='customheader-1 text-center'>Status</MudTh>
-            <MudTh Class='customheader-1 text-right'>
-                <MudTableSortLabel InitialDirection='SortDirection.None'
-                SortBy='new Func<LiquidationModel, object>(x=>x.TotalAmount)'>
                   Amount
                 </MudTableSortLabel>
-            </MudTh>
-          </HeaderContent>
-          <RowTemplate>
-            <MudTd Class='text-center pa-2' DataLabel='Select'>
-              <MudIconButton OnClick='(()=> SelectLiquidation(context))' Icon='@Icons.Filled.AddCircle' aria-label="Select" Color='Color.Success' Size='Size.Small' />
-            </MudTd>
-            <MudTd Class='text-center' DataLabel='Control Number'>
-              <div class='d-flex align-center'>
-                  <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'>
-                    @context.ControlNumber
-                  </MudChip>
-                  <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Text' Icon='@Icons.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
-                    @Convert.ToDateTime(context.LiquidationDate).ToShortDateString()
-                  </MudChip>
-              </div>
-            </MudTd>
-            <MudTd Class='wbreak-breakword font12' DataLabel='Prepared By'>@context.PreparedByName</MudTd>
-            <MudTd Class='text-center'>
-              <MudToggleIconButton @bind-Toggled='context.ShowSubTable'
-              Icon="@Icons.Filled.Message" Color="Color.Info" ToggledSize='Size.Small'
-              ToggledIcon="@Icons.Filled.Message" ToggledColor="Color.Tertiary" Size='Size.Small' />
-            </MudTd>
-            <MudTd Class='text-center' DataLabel='Status Name'>
-              <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@Extensions.GetAcctgStatusColor(context.StatusId)'>
-                @context.StatusName
-              </MudChip>
-            </MudTd>
-            <MudTd Class='wspace-nowrap text-right' DataLabel='Amount'>
-              <div class='d-flex align-center gap-2'>
-                @if (context.TotalAmount > 0)
-                {
-                  <MudText Class='font-bold color-green' Typo='Typo.body2'>
-                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
-                  </MudText>
-                  <MudSpacer />
-                  <MudText Class='font-bold color-green' Typo='Typo.body2'>
-                    @context.TotalAmount.ToString("N2")
-                  </MudText>
-                }
-                else
-                {
-                  <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
-                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
-                  </MudText>
-                  <MudSpacer />
-                  <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
-                    @context.TotalAmount.ToString("N2")
-                  </MudText>
-                }
-              </div>
-            </MudTd>
-          </RowTemplate>
-          <ChildRowContent>
-            @if (context.ShowSubTable)
-            {
-              <td colspan="3">
-                @* EMPTY *@
-              </td>
-              <td class='pa-2' colspan='3'>
-                <MudCard Class='d-flex flex-column justify-start pa-2'>
-                  <MudText Class='font-bold' Typo='Typo.overline'>Remarks: </MudText>
-                  @if (string.IsNullOrEmpty(context.Remarks))
-                  {
-                    <MudText Class='pl-2' Typo='Typo.caption'>No Remarks</MudText>
-                  }
-                  else
-                  {
-                    <MudText Class='pl-2' Typo='Typo.caption'>@context.Remarks</MudText>
-                  }
-                </MudCard>
-              </td>
-            }
-          </ChildRowContent>
-        </MudTable>
-      }
-      @if(lookUpType == Enums.LookUpType.POBilling)
-      {
-        <MudTable Class='configtables overflow-auto' Items="GlobalClassList.POBillingList" Bordered=true ReadOnly=false 
-          Dense=true Elevation='0' Height='calc(100vh - 270px)' Square='true' FixedHeader='true'>
-          <ColGroup>
-            <col style='width: 50px' />
-            <col style='width: 1%' />
-            <col />
-            <col />
-            <col style='width: 1%' />
-            <col style='width: 1%' />
-          </ColGroup>
-          <HeaderContent>
-              <MudTh Class='customheader-1 text-center pa-2'>Select</MudTh>
-              <MudTh Class='customheader-1 text-center'>
-                <MudTableSortLabel InitialDirection='SortDirection.Ascending'
-                SortBy='new Func<AccountingPOBillingModel, object>(x=>x.ControlNumber)'>
-                  Control No.
-                </MudTableSortLabel>
               </MudTh>
-              <MudTh Class='customheader-1'>Supplier</MudTh>
-              <MudTh Class='customheader-1'>Prepared By</MudTh>
-              <MudTh Class='customheader-1 text-center'>Status</MudTh>
-              <MudTh Class='customheader-1 text-right'>
+            </HeaderContent>
+            <RowTemplate>
+              <MudTd Class='text-center'>
+                <MudIconButton OnClick='(()=> SelectPettyCash(context))' Icon='@Icons.Material.Filled.AddCircle' aria-label="Select" Color='Color.Success' Size='Size.Small' />
+              </MudTd>
+              <MudTd DataLabel='ControlNumber'>
+                <div class='d-flex align-center'>
+                  <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small' Variant='Variant.Outlined'>
+                      @context.ControlNumber
+                  </MudChip>
+                  <MudChip Class='chip-radius-5 font-bold font10' Icon='@Icons.Material.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'
+                    Variant='Variant.Outlined'>
+                      @Convert.ToDateTime(context.RequestDate).ToShortDateString()
+                  </MudChip>
+                </div>
+              </MudTd>
+              <MudTd DataLabel='Payee'>
+                  <div class='dynamic-div-onglobalrfp'>
+                    <small>@context.PayeeName</small>
+                  </div>
+              </MudTd>
+              <MudTd DataLabel='Particulars'>
+                <div class='dynamic-div-onglobalrfp'>
+                  <small>@context.Particular</small>
+                </div>
+              </MudTd>
+              <MudTd DataLabel='Requested by'>
+                <div class='dynamic-div-onglobalrfp'>
+                  <small>@context.RequestedByName</small>
+                </div>
+              </MudTd>
+              <MudTd DataLabel='Status'>
+                <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@Extensions.BorderColor(context.StatusId)'
+                  Variant='Variant.Outlined'>
+                    @context.StatusName
+                </MudChip>
+              </MudTd>
+              <MudTd DataLabel='Amount'>
+                <div class='d-flex align-center justify-space-around pr-1'>
+                    <small class='font-bold @(context.Amount > 0 ? "color-green":"color-red")'>
+                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                    </small>
+                    <MudSpacer />
+                    <MudTooltip MudTooltip Text='@context.Amount.ToString("N2")' Arrow Placement="Placement.Top">
+                      <small class='globalrfp-amt-indialog @(context.Amount > 0 ? "color-green":"color-red")'>
+                          @context.Amount.ToString("N2")
+                      </small>
+                    </MudTooltip>
+                </div>
+              </MudTd>
+            </RowTemplate>
+            <PagerContent>
+              <TablePagerAmountsGRFP totalAmounts='totalAmounts'/>
+            </PagerContent>
+          </MudTable>
+        }
+        @if(lookUpType == Enums.LookUpType.Liquidation)
+        {
+          <MudTable Class='table-style-1' Items="GlobalClassList.LiquidationNotInRFP" Bordered ReadOnly=false 
+            Dense Elevation='0' Height='calc(100vh - 380px)' FixedHeader FixedFooter>
+            <ColGroup>
+              <col style='width: 1%' />
+              <col style='width: 1%' />
+              <col />
+              <col style='width: 20px'/>
+              <col style='width: 1%' />
+              <col style='width: 1%' />
+            </ColGroup>
+            <HeaderContent>
+              <MudTh Class='customheader-6'>Select</MudTh>
+              <MudTh Class='customheader-6'>
+                <div class='d-flex align-center justify-space-around'>
+                  <MudTableSortLabel Class='mudsort-icon-15px pad-bott05px' InitialDirection='SortDirection.Ascending'
+                  SortBy='new Func<LiquidationModel, object>(x=>x.ControlNumber)'>
+                    Control No.
+                  </MudTableSortLabel>
                   <MudTableSortLabel InitialDirection='SortDirection.None'
-                SortBy='new Func<AccountingPOBillingModel, object>(x=>x.TotalAmount)'>
-                  Amount
-                </MudTableSortLabel>
+                    SortBy='new Func<RequestForPaymentModel, object>(x=>x.RequestDate)'>
+                    Date
+                  </MudTableSortLabel>
+                </div>
               </MudTh>
-          </HeaderContent>
-          <RowTemplate>
-            <MudTd Class='text-center pa-2' DataLabel='SELECT'>
-              <MudIconButton OnClick='(()=> SelectPOBilling(context))' Icon='@Icons.Filled.AddCircle' aria-label="Select" Color='Color.Success' Size='Size.Small' />
-            </MudTd>
-            <MudTd DataLabel='Control number'>
-              <div class='d-flex align-center'>
-                <MudTooltip Text='@context.ControlNumber'>
-                    <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'>
+              <MudTh Class='customheader-6 text-left'>Prepared By</MudTh>
+              <MudTh Class='customheader-6 text-center'>
+                <MudToggleIconButton Toggled='isSubTableCollaped' ToggledChanged='() => TableCollapse(Enums.LookUpType.Liquidation)'
+                Icon='@Icons.Material.Filled.ExpandMore' Color="Color.Tertiary" ToggledSize='Size.Small'
+                ToggledIcon="@Icons.Material.Filled.ExpandLess" ToggledColor="Color.Info" Size='Size.Small' />
+              </MudTh>
+              <MudTh Class='customheader-6 text-center'>Status</MudTh>
+              <MudTh Class='customheader-6 text-right'>
+                  <MudTableSortLabel Class='mudsort-icon-15px pad-bott05px' InitialDirection='SortDirection.None'
+                  SortBy='new Func<LiquidationModel, object>(x=>x.TotalAmount)'>
+                    Amount
+                  </MudTableSortLabel>
+              </MudTh>
+            </HeaderContent>
+            <RowTemplate>
+              <MudTd Class='text-center pa-2' DataLabel='Select'>
+                <MudIconButton OnClick='(()=> SelectLiquidation(context))' Icon='@Icons.Material.Filled.AddCircle' aria-label="Select" Color='Color.Success' Size='Size.Small' />
+              </MudTd>
+              <MudTd Class='text-center' DataLabel='Control Number'>
+                <div class='d-flex align-center'>
+                    <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'
+                      Variant='Variant.Outlined'>
                       @context.ControlNumber
                     </MudChip>
-                </MudTooltip>
-                  <MudTooltip Text="@Convert.ToDateTime(context.BillingDate).ToLongTimeString()">
-                    <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Text' Icon='@Icons.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
+                    <MudChip Class='chip-radius-5 font-bold font10' Icon='@Icons.Material.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'
+                       Variant='Variant.Outlined'>
+                      @Convert.ToDateTime(context.LiquidationDate).ToShortDateString()
+                    </MudChip>
+                </div>
+              </MudTd>
+              <MudTd DataLabel='Prepared By'>
+                <div class='dynamic-div-onglobalrfp'>
+                  <small>@context.PreparedByName</small>
+                </div>
+              </MudTd>
+              <MudTd Class='text-center'>
+                <MudToggleIconButton @bind-Toggled='context.ShowSubTable'
+                Icon="@Icons.Material.Filled.Message" Color="Color.Info" ToggledSize='Size.Small'
+                ToggledIcon="@Icons.Material.Filled.Message" ToggledColor="Color.Tertiary" Size='Size.Small' />
+              </MudTd>
+              <MudTd Class='text-center' DataLabel='Status Name'>
+                <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@Extensions.BorderColor(context.StatusId)'
+                   Variant='Variant.Outlined'>
+                  @context.StatusName
+                </MudChip>
+              </MudTd>
+              <MudTd Class='text-right' DataLabel='Amount'>
+                  <div class='d-flex align-center justify-space-around pr-1'>
+                    <small class='font-bold @(context.TotalAmount > 0 ? "color-green":"color-red")'>
+                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                    </small>
+                    <MudSpacer />
+                    <MudTooltip MudTooltip Text='@context.TotalAmount.ToString("N2")' Arrow Placement="Placement.Top">
+                      <small class='globalrfp-amt-indialog @(context.TotalAmount > 0 ? "color-green":"color-red")'>
+                          @context.TotalAmount.ToString("N2")
+                      </small>
+                    </MudTooltip>
+                  </div>
+              </MudTd>
+            </RowTemplate>
+            <ChildRowContent>
+              @if (context.ShowSubTable)
+              {
+                <td colspan="3">
+                  @* EMPTY *@
+                </td>
+                <td class='pa-2' colspan='3'>
+                  <MudCard Class='d-flex flex-column justify-start pa-2'>
+                    <MudText Class='font-bold' Typo='Typo.overline'>Remarks: </MudText>
+                    @if (string.IsNullOrEmpty(context.Remarks))
+                    {
+                      <MudText Class='pl-2' Typo='Typo.caption'>No Remarks</MudText>
+                    }
+                    else
+                    {
+                      <MudText Class='pl-2' Typo='Typo.caption'>@context.Remarks</MudText>
+                    }
+                  </MudCard>
+                </td>
+              }
+            </ChildRowContent>
+            <PagerContent>
+              <TablePagerAmountsGRFP totalAmounts='totalAmounts'/>
+            </PagerContent>
+          </MudTable>
+        }
+        @if(lookUpType == Enums.LookUpType.POBilling)
+        {
+          <MudTable Class='table-style-1' Items="GlobalClassList.POBillingList" Bordered ReadOnly=false 
+            Dense Elevation='0' Height='calc(100vh - 380px)' FixedHeader FixedFooter>
+            <ColGroup>
+              <col style='width: 1%' />
+              <col style='width: 1%' />
+              <col />
+              <col />
+              <col style='width: 1%' />
+              <col style='width: 1%' />
+            </ColGroup>
+            <HeaderContent>
+              <MudTh Class='customheader-6'>Select</MudTh>
+              <MudTh Class='customheader-6 text-center'>
+                <div class='d-flex align-center justify-space-around'>
+                  <MudTableSortLabel Class='mudsort-icon-15px pad-bott05px' InitialDirection='SortDirection.Ascending'
+                    SortBy='new Func<AccountingPOBillingModel, object>(x=>x.ControlNumber)'>
+                    Control No.
+                  </MudTableSortLabel>
+                  <MudTableSortLabel InitialDirection='SortDirection.None'
+                    SortBy='new Func<AccountingPOBillingModel, object>(x=>x.BillingDate)'>
+                    Date
+                  </MudTableSortLabel>
+                </div>
+              </MudTh>
+              <MudTh Class='customheader-6'>Supplier</MudTh>
+              <MudTh Class='customheader-6'>Prepared By</MudTh>
+              <MudTh Class='customheader-6 text-center'>Status</MudTh>
+              <MudTh Class='customheader-6 text-right'>
+                  <MudTableSortLabel Class='mudsort-icon-15px pad-bott05px' InitialDirection='SortDirection.None'
+                    SortBy='new Func<AccountingPOBillingModel, object>(x=>x.TotalAmount)'>
+                    Amount
+                </MudTableSortLabel>
+              </MudTh>
+            </HeaderContent>
+            <RowTemplate>
+              <MudTd Class='text-center pa-2' DataLabel='SELECT'>
+                <MudIconButton OnClick='(()=> SelectPOBilling(context))' Icon='@Icons.Material.Filled.AddCircle' aria-label="Select" Color='Color.Success' Size='Size.Small' />
+              </MudTd>
+              <MudTd DataLabel='Control number'>
+                <div class='d-flex align-center'>
+                    <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'
+                      Variant='Variant.Outlined'>
+                      @context.ControlNumber
+                    </MudChip>
+                    <MudChip Class='chip-radius-5 font-bold font10' Icon='@Icons.Material.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'
+                      Variant='Variant.Outlined'>
                         @Convert.ToDateTime(context.BillingDate).ToShortDateString()
                     </MudChip>
+                </div>
+              </MudTd>
+              <MudTd DataLabel='Supplier'>
+                <div class='dynamic-div-onglobalrfp'>
+                  <small> @context.Supplier</small>
+                </div>
+              </MudTd>
+              <MudTd DataLabel='Prepared by'>
+                <div class='dynamic-div-onglobalrfp'>
+                  <small>@context.PreparedByName</small>
+                </div>
+              </MudTd>
+              <MudTd Class='text-center' DataLabel='Status'>
+                  <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Info' Size='Size.Small'
+                    Variant='Variant.Outlined'>
+                    @context.StatusName
+                  </MudChip>
+              </MudTd>
+              <MudTd DataLabel='Amount'>
+                <div class='d-flex align-center justify-space-around pr-1'>
+                    <small class='font-bold @(context.TotalAmount > 0 ? "color-green":"color-red")'>
+                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                    </small>
+                    <MudSpacer />
+                    <MudTooltip MudTooltip Text='@context.TotalAmount.ToString("N2")' Arrow Placement="Placement.Top">
+                      <small class='globalrfp-amt-indialog @(context.TotalAmount > 0 ? "color-green":"color-red")'>
+                          @context.TotalAmount.ToString("N2")
+                      </small>
+                    </MudTooltip>
+                </div>
+              </MudTd>
+            </RowTemplate>
+            <PagerContent>
+              <TablePagerAmountsGRFP totalAmounts='totalAmounts'/>
+            </PagerContent>
+          </MudTable>
+        }
+        @if(lookUpType == Enums.LookUpType.PO)
+        {
+          <MudTable Class='table-style-1' Items="POList" Bordered ReadOnly=false 
+            Dense Elevation='0' Height='calc(100vh - 270px)' FixedHeader FixedFooter>
+            <ColGroup>
+              <col style='width: 1%' />
+              <col style='width: 1%' />
+              <col />
+              <col />
+              <col style='width: 1%' />
+              <col style='width: 1%' />
+            </ColGroup>
+            <HeaderContent>
+                <MudTh Class='customheader-6'>Select</MudTh>
+                <MudTh Class='customheader-6'>
+                  <div class='d-flex align-center justify-space-around'>
+                    <MudTableSortLabel Class='mudsort-icon-15px pad-bott05px' InitialDirection='SortDirection.Ascending'
+                      SortBy='new Func<POModel, object>(x=>x.PONumber)'>
+                      Control No.
+                    </MudTableSortLabel>
+                    <MudTableSortLabel Class='mudsort-icon-15px pad-bott05px' InitialDirection='SortDirection.None'
+                      SortBy='new Func<POModel, object>(x=>x.PODate)'>
+                      Date
+                    </MudTableSortLabel>
+                  </div>
+                </MudTh>
+                <MudTh Class='customheader-6'>Supplier</MudTh>
+                <MudTh Class='customheader-6'>Prepared By</MudTh>
+                <MudTh Class='customheader-6 text-center'>Status</MudTh>
+                <MudTh Class='customheader-6 text-right'>
+                  <MudTableSortLabel Class='mudsort-icon-15px pad-bott05px' InitialDirection='SortDirection.None'
+                  SortBy='new Func<POModel, object>(x=>x.Amount)'>
+                    Amount
+                  </MudTableSortLabel>
+                </MudTh>
+            </HeaderContent>
+            <RowTemplate>
+              <MudTd Class='text-center' DataLabel='SELECT'>
+                <MudIconButton OnClick='(()=> SelectPO(context))' Icon='@Icons.Material.Filled.AddCircle' aria-label="Select" Color='Color.Success' Size='Size.Small' />
+              </MudTd>
+              <MudTd DataLabel='Control number'>
+               <div class='d-flex align-center'>
+                  <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'
+                    Variant='Variant.Outlined'>
+                    @context.PONumber
+                  </MudChip>
+                
+                  <MudChip Class='chip-radius-5 font-bold font10' Icon='@Icons.Material.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'
+                    Variant='Variant.Outlined'>
+                    @Convert.ToDateTime(context.PODate).ToShortDateString()
+                  </MudChip>
+                </div>
+              </MudTd>
+              <MudTd DataLabel='Supplier'>
+                <div class='dynamic-div-onglobalrfp'>
+                  <small>@context.SupplierName</small>
+                </div>
+              </MudTd>
+              <MudTd DataLabel='Prepared by'>
+                <div class='dynamic-div-onglobalrfp'>
+                  <small>@context.PreparedBy</small>
+                </div>
+              </MudTd>
+              <MudTd DataLabel='Status'>
+                <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Info' Size='Size.Small'
+                  Variant='Variant.Outlined'>
+                  @context.POStatusView
+                </MudChip>
+              </MudTd>
+              <MudTd DataLabel='Check Amount'>
+                <div class='d-flex align-center justify-space-around pr-1'>
+                  <small class='font-bold @(context.Amount > 0 ? "color-green":"color-red")'>
+                      @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                  </small>
+                  <MudSpacer />
+                  <MudTooltip MudTooltip Text='@context.Amount.ToString("N2")' Arrow Placement="Placement.Top">
+                    <small class='globalrfp-amt-indialog @(context.Amount > 0 ? "color-green":"color-red")'>
+                        @context.Amount.ToString("N2")
+                    </small>
                   </MudTooltip>
-              </div>
-            </MudTd>
-            <MudTd Class='wbreak-breakword font12' DataLabel='Supplier'>@context.Supplier</MudTd>
-            <MudTd Class='wbreak-breakword font12' DataLabel='Prepared by'>@context.PreparedByName</MudTd>
-            <MudTd Class='text-center' DataLabel='Status'>
-                <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Info' Size='Size.Small'>
-                  @context.StatusName
-                </MudChip>
-            </MudTd>
-            <MudTd Class='wspace-nowrap text-right' DataLabel='Amount'>
-              <div class='d-flex align-center gap-2'>
-                @if (context.TotalAmount > 0)
+                </div>
+              </MudTd>
+            </RowTemplate>
+            <PagerContent>
+              <TablePagerAmountsGRFP totalAmounts='totalAmounts'/>
+            </PagerContent>
+          </MudTable>
+        }
+        @if(lookUpType == Enums.LookUpType.RFPVoucher)
+        {
+          <MudTable Class='table-style-1' Items="noVoucherRFP" Bordered ReadOnly=false 
+            Dense Elevation='0' Height='calc(100vh - 270px)' Square FixedHeader FixedFooter>
+            <ColGroup>
+              <col style='width: 1%' />
+              <col style='width: 1%' />
+              <col />
+              <col />
+              <col style='width: 1%' />
+              <col style='width: 1%' />
+            </ColGroup>
+            <HeaderContent>
+                <MudTh Class='customheader-6'>Select</MudTh>
+                <MudTh Class='customheader-6'>
+                  <div class='d-flex align-center justify-space-around'>
+                    <MudTableSortLabel InitialDirection='SortDirection.Descending'
+                      SortBy='new Func<RequestForPaymentModel, object>(x=>x.ControlNumber)'>
+                      Control No.
+                    </MudTableSortLabel>
+                    <MudTableSortLabel Class='mudsort-icon-15px pad-bott05px' InitialDirection='SortDirection.None'
+                      SortBy='new Func<RequestForPaymentModel, object>(x=>x.RequestDate)'>
+                      Date
+                    </MudTableSortLabel>
+                  </div>
+                </MudTh>
+                <MudTh Class='customheader-6'>Payee</MudTh>
+                <MudTh Class='customheader-6'>Requestor</MudTh>
+                <MudTh Class='customheader-6 text-center'>Status</MudTh>
+                <MudTh Class='customheader-6 text-center'>
+                  <MudTableSortLabel Class='mudsort-icon-15px pad-bott05px' InitialDirection='SortDirection.None'
+                    SortBy='new Func<RequestForPaymentModel, object>(x=>x.Amount)'>
+                    Amount
+                  </MudTableSortLabel>
+                </MudTh>
+            </HeaderContent>
+            <RowTemplate>
+              <MudTd Class='text-center pa-0'>
+                @if(GlobalClass.voucher.VoucherRFP.Any(x=>x.RequestForPaymentId == context.Id))
                 {
-                  <MudText Class='font-bold color-green' Typo='Typo.body2'>
-                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
-                  </MudText>
-                  <MudSpacer />
-                  <MudText Class='font-bold color-green' Typo='Typo.body2'>
-                    @context.TotalAmount.ToString("N2")
-                  </MudText>
+                  @* <MudTooltip Text='Remove Detail'>
+                    <MudIconButton OnClick='(()=> SelectRFP(context))' Icon='@Icons.Material.Filled.RemoveCircle' Color='Color.Error' Size='Size.Small' />
+                  </MudTooltip> *@
                 }
                 else
                 {
-                  <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
-                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
-                  </MudText>
-                  <MudSpacer />
-                  <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
-                    @context.TotalAmount.ToString("N2")
-                  </MudText>
+                  <MudTooltip Text='Select Detail' Arrow Placement='Placement.Top'>
+                    <MudIconButton OnClick='(()=> SelectRFP(context))' Icon='@Icons.Material.Filled.AddCircle' Color='Color.Success' Size='Size.Small' />
+                  </MudTooltip>
                 }
-              </div>
-            </MudTd>
-          </RowTemplate>
-        </MudTable>
-      }
-      @if(lookUpType == Enums.LookUpType.PO)
-      {
-        <MudTable Class='configtables overflow-auto' Items="POList" Bordered=true ReadOnly=false 
-          Dense=true Elevation='0' Height='calc(100vh - 270px)' Square='true' FixedHeader='true'>
-          <ColGroup>
-            <col style='width: 50px' />
-            <col style='width: 1%' />
-            <col />
-            <col />
-            <col style='width: 1%' />
-            <col style='width: 1%' />
-          </ColGroup>
-          <HeaderContent>
-              <MudTh Class='customheader-1 text-center pa-2'>Select</MudTh>
-              <MudTh Class='customheader-1 text-center'>
-                <MudTableSortLabel InitialDirection='SortDirection.Ascending'
-                SortBy='new Func<POModel, object>(x=>x.PONumber)'>
-                  Control No.
-                </MudTableSortLabel>
-              </MudTh>
-              <MudTh Class='customheader-1'>Supplier</MudTh>
-              <MudTh Class='customheader-1'>Prepared By</MudTh>
-              <MudTh Class='customheader-1 text-center'>Status</MudTh>
-              <MudTh Class='customheader-1 text-right'>
-                <MudTableSortLabel InitialDirection='SortDirection.None'
-                SortBy='new Func<POModel, object>(x=>x.Amount)'>
-                  Amount
-                </MudTableSortLabel>
-              </MudTh>
-          </HeaderContent>
-          <RowTemplate>
-            <MudTd Class='text-center pa-2' DataLabel='SELECT'>
-              <MudIconButton OnClick='(()=> SelectPO(context))' Icon='@Icons.Filled.AddCircle' aria-label="Select" Color='Color.Success' Size='Size.Small' />
-            </MudTd>
-            <MudTd Class='d-flex align-center' DataLabel='Control number'>
-              <MudTooltip Text='@context.PONumber'>
-                <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'>
-                  @context.PONumber
-                </MudChip>
-              </MudTooltip>
-              <MudTooltip Text='@Convert.ToDateTime(context.PODate).ToShortDateString()'>
-                <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Text' Icon='@Icons.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
-                  @Convert.ToDateTime(context.PODate).ToShortDateString()
-                </MudChip>
-              </MudTooltip>
-            </MudTd>
-            <MudTd Class='wbreak-breakword font12' DataLabel='Supplier'>@context.SupplierName</MudTd>
-            <MudTd Class='wbreak-breakword font12' DataLabel='Prepared by'>@context.PreparedBy</MudTd>
-            <MudTd Class='text-center' DataLabel='Status'>
-              <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Info' Size='Size.Small'>
-                @context.POStatusView
-              </MudChip>
-            </MudTd>
-            <MudTd Class='wspace-nowrap text-right' DataLabel='Check Amount'>
-              <div class='d-flex align-center gap-2'>
-                @if (context.Amount > 0)
-                {
-                  <MudText Class='font-bold color-green' Typo='Typo.body2'>
-                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
-                  </MudText>
-                  <MudSpacer />
-                  <MudText Class='font-bold color-green' Typo='Typo.body2'>
-                    @context.Amount.ToString("N2")
-                  </MudText>
-                }
-                else
-                {
-                  <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
-                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
-                  </MudText>
-                  <MudSpacer />
-                  <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
-                    @context.Amount.ToString("N2")
-                  </MudText>
-                }
-              </div>
-            </MudTd>
-          </RowTemplate>
-        </MudTable>
-      }
-      @if(lookUpType == Enums.LookUpType.RFPVoucher)
-      {
-        <MudTable Class='configtables overflow-auto' Items="noVoucherRFP" Bordered ReadOnly=false 
-          Dense Elevation='0' Height='calc(100vh - 270px)' Square FixedHeader>
-          <ColGroup>
-            <col style='width: 50px' />
-            <col style='width: 50px' />
-            <col />
-            <col />
-            <col style='width: 1%' />
-            <col style='width: 1%' />
-          </ColGroup>
-          <HeaderContent>
-              <MudTh Class='customheader-1 text-center pa-2'>Select</MudTh>
-              <MudTh Class='customheader-1 text-left'>
-                <MudTableSortLabel InitialDirection='SortDirection.Descending'
-                  SortBy='new Func<RequestForPaymentModel, object>(x=>x.RequestDate)'>
-                  Control No.
-                </MudTableSortLabel>
-              </MudTh>
-              <MudTh Class='customheader-1'>Payee</MudTh>
-              <MudTh Class='customheader-1'>Requestor</MudTh>
-              <MudTh Class='customheader-1 text-center'>Status</MudTh>
-              <MudTh Class='customheader-1 text-center'>
-                <MudTableSortLabel InitialDirection='SortDirection.None'
-                  SortBy='new Func<RequestForPaymentModel, object>(x=>x.Amount)'>
-                  Amount
-                </MudTableSortLabel>
-              </MudTh>
-          </HeaderContent>
-          <RowTemplate>
-            <MudTd Class='text-center pa-0'>
-              @if(GlobalClass.voucher.VoucherRFP.Any(x=>x.RequestForPaymentId == context.Id))
-              {
-                @* <MudTooltip Text='Remove Detail'>
-                  <MudIconButton OnClick='(()=> SelectRFP(context))' Icon='@Icons.Filled.RemoveCircle' Color='Color.Error' Size='Size.Small' />
-                </MudTooltip> *@
-              }
-              else
-              {
-                <MudTooltip Text='Select Detail'>
-                  <MudIconButton OnClick='(()=> SelectRFP(context))' Icon='@Icons.Filled.AddCircle' Color='Color.Success' Size='Size.Small' />
+              </MudTd>
+              <MudTd Class='overflow-hidden' DataLabel='Control No.'>
+                <div class='d-flex align-center wspace-nowrap overflow-auto oflow-el max-width250px'>
+                  <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, SnackbarService, JSRuntime))'
+                    Color='Color.Error' Size='Size.Small' Variant='Variant.Outlined'>
+                    @(context.RFPDetailTypeId == Enums.RFPDetailTypeId.POBilling ? context.RFP:context.ControlNumber)
+                  </MudChip>
+                  <MudChip Class='chip-radius-5 font-bold font10' Icon='@Icons.Material.Filled.CalendarMonth' Size='Size.Small'
+                    Variant='Variant.Outlined' Color='Color.Dark'>
+                    @Convert.ToDateTime(context.RequestDate).ToShortDateString()
+                  </MudChip>  
+                </div>
+              </MudTd>
+              <MudTd DataLabel='Payee Name'>
+                <div class='dynamic-div-onglobalrfp'>
+                  <small>@context.PayeeName</small>
+                </div>
+              </MudTd>
+              <MudTd DataLabel='Requestor Name'>
+                <div class='dynamic-div-onglobalrfp'>
+                  <small>@context.RequestedByName</small>
+                </div>
+              </MudTd>
+              <MudTd DataLabel='All Statuses'>
+                <div class='d-flex align-center'>
+                  <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Dark' Size='Size.Small' Variant='Variant.Outlined'>
+                    @context.RFPDetailTypeId
+                  </MudChip>
+                  <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Dark' Size='Size.Small' Variant='Variant.Outlined'>
+                    @context.RequestTypeName
+                  </MudChip>
+                  <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@Extensions.BorderColor(Convert.ToInt64(context.AccountingStatusId))'
+                    Variant='Variant.Outlined'>
+                    @context.AccountingStaus
+                  </MudChip>
+                </div>
+              </MudTd>
+              <MudTd DataLabel='Amount'>
+                 <div class='d-flex align-center justify-space-around pr-1'>
+                   <small class='font-bold @(context.Amount > 0 ? "color-green":"color-red")'>
+                     @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                   </small>
+                   <MudSpacer />
+                   <MudTooltip MudTooltip Text='@context.Amount.ToString("N2")' Arrow Placement="Placement.Top">
+                      <small class='globalrfp-amt-indialog @(context.Amount > 0 ? "color-green":"color-red")'>
+                        @context.Amount.ToString("N2")
+                      </small>
+                   </MudTooltip>
+                 </div>
+              </MudTd>
+            </RowTemplate>
+            <PagerContent>
+              <TablePagerAmountsGRFP totalAmounts='totalAmounts'/>
+            </PagerContent>
+          </MudTable>
+        }
+        @if(lookUpType == Enums.LookUpType.Voucher)
+        {
+          <MudTable Class='table-style-1' Items="voucherNotInCheck" Bordered ReadOnly=false 
+            Dense Elevation='0' Height='calc(100vh - 270px)' Square FixedHeader>
+            <ColGroup>
+              <col style='width: 1%' />
+              <col style='width: 1%' />
+              <col  />
+              <col style='width: 1%' />
+              <col style='width: 10%' />
+              <col style='width: 10%' />
+              <col style='width: 10px' />
+              <col style='width: 10%' />
+            </ColGroup>
+            <HeaderContent>
+                <MudTh Class='customheader-6 text-center'>Select </MudTh>
+                <MudTh Class='customheader-6'>
+                  <div class='d-flex align-center justify-center'>
+                    <MudTableSortLabel Class='text-center' InitialDirection='SortDirection.Ascending'
+                      SortBy='new Func<VoucherModel, object>(x=>x.ControlNumber)'>
+                        Control No.
+                    </MudTableSortLabel>
+                  </div>
+                </MudTh>
+                <MudTh Class='customheader-6'>Payee</MudTh>
+                <MudTh Class='customheader-6 text-center'>Status</MudTh>
+                <MudTh Class='customheader-6 text-center'>Amount</MudTh>
+                <MudTh Class='customheader-6 text-center'>Balance</MudTh>
+                <MudTh Class='customheader-6 text-center'>-</MudTh>
+                <MudTh Class='customheader-6 text-right'>
+                    Check Amount
+                </MudTh>
+            </HeaderContent>
+            <RowTemplate>
+              <MudTd Class='text-center pa-2'>
+                <MudTooltip Text='Select Detail' Arrow Placement='Placement.Top'>
+                    <MudIconButton OnClick="(()=>SelectVoucher(context))" Icon='@Icons.Material.Filled.AddCircle' Color='Color.Success' Size='Size.Small' 
+                      Disabled='@(context.currentCheckAmount == 0 ? true:false)' />
                 </MudTooltip>
-              }
-            </MudTd>
-            <MudTd Class='overflow-hidden' DataLabel='Control No.'>
-              <div class='d-flex align-center wspace-nowrap overflow-auto oflow-el max-width250px'>
-                <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Text' Icon='@Icons.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
-                  @Convert.ToDateTime(context.RequestDate).ToShortDateString()
-                </MudChip>           
-                @if(context.RFPDetailTypeId == Enums.RFPDetailTypeId.POBilling)
-                {
-                  <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'> @context.RFP</MudChip>
-                }
-                else
-                {
-                  <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'> @context.ControlNumber</MudChip>
-                }
-              </div>
-            </MudTd>
-            <MudTd Class='wbreak-breakword font12' DataLabel='Payee Name'>@context.PayeeName</MudTd>
-            <MudTd Class='wbreak-breakword font12' DataLabel='Requestor Name'>@context.RequestedByName</MudTd>
-            <MudTd Class='wspace-nowrap pa-0' DataLabel='All Statuses'>
-              <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Info' Size='Size.Small'>
-                @context.RFPDetailTypeId
-              </MudChip>
-              <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Dark' Size='Size.Small'>
-                @context.RequestTypeName
-              </MudChip>
-              <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@Extensions.GetAcctgStatusColor(Convert.ToInt64(context.AccountingStatusId))'>
-                @context.AccountingStaus
-              </MudChip>
-            </MudTd>
-            <MudTd Class='wspace-nowrap text-right' DataLabel='Amount'>
-              <div class='d-flex align-center gap-2'>
-                @if (context.Amount > 0)
-                {
-                  <MudText Class='font-bold color-green' Typo='Typo.body2'>
+              </MudTd> 
+              <MudTd DataLabel='Payee Name'>
+                <div class='d-flex align-center justify-center '>
+                  <MudChip Class='chip-radius-5 txt-uppercase font-bold font10 cursor-pointer' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, SnackbarService, JSRuntime))'
+                    Color='Color.Error' Size='Size.Small' Variant='Variant.Outlined'>
+                    @context.ControlNumber
+                  </MudChip>
+                </div>
+              </MudTd>
+              <MudTd DataLabel='Requestor Name'>
+                <div class='dynamic-div-onglobalrfp'>
+                  <small>@context.PayeeName</small>
+                </div>
+              </MudTd>
+              <MudTd DataLabel='Status'>
+                <div class='d-flex align-center justify-center '>
+                  <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Size='Size.Small'
+                    Variant='Variant.Outlined' Style='@Extensions.BorderColor(context.AccountingStatusId)'>
+                    @context.StatusName
+                  </MudChip>
+                </div>
+              </MudTd>
+              <MudTd DataLabel='Amount'>
+                <div Class='d-flex align-center gap-1'>
+                  <small class='vrfp-amt @(context.TotalAmount > 0 ? "color-green":"color-red")'>
                     @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
-                  </MudText>
+                  </small>
                   <MudSpacer />
-                  <MudText Class='font-bold color-green' Typo='Typo.body2'>
-                    @context.Amount.ToString("N2")
-                  </MudText>
-                }
-                else
-                {
-                  <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
-                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) 
-                  </MudText>
+                  <MudTooltip MudTooltip Text='@context.TotalAmount.ToString("N2")' Arrow Placement="Placement.Top"
+                    Color='@(context.TotalAmount > 0 ? Color.Success:Color.Error)'>
+                    <small class='vrfp-amt @(context.TotalAmount > 0 ? "color-green":"color-red")' >
+                      @context.TotalAmount.ToString("N2")
+                    </small>
+                  </MudTooltip>
+                </div>
+              </MudTd>
+              <MudTd Class='wspace-nowrap' DataLabel='Check Balance'>
+                <div Class='d-flex align-center gap-1'>
+                  <small class='vrfp-amt @(context.CheckBalance > 0 ? "color-green":"color-red")'>
+                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                  </small>
                   <MudSpacer />
-                  <MudText Class='font-bold' Typo='Typo.body2' Color='Color.Error'>
-                    @context.Amount.ToString("N2")
-                  </MudText>
-                }
-              </div>
-            </MudTd>
-          </RowTemplate>
-        </MudTable>
+                  <MudTooltip MudTooltip Text='@context.CheckBalance.ToString("N2")' Arrow Placement="Placement.Top"
+                    Color='@(context.CheckBalance > 0 ? Color.Success:Color.Error)'>
+                    <small class='vrfp-amt @(context.CheckBalance > 0 ? "color-green":"color-red")' >
+                      @context.CheckBalance.ToString("N2")
+                    </small>
+                  </MudTooltip>
+                </div>
+              </MudTd>
+              <MudTd DataLabel='Copy amount'>
+                <MudTooltip MudTooltip Text='Copy to check amount' Arrow Placement="Placement.Top">
+                  <MudIconButton OnClick='(()=> FillCheckAmount(context) )' Size='Size.Small' Icon='@Icons.Material.Filled.KeyboardDoubleArrowRight' 
+                      Disabled='@(context.CheckBalance == 0 ? true:false)' Color='Color.Dark' />
+                </MudTooltip>
+              </MudTd>
+              <MudTd Class='wspace-nowrap' DataLabel='Check Amount'>
+                  <div class='d-flex align-center gap-2'>
+                      <small class='@(context.currentCheckAmount > 0 ? "font-bold color-green":"font-bold color-red")'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</small>
+                      <MudSpacer />
+                      <MudNumericField Class='@(context.currentCheckAmount > 0 ? "txtnumeric-green-1":"txtnumeric-red-1")' @bind-Value="@context.currentCheckAmount"  Culture='CultureInfo.GetCultureInfo("en-PH")'
+                        Format='N2' Variant='Variant.Text' Margin='Margin.Dense' HideSpinButtons ErrorText=''/>
+                  </div>
+              </MudTd>
+            </RowTemplate>
+            <PagerContent>
+              <TablePagerAmountsGRFP totalAmounts='totalAmounts'/>
+            </PagerContent>
+          </MudTable>
+        }
       }
-      @if(lookUpType == Enums.LookUpType.Voucher)
-      {
-        <MudTable Class='configtables overflow-auto' Items="voucherNotInCheck" Bordered ReadOnly=false 
-          Dense Elevation='0' Height='calc(100vh - 270px)' Square FixedHeader>
-          <ColGroup>
-            <col style='width: 1%' />
-            <col style='width: 1%' />
-            <col style='width: 30%' />
-            <col style='width: 1%' />
-            <col style='width: 15%' />
-            <col style='width: 15%' />
-            <col style='width: 15%' />
-          </ColGroup>
-          <HeaderContent>
-              <MudTh Class='customheader-1 text-center pa-2'>Select </MudTh>
-              <MudTh Class='customheader-1'>
-                <MudTableSortLabel Class='text-center' InitialDirection='SortDirection.Ascending'
-                  SortBy='new Func<RequestForPaymentModel, object>(x=>x.ControlNumber)'>
-                    Control No.
-                </MudTableSortLabel>
-              </MudTh>
-              <MudTh Class='customheader-1'>Payee</MudTh>
-              <MudTh Class='customheader-1 text-center'>Status</MudTh>
-              <MudTh Class='customheader-1 text-center'>Amount</MudTh>
-              <MudTh Class='customheader-1 text-center'>Balance</MudTh>
-              <MudTh Class='customheader-1 text-right'>
-                  <MudTableSortLabel InitialDirection='SortDirection.None'
-                  SortBy='new Func<RequestForPaymentModel, object>(x=>x.Amount)'>
-                  Check Amount
-                </MudTableSortLabel>
-              </MudTh>
-          </HeaderContent>
-          <RowTemplate>
-            <MudTd Class='text-center pa-2'>
-              <MudTooltip Text='Select Detail'>
-                  <MudIconButton OnClick="(()=>SelectVoucher(context))" Icon='@Icons.Filled.AddCircle' Color='Color.Success' Size='Size.Small' />
-              </MudTooltip>
-            </MudTd> 
-            <MudTd Class='wbreak-breakword font12' DataLabel='Payee Name'>
-              <div class='d-flex align-center justify-center '>
-                <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'>
-                  @context.ControlNumber
-                </MudChip>
-              </div>
-            </MudTd>
-            <MudTd Class='wbreak-breakword font12' DataLabel='Requestor Name'>@context.PayeeName</MudTd>
-            <MudTd Class='wspace-nowrap' DataLabel='Status'>
-              <div class='d-flex align-center justify-center '>
-                <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Info' Size='Size.Small'>
-                  @context.StatusName
-                </MudChip>
-              </div>
-            </MudTd>
-            <MudTd Class='wspace-nowrap' DataLabel='Amount'>
-                @if (context.TotalAmount > 0)
-              {
-                <div Class='d-flex align-center'>
-                  <MudText Class="font-bold color-green" Typo='Typo.body2'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
-                  <MudSpacer />
-                  <MudText Class="font-bold color-green" Typo='Typo.body2'>@context.TotalAmount.ToString("N2")</MudText>
-                </div>
-              }
-              else
-              {
-                <div Class='d-flex align-center'>
-                  <MudText Class="font-bold" Typo='Typo.body2' Color='Color.Error' >@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
-                  <MudSpacer />
-                  <MudText Class="font-bold" Typo='Typo.body2' Color='Color.Error' >@context.TotalAmount.ToString("N2")</MudText>
-                </div>
-              }
-            </MudTd>
-            <MudTd Class='wspace-nowrap' DataLabel='Check Balance'>
-              @if (context.CheckBalance > 0)
-              {
-                <div Class='d-flex align-center'>
-                  <MudText Class="font-bold color-green" Typo='Typo.body2'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
-                  <MudSpacer />
-                  <MudText Class="font-bold color-green" Typo='Typo.body2'>@context.CheckBalance.ToString("N2")</MudText>
-                </div>
-              }
-              else
-              {
-                <div Class='d-flex align-center font-bold'>
-                  <MudText Class="font-bold" Typo='Typo.body2' Color='Color.Error'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
-                  <MudSpacer />
-                  <MudText Class="font-bold" Typo='Typo.body2' Color='Color.Error'>@context.CheckBalance.ToString("N2")</MudText>
-                </div>
-              }
-            </MudTd>
-            <MudTd Class='wspace-nowrap' DataLabel='Check Amount'>
-                <div class='d-flex align-center gap-2'>
-                  @if (context.currentCheckAmount > 0) {
-                    <MudText Class="font-bold color-green" Typo='Typo.body2'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
-                    <MudSpacer />
-                    <MudNumericField Class='txt-search-overflow txt-top-0 txtfield-right tfield-color-green' @bind-Value="@context.currentCheckAmount"  Culture='CultureInfo.GetCultureInfo("en-PH")'
-                    Format='N2' Variant='Variant.Text' Margin='Margin.Dense' HideSpinButtons ErrorText=''/>
-                  } else {
-                    <MudText Class="font-bold" Typo='Typo.body2' Color='Color.Error'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
-                    <MudSpacer />
-                    <MudNumericField Class='txt-search-overflow txt-top-0 txtfield-right tfield-color-red' @bind-Value="@context.currentCheckAmount"  Culture='CultureInfo.GetCultureInfo("en-PH")'
-                    Format='N2' Variant='Variant.Text' Margin='Margin.Dense' HideSpinButtons ErrorText=''/>
-                  }
-                </div>
-            </MudTd>
-          </RowTemplate>
-        </MudTable>
-      }
-    }
-    <div class='d-flex align-center justify-end border-thin bgc-F4F5FB'>
-      <MudText Class='pa-2 font-bold' Typo='Typo.overline'>
-        Total amount selected:
-      </MudText>
-      <div class='d-flex align-center justify-end border-thin-left min-width15 pa-2 bgc-white'>
-        <MudText Class='pl-1 font-bold color-green' Typo='Typo.overline'>
-            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
-        </MudText>
-        <MudSpacer />
-        <MudText Class='pl-1 font-bold color-green' Typo='Typo.overline'>
-            @totalAmounts.ToString("N2")
-        </MudText>
-      </div>
     </div>
   </DialogContent>
   <DialogActions>
@@ -702,13 +731,42 @@
         @(GlobalClassList.requestForPayments.Where(x=>x.rfpType==Enums.RFPDetailTypeId.PO).Count()) <MudText>:</MudText> 
         @(GlobalClassList.requestForPayments.Where(x=>x.rfpType==Enums.RFPDetailTypeId.PO).Count() > 1 ? "items selected" : "item selected")
       }
-      @if (lookUpType == Enums.LookUpType.RFPVoucher)
+      @if(lookUpType == Enums.LookUpType.RFPVoucher)
       {
-        @GlobalClass.voucher.VoucherRFP.Count() <MudText>:</MudText> @(GlobalClass.voucher.VoucherRFP.Count() > 1 ? "items selected" : "items selected")
+        @GlobalClass.voucher.VoucherRFP.Count() <MudText>:</MudText> @(GlobalClass.voucher.VoucherRFP.Count() > 1 ? "items selected" : "item selected")
       }
     </MudText>
     <MudSpacer />
-    <MudButton OnClick='(()=> CloseDialog())'>Close</MudButton>
+     @if (lookUpType == Enums.LookUpType.PettyCash)  
+     {
+        <GlobalRFPConfirmBtn CloseDialogClick='(() => CloseDialog())'
+          itemCount='@GlobalClass.liquidation.LiquidationDetails.Count()' />
+     }
+      @if (lookUpType == Enums.LookUpType.Liquidation)
+      {
+        <GlobalRFPConfirmBtn CloseDialogClick='(() => CloseDialog())'
+          itemCount='@GlobalClassList.requestForPayments.Where(x=>x.rfpType==Enums.RFPDetailTypeId.Liquidation).Count()' />
+      }
+      @if(lookUpType == Enums.LookUpType.POBilling)
+      {
+        <GlobalRFPConfirmBtn CloseDialogClick='(() => CloseDialog())'
+          itemCount='@GlobalClassList.requestForPayments.Where(x=>x.rfpType==Enums.RFPDetailTypeId.POBilling).Count()' />
+      }
+      @if(lookUpType == Enums.LookUpType.PO)
+      {
+        <GlobalRFPConfirmBtn CloseDialogClick='(() => CloseDialog())'
+          itemCount='@GlobalClassList.requestForPayments.Where(x=>x.rfpType==Enums.RFPDetailTypeId.POBilling).Count()' />
+      }
+      @if(lookUpType == Enums.LookUpType.RFPVoucher)
+      {
+        <GlobalRFPConfirmBtn CloseDialogClick='(() => CloseDialog())'
+          itemCount='@GlobalClass.voucher.VoucherRFP.Count()' />
+      }
+      @if(lookUpType == Enums.LookUpType.Voucher)
+      {
+        <GlobalRFPConfirmBtn CloseDialogClick='(() => CloseDialog())'
+          itemCount='0' />
+      }
   </DialogActions>
 </MudDialog>
 
@@ -719,7 +777,7 @@
   [Parameter] public string buttonText { get; set; } = string.Empty;
   [Parameter] public Enums.LookUpType lookUpType {get; init;}
   [Parameter] public DateRange pettyCashRange {get; set;} = new DateRange();
-  private bool dataFetched, openSideFilter, IsDate, isSubTableCollaped;
+  private bool dataFetched, openSideFilter, IsDate, isSubTableCollaped, isLoading;
   private DateTime? dateFrom , dateTo;
   private string payeeName = default!, controlNumber = string.Empty, searchTerm = string.Empty;
   private FilterParameter filterParameter = new();
@@ -741,7 +799,6 @@
 
   protected override async Task OnInitializedAsync()
   {
-    @* await Task.Delay(100000); *@
     GlobalClassList.POBillingList = new();
     if(lookUpType == Enums.LookUpType.Voucher)
       totalAmounts = GlobalClass.checkModel.Amount;
@@ -774,9 +831,9 @@
     if (lookUpType == Enums.LookUpType.PettyCash)
       await LoadNotLiquidatedPettyCash();
     if (lookUpType == Enums.LookUpType.POBilling)
-      await SearchPOBilling();
+      await SearchPOBilling(false);
     if (lookUpType == Enums.LookUpType.PO)
-      await LoadPOs();
+      await LoadPOs(false);
     if(lookUpType == Enums.LookUpType.RFPVoucher)
       await LoadNotInVoucher();
     if(lookUpType == Enums.LookUpType.Liquidation)
@@ -797,7 +854,6 @@
     filterParameter.DateTo = dateRangeFilter.End.GetValueOrDefault();
     filterParameter.AccountingAccessLevel = GlobalClass.currentUserAccount.AccessLevel;
     filterParameter.AccountingStatusId = string.Join(",", hasAccountingStatus.Select(x => x.Id));
-    Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(filterParameter,Newtonsoft.Json.Formatting.Indented));
     await VoucherNotInCheck(filterParameter);
     StateHasChanged();
   }
@@ -824,14 +880,16 @@
     GlobalClassList.LiquidationNotInRFP = notInRFP.ToList();
 
   }
-  private async Task SearchPOBilling()
+  private async Task SearchPOBilling(bool isFilter)
   {
-    var filterParameter = new FilterParameter()
+    filterParameter = GlobalVariable.filterParameter;
+    if(!isFilter)
     {
-      IsControlNumber = true,
-      ControlNumber = controlNumber
-
-    };
+        filterParameter = new();
+        filterParameter.IsSupplier = true;
+        filterParameter.SupplierId = GlobalClass.requestForPayment.PayeeId;
+        filterParameter.POSupplierCategory = Extensions.POSupplierCategory(GlobalClass.requestForPayment.PayeeCategoryId);
+    }
     var POBillingList = await accountingPOBillingService.LoadAccountingBillingPO(filterParameter, GlobalClass.token);
 
     GlobalClassList.requestForPayments.ForEach(rfp=>{
@@ -840,29 +898,34 @@
 
     GlobalClassList.POBillingList = POBillingList;
   }
-  private async Task LoadPOs()
+  private async Task LoadPOs(bool isFilter)
   {
-    var filterParameter = new FilterParameter()
+    filterParameter = GlobalVariable.filterParameter;
+    if(!isFilter)
     {
-      IsControlNumber = controlNumber == "" ? false : true,
-      ControlNumber = controlNumber,
-      IsDate = IsDate,
-      DateFrom = dateFrom.GetValueOrDefault(),
-      DateTo = dateTo.GetValueOrDefault()
-    };
+        filterParameter = new();
+        filterParameter.IsSupplier = true;
+        filterParameter.SupplierId = GlobalClass.requestForPayment.PayeeId;
+        filterParameter.POSupplierCategory = Extensions.POSupplierCategory(GlobalClass.requestForPayment.PayeeCategoryId);
+    }
     POList = await globalService.LoadPOs(filterParameter, GlobalClass.token);
-
     GlobalClassList.requestForPayments.ForEach(rfp=>{
       POList.RemoveAll(x=>x.POId == rfp.POId);
     });
   }
   private async Task LoadNotInVoucher()
   {
+    filterParameter = new();
+    filterParameter = GlobalVariable.filterParameter;
     var RFP = await voucherService.NotInVoucher(GlobalClass.token);
     GlobalClass.voucher.VoucherRFP.ForEach(rf=> {
       RFP.RemoveAll(x=>x.Id == rf.RequestForPaymentId);
     });
     noVoucherRFP = RFP.OrderByDescending(x=>x.ControlNumber).ThenByDescending(x=>x.RequestDate).ToList();
+    if (filterParameter.IsControlNumber)
+      noVoucherRFP = noVoucherRFP.Where(x=>x.ControlNumber.Contains(filterParameter.ControlNumber,StringComparison.InvariantCultureIgnoreCase)).ToList();
+    if (filterParameter.IsDate)
+      noVoucherRFP = noVoucherRFP.Where(x=>x.RequestDate >= filterParameter.DateFrom && x.RequestDate <= filterParameter.DateTo).ToList();
   }
   private void SelectPettyCash(PettyCashModel pettyCash)
   {
@@ -901,7 +964,7 @@
     RFPDetails.Amount = poModel.Amount;
     RFPDetails.POId = poModel.POId;
     RFPDetails.PONumber = poModel.PONumber;
-    RFPDetails.Particulars = poModel.PONumber;
+    RFPDetails.Particulars = string.Empty;
     RFPDetails.rfpType = Enums.RFPDetailTypeId.PO;
     POList = POList.Where(x=>x.POId != poModel.POId).ToList();
     GlobalClassList.requestForPayments.Add(RFPDetails);
@@ -919,7 +982,7 @@
       RFPDetails.LiquidationId = liquidation.Id;
       RFPDetails.Amount = liquidation.TotalAmount;
       RFPDetails.LiquidationControlNumber = liquidation.ControlNumber;
-      RFPDetails.Particulars = liquidation.ControlNumber;
+      RFPDetails.Particulars = string.Empty;
       RFPDetails.Remarks = liquidation.Remarks;
        RFPDetails.rfpType = Enums.RFPDetailTypeId.Liquidation;
       GlobalClassList.LiquidationNotInRFP.Remove(liquidation);
@@ -940,7 +1003,7 @@
       RFPDetails.POBillingId = poBilling.POBillingId;
       RFPDetails.Amount = poBilling.TotalAmount;
       RFPDetails.POBControlNumber = poBilling.ControlNumber;
-      RFPDetails.Particulars = poBilling.ControlNumber;
+      RFPDetails.Particulars = string.Empty;
       RFPDetails.rfpType = Enums.RFPDetailTypeId.POBilling;
       GlobalClassList.POBillingList = GlobalClassList.POBillingList.Where(x=>x.POBillingId != poBilling.POBillingId).ToList();
       GlobalClassList.requestForPayments.Add(RFPDetails);
@@ -980,6 +1043,8 @@
       var liquidationDetails = await liquidationService.LiquidationDetails(Convert.ToInt64(liquidationId), GlobalClass.token);
       GlobalClass.voucher.VoucherDetails = liquidationDetails.Select(details=> new VoucherDetailModel()
       {
+        RFPPeriodDateFrom = requestForPayment.PeriodDateFrom,
+        RFPPeriodDateTo = requestForPayment.PeriodDateTo,
         ExpenseId = details.ExpenseLineId,
         ExpenseName = details.ExpenseName,
         ProjectId = details.ChargingId,
@@ -989,41 +1054,56 @@
         Amount = details.Amount,
         selExp = GlobalClassList.expenseLineList.Where(x=>details.ExpenseLineId == x.Id).FirstOrDefault()?? new(),
         selProj = projects.Where(x=>details.ChargingId == x.ProjectId).FirstOrDefault()?? new(),
-        selDiv = GlobalClassList.divisionList.Where(x=>x.divisionName == "None").FirstOrDefault()?? new(),
         selSOW = GlobalClassList.scopeOfWork.Where(x=>x.ScopeName == "None").Select(x=>new SubContractorProjectModel(){
           ScopeOfWork = x.ScopeName,
           ScopeOfWorkId = x.Id,
-        }).First(),
+        }).FirstOrDefault()?? new(),
         selSubConProject = (projects.Where(x=>x.ProjectName.Contains("None",StringComparison.InvariantCultureIgnoreCase)).Select(x=>new SubContractorProjectModel()
         {
           SubContractorName = x.subContractorName,
           SubContractorId = x.SubLedgerId,
-        })).First(),
+        })).FirstOrDefault()?? new(),
         isLabor = false,
         selSubConProjectSOWList = new(),
         RFPDetailType = Enums.RFPDetailTypeId.Liquidation,
       }).ToList();
+      GlobalClass.voucher.VoucherDetails.ForEach(x=>{
+        x.selDiv = GlobalClassList.divisionList.Where(x=>x.divisionName == x.divisionName).FirstOrDefault()?? new();
+        x.selProjSubLedger = projects.Where(x=>x.ProjectName == "None").FirstOrDefault()?? new();
+        x.SubLedgerId = x.selProjSubLedger.ProjectId;
+        x.SubLedgerName = x.selProjSubLedger.ProjectName;
+        x.SubLedgerCategoryId = x.selProjSubLedger.ProjectCategoryId;
+        x.DivisionId = x.selDiv.Id;
+        x.DivisionName = x.selDiv.divisionName;
+
+      });
     } else if(requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.Labor) {
       GlobalClass.voucher.VoucherDetails.AddRange(rfp.Select(details=> new VoucherDetailModel()
       {
         ExpenseId = details.ExpenseLineId,
+        ExpenseName = details.ExpenseLineName,
         ProjectId = details.ChargedId,
+        
         ProjectCategoryId = details.ChargedCategoryId,
         ProjectName = details.ChargedName,
         Description = details.Particulars,
         Amount = details.Amount,
+        RFPPeriodDateFrom = requestForPayment.PeriodDateFrom,
+        RFPPeriodDateTo = requestForPayment.PeriodDateTo,
+        InvoiceNo = details.InvoiceNo,
         PayeeId = requestForPayment.PayeeId,
         PayeeCategoryId = requestForPayment.PayeeCategoryId,
         isLabor = requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.Labor? true:false,//Disable enable charge
         selExp  = GlobalClassList.expenseLineList.Where(x=>details.ExpenseLineId == x.Id).FirstOrDefault()?? new(),
         selProj = new(),
         selSubConProject = new(),
+        RFPDetailType = Enums.RFPDetailTypeId.Labor,
         selDiv = GlobalClassList.divisionList.Where(x=>x.divisionName == details.DivisionName).FirstOrDefault()?? new(),
       }).ToList());
-
+        await Task.Delay(100);
         GlobalClass.voucher.VoucherDetails.ForEach(async (x)=>{
           x.selProj = (await LoadCharging(x.ProjectName)).FirstOrDefault()?? new();
-          x.selSubConProject = (await globalService.VoucherDetailsSubCon(x.ProjectId,GlobalClass.token)).First();
+          x.selSubConProject = (await globalService.VoucherDetailsSubCon(x.ProjectId,GlobalClass.token)).FirstOrDefault()?? new();
           x.selSubConProjectSOWList = await globalService.VoucherDetailsSubCon(x.ProjectId,GlobalClass.token);
           x.selSOW =  x.selSubConProject;
           //Set subledger for saving
@@ -1033,6 +1113,16 @@
           //Set subdledger for saving
           x.ScopeOfWorkId = x.selSOW.ScopeOfWorkId;
           x.ScopeOfWorkName = x.selSOW.ScopeOfWork;
+          x.RFPDetailType = Enums.RFPDetailTypeId.Labor;
+
+          x.DivisionId = x.selDiv.Id;
+          x.DivisionName = x.selDiv.divisionName;
+
+          x.SubLedgerName = x.selSubConProject.ProjectName;
+          x.SubLedgerCategoryId = x.selSubConProject.SubContactorCategoryId;
+          x.SubLedgerId = x.selSubConProject.ProjectId;
+
+          x.isLabor = true;
         });
         GlobalClass.voucher.WithSubLedger = requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.Labor ? true:false;
     } else {
@@ -1040,11 +1130,16 @@
       {
         ExpenseId = details.ExpenseLineId,
         ProjectId = details.ChargedId,
+        ExpenseName = details.ExpenseLineName,
+
         ProjectCategoryId = details.ChargedCategoryId,
         ProjectName = details.ChargedName,
         Description = details.Particulars,
         Amount = details.Amount,
+        RFPPeriodDateFrom = requestForPayment.PeriodDateFrom,
+        RFPPeriodDateTo = requestForPayment.PeriodDateTo,
         PayeeId = requestForPayment.PayeeId,
+        InvoiceNo = details.InvoiceNo,
         PayeeCategoryId = requestForPayment.PayeeCategoryId,
         isLabor = requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.Labor? true:false,//Disable enable charge
         selExp  = GlobalClassList.expenseLineList.Where(x=>details.ExpenseLineId == x.Id).FirstOrDefault()?? new(),
@@ -1053,15 +1148,16 @@
       }).ToList());
       GlobalClass.voucher.VoucherDetails.ForEach(async(x)=>{
         x.selProj = (await LoadCharging(x.ProjectName)).FirstOrDefault()?? new();
+        x.selProjSubLedger = projects.Where(x=>x.ProjectName == "None").FirstOrDefault()?? new();
         x.selSubConProject = (projects.Where(x=>x.ProjectName.Contains("None",StringComparison.InvariantCultureIgnoreCase)).Select(x=>new SubContractorProjectModel()
         {
           SubContractorName = x.SubLedgerName,
           SubContractorId = x.SubLedgerId,
-        })).First();
+        })).FirstOrDefault()?? new();
         x.selSOW = (GlobalClassList.scopeOfWork.Where(x=>x.ScopeName.Contains("None",StringComparison.InvariantCultureIgnoreCase)).Select(x=>new SubContractorProjectModel(){
           ScopeOfWork = x.ScopeName,
           ScopeOfWorkId = x.Id,
-        })).First();
+        })).FirstOrDefault()?? new();
         //Set subledger for saving
           x.SubLedgerId = x.selSubConProject.SubContractorId;
           x.SubLedgerCategoryId = x.SubLedgerCategoryId;
@@ -1069,10 +1165,14 @@
         //Set sow for saving
         x.ScopeOfWorkId = x.selSOW.ScopeOfWorkId;
         x.ScopeOfWorkName = x.selSOW.ScopeOfWork;
+        x.RFPDetailType = requestForPayment.RFPDetailTypeId;
+
+        x.DivisionId = x.selDiv.Id;
+        x.DivisionName = x.selDiv.divisionName;
+        
       });
-      Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(GlobalClass.voucher.VoucherDetails,Newtonsoft.Json.Formatting.Indented));
     }
-    
+    StateHasChanged();
   }
   private async Task<IEnumerable<Project>> LoadCharging(string chargingName)
   {
@@ -1093,22 +1193,13 @@
   {
     MudDialog.Close();
   }
-  async Task SearchPettyCash()
+  private async Task SearchPettyCash()
   {
-      if (payee == null)
-          payee = new Project();
-
-      filterParameter = new FilterParameter()
-      {
-          IsControlNumber = !string.IsNullOrEmpty(controlNumber) ? true : false,
-          IsPayee = !string.IsNullOrEmpty(payee.ProjectName) ? true : false,
-          PayeeId = payee.ProjectId,
-          PayeeCategoryId = payee.ProjectCategoryId,
-          IsDate = IsDate,
-          DateFrom = Convert.ToDateTime(dateFrom),
-          DateTo = Convert.ToDateTime(dateTo),
-      };
-      GlobalClassList.notLiquidatedPettyCashList = await liquidationService.GetPettyCashNotLiquidated(filterParameter, GlobalClass.token);
+    filterParameter = new FilterParameter();
+    filterParameter = GlobalVariable.filterParameter;
+    if (payee == null)
+        payee = new Project();
+    GlobalClassList.notLiquidatedPettyCashList = await liquidationService.GetPettyCashNotLiquidated(filterParameter, GlobalClass.token);
   }
   private async Task<IEnumerable<Project>> LoadProject(string projectName)
   {
@@ -1121,18 +1212,24 @@
     var projects = await globalService.LoadPayees(filterParameter, GlobalClass.token);
     return projects;
   }
-  private async Task ApplyFilter()
+  private async Task FilterTable()
   {
+    filterParameter = new FilterParameter();
+    filterParameter = GlobalVariable.filterParameter;
     if (lookUpType == Enums.LookUpType.PettyCash)
-      await SearchPettyCash();
-    if (lookUpType == Enums.LookUpType.POBilling)
-      await SearchPOBilling();
-    if(lookUpType == Enums.LookUpType.PO)
-      await LoadPOs();
-    if(lookUpType == Enums.LookUpType.Voucher)
-      await SearchVoucher();
+        await SearchPettyCash();
+      if (lookUpType == Enums.LookUpType.POBilling)
+        await SearchPOBilling(true);
+      if(lookUpType == Enums.LookUpType.PO)
+        await LoadPOs(true);
+      if(lookUpType == Enums.LookUpType.Voucher)
+        await SearchVoucher();
+      if(lookUpType == Enums.LookUpType.Liquidation)
+        await LoadNotInRFPLiquidation();
+      if(lookUpType == Enums.LookUpType.RFPVoucher)
+        await LoadNotInVoucher();
+      StateHasChanged();
   }
-  
   private void TableCollapse(Enums.LookUpType lookUpType)
   {
     isSubTableCollaped = !isSubTableCollaped;
@@ -1158,7 +1255,7 @@
     }
     else
     {
-      Extensions.ShowAlert("Check amount should not be greater than the current balance or equal to zero",Variant.Filled,snackbarService,Severity.Error);
+      Extensions.ShowAlert("Check amount should not be greater than the current balance or equal to zero",Variant.Filled,SnackbarService,Severity.Error);
     }
   }
   private bool isValidatedVoucher(VoucherModel voucher)
@@ -1195,7 +1292,7 @@
             DisableBackdropClick = false
         };
         var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Cancelled) {
+        if (!resultDialog.Canceled) {
             if(type == Enums.LookUpType.Employee)
                 requestor = (UserAccount) resultDialog.Data;
             else if (type == Enums.LookUpType.Project)
@@ -1206,4 +1303,21 @@
         }
         StateHasChanged();
     }
-}((byte)
+
+     private async Task ReloadTable()
+    {
+        filterParameter = new FilterParameter();
+        if(lookUpType == Enums.LookUpType.POBilling)
+          await SearchPOBilling(false);
+        else if(lookUpType == Enums.LookUpType.PO)
+          await LoadPOs(false);
+        else
+          await FilterTable();
+        @* await tableVariable.ReloadServerData(); *@
+    }
+    private void FillCheckAmount(VoucherModel v)
+    {
+        v.currentCheckAmount = v.CheckBalance;
+        StateHasChanged();
+    }
+}

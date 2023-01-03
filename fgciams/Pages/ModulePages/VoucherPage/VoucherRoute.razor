@@ -20,7 +20,7 @@
                 <MudItem Class='d-flex flex-column gap-2' xs=9>
                     <MudPaper Class='overflow-hidden' Height='calc(100vh - 125px)'>
                         <MudPaper Class='d-flex align-center pa-2 mt-2 mr-2 ml-2 rounded-br-0 rounded-bl-0 gap-2'>
-                            <MudIcon Icon="@Icons.Filled.Route" Size='Size.Small' />
+                            <MudIcon Icon="@Icons.Material.Filled.Route" Size='Size.Small' />
                             <MudText Class='wspace-nowrap font-bold txt-uppercase' Typo="Typo.body2">Voucher Routing</MudText>
                             <hr class='horizline2'>
                             <MudButton Class='btn-ios-d pa-1 font12' OnClick='(()=>New())' Size="Size.Medium" Variant='Variant.Filled' Color='Color.Info' DisableElevation>
@@ -56,7 +56,7 @@
                                 <div class='d-flex align-center justify-center pa-2 gap-2'>
                                     <MudText Class='wspace-nowrap txt-uppercase font-bold font10'>date :</MudText>
                                     <MudDatePicker Class='txt-top-0 font14-txtfield txtfield-right ' @bind-Date='GlobalClass.voucherRoute.RouteDate' IconSize='Size.Small' Error=@notValidDate
-                                    />
+                                       Margin='Margin.Dense' DisableToolbar/>
                                </div>
                             </MudItem>
                             <MudItem Class='d-flex align-center gap-2' xs=6>
@@ -75,8 +75,8 @@
                                     <ToolBarContent>
                                         <MudText Typo='Typo.caption'>
                                             @GlobalClassList.currentVoucherRoutes.Count() 
-                                            @(GlobalClassList.currentVoucherRoutes.Count() == 1 ? "Item" : "Items") 
-                                            in Total
+                                            @(GlobalClassList.currentVoucherRoutes.Count() == 1 ? "item" : "items") 
+                                            in total
                                         </MudText>
                                         <MudSpacer/>
                                     </ToolBarContent>
@@ -121,23 +121,23 @@
                                             </MudText>
                                         </MudTd>
                                         <MudTd Class='text-center pa-2' DataLabel='Actions'>
-                                            <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
+                                            <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
                                             TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
                                                 <MudMenuItem OnClick='(()=>EditRoute(context))'>
                                                     <div class='d-flex align-center gap-2'>
-                                                        <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Medium' />
+                                                        <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Medium' />
                                                         <MudText Typo='Typo.body2'>Edit</MudText>
                                                     </div>
                                                 </MudMenuItem>
                                                 <MudMenuItem OnClick='(()=>RemoveRoute(context))'>
                                                     <div class='d-flex align-center gap-2'>
-                                                        <MudIcon Icon='@Icons.Filled.DeleteForever' Size='Size.Medium' />
+                                                        <MudIcon Icon='@Icons.Material.Filled.DeleteForever' Size='Size.Medium' />
                                                         <MudText Typo='Typo.body2'>Remove</MudText>
                                                     </div>
                                                 </MudMenuItem>
                                                     <MudMenuItem OnClick='(() => NavigateToAuditTrail(context))'>
                                                     <a class='d-flex align-center gap-2'>
-                                                    <MudIcon Icon='@Icons.Filled.ListAlt' Size='Size.Small' />
+                                                    <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' />
                                                     <MudText Typo='Typo.body2'>Audit Trail</MudText>
                                                     </a>
                                                 </MudMenuItem>
@@ -161,7 +161,7 @@
                 <MudItem Class='d-flex flex-column gap-2' xs=3>
                     <MudPaper Class='overflow-hidden'>
                         <MudPaper Class='d-flex align-center pa-2 mt-2 mr-2 ml-2 rounded-br-0 rounded-bl-0 gap-2'>
-                            <MudIcon  Icon="@Icons.Filled.CommentBank" Size="Size.Small" />
+                            <MudIcon  Icon="@Icons.Material.Filled.CommentBank" Size="Size.Small" />
                             <MudText Class='wspace-nowrap font-bold txt-uppercase' Typo="Typo.body2">Voucher Details</MudText>
                             <hr class='horizline2'>
                         </MudPaper>
@@ -210,7 +210,7 @@
                                 </MudItem>
                                 <MudItem Class='d-flex flex-column rounded ma-1' xs=12>
                                     <MudPaper Class='d-flex align-center rounded-br-0 rounded-bl-0 pa-2 gap-2'>
-                                        <MudIcon  Icon="@Icons.Filled.Badge" Size="Size.Small" />
+                                        <MudIcon  Icon="@Icons.Material.Filled.Badge" Size="Size.Small" />
                                         <MudText Class='txt-uppercase wspace-nowrap font10'>Signatories</MudText>
                                         <hr class='horizline2'>
                                     </MudPaper>
@@ -376,13 +376,13 @@
         var options = new DialogOptions()
         {
             CloseButton = false,
-            MaxWidth = MaxWidth.ExtraSmall,
-            FullWidth = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = false,
             NoHeader = false,
             DisableBackdropClick = true
         };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Cancelled) 
+        if (!resultDialog.Canceled) 
         {
             //Audit Trail
             voucherRoute.Activity = "Removed Route";
@@ -408,7 +408,7 @@
             if(GlobalVariable.AMSHubConnection != null)
                 GlobalVariable.AMSHubConnection.On<VoucherRouteModel>("SaveVoucherRoute",(routeModel) => 
                 {
-                        tableVariable.ReloadServerData();
+                    tableVariable.ReloadServerData();
                     StateHasChanged();
                 });
         }catch (Exception ex)

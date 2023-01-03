@@ -1,3 +1,5 @@
+@use "../flexgridmods/flexgridmods.styles.css";
+
 .customdialog,
 .customdialog-table-only {
   .mud-dialog-title {
@@ -28,12 +30,127 @@
     }
   }
   .mud-dialog-content {
+    padding: 8px !important;
     background-color: #eeeeeea0 !important;
   }
 }
 
-.customdialog2 {
-  .mud-dialog-content {
+.customdialog3 {
+  @extend .customdialog2;
+  .mud-dialog-title {
     padding: 8px !important;
+  }
+}
+
+
+.pcview-dialog {
+  .mud-dialog-title {
+    background-color: #542D6F;
+  }
+  &__title {
+    color: white;
+    font-size: 1.25rem;
+    font-family: "Theramin";
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    
+  }
+  &__crumb { 
+    @extend .dflex-row;
+    gap: 4px;
+  }
+  &__crumb--prefix {
+    color: white;
+  }
+  &__crumb--prefix,  &__crumb--suffix {
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+  &__crumb--suffix {
+    font-weight: bold;
+  }
+  &__grid {  
+    display: grid;
+    grid-template-columns: 75px 1fr 1fr 1fr;
+    grid-template-rows: 35px 35px minmax(35px,auto) 35px minmax(70px,auto) minmax(70px,auto);
+    gap: 0px 0px;
+    grid-auto-flow: row;
+    grid-template-areas:
+      "pcgrid-lblstatus pcgrid-status pcgrid-status pcgrid-controls"
+      "pcgrid-lbldate pcgrid-date pcgrid-date pcgrid-date"
+      "pcgrid-lblpayee pcgrid-payee pcgrid-payee pcgrid-payee"
+      "pcgrid-lblamt pcgrid-amt pcgrid-amt pcgrid-amt"
+      "pcgrid-particulars pcgrid-particulars pcgrid-particulars pcgrid-signatories"
+      "pcgrid-remarks pcgrid-remarks pcgrid-remarks pcgrid-signatories";
+      max-height: 1024px;
+  }
+  
+  .pcgrid-lblstatus { grid-area: pcgrid-lblstatus; }
+  
+  .pcgrid-lbldate { grid-area: pcgrid-lbldate; }
+  
+  .pcgrid-lblpayee { grid-area: pcgrid-lblpayee; }
+  .pcgrid-lblamt { grid-area: pcgrid-lblamt; }
+  
+  .pcgrid-status { grid-area: pcgrid-status; }
+  
+  .pcgrid-date { grid-area: pcgrid-date; }
+  
+  .pcgrid-payee { grid-area: pcgrid-payee; }
+  
+  .pcgrid-amt { grid-area: pcgrid-amt; }
+  
+  .pcgrid-controls { 
+    grid-area: pcgrid-controls; 
+    gap: 4px;
+    justify-content: end;
+  }
+  
+  .pcgrid-signatories { 
+    @extend .dflex-col;
+    border: solid thin lightgray;
+    border-radius: 5px;
+    grid-area: pcgrid-signatories; 
+    gap: 4px;
+    justify-content: center;
+    padding: 8px;
+    margin: 4px 4px 0px 4px;
+  }
+  
+  .pcgrid-particulars { grid-area: pcgrid-particulars; }
+  
+  .pcgrid-remarks { grid-area: pcgrid-remarks; }
+  
+  .pcgrid-lblstatus, .pcgrid-lbldate, .pcgrid-lblpayee,
+  .pcgrid-lblamt, .pcgrid-status, .pcgrid-date, .pcgrid-payee,
+  .pcgrid-amt, .pcgrid-controls {
+    @extend .dflex-row;
+  }
+  .pcgrid-status, .pcgrid-date, .pcgrid-payee,
+  .pcgrid-amt {
+    border-bottom: solid thin lightgray;
+  }
+
+  .pcgrid-particulars, .pcgrid-remarks {
+    border-bottom: dotted thin black;
+    padding: 8px;
+  }
+  &__label {
+    font-size: 10px;
+    color: #9F9F9F;
+    text-transform: uppercase;
+  }
+  &__txt {
+    font-size: 12px;
+    margin: 4px;
+    padding: 0px 12px;
+  }
+  &__txt--content-title {
+    @extend .pcview-dialog__txt;
+    font-family: "R-Flex Bold";
+    font-size: 14px;
+  }
+  &__btn-circular {
+    border-radius: 24px !important;
   }
 }

@@ -14,22 +14,22 @@
             @if (lookUpType == Enums.LookUpType.Employee)
             {
                 <BlazoredTypeahead SearchMethod='LoadEmployee' @ref='employeeTypeahead'
-                @bind-Value='selectedEmployee' Debounce='500' placeholder='@searchPlaceholderText'>
-                <SelectedTemplate>
-                    <div class='ddavatar'>
-                        @if(context.Picture != null)
-                        {
+                    @bind-Value='selectedEmployee' Debounce='500' placeholder='@searchPlaceholderText'>
+                    <SelectedTemplate>
+                        <div class='ddavatar'>
+                            @if(context.Picture != null)
+                            {
+                                <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@context.Picture)}")' Size='Size.Small'/>
+                            }
+                            @context.EmployeeName | @context.Designation
+                        </div>
+                    </SelectedTemplate>
+                    <ResultTemplate>
+                        <div class='ddavatar'>
                             <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@context.Picture)}")' Size='Size.Small'/>
-                        }
-                        @context.EmployeeName | @context.Designation
-                    </div>
-                </SelectedTemplate>
-                <ResultTemplate>
-                    <div class='ddavatar'>
-                        <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@context.Picture)}")' Size='Size.Small'/>
-                        @context.EmployeeName | @context.Designation
-                    </div>
-                </ResultTemplate>
+                            @context.EmployeeName | @context.Designation
+                        </div>
+                    </ResultTemplate>
                 </BlazoredTypeahead>
             }
             @if (lookUpType == Enums.LookUpType.Project)
@@ -101,7 +101,7 @@
     private Project selectedPayee = new Project(), selectedCharging = new Project();
     private ExpenseLineModel selectedExpense = new ExpenseLineModel();
     private DivisionModel selectedDivision = new DivisionModel();
-    private string iconString = "Icons.Filled.PersonSearch";
+    private string iconString = "Icons.Material.Filled.PersonSearch";
     private BlazoredTypeahead<UserAccount, UserAccount> employeeTypeahead = new BlazoredTypeahead<UserAccount, UserAccount>();
     private BlazoredTypeahead<Project, Project> projectTypeahead = new BlazoredTypeahead<Project, Project>();
     private BlazoredTypeahead<ExpenseLineModel, ExpenseLineModel> expenseTypeahead = new BlazoredTypeahead<ExpenseLineModel, ExpenseLineModel>();
@@ -111,9 +111,9 @@
     protected override async Task OnInitializedAsync()
     {
         if (lookUpType == Enums.LookUpType.Employee)
-            iconString = Icons.Filled.PersonSearch;
+            iconString = Icons.Material.Filled.PersonSearch;
         if (lookUpType == Enums.LookUpType.Project || lookUpType == Enums.LookUpType.ChargeLine)
-            iconString = Icons.Filled.Groups;
+            iconString = Icons.Material.Filled.Groups;
         if (lookUpType == Enums.LookUpType.Division)
             iconString = "fa-solid fa-users-between-lines";
         if (lookUpType == Enums.LookUpType.ExpLine)

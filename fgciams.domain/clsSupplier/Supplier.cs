@@ -46,7 +46,7 @@ namespace fgciams.domain.clsSupplier
         [Required(ErrorMessage = "Account name is required")] 
         public string BankAccountName { get; set; } = string.Empty;
         public bool isShowOthers {get;set;}
-        public List<SupplierContactModel> SupplierContacts { get; set; }
-        public List<SupplierContactModel> RemovedSupplierContacts { get; set; }
+        public List<SupplierContactModel> SupplierContacts { get; set; } = new();
+        public List<SupplierContactModel> RemovedSupplierContacts { get; set; } = new();
     }
 }

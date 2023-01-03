@@ -159,22 +159,19 @@ namespace fgciams.domain.clsEnums
             [Description("Void")]
             Void = 6,
             [Description("Issue")]
-            Issued = 6,
+            Issue = 6,
             [Description("Release")]
-            Released = 7,
+            Release = 7,
             [Description("Clear")]
-            Cleared = 8,
+            Clear = 8,
             [Description("Deactivate")]
             Deactivate = 9,
             [Description("Route")]
             Route = 10,
             [Description("Invalid")]
             Invalid = 11,
-        }
-        public enum AccountReportGroup : byte
-        {
-            [Description("Balance Sheet")]
-            BalanceSheet = 0
+            [Description("Prompt")]
+            Prompt = 12
         }
         public enum AccountDefaultBalance : byte
         {
@@ -199,6 +196,83 @@ namespace fgciams.domain.clsEnums
             OthersRequestor = 5,
             [Description("Others-Viewer")]
             OthersViewer = 6,
+        }
+
+        public enum AuditTrailMode
+        {
+            [Description("Petty Cash Audit Trail")]
+            PettyCashTrail = 0,
+            [Description("Liquidation Audit Trail")]
+            LiquidationTrail = 1,
+            [Description("Check Audit Trail")]
+            CheckTrail = 2,
+            [Description("Collection Audit Trail")]
+            CollectionTrail = 3,
+            [Description("Request for Payment Trail")]
+            RFPTrail = 4,
+            [Description("Voucher Trail")]
+            VoucherTrail = 5,
+            [Description("Voucher Batch Trail")]
+            VoucherBatch = 6,
+            [Description("Debit Trail")]
+            DebitTrail = 7
+        }
+        public enum CollectionCategory
+        {
+            [Description("P")]
+            P = 0,
+            [Description("C-Admin")]
+            C = 1,
+            [Description("AR")]
+            AR = 2,
+            [Description("CA")]
+            CA = 3,
+            [Description("Others")]
+            Others = 4
+        }
+        public enum CollectionType
+        {
+            [Description("Collection")]
+            Collection = 0,
+            [Description("Billing")]
+            Billing = 1
+        }
+        public enum CollectionPaymentType
+        {
+            [Description("Cash")]
+            Cash = 0,
+            [Description("Check")]
+            Check = 1,
+            [Description("Direct Deposit")]
+            DirectDeposit = 2
+        }
+        public enum AccountReportGroup
+        {
+            [Description("Balance Sheet")]
+            BalanceSheet = 0,
+            [Description("Income Statement")]
+            IncomeStatement = 1
+        }
+        public enum SupplierCategory
+        {
+            Supplier = 0,
+            Project = 1,
+            Department = 2,
+            Section = 3,
+            OtherProject = 4
+        }
+        public enum RouteTag
+        {
+            [Description("None")]
+            None = 0,
+            [Description("Govt/EBenefits")]
+            GovEBenefit = 1,
+            [Description("Billing")]
+            Billing = 2,
+            [Description("Issuance & Processing")]
+            IssuanceAndProcessing = 3,
+            [Description("Others")]
+            Others = 4
         }
     }
 }

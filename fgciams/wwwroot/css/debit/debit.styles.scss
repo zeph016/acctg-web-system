@@ -1,0 +1,69 @@
+@use "../components/flexgridmods/flexgridmods.styles.css";
+
+.debit-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 150px 150px;
+  grid-template-rows: 40px 50px 60px 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "debit-header debit-header debit-header debit-header debit-header debit-header  debit-header"
+    "debit-bank debit-bank debit-bank debit-bank debit-bank debit-controlno debit-controlno"
+    "debit-amount debit-amount debit-amount debit-amount debit-amount debit-date debit-date"
+    "debit-remarks debit-remarks debit-remarks debit-remarks debit-remarks debit-sidebar debit-sidebar";
+  padding: 8px;
+  .debit-header {
+    @extend .dflex-ac;
+    background-color: #f4f5fb;
+    border-radius: 4px 4px 0px 0px;
+    border: solid thin lightgray;
+    grid-area: debit-header;
+  }
+
+  .debit-bank {
+    @extend .dflex-ac;
+    justify-content: space-between;
+    border-right: solid thin lightgray;
+    border-left: solid thin lightgray;
+    grid-area: debit-bank;
+  }
+
+  .debit-controlno {
+    @extend .dflex-ac;
+    justify-content: space-around;
+    border-right: solid thin lightgray;
+    grid-area: debit-controlno;
+  }
+
+  .debit-date {
+    @extend .dflex-ac;
+    border: solid thin lightgray;
+    border-left-style: none;
+    grid-area: debit-date;
+  }
+
+  .debit-amount {
+    @extend .dflex-ac;
+    border: solid thin lightgray;
+    grid-area: debit-amount;
+    &__amtcont {
+      width: 100%;
+    }
+  }
+
+  .debit-remarks {
+    display: flex;
+    border: solid thin lightgray;
+    border-top-style: none;
+    align-items: starts;
+    gap: 4px;
+    grid-area: debit-remarks;
+    padding: 8px;
+  }
+
+  .debit-sidebar {
+    border-right: solid thin lightgray;
+    border-bottom: solid thin lightgray;
+    grid-area: debit-sidebar;
+  }
+}

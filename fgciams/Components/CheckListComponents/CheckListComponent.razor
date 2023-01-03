@@ -13,14 +13,11 @@
     }
     else
     {
-        <MudTable Class='small-toolbar-gutter2 overflow-auto position-rel zindex1' ServerData='new Func<TableState, Task<TableData<CheckModel>>>(LoadCheck)' 
+        <MudTable Class='table-style-1' ServerData='new Func<TableState, Task<TableData<CheckModel>>>(LoadCheck)' 
             Breakpoint="Breakpoint.Sm" Hover FixedHeader Bordered Dense Height='auto'
             RowsPerPage='10' @ref='tableVariable'>
-            @* <ToolBarContent>
-                <MudText Color='Color.Error'>@AppState._checkListCompState.ToString()</MudText>
-            </ToolBarContent> *@
             <ColGroup>
-                <col style='width:20%;' />
+                <col style='width:1%;' />
                 <col style='width:1%;' />
                 <col style='width:1%;' />
                 <col />
@@ -29,60 +26,74 @@
                 <col style='width:3%;' />
             </ColGroup>
             <HeaderContent>
-                <MudTh Class='customheader-3 pa-2'>
-                    <MudTableSortLabel SortLabel='SortControlNumber' T='CheckModel' InitialDirection="SortDirection.Descending">
-                        Check No.
-                    </MudTableSortLabel>
+                <MudTh Class='customheader-6'>
+                    <div class='d-flex justify-space-around'>
+                        <MudTableSortLabel SortLabel='SortControlNumber' T='CheckModel' InitialDirection="SortDirection.Descending">
+                            Control No
+                        </MudTableSortLabel>
+                        <MudTableSortLabel SortLabel='SortCheckNumber' T='CheckModel' InitialDirection="SortDirection.None">
+                            Check No.
+                        </MudTableSortLabel>
+                    </div>
                 </MudTh>
-                <MudTh Class='customheader-3 text-center pa-2'>
+                <MudTh Class='customheader-6'>
                     <MudTableSortLabel SortLabel='SortDate' T='CheckModel' InitialDirection="SortDirection.Descending">
                         Check Date
                     </MudTableSortLabel>
                 </MudTh>
-                <MudTh Class='customheader-3 text-center pa-2'>
+                <MudTh Class='customheader-6'>
                     <MudTableSortLabel InitialDirection="SortDirection.Descending" 
                         SortBy="new Func<CheckModel, object>(x=>x.IssuedDate != null)">
                         Issued
                     </MudTableSortLabel>
                 </MudTh>
-                <MudTh Class='customheader-3 text-center pa-2'>Payee</MudTh>
-                <MudTh Class='customheader-3 text-center pa-2'>Bank</MudTh>
-                <MudTh Class='customheader-3 text-center pa-2'>Status</MudTh>
-                <MudTh Class='customheader-3 text-right pa-2'>Amount</MudTh>
+                <MudTh Class='customheader-6 text-left'>Payee</MudTh>
+                <MudTh Class='customheader-6 text-left'>Bank</MudTh>
+                <MudTh Class='customheader-6 text-center'>Status</MudTh>
+                <MudTh Class='customheader-6 text-center'>Amount</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd Class='wspace-nowrap pa-2' DataLabel='Check No.'>
+                <MudTd DataLabel='Check No.'>
                     <div class='d-flex gap-2'>
-                         <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Default' Size='Size.Small'>@context.ControlNumber</MudChip>
-                        <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'>@context.CheckNo</MudChip>
+                        <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Size='Size.Small' Variant='Variant.Outlined'>
+                            @context.ControlNumber
+                        </MudChip>
+                        <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small' Variant='Variant.Outlined'>
+                            @context.CheckNo
+                        </MudChip>
                     </div>
                 </MudTd>
-                <MudTd Class='text-center pa-2' DataLabel='Date'>
-                    <MudText Class='font12 wspace-nowrap'>@(context.CheckDate?.ToString("MM/dd/yyyy"))</MudText>
+                <MudTd Class='text-center' DataLabel='Date'>
+                    <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Variant='Variant.Outlined'>
+                        @(context.CheckDate?.ToShortDateString())
+                    </MudChip>
                 </MudTd>
-                <MudTd Class='pa-2' DataLabel='Date Issued'>
-                        <MudText Class='font12 wspace-nowrap'>@context.IssuedDate?.ToString("MM/dd/yyyy")</MudText>          
+                <MudTd DataLabel='Date Issued'>
+                    <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Variant='Variant.Outlined'>
+                        @(context.IssuedDate?.ToShortDateString())
+                    </MudChip>
                 </MudTd>
-                <MudTd Class='pa-2' DataLabel='Payee Name'>
-                    <MudText Class='font12 font-bold wspace-nowra pt-1'>@context.PayeeName</MudText>
+                <MudTd DataLabel='Payee Name'>
+                    <MudText Class='font12 wspace-nowra pt-1'>@context.PayeeName</MudText>
                 </MudTd>
-                <MudTd Class='pa-2' DataLabel='Bank Name'>
-                    <MudText Class='font12 font-bold wspace-nowra pt-1'>@context.BankName</MudText>
+                <MudTd DataLabel='Bank Name'>
+                    <MudText Class='font12 wspace-nowra pt-1'>@context.BankName</MudText>
                 </MudTd>
-                <MudTd Class='pa-2' DataLabel='Status'>
-                    <div class='d-flex align-center'>
+                <MudTd DataLabel='Status'>
+                    <div class='d-flex align-center justify-space-around'>
                         @if(GlobalClassList.accountingStatusList != null)
                         {
-                            <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Color='Color.Info'>
+                            <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Color='Color.Info' Variant='Variant.Outlined'>
                                 @context.CheckCategory
                             </MudChip>
-                            <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@GetAcctgStatusColor(context.AccountingStatusId)'>
-                                @Extensions.GetEnumDescription((Enums.AccountingStatusEnumCategory)context.AccountingStatusId)
+                            <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@GetAcctgStatusColor(context.AccountingStatusId)'
+                                Variant='Variant.Outlined'>
+                                @GlobalClassList.accountingStatusList.Where( acctg => context.AccountingStatusId == acctg.Id).Select( acctg => acctg.StatusName).FirstOrDefault()
                             </MudChip>
                         }
                     </div>
                 </MudTd>
-                <MudTd Class='pa-2' DataLabel='Amount'>
+                <MudTd DataLabel='Amount'>
                     <div class='d-flex align-center gap-2'>
                         @if (context.Amount > 0) {
                             <MudText Class='wspace-nowrap font-bold font12 color-green'>
@@ -136,10 +147,10 @@
         //Prompt confirmation
         var parameters = new DialogParameters();
         string contentText = "Check";
-        string dialogTitle = actionMode == Enums.ActionMode.Released ? "RELEASE " + contentText 
-                    : (actionMode == Enums.ActionMode.Cleared ? "CLEAR " + contentText :"CANCEL " + contentText );
-        parameters.Add("contentText", contentText);
+        string dialogTitle = actionMode.ToString();
+        parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("actionMode", actionMode);
+        parameters.Add("contentText", contentText);
         var options = new DialogOptions()
         {
             CloseButton = false,
@@ -149,7 +160,7 @@
             DisableBackdropClick = true
         };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Cancelled) 
+        if (!resultDialog.Canceled) 
         {
             //Audit Trail
             check.UserId = GlobalClass.currentUserAccount.EmployeeId;

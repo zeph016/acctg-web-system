@@ -30,5 +30,7 @@ namespace fgciams.domain.clsBank
         public Nullable<Int64> BankCheckNumberId { get; set; } = 0;
         public List<BankCheckNumberModel> BankCheckNumbers { get; set; }
         public List<BankCheckNumberModel> RemovedBankCheckNumbers { get; set; }
+        public decimal RunningBalance { get; set; }
+        public bool isStart { get; set; } = true;
     }
 }

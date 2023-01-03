@@ -18,6 +18,7 @@
 @using fgciams.Pages.ModulePages
 @using fgciams.Pages.ModulePages.PettyCashPage
 @using fgciams.Pages.ModulePages.CheckWriterPage
+@using fgciams.Pages.ModulePages.LedgerPages
 @using fgciams.Pages.ConfigurationPages.AccountingStatusPage
 @using fgciams.Pages.ConfigurationPages.AccountingLinePage
 @using fgciams.Pages.ConfigurationPages.BankPage
@@ -36,6 +37,7 @@
 @using fgciams.Pages.ConfigurationPages.TermsOfPaymentPage
 @using fgciams.Pages.ConfigurationPages.TaxCodePage
 @using fgciams.Pages.ConfigurationPages.ScopeOfWorkPage
+@using fgciams.Pages.ConfigurationPages.VoucherRouteTagPage
 
 @using Pages.PrintPages
 @using Blazored.Typeahead
@@ -87,7 +89,13 @@
 @using fgciams.domain.clsBIR
 @using fgciams.domain.clsScopeOfWork
 @using fgciams.domain.clsSubContractProject
+@using fgciams.domain.clsCollection
+@using fgciams.domain.clsBankDeposit
+@using fgciams.domain.clsCheckLedger
+@using fgciams.domain.clsDebit
+@using fgciams.domain.clsVoucherRouteTag;
 
+@using fgciams.service
 @using fgciams.service.UserAccountServices
 @using fgciams.service.AccountingStatusServices
 @using fgciams.service.ModeOfPaymentServices
@@ -120,8 +128,22 @@
 @using fgciams.service.VATServices
 @using fgciams.service.BIRServices
 @using fgciams.service.ScopeOfWorkServices
-
+@using fgciams.service.CollectionServices
+@using fgciams.service.BankDepositServices
+@using fgciams.service.LedgerServices
+@using fgciams.service.DebitServices
+@using fgciams.service.VoucherRouteTagServices
+@using fgciams.service.JournalServices
 
 @using fgciams.Components.CheckListComponents
 @using fgciams.Components.MudChipComponents
-@using fgciams.Components.Signatories
+@using fgciams.Components.SignatoriesComponents
+@using fgciams.Components.AuditTrailComponents
+@using fgciams.Components.CollectionComponents
+@using fgciams.Components.DateRangeCardComponent
+@using fgciams.Components.FilterComponents
+@using fgciams.Components.MudTablePagerComponents
+@using fgciams.Components.VoucherEntryComponents
+@using fgciams.Components.AccctgStatusComponents
+@using fgciams.Components.ButtonComponents
+@using fgciams.Components.ReportComponents

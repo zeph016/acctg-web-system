@@ -1,0 +1,109 @@
+.blzrtypahead-unset-width .blazored-typeahead__results {
+  position: fixed;
+  width: unset;
+}
+
+.blzrtypahead-unset-width15p .blazored-typeahead__results {
+  position: fixed;
+  width: unset;
+  max-width: 15%;
+}
+
+.blzrthead-disabled-minheight15 .blazored-typeahead__input-mask-wrapper--disabled {
+  background-color: inherit;
+  min-height: 35px;
+}
+
+.blzrthead-disabled-white .blazored-typeahead__input-mask-wrapper--disabled {
+  background-color: inherit;
+}
+
+.blzrthead-custom-lbl, .blzrtheadfilter-lbl-pj, .blztheadfilter-lbl-line6, .blztheadfilter-lbl-line3, .blztheadfilter-lbl-payproj, .blzrtheadfilter-lbl-req {
+  background-color: white;
+  display: inline;
+  font-size: 12px;
+  padding: 0px 4px 0px 4px;
+  position: absolute;
+  z-index: 1;
+}
+
+.blzrtheadfilter-lbl-req {
+  top: 45px;
+  left: 72px;
+}
+
+.blztheadfilter-lbl-payproj {
+  top: 92px;
+  left: 72px;
+}
+
+.blztheadfilter-lbl-line3 {
+  top: 138px;
+  left: 72px;
+}
+
+.blztheadfilter-lbl-line6 {
+  top: 186px;
+  left: 72px;
+}
+
+.blzrtheadfilter-lbl-pj {
+  top: 45px;
+  left: 20px;
+}
+
+.blzsmall-minheight20px, .blzsmallpayproj-220px, .blzsmallpayproj-170px {
+  min-height: 20px;
+}
+
+.small-oflow-elipsis, .blzsmallpayee-rfp, .blzsmallmain-205px, .blzsmallpayproj-220px, .blzsmallpayproj-170px, .blzsmallreq-170px, .blzsmallreq-160px {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.blzsmallreq-160px {
+  width: 160px;
+}
+
+.blzsmallreq-170px {
+  width: 170px;
+}
+
+.blzsmallpayproj-170px {
+  width: 170px;
+}
+
+.blzsmallpayproj-220px {
+  width: 220px;
+}
+
+.avatar-20px {
+  height: 20px !important;
+  width: 20px !important;
+}
+
+.blzsmallmain-205px {
+  width: 205px;
+}
+
+.blzsmallpayee-rfp {
+  max-width: calc(37vw - 300px);
+}
+@media only screen and (max-width: 1366px) {
+  .blzsmallpayee-rfp {
+    max-width: calc(49vw - 300px);
+  }
+}
+
+.blzrth-maxheight-55px .blazored-typeahead__results, .blzrth-result-height-rfp-payee .blazored-typeahead__results, .blzrth-result-height-rfp-sig .blazored-typeahead__results {
+  min-height: 55px !important;
+}
+
+.blzrth-result-height-rfp-sig .blazored-typeahead__results {
+  max-height: calc(100vh - 640px) !important;
+}
+
+.blzrth-result-height-rfp-payee .blazored-typeahead__results {
+  max-height: calc(100vh - 200px) !important;
+}/*# sourceMappingURL=blazoredtypeahead.styles.css.map */

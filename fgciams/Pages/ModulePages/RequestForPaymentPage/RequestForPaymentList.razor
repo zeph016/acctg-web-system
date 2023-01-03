@@ -1,91 +1,21 @@
-@page "/requestpayment/list"
+@page "/request-payment/list"
 
 @inject IRequestForPaymentService requestForPaymentService
 @inject NavigationManager navigationManager
 @inject IDialogService dialogService
-@inject ISnackbar snackBar
+@inject ISnackbar snackbarService
+@inject IJSRuntime JSRuntime
+@attribute [Authorize]
 
 <div class='page-cont'>
-    <div class='drawer-right'>
+    <div class='drawer-right-min'>
         <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
-            <div class="drawer-right__filtercont">
-                <div class="icon-area d-flex align-center">
-                    <MudIconButton OnClick='OpenSideFilter' Icon="@Icons.Filled.FilterList" aria-label="Filter" Size='Size.Medium' />
-                </div>
-                <div class="filter-title d-flex align-center">
-                    <p class='title875'>Filter</p>
-                    <MudSpacer />
-                    <MudIconButton OnClick='OpenSideFilter' Icon="@Icons.Filled.Close" aria-label="Close Filter" Size='Size.Medium' />
-                </div>
-                <div class="filter-content d-flex flex-column pl-4 pr-4 gap-1 @visibility">
-                  <div class='d-flex align-center gap-2 @visibility'>
-                    <MudCheckBox Class='pt-1' @bind-Checked='filterParameter.IsControlNumber' Dense Size='Size.Small' />
-                    <MudTextField Class='txtfield-75' @bind-Value='filterParameter.ControlNumber' Placeholder='Control No.'
-                    Immediate Clearable='true' Variant='Variant.Outlined' Disabled=!filterParameter.IsControlNumber/>
-                  </div>
-                  <div class='d-flex align-center gap-2 @visibility'>
-                    <MudCheckBox Class='pt-1' @bind-Checked='filterParameter.IsPOBillingControlNumber' Dense Size='Size.Small' />
-                    <MudTextField Class='txtfield-75' @bind-Value='filterParameter.POBillingControlNumber' Placeholder='PO Billing Control No.'
-                    Clearable='true' Variant='Variant.Outlined' Disabled=!filterParameter.IsPOBillingControlNumber/>
-                  </div>
-                  <div class='d-flex align-center gap-2 @visibility'>
-                    <MudCheckBox @bind-Checked='filterParameter.IsPOControlNumber' Dense Size='Size.Small' />
-                    <MudTextField Class='txtfield-75' @bind-Value='filterParameter.POControlNumber' Placeholder='PO Control No.'
-                    Clearable='true' Variant='Variant.Outlined' Disabled=!filterParameter.IsPOControlNumber/>
-                  </div>
-                  <div class='d-flex align-center gap-2 @visibility'>
-                    <MudCheckBox Class='pt-1' @bind-Checked='filterParameter.IsLiqudationControlNumber' Dense Size='Size.Small' />
-                    <MudTextField Class='txtfield-75' @bind-Value='filterParameter.LiquidationControlNumber' Placeholder='Liquidation Control No.'
-                    Adornment='Adornment.Start' AdornmentIcon='@Icons.Material.Filled.Search' IconSize='Size.Small'
-                    Clearable='true' Variant='Variant.Outlined' Disabled=!filterParameter.IsLiqudationControlNumber/>
-                  </div>
-                  <div class='d-flex align-center gap-2 @visibility'>
-                    <MudCheckBox Class='pt-1' @bind-Checked='filterParameter.IsRequestType' Dense Size='Size.Small' />
-                    <MudSelect MultiSelectionTextFunc='@(new Func<List<string>, string>(SelectedRFPDetails))' @bind-SelectedValues=hasRFPDetail Class='selectparent-75 fa-icon-center' @bind-Value='selectedRequestType' 
-                      Adornment='Adornment.Start' AdornmentIcon='fa-solid fa-clipboard-check' IconSize='Size.Small' Placeholder='Category' AnchorOrigin='Origin.BottomCenter' 
-                      Variant='Variant.Outlined' Clearable='true' MultiSelection=true Disabled=!filterParameter.IsRequestType>
-                        @if (dataFetched)
-                        {
-                            @foreach (var item in GlobalClassList.requestTypes)
-                            {
-                                <MudSelectItem Class='selectitem-75' Value='item'>@item.TypeName</MudSelectItem>
-                            }
-                        }
-                    </MudSelect>
-                  </div>
-                  <div class='d-flex align-center gap-2 @visibility'>
-                    <MudCheckBox Class='pt-1' @bind-Checked='filterParameter.IsAccountingStatus' Dense Size='Size.Small' />
-                    <MudSelect Class='selectparent-75 fa-icon-center' MultiSelectionTextFunc='@(new Func<List<string>, string>(AccountingStatus))' @bind-SelectedValues='hasAccountingStatus' 
-                      @bind-Value="selectedStatus" Dense="true" MultiSelection=true Disabled='!filterParameter.IsAccountingStatus' PlaceHolder='Accounting Status'
-                      Variant='Variant.Outlined' Adornment='Adornment.Start' AdornmentIcon='@Icons.Material.Filled.Search'>
-                      @if(dataFetched)
-                      {
-                        @foreach (var item in GlobalClassList.accountingStatusList.Where(x=> (int)x.StatusEnumCategoryId == 7 || (int)x.StatusEnumCategoryId == 8 || (int)x.StatusEnumCategoryId == 9))
-                        {
-                          <MudSelectItem Value="@item">@item.StatusName</MudSelectItem>
-                        }
-                      }
-                    </MudSelect>
-                  </div>
-                  <div class='d-flex align-center gap-2 @visibility'>
-                    <MudCheckBox Class='pt-1' @bind-Checked='filterParameter.IsPayee' Dense Size='Size.Small' />
-                    <MudTextField Class='txtfield-75' @onclick='PayeeSearchLookup' @bind-Value='filterParameter.PayeeName' Placeholder='Payee' 
-                    ReadOnly Disabled='!filterParameter.IsPayee' Clearable Variant='Variant.Outlined' />
-                  </div>
-                  <div class='d-flex align-center gap-2 @visibility'>
-                    <MudCheckBox Class='pt-1' @bind-Checked='filterParameter.IsDate' Dense Size='Size.Small' />
-                    <MudDateRangePicker Class='txtfield-75' @bind-DateRange='dateRange' Disabled='!filterParameter.IsDate' Variant='Variant.Outlined' ></MudDateRangePicker>
-                  </div>
-                  <div class='d-flex align-center justify-end'>
-                    <MudButton Class='wspace-nowrap' OnClick='ClearSearch' Variant='Variant.Filled' Color='Color.Secondary' Disabled=!EnableClearButton()>Clear Filter</MudButton>
-                    &nbsp;
-                    <MudButton Class='wspace-nowrap' OnClick='FilteredItem' Variant='Variant.Filled' Color='Color.Secondary'>Apply Filter</MudButton>
-                  </div>
-                </div>
-            </div>
+          <FilterComponent OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
+              FilterClick='FilterTable' ResetTableClick='ReloadTable'
+               moduleName='rfp-list' contentVisible='openSideFilter'/>
         </MudDrawer>
     </div>
-    <MudContainer Class='requesttypelist' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+    <MudContainer Class='py-2 pl-2 pr-10  table-toolbar-custom1' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
         @if (!dataFetched)
         {
             <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
@@ -94,30 +24,37 @@
         }
         else
         {
-            <MudTable Class='configtables' ServerData='new Func<TableState, Task<TableData<RequestForPaymentModel>>>(LoadRFPFromServer)' Hover="true"
-            Breakpoint='Breakpoint.Sm' FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
-            RowsPerPage='30' Filter='new Func<RequestForPaymentModel,bool>(FilterItems)' @ref='tableVariable'>
+            <MudTable Class='table-style-1 ' ServerData='new Func<TableState, Task<TableData<RequestForPaymentModel>>>(LoadRFPFromServer)' 
+              Breakpoint='Breakpoint.Xs' Hover FixedHeader FixedFooter Bordered Dense Loading='isLoading'
+              RowsPerPage='15' Filter='new Func<RequestForPaymentModel,bool>(FilterItems)' @ref='tableVariable'>
                 <ToolBarContent>
                     <MudText Typo='Typo.caption'>
                         @totalItems
                         @(totalItems == 1 ? "item" : "items")
-                        in Total
+                        in total
                     </MudText>
                     <MudSpacer />
-                    <MudTooltip Text="Refresh Table">
-                        <MudIconButton Icon="@Icons.Filled.Refresh" Size="Size.Small" OnClick='ClearSearch' ></MudIconButton>
+                    <MudTooltip Text="Refresh Table" Arrow Placement='Placement.Top'>
+                        <MudIconButton Class='@(isLoading ? "mudbtnico-rotate":"")' OnClick='ReloadTable' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" 
+                           Color='@(isLoading ? Color.Info : Color.Default)'/>
                     </MudTooltip>
-                    <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
+                    <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' ActivationEvent='MouseEvent.MouseOver'
                              TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
                        @if(AccessLevelAddmin() || AccessLevelRequestors())
                        {
                         <MudMenuItem OnClick='(()=> AddNewRFP())'>
-                            <div class='d-flex align-center gap-2 menu-grow-anim'>
-                                <MudIcon Icon='@Icons.Filled.Add' Size='Size.Small' />
-                                <MudText Typo='Typo.body2'>Add</MudText>
+                            <div class='d-flex align-center gap-2 '>
+                                <MudIcon Icon='@Icons.Material.Filled.Add' Size='Size.Small' />
+                                <MudText Typo='Typo.body2'>Create RFP</MudText>
                             </div>
                         </MudMenuItem>                        
                        }
+                       <MudMenuItem OnClick="(() => openSideFilter = !openSideFilter)"  >
+                          <div class='d-flex align-center gap-2 '>
+                              <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
+                              <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
+                          </div>
+                        </MudMenuItem>
                     </MudMenu>
                 </ToolBarContent>
                 <ColGroup>
@@ -125,62 +62,74 @@
                     <col />
                     <col />
                     <col style='width: 1%' />
-                    <col style='width: 20px' />
+                    <col style='width: 50px' />
                 </ColGroup>
                 <HeaderContent>
-                    <MudTh Class='customheader-1 text-center'>
-                        <div class='d-flex align-center justify-start'>
-                            <MudTableSortLabel Class='lbl75' SortLabel='SortControlNumber' T='RequestForPaymentModel'
+                    <MudTh Class='@(isPinnedCtrlNo ? "th-sticky-left customheader-6":"customheader-6")'>
+                        <div class='d-flex align-center justify-space-around gap-2'>
+                            <MudTooltip Text='Pin control number column' Arrow Placement='Placement.Top'>
+                              <MudIconButton Class='ico-15x15' OnClick='(() => isPinnedCtrlNo = !isPinnedCtrlNo)' Color='@(isPinnedCtrlNo ? Color.Info:Color.Dark)' 
+                                  Icon='@Icons.Material.Filled.PushPin' Size='Size.Small'/>
+                            </MudTooltip>
+                            <MudTableSortLabel SortLabel='SortControlNumber' T='RequestForPaymentModel'
                             InitialDirection='SortDirection.None'>
                                 Control No.
                             </MudTableSortLabel>
-                            <MudSpacer />
-                            <MudTableSortLabel Class='lbl75' SortLabel='SortDate' T='RequestForPaymentModel'
+                            <MudTableSortLabel SortLabel='SortDate' T='RequestForPaymentModel'
                             InitialDirection='SortDirection.Descending'>
                                 Date
                             </MudTableSortLabel>
                         </div>
                     </MudTh>
-                    <MudTh Class='customheader-1'>Payee</MudTh>
-                    <MudTh Class='customheader-1'>Requestor</MudTh>
-                    <MudTh Class='customheader-1'></MudTh>
-                    <MudTh Class='customheader-1 text-center pa-2'>Actions</MudTh>
+                    <MudTh Class='customheader-6'>Payee</MudTh>
+                    <MudTh Class='customheader-6'>Requestor</MudTh>
+                    <MudTh Class='customheader-6'></MudTh>
+                    <MudTh Class='customheader-6 text-center'>Actions</MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd>
+                    <MudTd Class='@(isPinnedCtrlNo ? "col-sticky-left":"")'>
                         <div class='d-flex align-center'>
-                            <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'>
+                            <MudChip Class='mudchip-tbl' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, snackbarService, JSRuntime))' 
+                              Variant='Variant.Outlined' Color='Color.Error' Size='Size.Small'>
                                 @context.ControlNumber
                             </MudChip>
-                            <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Text' Icon='@Icons.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
+                            <MudChip Class='mudchip-tbl' Variant='Variant.Outlined' Icon='@Icons.Material.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
                                 @Convert.ToDateTime(context.RequestDate).ToShortDateString()
                             </MudChip>
                          </div>
                     </MudTd>
-                    <MudTd Class='wspace-nowrap font12'>@context.PayeeName</MudTd>
-                    <MudTd Class='wspace-nowrap font12'>@context.RequestedByName</MudTd>
+                    <MudTd>
+                      <div class='dynamic-div-1'>
+                        <small>@context.PayeeName</small>
+                      </div>
+                    </MudTd>
+                    <MudTd>
+                      <div class='dynamic-div-1'>
+                        <small>@context.RequestedByName</small>
+                      </div>
+                    </MudTd>
                     <MudTd Class='text-left'>
                         <div class='d-flex align-center justify-start'>
-                            <MudChip Class='chip-radius-5 font-bold font10' Color='Color.Dark' Variant='Variant.Text' Size='Size.Small'>
+                            <MudChip Class='mudchip-tbl-nw' Label Color='Color.Default' Variant='Variant.Outlined' Size='Size.Small'>
                                 @context.RFPDetailTypeId
                             </MudChip>
-                                <MudChip Class='chip-radius-5 font-bold font10' Color='Color.Dark' Variant='Variant.Text' Size='Size.Small'>
+                                <MudChip Class='mudchip-tbl-nw' Label Color='Color.Default' Variant='Variant.Outlined' Size='Size.Small'>
                                 @context.RequestTypeName
                             </MudChip>
-                            <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@Extensions.GetAcctgStatusColor(context.AccountingStatusId)'>
+                            <MudChip Class='mudchip-tbl-nw' Label Variant='Variant.Outlined' Size='Size.Small' Style='@Extensions.BorderColor(context.AccountingStatusId)'>
                                 @context.AccountingStaus
                             </MudChip>
                         </div>
                     </MudTd>
                     <MudTd Class='text-center pa-2'>
-                        <MudMenu Icon="@Icons.Material.Filled.MoreVert" AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
-                        TransformOrigin='Origin.TopRight' Size='Size.Small' Dense='true'>
+                        <MudMenu Class='mudbtnico-rotate-90' Icon="@Icons.Material.Filled.MoreVert" AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
+                          TransformOrigin='Origin.TopRight' Size='Size.Small' Dense='true'>
                           @if((!EnableEditApproved(context) && AccessLevelAddmin()) 
                             || (!EnableEditApproved(context) && AccessLevelRequestors()))
                             {
                               <MudMenuItem OnClick='(() => EditRFP(context))'>
                                 <div class='d-flex align-center gap-2'>
-                                    <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small' />
+                                    <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' />
                                     <MudText Typo='Typo.body2'>Edit</MudText>
                                 </div>
                               </MudMenuItem>
@@ -189,14 +138,14 @@
                               {
                                 <MudMenuItem OnClick='(()=> ApprovedRFPStatus(context))'>
                                   <div class='d-flex align-center gap-2'>
-                                    <MudIcon Icon='@Icons.Filled.CheckCircle' Size='Size.Small' />
+                                    <MudIcon Icon='@Icons.Material.Filled.CheckCircle' Size='Size.Small' />
                                     <MudText Typo='Typo.body2'>Approve</MudText>
                                   </div>
                                 </MudMenuItem>
 
                                 <MudMenuItem OnClick='(()=> CancelRFPStatus(context))'>
                                   <div class='d-flex align-center gap-2'>
-                                    <MudIcon Icon='@Icons.Filled.Cancel' Size='Size.Small' />
+                                    <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small' />
                                     <MudText Typo='Typo.body2'>Cancel</MudText>
                                   </div>
                                 </MudMenuItem>
@@ -207,20 +156,20 @@
                             {
                               <MudMenuItem OnClick='(()=> VoidRFP(context))'>
                                 <div class='d-flex align-center gap-2'>
-                                    <MudIcon Icon='@Icons.Filled.CancelPresentation' Size='Size.Small' />
+                                    <MudIcon Icon='@Icons.Material.Filled.CancelPresentation' Size='Size.Small' />
                                     <MudText Typo='Typo.body2'>Generated (Void)</MudText>
                                 </div>
                               </MudMenuItem>
                             }
                             <MudMenuItem OnClick='(()=> NavigateToAuditTrail(context))'>
                                 <div class='d-flex align-center gap-2'>
-                                    <MudIcon Icon='@Icons.Filled.ListAlt' Size='Size.Small' />
+                                    <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' />
                                     <MudText Typo='Typo.body2'>Audit Trail</MudText>
                                 </div>
                             </MudMenuItem>
                             <MudMenuItem OnClick='(()=> context.ShowReport = ShowReport(context.ShowReport, context))'>
                                 <div class='d-flex align-center gap-2'>
-                                    <MudIcon Icon='@Icons.Filled.PictureAsPdf' Size='Size.Small' />
+                                    <MudIcon Icon='@Icons.Material.Filled.PictureAsPdf' Size='Size.Small' />
                                     <MudText Typo='Typo.body2'> @(context.ShowReport ? "Close" : "Show") Report</MudText>
                                 </div>
                             </MudMenuItem>
@@ -231,32 +180,36 @@
                     <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No records found</MudText>
                 </NoRecordsContent>
                 <ChildRowContent>
-                    @if (context.ShowReport)
-                        {
+                   <MudTr>
                         <td colspan="9">
+                          <div class='transition-05s-ease overflow-hidden' style='@(context.ShowReport ? "max-height:700px" : "max-height:0px")'>
                             <div class='d-flex align-center pa-2 bgc-f2f2f2'>
                                 <MudSpacer />
-                                <MudButton OnClick='(() => context.ShowReport = ShowReport(context.ShowReport, context))' EndIcon="@Icons.Rounded.Close" IconColor='Color.Error' Size='Size.Small' >
+                                <MudButton Class='btn-ios-d font12' OnClick='(() => context.ShowReport = ShowReport(context.ShowReport, context))' EndIcon="@Icons.Rounded.Close" Size='Size.Small' >
                                     Close Report
                                 </MudButton>
                             </div>
-                            <MudTr Class='d-flex align-stretch justify-center default-report-container'>
-                                @if (string.IsNullOrWhiteSpace(PDFContent))
+                            <div class='d-flex align-stretch justify-center default-report-container'>
+                                @if (context.ShowReport)
                                 {
-                                    <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
-                                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-                                    </MudOverlay>
+                                  @if (string.IsNullOrWhiteSpace(PDFContent))
+                                  {
+                                      <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
+                                          <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                                      </MudOverlay>
+                                  }
+                                  else
+                                  {
+                                  <iframe src='@PDFContent' />
+                                  }
                                 }
-                                else
-                                {
-                                <iframe src='@PDFContent' />
-                                }
-                            </MudTr>
+                            </div>
+                          </div>
                         </td>
-                        }
+                       </MudTr>
                 </ChildRowContent>
                 <PagerContent>
-                    <MudTablePager />
+                    <MudTablePager PageSizeOptions='GlobalVariable.pageSize' />
                 </PagerContent>
             </MudTable>
         }
@@ -264,16 +217,15 @@
 </div>
 
 @code{
-    private bool dataFetched, openSideFilter;
-    private string PDFContent = default!;
-    private int[] pageSize = new int[] { 30, 50, 100, 500, 1000 };
-    private string searchTerm = string.Empty, visibility = "visibility-animation-hide", selectedTypeName = string.Empty;
+    private bool dataFetched, openSideFilter, isLoading = true, isPinnedCtrlNo = true;
+    private string PDFContent = string.Empty;
+    private string searchTerm = string.Empty, selectedTypeName = string.Empty;
     private int selectedFilter, totalItems;
     private FilterParameter filterParameter = new();
     private RequestTypeModel? selectedRequestType;
     private AccountingStatusModel? selectedStatus;
     private IEnumerable<RequestForPaymentModel>? pageData;
-    private MudTable<RequestForPaymentModel>? tableVariable;
+    private MudTable<RequestForPaymentModel> tableVariable = new MudTable<RequestForPaymentModel>();
     private DateRange dateRange = new DateRange(DateTime.Now, DateTime.Now);
     private IEnumerable<RequestTypeModel> hasRFPDetail {get; set;} = new HashSet<RequestTypeModel>();
     private IEnumerable<AccountingStatusModel> hasAccountingStatus {get; set;} = new HashSet<AccountingStatusModel>();
@@ -297,6 +249,7 @@
     }
     private async Task<TableData<RequestForPaymentModel>> LoadRFPFromServer(TableState tableState)
     {
+      isLoading = true;
         IEnumerable<RequestForPaymentModel> data = await requestForPaymentService.LoadRequestPayment(filterParameter, GlobalClass.token);
         switch (tableState.SortLabel)
         {
@@ -310,24 +263,18 @@
         
         GlobalClassList.requestForPaymentsList = data.ToList();
         pageData = GlobalClassList.requestForPaymentsList.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
-
-        await Task.Delay(3);
+        isLoading = !isLoading;
         totalItems = GlobalClassList.requestForPaymentsList.Count();
-
         return new TableData<RequestForPaymentModel>()
         {
             TotalItems = totalItems,
             Items = pageData
         };
     }
-    private async void FilteredItem()
+    private async void FilterTable()
     {
-      filterParameter.RequestTypeId = string.Join(", ", hasRFPDetail.Select(x=> x.Id));
-      filterParameter.AccountingStatusId = string.Join(",", hasAccountingStatus.Select(x=>x.Id));
-      filterParameter.DateFrom = dateRange.Start.GetValueOrDefault();
-      filterParameter.DateTo = dateRange.End.GetValueOrDefault();
-      if(tableVariable != null)
-        await tableVariable.ReloadServerData();
+      filterParameter = GlobalVariable.filterParameter;
+      await tableVariable.ReloadServerData();
     }
     private string SelectedRFPDetails(List<string> selectedDetail)
     {
@@ -352,12 +299,12 @@
     {
         GlobalClass.requestForPayment = new();
         GlobalClassList.requestForPayments = new();
-        navigationManager.NavigateTo($"/requestpayment/create");
+        navigationManager.NavigateTo($"/request-payment/create");
     }
     async void EditRFP(RequestForPaymentModel request)
     {
         GlobalClass.requestForPayment = await Task.Run(() => request);
-        navigationManager.NavigateTo($"/requestpayment/create");
+        navigationManager.NavigateTo($"/request-payment");
     }
 
     private bool FilterItems(RequestForPaymentModel items)
@@ -382,40 +329,19 @@
         PDFContent = await requestForPaymentService.GenerateRFPReport(RFP);
         StateHasChanged();
     }
-
-    private void OpenSideFilter()
-    {
-        openSideFilter = !openSideFilter;
-        if (openSideFilter)
-            visibility = "visibility-animation-show";
-        if (!openSideFilter)
-            visibility = "visibility-animation-hide";
-    }
-    private async Task<bool> PromptMessage(Enums.ActionMode actionMode)
+    private async Task<bool> PromptMessage(Enums.ActionMode actionMode, RequestForPaymentModel rfp)
     {
         bool isNotCancel;
         var parameters = new DialogParameters();
         string contentText = "Request for payment ";
-        string dialogTitle = actionMode == Enums.ActionMode.Cancel ? "Cancel " + contentText 
-        : actionMode == Enums.ActionMode.Approve ? "Approve " + contentText 
-        : "Void " + contentText;
-
-        parameters.Add("actionMode", actionMode == Enums.ActionMode.Cancel ? Enums.ActionMode.Cancel 
-        : actionMode == Enums.ActionMode.Approve ? Enums.ActionMode.Approve
-        : Enums.ActionMode.Void );
-
+        string dialogTitle = actionMode.ToString();
+        parameters.Add("actionMode", actionMode);
+        parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("contentText", contentText);
-
-        var options = new DialogOptions()
-        {
-            CloseButton = false,
-            MaxWidth = MaxWidth.ExtraSmall,
-            FullWidth = true,
-            NoHeader = false,
-            DisableBackdropClick = true
-        };
+        parameters.Add("controlNumber", rfp.ControlNumber);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Cancelled)
+        if (!resultDialog.Canceled)
             isNotCancel = true;
         else
             isNotCancel = false;
@@ -432,16 +358,9 @@
         parameters.Add("buttonText", "Select");
         parameters.Add("color", Color.Success);
         parameters.Add("lookUpType", Enums.LookUpType.Project);
-        var options = new DialogOptions()
-        {
-            CloseButton = false,
-            MaxWidth = MaxWidth.Small,
-            FullWidth = true,
-            NoHeader = false,
-            DisableBackdropClick = false
-        };
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.Small, FullWidth = true, NoHeader = false, DisableBackdropClick = false };
         var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Cancelled)
+        if (!resultDialog.Canceled)
         {
             var payee = (Project)resultDialog.Data;
             filterParameter.PayeeId = payee.ProjectId;
@@ -452,7 +371,7 @@
     }
     private async Task VoidRFP(RequestForPaymentModel requestForPayment)
     {
-      if(await PromptMessage(Enums.ActionMode.Void))
+      if(await PromptMessage(Enums.ActionMode.Void, requestForPayment))
       {
             requestForPayment.AccountingStatusId = AccountingStatus(Enums.ActionMode.Void).Id;
             requestForPayment.Activity = "Update RFP status to generated (void)";
@@ -463,16 +382,16 @@
             requestForPayment.StatusEnumCategoryId = AccountingStatus(Enums.ActionMode.Void).StatusEnumCategoryId;
 
             var updatedStatus = await requestForPaymentService.UpdateRFPStatus(requestForPayment, GlobalClass.token);
-            Extensions.ShowAlert("Request for payment voided", Variant.Filled, snackBar, Severity.Success);
+            Extensions.ShowAlert("Request for payment voided", Variant.Filled, snackbarService, Severity.Success);
             if(GlobalVariable.AMSHubConnection != null)
                 await GlobalVariable.AMSHubConnection.InvokeAsync("SaveRequestForPayment", updatedStatus);
       }
       else
-            Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackBar, Severity.Normal);
+          Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackbarService, Severity.Normal);
     }
     private async Task ApprovedRFPStatus(RequestForPaymentModel requestForPayment)
     {
-        if (await PromptMessage(Enums.ActionMode.Approve))
+        if (await PromptMessage(Enums.ActionMode.Approve,requestForPayment))
         {
             requestForPayment.AccountingStatusId = AccountingStatus(Enums.ActionMode.Approve).Id;
             requestForPayment.Activity = "RFP Status Approved";
@@ -483,16 +402,16 @@
             requestForPayment.StatusEnumCategoryId = AccountingStatus(Enums.ActionMode.Approve).StatusEnumCategoryId;
 
             var updatedStatus = await requestForPaymentService.UpdateRFPStatus(requestForPayment, GlobalClass.token);
-            Extensions.ShowAlert("Request for payment approved", Variant.Filled, snackBar, Severity.Info);
+            Extensions.ShowAlert("Request for payment approved", Variant.Filled, snackbarService, Severity.Info);
             if(GlobalVariable.AMSHubConnection != null)
                 await GlobalVariable.AMSHubConnection.InvokeAsync("SaveRequestForPayment", updatedStatus);
         }
         else
-            Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackBar, Severity.Normal);
+            Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackbarService, Severity.Normal);
     }
     private async Task CancelRFPStatus(RequestForPaymentModel requestForPayment)
     {
-      if (await PromptMessage(Enums.ActionMode.Cancel))
+      if (await PromptMessage(Enums.ActionMode.Cancel, requestForPayment))
       {
           requestForPayment.AccountingStatusId = AccountingStatus(Enums.ActionMode.Cancel).Id;
           requestForPayment.UserId = GlobalClass.currentUserAccount.EmployeeId;
@@ -502,12 +421,12 @@
           requestForPayment.StatusEnumCategoryId = AccountingStatus(Enums.ActionMode.Cancel).StatusEnumCategoryId;
 
           var updatedStatus = await requestForPaymentService.UpdateRFPStatus(requestForPayment, GlobalClass.token);
-          Extensions.ShowAlert("Request for payment cancelled", Variant.Filled, snackBar, Severity.Success);
+          Extensions.ShowAlert("Request for payment cancelled", Variant.Filled, snackbarService, Severity.Success);
           if(GlobalVariable.AMSHubConnection != null)
               await GlobalVariable.AMSHubConnection.InvokeAsync("SaveRequestForPayment", updatedStatus);
       }
       else
-          Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackBar, Severity.Normal);
+          Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackbarService, Severity.Normal);
     }
     private bool EnableEditApproved(RequestForPaymentModel requestForPayment)
     {
@@ -582,7 +501,13 @@
       hasAccountingStatus = new HashSet<AccountingStatusModel>();
       hasRFPDetail = new HashSet<RequestTypeModel>();
       dateRange = new DateRange(DateTime.Now, DateTime.Now);
-      Task.Run(async()=> await tableVariable!.ReloadServerData());
+      Task.Run(async()=> await tableVariable.ReloadServerData());
+    }
+
+    private async Task ReloadTable()
+    {
+        filterParameter = new FilterParameter();
+        await tableVariable.ReloadServerData();
     }
     private bool EnableClearButton()
     {
@@ -614,11 +539,8 @@
             if(GlobalVariable.AMSHubConnection != null)
                 GlobalVariable.AMSHubConnection.On<RequestForPaymentModel>("SaveRequestForPayment",(requestModel) => 
                 {
-                  tableVariable?.ReloadServerData();
-                    @* GlobalClassList.requestForPaymentsList.RemoveAll(request => request.Id == requestModel.Id);
-                    if(requestModel.IsActive == true)
-                        GlobalClassList.requestForPaymentsList.Insert(0,requestModel);
-                    StateHasChanged(); *@
+                  tableVariable.ReloadServerData();
+                  StateHasChanged();
                 });
         }catch (Exception ex)
         {

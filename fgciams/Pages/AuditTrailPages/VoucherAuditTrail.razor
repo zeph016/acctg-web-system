@@ -1,156 +1,160 @@
 @page "/voucher-audit"
-@inject IVoucherService voucherService
-@inject IGlobalService GlobalService
+
 @inject NavigationManager NavigationManager
+@inject IVoucherService VoucherService
+@inject IGlobalService GlobalService
 
-<div class="audittrail_container">
-        <MudGrid>
-            <MudItem xs="8">
-                <MudPaper Elevation="3">
-                    <MudCard Elevation="2">
-                        <div style="display: flex; align-items: center;">
-                            <MudIcon Size="Size.Medium" style="margin-right: 10px;" Icon="@Icons.Filled.Timeline"></MudIcon>
-                             <MudText Typo="Typo.body1">Timeline</MudText>
+<div class='page-cont'>
+    <MudContainer Class='overflow-hidden pa-2' Fixed='false' MaxWidth='MaxWidth.Large'>
+        @if (!dataFetched)
+        {
+            <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
+                <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='calc(100vh - 135px)' Animation='Animation.Wave' />
+            </MudPaper>
+        }
+        else
+        {
+            <MudGrid Spacing='1'>
+                <MudItem xs=9>
+                    <MudPaper Class='overflow-hidden' Height='calc(100vh - 105px)'>
+                        <div class='d-flex align-center pa-2 gap-2 bgc-F4F5FB'>
+                            <MudIcon Icon="@Icons.Material.Filled.Timeline" Size='Size.Small' />
+                            <MudText Class='wspace-nowrap font-bold txt-uppercase' Typo="Typo.body2">Audit Trail</MudText>
+                            <hr class='horizline2'>
                         </div>
-                        <MudButton Size="Size.Small" StartIcon="@Icons.Filled.ArrowBackIos" title="Add" class="btn btn-primary" Href="/voucher/list"><MudText Typo="Typo.caption">Back</MudText></MudButton>
-                    </MudCard>
-                 
-                    <MudTimeline TimelinePosition="TimelinePosition.Start">
-                        @foreach (var item in voucherAuditTrails) 
-                        {
-                          Console.WriteLine(item.Activity);
-                          <style>
-                            .timeline-container-@AcctgModel(item).StatusName .mud-timeline-item-dot-inner
-                            {
-                                background-color: @AcctgModel(item).StatusColor !important;
-                                width:18px !important;
-                                height:18px !important;
-                            }
-                        </style>
-                        <div class="timeline-container-@AcctgModel(item).StatusName">
-                            <MudTimelineItem Variant="Variant.Filled">
-                                <MudAlert Severity="Severity.Success" Style="@($"border-left:10px {AcctgModel(item).StatusColor} solid;")" Icon="@Extensions.Icon(@AcctgModel(item).StatusIcon)">
-                                    <MudText Typo="Typo.caption"><b>@item.LogDateTime.ToString("MMMM dd, yyyy hh:mm tt")</b></MudText>
-                                    <MudText Typo="Typo.subtitle2"><b>@item.Activity</b></MudText>
-                                    <MudText Typo="Typo.caption">by: &nbsp; @item.UserName</MudText>
-                                </MudAlert>
-                            </MudTimelineItem>
+                        <MudDivider />
+                        <div class='rounded-br rounded-bl overflow-auto pa-2 mx-2' style='height:calc(100vh - 150px)'>
+                            <AuditTrailTimeLine auditMode=@Enums.AuditTrailMode.VoucherTrail VoucherAuditTrail=@currentTrail />
                         </div>
-                        }
-                    </MudTimeline>
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="4">
-                <MudPaper Elevation="3">
-                  <MudCard Elevation="2">
-                      <div class="flex-gap">
-                          <MudIcon Size="Size.Medium" Icon="@Icons.Filled.Badge"></MudIcon>
-                          <MudText Typo="Typo.body1">Payee Details</MudText>
-                      </div>
-                    </MudCard>
-                    @if(isDataFetch)
-                    {
-                    <div class="payee_details">
-                        <div class="payee_details-fields">
-                                <MudTextField Label="Date" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.CalendarToday" @bind-Value="@GlobalClass.voucher.LogDateTime" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
-                                <MudTextField Label="Control No." @bind-Value="@GlobalClass.voucher.ControlNumber" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
-                          </div>
-
-                        <div style="margin-top: 15px">
-                          <MudTextField Label="Payee Name" Adornment="Adornment.Start" AdornmentIcon="@Icons.Filled.AttachMoney" @bind-Value="@GlobalClass.voucher.PayeeName" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                    </MudPaper>
+                </MudItem>
+                <MudItem Class='d-flex flex-column gap-2' xs=3>
+                    <MudPaper Class='overflow-hidden'>
+                        <div class='d-flex align-center pa-2 gap-2 bgc-F4F5FB'>
+                            <MudIcon Icon="@Icons.Material.Filled.CommentBank" Size="Size.Small" />
+                            <MudText Class='wspace-nowrap font-bold txt-uppercase' Typo="Typo.body2">Voucher Details</MudText>
+                            <hr class='horizline2'>
                         </div>
-
-                        <div style="margin-top: 15px">
-                          <MudTextField Label="Total Amount" Adornment="Adornment.Start" AdornmentIcon="@Icons.Filled.AttachMoney" @bind-Value="@GlobalClass.voucher.TotalAmount" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
-                        </div>
-
-                        <div style="margin-top: 15px">
-                            <MudTextField Label="Remarks" Lines="5" @bind-Value="@GlobalClass.voucher.Remarks" Variant="Variant.Outlined" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
-                        </div>
-
-                        <div style="margin-top: 15px">
-                                <div  class="flex-gap">
-                                    <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(preparedByImg)}")' />
-                                    <div class="">
-                                            <MudText Typo="Typo.subtitle2">@GlobalClass.voucher.PreparedByName</MudText>
-                                          <MudText Typo="Typo.caption">Prepared by</MudText>
+                        <MudDivider />
+                        <MudGrid Class='mt-2' Spacing='1'>
+                            <MudItem Class='px-4' xs=6>
+                                <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>Control Number:</MudText>
+                                <MudText Class='txt-uppercase wspace-nowrap font-bold font14 pa-1' Color='Color.Error'>@GlobalClass.voucher.ControlNumber</MudText>
+                            </MudItem>
+                            <MudItem Class='px-4 gap-2' xs=6>
+                                <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>Date:</MudText>
+                                <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Icon='@Icons.Material.Filled.CalendarMonth' Color='Color.Default' Size='Size.Small'>
+                                    @GlobalClass.voucher.VoucherDate.ToShortDateString()
+                                </MudChip>
+                            </MudItem>
+                            <MudItem xs=12>
+                                <MudDivider />
+                                <div class='px-2'>
+                                    <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>Payee:</MudText>
+                                    <div class='d-flex align-center pa-1 gap-2'>
+                                        <MudIcon Icon='@Icons.Material.Filled.Person' Size='Size.Small' />
+                                        <MudText Class='txt-uppercase font12'> @GlobalClass.voucher.PayeeName</MudText>
                                     </div>
                                 </div>
-                            </div>
-                            <div style="margin-top: 15px">
-                                <div  class="flex-gap">
-                                    <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(verifiedByImg)}")' />
-                                    <div class="">
-                                            <MudText Typo="Typo.subtitle2">@GlobalClass.voucher.VerifiedByName</MudText>
-                                          <MudText Typo="Typo.caption">Verified by</MudText>
+                            </MudItem>
+                            <MudItem xs=12>
+                                <MudDivider />
+                                <div class='px-2'>
+                                    <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>Remarks:</MudText>
+                                    <div class='d-flex align-center pa-1 gap-2'>
+                                        <MudIcon Icon='@Icons.Material.Filled.Description' Size='Size.Small' />
+                                        <MudText Class='txt-uppercase font12'> @GlobalClass.voucher.Remarks</MudText>
                                     </div>
                                 </div>
-                            </div>
-                            <div style="margin-top: 15px">
-                                <div  class="flex-gap">
-                                    <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(approvedByImg)}")' />
-                                    <div class="">
-                                            <MudText Typo="Typo.subtitle2">@GlobalClass.voucher.ApprovedByName</MudText>
-                                          <MudText Typo="Typo.caption">Approved by</MudText>
+                            </MudItem>
+                            <MudItem Class='d-flex flex-column' xs=12>
+                                <MudDivider />
+                                <div class='d-flex align-center pa-2 gap-2 bgc-F4F5FB'>
+                                    <MudIcon Class='ml-2' Icon="@Icons.Material.Filled.Badge" Size="Size.Small" />
+                                    <MudText Class='txt-uppercase wspace-nowrap font-bold' Typo='Typo.body2'>Signatories</MudText>
+                                    <hr class='horizline2'>
+                                </div>
+                                <MudDivider />
+                                <div class='d-flex flex-column pa-2 gap-2'>
+                                    <div class="d-flex align-center gap-2">
+                                        <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(preparedByImg)}")' />
+                                        <MudDivider />
+                                        <div class="gap-2">
+                                            <MudText Class='wspace-nowrap' Typo="Typo.subtitle2">@GlobalClass.voucher.PreparedByName</MudText>
+                                            <MudText Typo="Typo.caption">Requested by</MudText>
+                                        </div>
+                                    </div>
+                                    <div class='d-flex align-center gap-2'>
+                                        <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(verifiedImg)}")' />
+                                        <MudDivider />
+                                        <div class="gap-2">
+                                            <MudText Class='wspace-nowrap' Typo="Typo.subtitle2">@GlobalClass.voucher.VerifiedByName</MudText>
+                                            <MudText Typo="Typo.caption">Approved by</MudText>
+                                        </div>
+                                    </div>
+                                    <div class='d-flex align-center gap-2'>
+                                        <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(approverImg)}")' />
+                                        <MudDivider />
+                                        <div class="gap-2">
+                                            <MudText Class='wspace-nowrap' Typo="Typo.subtitle2">@GlobalClass.voucher.ApprovedByName</MudText>
+                                            <MudText Typo="Typo.caption">Approved by</MudText>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                    <div class='d-flex align-center justify-end pa-2'>
+                        <MudButton Class='btn-ios-d pa-1 font12' OnClick="(() => BackToRFPList())" Size="Size.Small" Variant='Variant.Filled' Color='Color.Error' DisableElevation>
+                            Return
+                        </MudButton>
                     </div>
-                    }
-                </MudPaper>
-            </MudItem>
-        </MudGrid>
-    </div>
-    @code{
-      public List<VoucherAuditTrailModel> voucherAuditTrails {get;set;}= new();
-      string text = "";
-      private byte[] payeeImg = new byte[]{}, preparedByImg = new byte[]{}, verifiedByImg = new byte[]{}, approvedByImg = new byte[]{};
-      private bool isDataFetch {get;set;}
-      protected override async Task OnInitializedAsync()
-      {
-        Task t = Task.WhenAll(LoadAuditTrail());
-        await t;
-        if(t.Status == TaskStatus.RanToCompletion)
+                </MudItem>
+            </MudGrid>
+       }
+    </MudContainer>
+</div>
+
+@code{
+    private bool dataFetched {get;set;}
+    private byte[] preparedByImg = new byte[]{}, verifiedImg = new byte[]{}, approverImg = new byte[]{};
+    private List<VoucherAuditTrailModel> currentTrail = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(GlobalClass.voucher != null)
         {
-            if(GlobalClass.voucher != null)
-            {
-                try{
-                    GlobalClass.pageTitle = "PETTY CASH AUDIT TRAIL";
-                    preparedByImg = await GetEmployeeDetails(GlobalClass.voucher.PreparedById);
-                    verifiedByImg = await GetEmployeeDetails(GlobalClass.voucher.ApprovedById);
-                    approvedByImg = await GetEmployeeDetails(GlobalClass.voucher.VerifiedById);
-                    isDataFetch = true;
-                }catch(NullReferenceException ee){
-                    //Do nothing
-                    throw ee;
-                }
-            }
-            else{
-                NavigationManager.NavigateTo($"/pettycash-list");
+            try{
+                GlobalClass.pageTitle = "REQUEST FOR PAYMENT AUDIT TRAIL";
+                currentTrail = await VoucherService.VoucherAuditTrail(GlobalClass.voucher.Id,GlobalClass.token);
+                preparedByImg = await GetEmployeeDetails(GlobalClass.voucher.PreparedById);
+                verifiedImg = await GetEmployeeDetails(GlobalClass.voucher.VerifiedById);
+                approverImg = await GetEmployeeDetails(GlobalClass.voucher.ApprovedById);
+                CompletedFetch();
+            }catch(NullReferenceException ee){
+                //Do nothing
+                throw ee;
             }
         }
-      }
-      private async Task LoadAuditTrail()
-      {
-        voucherAuditTrails = await voucherService.VoucherAuditTrail(GlobalClass.voucher.Id, GlobalClass.token);
-      }
-        private async Task<byte[]> GetEmployeeDetails(long employeeId)
-        {
-            var employeeDetail = await GlobalService.GetEmployeeById(employeeId, GlobalClass.token);
-            return employeeDetail.Picture;
+        else{
+             NavigationManager.NavigateTo($"/voucher/list");
         }
-      private AccountingStatusModel AcctgModel(VoucherAuditTrailModel auditTrail)
-      {
-      AccountingStatusModel accountingStatusModel = new();
-        accountingStatusModel.StatusName = "Update";
-        accountingStatusModel.StatusColor = "LIME";
-        accountingStatusModel.StatusIcon = Icons.Filled.CheckCircleOutline;
-        if(auditTrail.Activity.Equals("Add Voucher"))
-            accountingStatusModel = GlobalClassList.accountingStatusList.Find(x=> x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.VG) ?? accountingStatusModel;
-        if(auditTrail.Activity.Equals("Update voucher status to approved"))
-            accountingStatusModel = GlobalClassList.accountingStatusList.Find(x=> x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.VA) ?? accountingStatusModel;
-        if(auditTrail.Activity.Equals("Update voucher status to cancelled")) 
-            accountingStatusModel = GlobalClassList.accountingStatusList.Find(x=> x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.VC) ?? accountingStatusModel;
-        return accountingStatusModel;
-      }
     }
+    private async Task<byte[]> GetEmployeeDetails(long employeeId)
+    {
+        var employeeDetail = await GlobalService.GetEmployeeById(employeeId, GlobalClass.token);
+        return employeeDetail.Picture;
+    }
+  
+    private void BackToRFPList()
+    {
+        NavigationManager.NavigateTo("/voucher/list");
+    }
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+}
+
+

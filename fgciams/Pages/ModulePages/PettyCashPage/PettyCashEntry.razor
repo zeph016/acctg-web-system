@@ -1,10 +1,10 @@
-@page "/pettycash/create"
-@page "/pettycash"
+@page "/petty-cash"
 
 @inject IGlobalService globalService
 @inject IPettyCashService pettyCashService
 @inject ISnackbar snackbarService
 @inject IDialogService dialogService
+@inject IGlobalService GlobalService
 @inject NavigationManager navigationManager
 @inject IJSRuntime jsRuntimeService
 @attribute [Authorize]
@@ -12,13 +12,13 @@
 <div class='page-cont d-flex'>
     @if (!dataFetched)
     {
-        <MudPaper Class='d-flex flex-1 ma-2 pa-2'>
-          <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='100%' Width='100%' Animation='Animation.Wave' />
-        </MudPaper>
+        <div class='flex-1 pa-2'>
+            <SkeletonPageList />
+        </div>
     }
     else
     {
-        <MudContainer Class='pettycashpage pa-2 gap-2 overflow-auto' Fixed='false' MaxWidth='MaxWidth.Medium'>
+        <MudContainer Class='pettycashpage pa-2 gap-2 overflow-auto' Fixed='false' MaxWidth='MaxWidth.Large'>
             <MudPaper Class='flex-1' Elevation='1' Height='fit-content'>
                 <MudCardContent Class='pa-2'>
                     <div class='pettycashpage__grid'>
@@ -33,8 +33,8 @@
                                     <MudText Class='txt-uppercase font-1-1rem ff-theramin'>@GlobalClass.pageTitle</MudText>
                                 </MudItem>
                                 <MudItem Class='d-flex align-center justify-end' xs=4>
-                                    <MudTooltip Text="Create Petty Cash">
-                                        <MudButton Class='btn-ios-d pa-1 font12' OnClick='New' StartIcon="@Icons.Filled.Add" Variant='Variant.Filled'
+                                    <MudTooltip Text="Create new petty cash" Arrow Placement='Placement.Left'>
+                                        <MudButton Class='btn-ios-d pa-1 font12' OnClick='New' StartIcon="@Icons.Material.Filled.Add" Variant='Variant.Filled'
                                         Color='Color.Info' Size='Size.Small' DisableElevation>new</MudButton>
                                     </MudTooltip>
                                 </MudItem>
@@ -42,11 +42,11 @@
                         </div>
                          <div class="pcash-payee d-flex align-center pa-2 gap-2">
                             <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>
-                                Payee
+                                Payee:
                                 <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
                             </MudText>
                             <BlazoredTypeahead SearchMethod='LoadPayee' DisableClear placeholder='Payee'
-                            @bind-Value='payeeName' Debounce='500' MaximumSuggestons='10'>
+                                @bind-Value='payeeName' Debounce='500' MaximumSuggestons='10'>
                                 <SelectedTemplate>
                                     <div class='overflow-hidden wspace-nowrap'>
                                         @if (context.ProjectId != 0) {
@@ -69,153 +69,187 @@
                                 </ResultTemplate>
                             </BlazoredTypeahead>
                         </div>
-                        <div class="pcash-controlno d-flex align-center justify-space-end gap-2">
-                            <div class='d-flex align-center justify-center pa-2 gap-2'>
-                                <MudText Class='wspace-nowrap txt-uppercase font-bold font10'>date :</MudText>
-                                <MudDatePicker Class='txt-top-0 font14-txtfield txtfield-right ' @bind-Date='GlobalClass.pettyCash.RequestDate' IconSize='Size.Small' />
-                            </div>
-                            <MudText Class='wspace-nowrap txt-uppercase font-bold font10'>ref no. :</MudText>
-                            @if (GlobalClass.pettyCash.Id != 0)
-                            {
-                                <MudChip Class='chip-radius-5 font-bold font12' Color='Color.Error' Size='Size.Medium' Variant='Variant.Outlined'>
-                                    @GlobalClass.pettyCash.ControlNumber
-                                </MudChip>
-                            }
-                            else{
-                                <MudChip Class='chip-radius-5 font-bold font12 txt-uppercase' Color='Color.Error' Size='Size.Medium' Variant='Variant.Outlined'>
-                                    Auto Generated
-                                </MudChip>
-                                @* <MudText Class='chip-radius-5 font-bold font12 txt-uppercase' Color='Color.Error' Size='Size.Small'>Auto Generated</MudText> *@
-                            }
+                        <div class='pcash-date'>
+                            <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>
+                                date:
+                            </MudText>
+                            <MudDatePicker Class='txtfield-font12-no-margin txtfield-right' @bind-Date='GlobalClass.pettyCash.RequestDate' IconSize='Size.Small' DisableToolbar
+                                Margin='Margin.Dense' ReadOnly MinDate='@Convert.ToDateTime(GlobalClass.pettyCash.RequestDate).AddDays(-1)' MaxDate='@GlobalClass.pettyCash.RequestDate' />
                         </div>
-                        <div class="pcash-details d-flex overflow-hidden rounded-br rounded-bl">
-                            <div class='flex-1 pa-2 gap-2'>
-                                <MudTextField @bind-Value='GlobalClass.pettyCash.Particular' Variant='Variant.Text' Lines=8 Label='Particulars' Error='reqParticulars' ErrorText='Required' />
-                                <MudSpacer />
-                                <MudTextField @bind-Value='GlobalClass.pettyCash.Remarks' Variant='Variant.Text' Lines=8 Label='Remarks' />
+                        <div class="pcash-controlno"> 
+                            <MudText Class='wspace-nowrap txt-uppercase font-bold font10'>Control No:</MudText>
+                            <MudSpacer />
+                            <MudChip Class='chip-radius-5 font-bold font12' Color='Color.Error' Size='Size.Medium' Variant='Variant.Outlined'>
+                                @(GlobalClass.pettyCash.Id != 0 ? GlobalClass.pettyCash.ControlNumber:"AUTO")
+                            </MudChip>
+                        </div>
+                        <div class="pcash-details rounded-br rounded-bl">
+                            <div class='flex-1 gap-2'>
+                                <div class='d-flex align-center justify-end bgc-F4F5FB height32px'>
+                                    <MudDivider Vertical />
+                                    <MudToggleIconButton Class='mx-1' @bind-Toggled="isSideBarExpanded" Size='Size.Small' ToggledSize='Size.Small'
+                                        Icon="@Icons.Material.Filled.ToggleOff" Color="@Color.Tertiary" Title="Expand Sub Details"
+                                        ToggledIcon="@Icons.Material.Filled.ToggleOn" ToggledColor="@Color.Info" ToggledTitle="Collapse Details"/>
+                                </div>
+                                <MudDivider />
+                                <MudTextField Class='pa-2' @bind-Value='GlobalClass.pettyCash.Particular' Variant='Variant.Text' Lines=8 Label='Particulars' Error='reqParticulars' ErrorText='Required' DisableUnderLine />
+                                <MudDivider />
+                                <MudTextField Class='pa-2' @bind-Value='GlobalClass.pettyCash.Remarks' Variant='Variant.Text' Lines=8 Label='Remarks' DisableUnderLine />
                             </div>
-                            <div class='d-flex flex-column border-thin-left overflow-auto'>
-                                <MudCardHeader Class='pa-2 border-thin-bottom bgc-F4F5FB height2-05rem'>
-                                    <MudText Class='txt-uppercase font12 font-bold'>Signatories</MudText>
-                                    <MudSpacer />
-                                    <MudIcon Icon='@Icons.Filled.PersonPin' Size='Size.Small' />
+                            <div class='d-flex flex-column border-thin-left overflow-hidden blzrtypahead-unset-width transition-05s-ease width300px'
+                                style='@(isSideBarExpanded ? "max-width:300px" : "max-width:57px")'>
+                                <MudCardHeader Class='d-flex justify-center pa-2 border-thin-bottom bgc-F4F5FB height2-05rem cursor-pointer'
+                                    @onclick='(() => isSigExpanded = !isSigExpanded)'>
+                                    <div class='d-flex align-center transition-05s-ease overflow-hidden @(isSideBarExpanded ? "fade-in flex-1" : "fade-out")' style='@(isSideBarExpanded ? "max-width:500px" : "max-width:0px")'>
+                                        <MudText Class='txt-uppercase font12 font-bold'>Signatories</MudText>
+                                    </div>
+                                    <MudIconButton OnClick='(() => isSigExpanded = !isSigExpanded)' Icon='@Icons.Material.Filled.PersonPin' Size='Size.Small'
+                                        Color='Color.Dark' />
                                 </MudCardHeader>
-                                <MudCardContent Class='d-flex flex-column pa-2 gap-2'>
-                                    <div class='d-flex align-center gap-2 min-width25'>
-                                        @if (requestedBy.Picture.Count() == 0) {
-                                            <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
-                                        } else {
-                                            <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(requestedBy.Picture)}")' Size='Size.Medium' />
-                                        }
-                                        <div class='d-flex flex-grow-1 flex-column'>
-                                            <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear Context='reqby' placeholder='Requested By'
-                                            @bind-Value='requestedBy' Debounce='500' MaximumSuggestions='5'>
-                                                <SelectedTemplate>
-                                                    <div class='overflow-hidden wspace-nowrap'>
-                                                        @if (reqby.EmployeeId !=0 ) {
-                                                            <MudText Class='font12'>@reqby.EmployeeName</MudText>
-                                                            GlobalClass.pettyCash.RequestedById = reqby.EmployeeId;
-                                                        } else if (reqRequestor) {
-                                                            <MudText Class='font12 font-bold txt-uppercase' Color='Color.Error'>Required</MudText>
-                                                        } else {
-                                                            <MudText Class='font12'> - </MudText>
-                                                        }
-                                                    </div>
-                                                </SelectedTemplate>
-                                                <ResultTemplate>
-                                                    <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@reqby.Picture)}")' Size='Size.Small'/>
-                                                    @reqby.EmployeeName | @reqby.Designation
-                                                </ResultTemplate>
-                                            </BlazoredTypeahead>
-                                            <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
-                                                Requested By
-                                                <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
-                                            </MudText>
+                                <div class='transition-05s-ease @(isSideBarExpanded ? "":"overflow-hidden") @(isSigExpanded ? "fade-in":"overflow-hidden")' style='@(isSigExpanded ? "max-height:245px" : "max-height:0px")'>
+                                    <MudCardContent Class='d-flex flex-column pa-2 gap-2'>
+                                        <div class='d-flex align-center gap-2'>
+                                            @if (requestedBy.Picture.Count() == 0) {
+                                                <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
+                                            } else {
+                                                <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(requestedBy.Picture)}")' Size='Size.Medium' />
+                                            }
+                                            <div class='d-flex flex-grow-1 flex-column blzrthead-disabled-minheight15'>
+                                                <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear Context='reqby' placeholder='Requested By'
+                                                    Debounce='500' MaximumSuggestions='5' Disabled
+                                                    Value='requestedBy' ValueExpression='(() => requestedBy)'
+                                                    ValueChanged='((UserAccount userAccount) =>
+                                                    {
+                                                        requestedBy = userAccount;
+                                                        GlobalClass.pettyCash.RequestedById = userAccount.EmployeeId;
+                                                        GlobalClass.pettyCash.RequestedByName = userAccount.EmployeeName;
+                                                    })'>
+                                                    <SelectedTemplate>
+                                                        <div class='overflow-hidden wspace-nowrap'>
+                                                            <small>@GlobalClass.pettyCash.RequestedByName</small>
+                                                        </div>
+                                                    </SelectedTemplate>
+                                                    <ResultTemplate>
+                                                        <div class='ddavatar width210px'>
+                                                            <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@reqby.Picture)}")' Size='Size.Small'/>
+                                                            @reqby.EmployeeName | @reqby.Designation
+                                                        </div>
+                                                    </ResultTemplate>
+                                                </BlazoredTypeahead>
+                                                <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
+                                                    Requested By
+                                                    <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                                                </MudText>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class='d-flex align-center gap-2 min-width25'>
-                                        @if (approvedBy.Picture.Count() == 0) {
-                                            <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
-                                        } else {
-                                            <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(approvedBy.Picture)}")' Size='Size.Medium' />
-                                        }
-                                        <div class='d-flex flex-grow-1 flex-column'>
-                                            <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear Context='aprby' placeholder='Approved By'
-                                            ValueExpression='@(()=>approvedBy)' Value="approvedBy" ValueChanged="@((UserAccount ac)=>SelectedApprovedBy(ac))" Debounce='500' MaximumSuggestions='5'>
-                                                <SelectedTemplate>
-                                                    <div class='overflow-hidden wspace-nowrap'>
-                                                        @if (aprby.EmployeeId != 0) {
-                                                            <MudText Class='font12'>@aprby.EmployeeName</MudText>
-                                                            GlobalClass.pettyCash.ApprovedById = aprby.EmployeeId;
-                                                        } else if (reqApprover) {
-                                                            <MudText Class='font12 font-bold txt-uppercase' Color='Color.Error'>Required</MudText>
-                                                        } else {
-                                                            <MudText Class='font12'> - </MudText>
+                                        <div class='d-flex align-center gap-2'>
+                                            @if (approvedBy.Picture.Count() == 0) {
+                                                <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
+                                            } else {
+                                                <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(approvedBy.Picture)}")' Size='Size.Medium' />
+                                            }
+                                            <div class='d-flex flex-grow-1 flex-column'>
+                                                <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear Context='aprby' placeholder='Approved By'
+                                                    Debounce='500' MaximumSuggestions='5'
+                                                    Value="approvedBy" ValueExpression='(() => approvedBy)'  
+                                                    ValueChanged="@((UserAccount userAccount) => 
+                                                    {
+                                                        approvedBy = userAccount;
+                                                        GlobalClass.pettyCash.ApprovedById = userAccount.EmployeeId;
+                                                        GlobalClass.pettyCash.ApprovedByName = userAccount.EmployeeName;
+                                                    })">
+                                                    <SelectedTemplate>
+                                                        @if(String.IsNullOrEmpty(GlobalClass.pettyCash.ApprovedByName))
+                                                        {
+                                                            <small>-</small>
                                                         }
-                                                    </div>
-                                                </SelectedTemplate>
-                                                <ResultTemplate>
-                                                    <div class='ddavatar'>
-                                                    <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@aprby.Picture)}")' Size='Size.Small' />
-                                                    @aprby.EmployeeName | @aprby.Designation
-                                                    </div>
-                                                </ResultTemplate>
-                                            </BlazoredTypeahead>
-                                            <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
-                                                Approved By
-                                                <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
-                                            </MudText>
-                                        </div>
-                                    </div>
-                                    <div class='d-flex align-center gap-2 min-width25'>
-                                        @if (receivedBy.Picture.Count() == 0) {
-                                            <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
-                                        } else {
-                                            <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(receivedBy.Picture)}")' Size='Size.Medium' />
-                                        }
-                                        <div class='d-flex flex-grow-1 flex-column'>
-                                            <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear Context='recby' placeholder='Received By'
-                                            ValueExpression="@(()=>receivedBy)" Value='receivedBy' ValueChanged="@((UserAccount ac) => SelectedReceivedBy(ac))" Debounce='500' MaximumSuggestions='5'>
-                                                <SelectedTemplate>
-                                                    <div class='overflow-hidden wspace-nowrap'>
-                                                        @if (recby.EmployeeId != 0) {
-                                                            <MudText Class='font12'>@recby.EmployeeName</MudText>
-                                                            GlobalClass.pettyCash.ReceivedById = recby.EmployeeId;
-                                                        } else if (reqReceived) {
-                                                            <MudText Class='font12 font-bold txt-uppercase' Color='Color.Error'>Required</MudText>
-                                                        } else  {
-                                                            <MudText Class='font12'> - </MudText>
+                                                        else
+                                                        {
+                                                        <div class='overflow-hidden wspace-nowrap'>
+                                                            <small>@GlobalClass.pettyCash.ApprovedByName</small>
+                                                        </div>
                                                         }
-                                                    </div>
-                                                </SelectedTemplate>
-                                                <ResultTemplate>
-                                                    <div class='ddavatar'>
-                                                        <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@recby.Picture)}")' Size='Size.Small' />
-                                                        @recby.EmployeeName | @recby.Designation
-                                                    </div>
-                                                </ResultTemplate>
-                                            </BlazoredTypeahead>
-                                            <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
-                                                Received By
-                                                <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
-                                            </MudText>
+                                                    </SelectedTemplate>
+                                                    <ResultTemplate>
+                                                        <div class='ddavatar width210px'>
+                                                            <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@aprby.Picture)}")' Size='Size.Small' />
+                                                            @aprby.EmployeeName | @aprby.Designation
+                                                        </div>
+                                                    </ResultTemplate>
+                                                </BlazoredTypeahead>
+                                                <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
+                                                    Approved By
+                                                    <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                                                </MudText>
+                                            </div>
                                         </div>
-                                    </div>
-                                </MudCardContent>
-                                <MudSpacer />
-                                @if (GlobalClass.pettyCash.Id != 0) {
-                                    <MudCardContent Class='d-flex align-center pa-2'>
-                                        <MudChip Class='chip-radius-5 font-bold font12' Size='Size.Medium' Style="@Extensions.GetAcctgStatusColor(GlobalClass.pettyCash.StatusId)">
-                                            @GlobalClass.pettyCash.StatusName
-                                        </MudChip>
+                                        <div class='d-flex align-center gap-2'>
+                                            @if (receivedBy.Picture.Count() == 0) {
+                                                <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
+                                            } else {
+                                                <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(receivedBy.Picture)}")' Size='Size.Medium' />
+                                            }
+                                            <div class='d-flex flex-grow-1 flex-column'>
+                                                <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear Context='recby' placeholder='Received By'
+                                                    Debounce='500' MaximumSuggestions='5' 
+                                                    Value='receivedBy' ValueExpression="(()=>receivedBy)" 
+                                                    ValueChanged="@((UserAccount userAccount) => 
+                                                    {
+                                                        receivedBy = userAccount;
+                                                        GlobalClass.pettyCash.ReceivedById = userAccount.EmployeeId;
+                                                        GlobalClass.pettyCash.ReceivedByName = userAccount.EmployeeName;
+                                                    })" >
+                                                    <SelectedTemplate>
+                                                        @if(String.IsNullOrEmpty(GlobalClass.pettyCash.ReceivedByName))
+                                                        {
+                                                            <small>-</small>
+                                                        }
+                                                        else
+                                                        {
+                                                        <div class='overflow-hidden wspace-nowrap'>
+                                                            <small>@GlobalClass.pettyCash.ReceivedByName</small>
+                                                        </div>
+                                                        }
+                                                    </SelectedTemplate>
+                                                    <ResultTemplate>
+                                                        <div class='ddavatar width210px'>
+                                                            <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@recby.Picture)}")' Size='Size.Small' />
+                                                            @recby.EmployeeName | @recby.Designation
+                                                        </div>
+                                                    </ResultTemplate>
+                                                </BlazoredTypeahead>
+                                                <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
+                                                    Received By
+                                                    <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                                                </MudText>
+                                            </div>
+                                        </div>
                                     </MudCardContent>
-                                }
-                                <MudCardHeader Class='pa-2 border-thin-top bgc-F4F5FB height2-05rem'>
-                                    <MudText Class='txt-uppercase font12 font-bold'>Amount</MudText>
-                                    <MudSpacer />
-                                    <MudIcon Icon='@Icons.Filled.Equalizer' Size='Size.Small' />
+                                </div>
+                                <MudDivider />
+                                <MudCardHeader Class='d-flex justify-center pa-2 border-thin-bottom bgc-F4F5FB height2-05rem cursor-pointer'
+                                    @onclick='(() => isStatusExpanded = !isStatusExpanded)'>
+                                    <div class='d-flex align-center transition-05s-ease overflow-hidden @(isSideBarExpanded ? "fade-in flex-1" : "fade-out")' style='@(isSideBarExpanded ? "max-width:500px" : "max-width:0px")'>
+                                        <MudText Class='txt-uppercase font12 font-bold'>Status</MudText>
+                                    </div>
+                                    <MudIconButton OnClick='(() => isStatusExpanded = !isStatusExpanded)' Icon='@Icons.Material.Filled.FactCheck' Size='Size.Small'
+                                        Color='Color.Dark' />
                                 </MudCardHeader>
-                                <MudCardContent Class='d-flex d-flex align-center pa-2 border-thin-top'>
+                                <div class='d-flex align-start justify-center overflow-hidden @(isStatusExpanded ? "fade-in" : "fade-out")' style='@(isStatusExpanded && isSideBarExpanded ? "max-height:500px" : "max-height:0px")'>
+                                    <MudChip Class='chip-radius-5 font-bold font12' Size='Size.Medium' Style="@Extensions.BorderColor(currentStatus.Id)" Variant='Variant.Outlined'>
+                                        @currentStatus.StatusName
+                                    </MudChip>
+                                </div>
+                                <MudDivider />
+                                <MudCardHeader Class='d-flex justify-center pa-2 border-thin-bottom bgc-F4F5FB height2-05rem cursor-pointer'
+                                    @onclick='(() => isAmountExpanded = !isAmountExpanded)'>
+                                    <div class='d-flex align-center transition-05s-ease overflow-hidden @(isSideBarExpanded ? "fade-in flex-1" : "fade-out")' style='@(isSideBarExpanded ? "max-width:500px" : "max-width:0px")'>
+                                        <MudText Class='txt-uppercase font12 font-bold'>Amount</MudText>
+                                    </div>
+                                    <MudIconButton OnClick='(() => isAmountExpanded = !isAmountExpanded)' Icon='@Icons.Material.Filled.Equalizer' Size='Size.Small'
+                                        Color='Color.Dark' />
+                                </MudCardHeader>
+                                <div class='d-flex align-center pa-2 justify-center overflow-hidden @(isSideBarExpanded ? "fade-in" : "fade-out")' style='@(isSideBarExpanded ? "max-height:500px" : "max-height:0px")'>
                                     @if (GlobalClass.pettyCash.Amount > 0) {
                                         <MudIcon Class='color-green' Icon='@Icons.Outlined.LabelImportant' Size='Size.Medium'/>
                                         <MudSpacer />
@@ -230,12 +264,14 @@
                                         <div class='d-flex align-center gap-2'>
                                             <MudText Class='font-bold pl-2' Color='Color.Error'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
                                             <MudNumericField Class='txt-search-overflow txt-top-0 txtfield-right tfield-color-red' @bind-Value='GlobalClass.pettyCash.Amount' Culture='CultureInfo.GetCultureInfo("en-PH")'
-                                            Format='N2' Variant='Variant.Text' HideSpinButtons Error='reqAmount' ErrorText=''/>
+                                                Format='N2' Variant='Variant.Text' HideSpinButtons Error='reqAmount' ErrorText=''/>
                                         </div>
                                     }
-                                </MudCardContent>
-                                <MudCardActions Class='d-flex align-center justify-end gap-2 border-thin-top'>
-                                        <MudButton Class='btn-ios-d font12' OnClick='(()=> navigationManager.NavigateTo($"/refresh/pettycash-list"))' Variant="Variant.Text" Size='Size.Medium' DisableElevation>Cancel</MudButton>
+                                </div>
+                                <MudSpacer />
+                                <div class='@(isSideBarExpanded ? "fade-in" : "fade-out")'>
+                                    <MudCardActions Class='d-flex align-center justify-end gap-2 border-thin-top'>
+                                        <MudButton Class='btn-ios-d font12' OnClick='(()=> navigationManager.NavigateTo($"/petty-cash/list"))' Variant="Variant.Text" Size='Size.Medium' DisableElevation>Cancel</MudButton>
                                         <MudButton Class='btn-ios-d font12' OnClick='(()=> GenerateReport())' Variant="Variant.Filled" Color='@(currActionMode == Enums.ActionMode.Update ? Color.Info : Color.Primary)' Size='Size.Medium' DisableElevation Disabled='_processing'>
                                             @if (_processing) {
                                                 <MudProgressCircular Class="progsize-21" Size="Size.Small" Indeterminate="true"/>
@@ -244,7 +280,8 @@
                                                 <MudText Class='font12 fweight500'>@submitText</MudText> 
                                             }
                                         </MudButton>
-                                </MudCardActions>
+                                    </MudCardActions>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -258,23 +295,28 @@
     private Project payeeName = new Project();
     private UserAccount requestedBy = new UserAccount(); private UserAccount approvedBy = new UserAccount();
     private UserAccount receivedBy = new UserAccount();
-    private DateTime? date = DateTime.Today;
     private string submitText = "GENERATE";
-    private bool dataFetched, reqPayee, reqRequestor, reqApprover, reqReceived, reqAmount, reqParticulars, _processing;
+    private bool dataFetched, reqPayee, reqRequestor, reqApprover, reqReceived, reqAmount, reqParticulars, _processing,
+    isSideBarExpanded = true, isSigExpanded = true, isStatusExpanded = true, isAmountExpanded = true;
     public static Enums.ActionMode currActionMode { get; set; }
+    private AccountingStatusModel currentStatus = new AccountingStatusModel();
     public override async Task SetParametersAsync(ParameterView parameters)
     {
-        if(GlobalClass.pettyCash == null || Extensions.CheckUrlType(navigationManager.Uri))
+        if(GlobalClass.pettyCash == null || GlobalClass.pettyCash.Id == 0)
         {
             GlobalClass.pettyCash = new();
-            PettyCashList.currActionMode = Enums.ActionMode.Create;
+            currActionMode = Enums.ActionMode.Create;
         }
+        else
+            currActionMode = Enums.ActionMode.Update;
+        submitText = PettyCashList.currActionMode == Enums.ActionMode.Create ? "GENERATE" : "UPDATE";
+        currActionMode = PettyCashList.currActionMode == Enums.ActionMode.Create ? Enums.ActionMode.Create : Enums.ActionMode.Update;
         await base.SetParametersAsync(parameters);
     }
     protected override async Task OnInitializedAsync()
     {
         GlobalClass.pageTitle = "PETTY CASH ENTRY";
-        while (GlobalClass.currentUserAccount == null || string.IsNullOrWhiteSpace(GlobalClass.token))
+        while (GlobalClass.currentUserAccount == null || string.IsNullOrWhiteSpace(GlobalClass.token) || GlobalVariable.ServerTime == null)
             await Task.Delay(1);
         if (GlobalClass.pettyCash.Id != 0)
             await ReMapDetails();
@@ -283,16 +325,15 @@
                 MapDefaultDetails();
             else
                 await LoadEmployeePictures();
-        if(GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.OthersViewer)
-            navigationManager.NavigateTo($"/refresh/pettycash-list");
+        Console.WriteLine(currActionMode);
         CompletedFetch();
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        await Task.Delay(1);
+        @* await Task.Delay(1);
         submitText = PettyCashList.currActionMode == Enums.ActionMode.Create ? "GENERATE" : "UPDATE";
-        currActionMode = PettyCashList.currActionMode == Enums.ActionMode.Create ? Enums.ActionMode.Create : Enums.ActionMode.Update;
+        currActionMode = PettyCashList.currActionMode == Enums.ActionMode.Create ? Enums.ActionMode.Create : Enums.ActionMode.Update; *@
     }
 
     void CompletedFetch()
@@ -335,15 +376,20 @@
         GlobalClass.pettyCash.UserName = GlobalClass.currentUserAccount.UserName;
         GlobalClass.pettyCash.Department = GlobalClass.currentUserAccount.DepartmentName;
         GlobalClass.pettyCash.Activity = "Update Petty Cash";
+
+        var result = GlobalClassList.accountingStatusList.Find(x=>x.Id == GlobalClass.pettyCash.StatusId);
+        if (result != null)
+            currentStatus = result;
+        GlobalClass.pettyCash.StatusName = currentStatus.StatusName;   
     }
     private void MapDefaultDetails()
     {
         GlobalClass.pettyCash = new ();
-        GlobalClass.pettyCash.RequestDate = date;
+        GlobalClass.pettyCash.RequestDate = GlobalVariable.ServerTime;
         GlobalClass.pettyCash.IsActive = true;
         GlobalClass.pettyCash.StatusId = (Int64)Enums.AccountingStatusEnumCategory.PCG+1;
         GlobalClass.pettyCash.statusCategoryId = Enums.AccountingStatusEnumCategory.PCG;
-        GlobalClass.pettyCash.StatusName = string.Empty;
+        
         GlobalClass.pettyCash.RequestedById = GlobalClass.currentUserAccount.EmployeeId;
         GlobalClass.pettyCash.RequestedByName = GlobalClass.currentUserAccount.EmployeeName;
         GlobalClass.pettyCash.RequestedByDepartment = GlobalClass.currentUserAccount.DepartmentName;
@@ -355,9 +401,13 @@
         GlobalClass.pettyCash.UserId = GlobalClass.currentUserAccount.EmployeeId;
         GlobalClass.pettyCash.UserName = GlobalClass.currentUserAccount.UserName;
         GlobalClass.pettyCash.Department = GlobalClass.currentUserAccount.DepartmentName;
-        GlobalClass.pettyCash.LogDateTime = DateTime.Today;
+        GlobalClass.pettyCash.LogDateTime = GlobalVariable.ServerTime;
         GlobalClass.pettyCash.Activity = "Create Petty Cash";
-    
+
+        var result = GlobalClassList.accountingStatusList.Where(x=>x.StatusName.Contains("pc-generated", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+        if (result != null)
+            currentStatus = result;
+        GlobalClass.pettyCash.StatusName = currentStatus.StatusName;   
     }
     private async Task<UserAccount> GetEmployeeDetails(long employeeId)
     {
@@ -366,12 +416,12 @@
     }
     private void GenerateReport()
     {
+        
         _processing = true;
         if (isValidated())
         {
-            Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(GlobalClass.pettyCash,Newtonsoft.Json.Formatting.Indented));
             _processing = false;
-            navigationManager.NavigateTo($"/pettycash/print");
+            navigationManager.NavigateTo($"/petty-cash/print");
         }
         else
         {
@@ -379,20 +429,34 @@
             Extensions.ShowAlert("Cannot create Petty Cash. Incomplete fields.", Variant.Filled, snackbarService, Severity.Error);
         }
     }
-    private void New()
+    private async Task New()
     {
-        GlobalClass.pettyCash = new();
-        requestedBy = new UserAccount();
-        approvedBy = new UserAccount();
-        receivedBy = new UserAccount();
-        navigationManager.NavigateTo($"/pettycash/create");
-        MapDefaultDetails();
+        var parameters = new DialogParameters();
+        parameters.Add("contentText", "create new petty cash");
+        parameters.Add("dialogTitle", "Create New");
+        parameters.Add("buttonText", "Create New");
+        parameters.Add("actionMode", Enums.ActionMode.Prompt);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.Small, FullWidth = false, NoHeader = false };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(string.Empty,parameters,options).Result;
+        if(!resultDialog.Canceled)
+        {
+            string thisPage = "pc-create";
+            navigationManager.NavigateTo($"/refresh/{thisPage}");
+        }
     }
     public async Task LoadEmployeePictures()
     {
         requestedBy = await GetEmployeeDetails(GlobalClass.pettyCash.RequestedById);
         approvedBy = await GetEmployeeDetails(GlobalClass.pettyCash.ApprovedById);
         receivedBy = await GetEmployeeDetails(GlobalClass.pettyCash.ReceivedById);
+
+        if(GlobalClass.pettyCash.Id == 0 )
+        {
+            var result = GlobalClassList.accountingStatusList.Where(x=>x.StatusName.Contains("pc-generated", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+            if (result != null)
+                currentStatus = result;
+        }
+        GlobalClass.pettyCash.StatusName = currentStatus.StatusName;
     }
     private bool isValidated()
     {
@@ -424,12 +488,6 @@
         reqApprover = false;
         reqReceived = false;
         reqAmount = false;
-    }
-    private void SelectedApprovedBy(UserAccount ac)
-    {
-        approvedBy = ac;
-        GlobalClass.pettyCash.ApprovedById = ac.EmployeeId;
-        GlobalClass.pettyCash.ApprovedByName = ac.EmployeeName;
     }
     private void SelectedReceivedBy(UserAccount ac)
     {

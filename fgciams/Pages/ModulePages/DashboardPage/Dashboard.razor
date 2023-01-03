@@ -8,19 +8,128 @@
             <MudContainer Class='dashboardpage' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
                 @if(!dataFetched)
                 {
-
-                
+                    <SkeletonDashboard />
                 }
                 else
                 {
-                    <div class="dashboard-container">
-                        <MudPaper class="topdash">
-                            <div class='d-flex align-center'>
-                                Top
-                            </div>
-                        </MudPaper>
-                        <MudPaper class="bodydash">Body</MudPaper>
-                        <MudPaper class="sidedash">Side</MudPaper>
+                    <div class="dboard-container transition-05s-ease fade-in">
+                        <div class="dboard-settings d-flex align-center px-2 gap-2">
+                            <MudIcon Icon='fa-solid fa-sliders' Size='Size.Small' />
+                            <MudSpacer />
+                            <MudButton StartIcon='fa-solid fa-gear' Size='Size.Small'>Settings</MudButton>
+                        </div>
+                        <div class="dboard-top d-flex">
+                            <MudGrid Spacing='1'>
+                                <MudItem xs=12 sm=2>
+                                    <MudPaper Height=100%>
+                                        <MudCardHeader Class='pa-2'>
+                                            Placeholder
+                                        </MudCardHeader>
+                                        <MudCardContent Class='pa-2'>
+                                            Content
+                                        </MudCardContent>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs=12 sm=2>
+                                    <MudPaper Height=100%>
+                                        <MudCardHeader Class='pa-2'>
+                                            Placeholder
+                                        </MudCardHeader>
+                                        <MudCardContent Class='pa-2'>
+                                            Content
+                                        </MudCardContent>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs=12 sm=2>
+                                    <MudPaper Height=100%>
+                                        <MudCardHeader Class='pa-2'>
+                                            Placeholder
+                                        </MudCardHeader>
+                                        <MudCardContent Class='pa-2'>
+                                            Content
+                                        </MudCardContent>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs=12 sm=2>
+                                    <MudPaper Height=100%>
+                                        <MudCardHeader Class='pa-2'>
+                                            Placeholder
+                                        </MudCardHeader>
+                                        <MudCardContent Class='pa-2'>
+                                            Content
+                                        </MudCardContent>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs=12 sm=2>
+                                    <MudPaper Height=100%>
+                                        <MudCardHeader Class='pa-2'>
+                                            Placeholder
+                                        </MudCardHeader>
+                                        <MudCardContent Class='pa-2'>
+                                            Content
+                                        </MudCardContent>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs=12 sm=2>
+                                    <MudPaper Height=100%>
+                                        <MudCardHeader Class='pa-2'>
+                                            Placeholder
+                                        </MudCardHeader>
+                                        <MudCardContent Class='pa-2'>
+                                            Content
+                                        </MudCardContent>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </div>
+                        <div class="dboard-body-left">
+                            <MudPaper Height=100%> <MudCardHeader Class='pa-2'>
+                                Placeholder
+                            </MudCardHeader>
+                            <MudCardContent Class='pa-2'>
+                                Content
+                            </MudCardContent></MudPaper>
+                        </div>
+                        <div class="dboard-body">
+                            <MudPaper Height=100%>
+                                <MudCardHeader Class='pa-2'>
+                                    Placeholder
+                                </MudCardHeader>
+                                <MudCardContent Class='pa-2'>
+                                    Content
+                                </MudCardContent>
+                            </MudPaper>
+                        </div>
+                        <div class="dboard-body-right">
+                            <MudPaper Height=100%>
+                                <MudCardHeader Class='pa-2'>
+                                    Placeholder
+                                </MudCardHeader>
+                                <MudCardContent Class='pa-2'>
+                                    Content
+                                </MudCardContent>
+                            </MudPaper>
+                        </div>
+                        <div class="dboard-bottom-left">
+                            <MudPaper Height=100%>
+                                <MudCardHeader Class='pa-2'>
+                                    Placeholder
+                                </MudCardHeader>
+                                <MudCardContent Class='pa-2'>
+                                    Content
+                                </MudCardContent>
+                            </MudPaper>
+                        </div>
+                        <div class="dboard-bottom-right">
+                            <MudPaper Height=100%>
+                                <MudCardHeader Class='pa-2'>
+                                    Placeholder
+                                </MudCardHeader>
+                                <MudCardContent Class='pa-2'>
+                                    Content
+                                </MudCardContent>
+                            </MudPaper>
+                        </div>
                     </div>
                 }
             </MudContainer>
@@ -37,6 +146,7 @@
     private bool dataFetched;
     protected override async Task OnInitializedAsync()
     {
+        @* await Task.Delay(1000000); *@
         GlobalClass.pageTitle = "Dashboard";
         CompletedFetch();
     }

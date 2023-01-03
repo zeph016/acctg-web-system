@@ -14,15 +14,14 @@ using fgciams.domain.clsPO;
 using fgciams.domain.clsScopeOfWork;
 using fgciams.domain.clsSubConGeneralInformation;
 using fgciams.domain.clsSubContractProject;
+using fgciams.domain.clsCollection;
+using System.Net.Http.Json;
 
 namespace fgciams.service.GlobalServices
 {
     public class GlobalService : IGlobalService
     {
-        public GlobalService(HttpClient client)
-        {
-            _client = client;
-        }
+        public GlobalService(HttpClient client) => _client = client;
 
         #region Properties
 
@@ -234,6 +233,17 @@ namespace fgciams.service.GlobalServices
             }
         }
         #endregion
+        #endregion
+
+        #region  Load Server Time
+        public async Task<DateTime?> GetServerTime()
+        {
+            var result = await _client.GetFromJsonAsync<DateTime>("ticket/server-date");
+            if (result != null)
+                return result;
+            else
+                return null;
+        }
         #endregion
 
     }

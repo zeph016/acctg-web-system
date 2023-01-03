@@ -3,115 +3,118 @@
 @inject NavigationManager navigationManager
 @inject IGlobalService globalService
 
-<div class="audittrail_container">
-        <MudGrid>
-            <MudItem xs="8">
-                <MudPaper Elevation="3">
-                    <MudCard Elevation="2">
-                        <div style="display: flex; align-items: center;">
-                            <MudIcon Size="Size.Medium" style="margin-right: 10px;" Icon="@Icons.Filled.Timeline"></MudIcon>
-                             <MudText Typo="Typo.body1">Timeline</MudText>
+<div class='page-cont'>
+    <MudContainer Class='overflow-hidden pa-2' Fixed='false' MaxWidth='MaxWidth.Large'>
+        @if (!dataFetched)
+        {
+            <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
+                <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='calc(100vh - 135px)' Animation='Animation.Wave' />
+            </MudPaper>
+        }
+        else
+        {
+            <MudGrid Spacing='1'>
+                <MudItem xs=9>
+                    <MudPaper Class='overflow-hidden' Height='calc(100vh - 105px)'>
+                        <div class='d-flex align-center pa-2 gap-2 bgc-F4F5FB'>
+                            <MudIcon Icon="@Icons.Material.Filled.Timeline" Size='Size.Small' />
+                            <MudText Class='wspace-nowrap font-bold txt-uppercase' Typo="Typo.body2">Audit Trail</MudText>
+                            <hr class='horizline2'>
                         </div>
-                        <MudButton Size="Size.Small" StartIcon="@Icons.Filled.ArrowBackIos" title="Add" class="btn btn-primary" Href="/voucher/batch/list"><MudText Typo="Typo.caption">Back</MudText></MudButton>
-                    </MudCard>
-                 
-                    <MudTimeline TimelinePosition="TimelinePosition.Start">
-                        @foreach (var item in audiTrailVoucherRoute) 
-                        {
-                          Console.WriteLine(item.Activity);
-                          <style>
-                            .timeline-container-@AcctgModel(item).StatusName .mud-timeline-item-dot-inner
-                            {
-                                background-color: @AcctgModel(item).StatusColor !important;
-                                width:18px !important;
-                                height:18px !important;
-                            }
-                        </style>
-                        <div class="timeline-container-@AcctgModel(item).StatusName">
-                            <MudTimelineItem Variant="Variant.Filled">
-                                <MudAlert Severity="Severity.Success" Style="@($"border-left:10px {AcctgModel(item).StatusColor} solid;")" Icon="@Extensions.Icon(@AcctgModel(item).StatusIcon)">
-                                    <MudText Typo="Typo.caption"><b>@item.LogDateTime.ToString("MMMM dd, yyyy hh:mm tt")</b></MudText>
-                                    <MudText Typo="Typo.subtitle2"><b>@item.Activity</b></MudText>
-                                    <MudText Typo="Typo.caption">by: &nbsp; @item.UserName</MudText>
-                                </MudAlert>
-                            </MudTimelineItem>
+                        <MudDivider />
+                        <div class='rounded-br rounded-bl overflow-auto pa-2 mx-2' style='height:calc(100vh - 150px)'>
+                            <AuditTrailTimeLine auditMode=@Enums.AuditTrailMode.VoucherBatch VoucherRouteTrail=@voucherBatchListTrail />
                         </div>
-                        }
-                    </MudTimeline>
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="4">
-                <MudPaper Elevation="3">
-                  <MudCard Elevation="2">
-                      <div class="flex-gap">
-                          <MudIcon Size="Size.Medium" Icon="@Icons.Filled.Badge"></MudIcon>
-                          <MudText Typo="Typo.body1">Batch Details</MudText>
-                      </div>
-                    </MudCard>
-
-                    <div class="payee_details">
-                        <div class="payee_details-fields d-flex">
-                                <MudDatePicker @bind-Date='@BatchDate' ReadOnly Margin='Margin.Dense' Label='Batch Date'></MudDatePicker>
-                                <MudTextField Label="Control No." @bind-Value="@GlobalClass.voucherRouteBatch.ControlNumber" Variant="Variant.Text" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
-                          </div>
-
-                        <div style="margin-top: 15px">
-                            <MudTextField Label="Remarks" Lines="5" @bind-Value="@GlobalClass.voucherRouteBatch.Remarks" Variant="Variant.Outlined" ReadOnly="true" Margin="Margin.Dense"></MudTextField>
+                    </MudPaper>
+                </MudItem>
+                <MudItem Class='d-flex flex-column gap-2' xs=3>
+                    <MudPaper Class='overflow-hidden'>
+                        <div class='d-flex align-center pa-2 gap-2 bgc-F4F5FB'>
+                            <MudIcon Icon="@Icons.Material.Filled.CommentBank" Size="Size.Small" />
+                            <MudText Class='wspace-nowrap font-bold txt-uppercase' Typo="Typo.body2">Voucher Batch Details</MudText>
+                            <hr class='horizline2'>
                         </div>
-
+                        <MudDivider />
+                        <MudGrid Class='mt-2' Spacing='1'>
+                            <MudItem Class='px-4' xs=6>
+                                <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>Control Number:</MudText>
+                                <MudText Class='txt-uppercase wspace-nowrap font-bold font14 pa-1' Color='Color.Error'>@GlobalClass.voucherRouteBatch.ControlNumber</MudText>
+                            </MudItem>
+                            <MudItem Class='px-4 gap-2' xs=6>
+                                <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>Requested Date:</MudText>
+                                <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Icon='@Icons.Material.Filled.CalendarMonth' Color='Color.Default' Size='Size.Small'>
+                                    @GlobalClass.voucherRouteBatch.BatchDate.GetValueOrDefault().ToShortDateString()
+                                </MudChip>
+                            </MudItem>
+                             <MudItem Class='d-flex flex-column' xs=12>
+                                <MudDivider />
+                                <div class='d-flex align-center pa-2 gap-2 bgc-F4F5FB'>
+                                    <MudIcon Class='ml-2' Icon="@Icons.Material.Filled.Badge" Size="Size.Small" />
+                                    <MudText Class='txt-uppercase wspace-nowrap font-bold' Typo='Typo.body2'>Signatories</MudText>
+                                    <hr class='horizline2'>
+                                </div>
+                                <MudDivider />
+                                <div class='d-flex flex-column pa-2 gap-2'>
+                                    <div class="d-flex align-center gap-2">
+                                        <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(preparedBy)}")' />
+                                        <MudDivider />
+                                        <div class="gap-2">
+                                            <MudText Class='wspace-nowrap' Typo="Typo.subtitle2">@GlobalClass.voucherRouteBatch.PreparedByName</MudText>
+                                            <MudText Typo="Typo.caption">Prepared by</MudText>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                    <div class='d-flex align-center justify-end pa-2'>
+                        <MudButton Class='btn-ios-d pa-1 font12' OnClick="(() => BackToVoucherBatchList())" Size="Size.Small" Variant='Variant.Filled' Color='Color.Error' DisableElevation>
+                            Return
+                        </MudButton>
                     </div>
-                </MudPaper>
-            </MudItem>
-        </MudGrid>
-    </div>
+                </MudItem>
+            </MudGrid>
+       }
+    </MudContainer>
+</div>
 
 @code{
-  [Parameter] public Int64 liquidationId {get; set;}
-
-  string text = "";
-  private byte[] preparedByImg = new byte[] { }, approvedByImg = new byte[] {};
-  private List<VoucherRouteBatchAuditTrailModel> audiTrailVoucherRoute = new();
-  private DateTime? BatchDate;
-  
-  protected override async Task OnInitializedAsync()
-  {
-    navigationManager.LocationChanged += OnLocationChanged;
-    while(GlobalClass.currentUserAccount == null || GlobalClassList.accountingStatusList == null)
-       await Task.Delay(1);
-    Task t = Task.WhenAll(LoadAuditTrail());
-    await t;
-  }
-  private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
-  {
-    Dispose();
-  }
-  public void Dispose()
-  {
-     navigationManager.LocationChanged -= OnLocationChanged;
-  }
-  private async Task LoadAuditTrail()
-  {
-    BatchDate = GlobalClass.voucherRouteBatch.BatchDate;
-    audiTrailVoucherRoute = await audiTrailVoucherRouteService.GetVoucherRouteBatchAuditTrail(GlobalClass.voucherRouteBatch.Id, GlobalClass.token);
-
-  }
-  private AccountingStatusModel AcctgModel(VoucherRouteBatchAuditTrailModel auditTrail)
-  {
-     AccountingStatusModel accountingStatusModel = new();
-        accountingStatusModel.StatusName = "Update";
-        accountingStatusModel.StatusColor = "LIME";
-        accountingStatusModel.StatusIcon = Icons.Filled.CheckCircleOutline;
-        if(auditTrail.Activity.Equals("Save Voucher Route Batch"))
-            accountingStatusModel = GlobalClassList.accountingStatusList.Find(x=> x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.VG) ?? accountingStatusModel;
-        if(auditTrail.Activity.Equals("Update Voucher Route Batch"))
-            accountingStatusModel = GlobalClassList.accountingStatusList.Find(x=> x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.VA) ?? accountingStatusModel;
-        if(auditTrail.Activity.Equals("Cancel liquidation")) 
-            accountingStatusModel = GlobalClassList.accountingStatusList.Find(x=> x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.VC) ?? accountingStatusModel;
-        return accountingStatusModel;
-  }
-  private async Task<byte[]> GetEmployeeImg(long employeeId)
-  {
-    var employeeDetail = await globalService.GetEmployeeById(employeeId, GlobalClass.token);
-    return employeeDetail.Picture;
-  }
+    private bool dataFetched {get;set;}
+    private VoucherRouteBatchAuditTrailModel currentTrail = new VoucherRouteBatchAuditTrailModel();
+    private List<VoucherRouteBatchAuditTrailModel> voucherBatchListTrail = new();
+    private byte[] preparedBy = new byte[]{};
+    protected override async Task OnInitializedAsync()
+    {
+        if(GlobalClass.voucherRouteBatch != null)
+        {
+            try{
+                GlobalClass.pageTitle = "VOUCHER BATCH AUDIT TRAIL";
+                voucherBatchListTrail = await audiTrailVoucherRouteService.GetVoucherRouteBatchAuditTrail(GlobalClass.voucherRouteBatch.Id, GlobalClass.token);
+                preparedBy = await GetEmployeeDetails(GlobalClass.voucherRouteBatch.PreparedById);
+                currentTrail = voucherBatchListTrail.Last();
+                CompletedFetch();
+            }catch(NullReferenceException ee){
+                //Do nothing
+                throw ee;
+            }
+        }
+        else{
+             BackToVoucherBatchList();
+        }
+    }
+    private void BackToVoucherBatchList()
+    {
+        navigationManager.NavigateTo("/voucher/batch/list");
+    }
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+    private async Task<byte[]> GetEmployeeDetails(long employeeId)
+    {
+        var employeeDetail = await globalService.GetEmployeeById(employeeId, GlobalClass.token);
+        return employeeDetail.Picture;
+    }
 }

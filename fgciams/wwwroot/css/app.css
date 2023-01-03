@@ -1,3 +1,4 @@
+@import url("../assets/icomoon/style.css");
 @import url("https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap");
 @import url("../assets/fontawesome/css/all.min.css");
 @import url("../assets/quilljs/css/quill.bubble.styles.css");
@@ -14,7 +15,6 @@
 @import url("./components/docheaderlogo/docheaderlogo.styles.css");
 @import url("./components/chips/chip.styles.css");
 @import url("./components/sidedrawer/rightdrawer-filter.styles.css");
-@import url("./components/animations/animation.styles.css");
 @import url("./components/subdrawer/subdrawer-left.styles.css");
 @import url("./components/fontawesome/fa-styles.css");
 @import url("./components/colors/colors.styles.css");
@@ -23,22 +23,197 @@
 @import url("./components/colorbox/colorbox.styles.css");
 @import url("./components/font/fontmods.styles.css");
 @import url("./components/border/border.styles.css");
-@import url("./components/scrollbar/scrollbar.styles.css");
 @import url("./components/heightwidth/heightwidth.styles.css");
 @import url("./components/textfieldmods/textfieldmods.styles.css");
 @import url("./components/spacings/spacings.styles.css");
 @import url("./components/buttonmods/buttonmods.styles.css");
 @import url("./components/alertmods/alertmods.syles.css");
 @import url("./components/mudprogressmods/mudprogressmods.style.css");
+@import url("./components/blazoredtypeahead/blazoredtypeahead.styles.css");
+@import url("./components/icons-styles/icons.styles.css");
+@import url("./components/transformmods/transform.styles.css");
+@import url("./components/flexgridmods/flexgridmods.styles.css");
+@import url("./components/filtercomponents/filtercomponents.styles.css");
+@import url("./pettycash/pettycash-entry.styles.css");
 @import url("./voucher/voucher-entry.styles.css");
 @import url("./requestpayment/requestpayment.css");
 @import url("./requestpayment/requestpaymetlist.styles.css");
 @import url("./dashboard/dashboard.styles.css");
-@import url("./pettycash/pettycash-entry.styles.css");
 @import url("./liquidation/liquidation.style.css");
 @import url("./error/error.styles.css");
-@import url("./pettycash/pettycashaudittrail.css");
 @import url("./checkwriter/checkwriter.styles.css");
+@import url("./collections/collectionlist.styles.css");
+@import url("./subledger/subledgerlist.styles.css");
+@import url("./debit/debit.styles.css");
+@import url("./journal/journal.styles.css");
+@import url("./audittrails/audit-trails.css");
+.visibility-animation-hide {
+  display: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s linear 0.2s, opacity 0.2s linear;
+}
+
+.visibility-animation-show {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  transition-delay: 0s;
+}
+
+.transition-05s-ease {
+  transition: all 0.5s;
+  transition-timing-function: ease;
+}
+
+.transition-025s-ease {
+  transition: all 0.25s;
+  transition-timing-function: ease;
+}
+
+.menu-grow-anim {
+  transition: all 0.15s ease-in-out !important;
+}
+
+.menu-grow-anim:hover {
+  transform: scale(1.025) !important;
+}
+
+.row-popup-anim-2px tr {
+  transition: all 0.2s ease-in-out;
+}
+
+.row-popup-anim-2px tr:hover {
+  transform: translateY(-2px);
+}
+
+.fade-in, .page-cont {
+  -webkit-animation: fadein 1s;
+  animation: fadein 1s;
+  visibility: visible;
+}
+
+.fade-out {
+  -webkit-animation: fadeout 1s;
+  animation: fadeout 1s;
+  visibility: hidden;
+}
+
+@-webkit-keyframes fadein {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes fadein {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@-webkit-keyframes fadeout {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes fadeout {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.icon-rotate180 .mud-button-icon-end {
+  transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
+}
+
+.mudbtnico-rotate {
+  -webkit-animation: mudbtnico-rotate 0.5s linear infinite;
+  animation: mudbtnico-rotate 0.5s linear infinite;
+}
+
+@-webkit-keyframes mudbtnico-rotate {
+  0% {
+    transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+  }
+}
+@keyframes mudbtnico-rotate {
+  0% {
+    transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+  }
+}
+.mudbtnico-rotate-90 .mud-icon-root {
+  transform: rotate(0deg);
+  transition: all 0.5s ease;
+  -webkit-transition: all 0.5s ease; /** Chrome & Safari **/
+  -moz-transition: all 0.5s ease; /** Firefox **/
+  -o-transition: all 0.5s ease; /** Opera **/
+}
+
+.mudbtnico-rotate-90:hover .mud-button-root {
+  color: #2196f3 !important;
+}
+
+.mudbtnico-rotate-90:hover .mud-icon-root {
+  transform: rotate(90deg);
+  transition: all 0.5s ease;
+  -webkit-transition: all 0.5s ease; /** Chrome & Safari **/
+  -moz-transition: all 0.5s ease; /** Firefox **/
+  -o-transition: all 0.5s ease; /** Opera **/
+}
+
+.sticky-div {
+  z-index: 1;
+  position: -webkit-sticky;
+  position: sticky;
+  left: 0;
+  background-color: white;
+} /*# sourceMappingURL=animation.styles.css.map */
 @font-face {
   font-family: "Theramin";
   src: url("../fonts/theramin/theramin.woff2") format("woff2");
@@ -54,9 +229,27 @@
   src: url("../fonts/roboto/roboto-v30-latin-regular.eot");
   src: local(""), url("../fonts/roboto/roboto-v30-latin-regular.eot?#iefix") format("embedded-opentype"), url("../fonts/roboto/roboto-v30-latin-regular.woff2") format("woff2"), url("../fonts/roboto/roboto-v30-latin-regular.woff") format("woff"), url("../fonts/roboto/roboto-v30-latin-regular.ttf") format("truetype"), url("../fonts/roboto/roboto-v30-latin-regular.svg#Roboto") format("svg");
 }
+@font-face {
+  font-family: "R-Flex Regular";
+  src: url("../fonts/rflex/RFlexRegular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "R-Flex Bold";
+  src: url("../fonts/rflex/RFlex-Bold.woff2") format("woff2");
+}
+@font-face {
+  font-family: "icomoon";
+  src: url("../assets/icomoon/fonts/icomoon.eot");
+  src: url("../assets/icomoon/fonts/icomoon.eot?cwr9uo");
+  src: url("../assets/icomoon/fonts/icomoon.eot?cwr9uo#iefix") format("embedded-opentype"), url("../assets/icomoon/fonts/icomoon.ttf?cwr9uo") format("truetype"), url("../assets/icomoon/fonts/icomoon.woff?cwr9uo") format("woff"), url("../assets/icomoon/fonts/icomoon.svg?cwr9uo#icomoon") format("svg");
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
 html,
 body {
   font-family: "Roboto-Latin-Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  overflow: hidden;
 }
 
 h1:focus {
@@ -214,8 +407,4 @@ a,
   background-position: right bottom;
   background-size: contain;
   height: 100%;
-}
-
-.ba-new .blazored-typeahead {
-  border: none !important;
 }/*# sourceMappingURL=app.css.map */

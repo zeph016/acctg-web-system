@@ -1,0 +1,61 @@
+
+@inject IPettyCashService PettyCashService
+
+@if (!dataFetched)
+{
+    <MudSkeleton Width='80px' Height='25px' Animation='Animation.Wave'/>
+}
+else
+{
+    <MudChip Class='chip-radius-5 txt-uppercase' Size='Size.Small' Variant='Variant.Outlined'  Style='@Extensions.BorderColor(statusId)'>
+        <small class='font-bold'>@chipName</small>
+    </MudChip>
+}
+
+
+@code {
+
+    [Parameter] public long itemId { get; set; }
+    [Parameter] public string moduleName { get; set; } = string.Empty;
+    private bool dataFetched;
+    private PettyCashModel pettyCash { get; set; } = new PettyCashModel();
+    private string chipName = string.Empty;
+    private long statusId;
+
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        while (string.IsNullOrWhiteSpace(GlobalClass.token))
+            await Task.Delay(1);
+        Task t = Task.WhenAll(GetData());
+        await t;
+        if(t.Status == TaskStatus.RanToCompletion)
+            CompletedFetch();
+    }
+
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+
+    private async Task GetData()
+    {
+         if (moduleName.Contains("pettycash", StringComparison.InvariantCultureIgnoreCase))
+            await GetPettyCash();
+    }
+
+    private async Task GetPettyCash()
+    {
+        pettyCash = await PettyCashService.GetPettyCash(itemId, GlobalClass.token);
+        if (pettyCash != null)
+        {
+            statusId = pettyCash.StatusId;
+            chipName = pettyCash.StatusName;
+        }
+    }
+}

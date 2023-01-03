@@ -175,3 +175,117 @@
     overflow: auto;
   }
 }
+
+.rfp-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 300px 190px 190px auto;
+  grid-template-rows: 40px 40px 1fr 1fr 130px;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "rfp-header rfp-header rfp-header rfp-header rfp-header rfp-header"
+    "rfp-subheader rfp-subheader rfp-dateperiod rfp-datereq rfp-dateneed rfp-controlno"
+    "rfp-body rfp-body rfp-body rfp-body rfp-body rfp-body"
+    "rfp-body rfp-body rfp-body rfp-body rfp-body rfp-body"
+    "rfp-body rfp-body rfp-body rfp-body rfp-body rfp-body";
+  height: calc(100vh - 120px);
+}
+
+.rfp-header {
+  grid-area: rfp-header;
+}
+.rfp-subheader {
+  grid-area: rfp-subheader;
+}
+.rfp-dateperiod {
+  grid-area: rfp-dateperiod;
+}
+.rfp-datereq {
+  grid-area: rfp-datereq;
+}
+.rfp-dateneed {
+  grid-area: rfp-dateneed;
+}
+.rfp-controlno {
+  grid-area: rfp-controlno;
+}
+
+.rfp-body {
+  grid-area: rfp-body;
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    grid-template-rows: 1fr 1fr 1fr 130px;
+    gap: 0px 0px;
+    grid-auto-flow: row;
+    grid-template-areas:
+      "body-content body-content body-content body-sidebar"
+      "body-content body-content body-content body-sidebar"
+      "body-content body-content body-content body-sidebar"
+      "body-footer body-footer body-footer body-sidebar";
+    height: 100%;
+  }
+
+  .body-content {
+    grid-area: body-content;
+    overflow: hidden;
+  }
+
+  .body-footer {
+    align-items: start;
+    display: flex;
+    border: solid thin lightgray;
+    border-right-style: none;
+    border-left-style: none;
+    grid-area: body-footer;
+  }
+
+  .body-sidebar {
+    border: solid thin lightgray;
+    border-top-style: none;
+    grid-area: body-sidebar;
+  }
+}
+
+.rfp-sidebar {
+  grid-area: rfp-sidebar;
+}
+
+.rfp-footer {
+  grid-area: rfp-footer;
+}
+
+.rfp-header {
+  border: solid thin lightgray;
+}
+.rfp-subheader {
+  border: solid thin lightgray;
+  border-top-style: none;
+  border-bottom-style: none;
+}
+
+.rfp-body {
+  border-top: solid thin lightgray;
+  border-left: solid thin lightgray;
+}
+
+.rfp-footer {
+  border: solid thin lightgray;
+  border-right-style: none;
+}
+
+.rfp-sidebar {
+  border: solid thin lightgray;
+  border-top-style: none;
+}
+
+.rfp-subheader,
+.rfp-dateperiod,
+.rfp-datereq,
+.rfp-dateneed,
+.rfp-controlno {
+  align-items: center;
+  border-right: solid thin lightgray;
+  display: flex;
+  padding: 0px 4px 0px 4px;
+}

@@ -1,9 +1,12 @@
-﻿using fgciams.domain.clsEnums;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using fgciams.domain.clsEnums;
+using fgciams.domain.clsProject;
+using fgciams.domain.clsDivision;
+using fgciams.domain.clsExpenseLine;
 
 namespace fgciams.domain.clsRequest
 {
@@ -77,5 +80,10 @@ namespace fgciams.domain.clsRequest
         public string LiquidationControlNumber { get; set; } = string.Empty;
         public int TemporaryId {get; set;}
         public Enums.RFPDetailTypeId rfpType {get;set;}
+
+        //Extra
+        public Project projectModel { get; set; } = new Project();
+        public DivisionModel divisionModel { get; set; } = new DivisionModel();
+        public ExpenseLineModel expenseLineModel { get; set; } = new ExpenseLineModel();
     }
 }

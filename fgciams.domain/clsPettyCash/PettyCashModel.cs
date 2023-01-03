@@ -13,7 +13,7 @@ namespace fgciams.domain.clsPettyCash
         }
         public Int64 Id { get; set; }
         public bool IsActive { get; set; }
-        public DateTime? RequestDate { get; set; }
+        public DateTime? RequestDate { get; set; } = DateTime.Now;
         public Int64 PayeeId { get; set; }
         public Enums.ProjectCategory PayeeCategoryId { get; set; }
         public Int64 StatusId { get; set; }

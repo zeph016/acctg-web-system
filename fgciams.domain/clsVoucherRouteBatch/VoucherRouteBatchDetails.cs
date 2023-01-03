@@ -20,6 +20,7 @@ namespace fgciams.domain.clsVoucherRouteBatch
       public Int64 VoucherId { get; set; }
       public Int64 VoucherRouteBatchId { get; set; }
       public bool IsFiled {get; set;}
+      public decimal TotalAmount {get; set; }
 
       //Added
       public bool ShowDesc { get; set; }

@@ -1,0 +1,188 @@
+@page "/collection/trail"
+
+@inject NavigationManager NavigationManager
+@inject ICollectionService CollectionService
+@inject IGlobalService GlobalService
+@inject IBankDepositService BankDepositService
+
+<div class='page-cont'>
+    <MudContainer Class='overflow-hidden pa-2' Fixed='false' MaxWidth='MaxWidth.Large'>
+        @if (!dataFetched)
+        {
+            <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
+                <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='calc(100vh - 135px)' Animation='Animation.Wave' />
+            </MudPaper>
+        }
+        else
+        {
+            <MudGrid Spacing='1'>
+                <MudItem xs=9>
+                    <MudPaper Class='overflow-hidden' Height='calc(100vh - 105px)'>
+                        <div class='d-flex align-center pa-2 gap-2 bgc-F4F5FB'>
+                            <MudIcon Icon="@Icons.Material.Filled.Timeline" Size='Size.Small' />
+                            <MudText Class='wspace-nowrap font-bold txt-uppercase' Typo="Typo.body2">Audit Trail</MudText>
+                            <hr class='horizline2'>
+                        </div>
+                        <MudDivider />
+                        <div class='rounded-br rounded-bl overflow-auto pa-2 mx-2' style='height:calc(100vh - 150px)'>
+                            <AuditTrailTimeLine auditMode=@Enums.AuditTrailMode.CollectionTrail collectionAuditTrails=@currentTrail />
+                        </div>
+                    </MudPaper>
+                </MudItem>
+                <MudItem Class='d-flex flex-column gap-2' xs=3>
+                    <MudPaper Class='overflow-hidden'>
+                        <div class='d-flex align-center pa-2 gap-2 bgc-F4F5FB'>
+                            <MudIcon Icon="@Icons.Material.Filled.CommentBank" Size="Size.Small" />
+                            <MudText Class='wspace-nowrap font-bold txt-uppercase' Typo="Typo.body2">Check Details</MudText>
+                            <hr class='horizline2'>
+                        </div>
+                        <MudDivider />
+                        <MudGrid Class='mt-2' Spacing='1'>
+                            <MudItem Class='px-4' xs=6>
+                                <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>Control Number:</MudText>
+                                <MudText Class='txt-uppercase wspace-nowrap font-bold font14 pa-1' Color='Color.Error'>@GlobalClass.collection.ControlNumber</MudText>
+                            </MudItem>
+                            <MudItem Class='px-4 gap-2' xs=6>
+                                <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>Transaction Date:</MudText>
+                                <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Icon='@Icons.Material.Filled.CalendarMonth' Color='Color.Default' Size='Size.Small'>
+                                    @GlobalClass.collection.TransactionDate.GetValueOrDefault().ToShortDateString()
+                                </MudChip>
+                            </MudItem>
+                            <hr class='horizline2'>
+                            <MudItem Class='px-4' xs=6>
+                                <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>Reference Number:</MudText>
+                                <MudText Class='txt-uppercase wspace-nowrap font-bold font14 pa-1' Color='Color.Error'>@GlobalClass.collection.ReferenceNo</MudText>
+                            </MudItem>
+                            <MudItem Class='px-4 gap-2' xs=6>
+                                <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>Category:</MudText>
+                                <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Info' Size='Size.Small'>
+                                    @Extensions.GetEnumDescription(GlobalClass.collection.CollectionCategoryId)
+                                </MudChip>
+                            </MudItem>
+                            <MudItem xs=12>
+                                <MudDivider />
+                                <div class='px-2'>
+                                    <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>Charging:</MudText>
+                                    <div class='d-flex align-center pa-1 gap-2'>
+                                        <MudIcon Icon='@Icons.Material.Filled.Person' Size='Size.Small' />
+                                        <MudText Class='txt-uppercase font12'> @GlobalClass.collection.ChargeName</MudText>
+                                    </div>
+                                </div>
+                            </MudItem>
+                            <MudItem xs=12>
+                                <MudDivider />
+                                <div class='px-2'>
+                                    <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>Description:</MudText>
+                                    <div class='d-flex align-center pa-1 gap-2'>
+                                        <MudIcon Icon='@Icons.Material.Filled.Description' Size='Size.Small' />
+                                        <MudText Class='txt-uppercase font12'> @GlobalClass.collection.Description</MudText>
+                                    </div>
+                                </div>
+                            </MudItem>
+                            <MudItem xs=12>
+                                <MudDivider />
+                                <div class='d-flex align-center px-2'>
+                                    <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>NET Amount:</MudText>
+                                    <MudSpacer />
+                                    <MudChip Class='rounded' Color='Color.Default' Size='Size.Small'>
+                                    @if (@GlobalClass.collection.NetAmount > 0 )
+                                    {
+                                       
+                                        <MudText Class='font-bold color-green font12'>
+                                            @(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + @GlobalClass.collection.NetAmount.ToString("N2"))
+                                        </MudText>
+                                       
+                                    }
+                                    else
+                                    {
+                                        <MudText Class='pl-2 txt-uppercase wspace-nowrap font-bold font12 gap-2' Color='Color.Error'> 
+                                            @(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + @GlobalClass.collection.NetAmount.ToString("N2"))
+                                        </MudText>
+                                    }
+                                    </MudChip>
+                                </div>
+                            </MudItem>
+                            <MudItem xs=12>
+                                <MudDivider />
+                                <div class='px-2'>
+                                    <MudText Class='ml-1 txt-uppercase wspace-nowrap font10 font-bold'>Expense:</MudText>
+                                    <div class='d-flex align-center pa-1 gap-2'>
+                                        <MudIcon Icon='@Icons.Material.Filled.WorkOutline' Size='Size.Small' />
+                                        <MudText Class='txt-uppercase wspace-nowrap font12'>@GlobalClass.collection.ExpenseName</MudText>
+                                    </div>
+                                </div>
+                                <MudDivider />
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                    <div class='d-flex align-center justify-end pa-2'>
+                        <MudButton Class='btn-ios-d pa-1 font12' OnClick="(() => BackToList())" Size="Size.Small" Variant='Variant.Filled' Color='Color.Error' DisableElevation>
+                            Return
+                        </MudButton>
+                    </div>
+                </MudItem>
+            </MudGrid>
+       }
+    </MudContainer>
+</div>
+
+@code{
+    private bool dataFetched {get;set;}
+    private byte[] payeeImg = new byte[]{}, requestorImg = new byte[]{}, approverImg = new byte[]{}, receiverImg = new byte[]{};
+    private List<CollectionAuditTrailModel> currentTrail = new();
+    private List<BankDepositAuditTrailModel> bankDepositCurrentTrail = new();
+    protected override void OnInitialized()
+    {
+        if(GlobalClass.checkModel != null)
+        {
+            try{
+                GlobalClass.pageTitle = GlobalClass.collection.ControlNumber.StartsWith("CL") ? "Collection AUDIT TRAIL":"Billing AUDIT TRAIL";
+                Task.Run( async () => 
+                {
+                currentTrail = await CollectionService.GetAuditTrail(GlobalClass.collection.Id,GlobalClass.token);
+                GlobalClass.bankDeposit = await BankDepositService.GetBankDeposit(GlobalClass.collection.Id,GlobalClass.token);
+                bankDepositCurrentTrail = await CollectionService.GetBankDepositTrail(GlobalClass.bankDeposit.Id,GlobalClass.token);
+                }).ContinueWith( Task => 
+                {
+                    bankDepositCurrentTrail.ForEach( bankAudit => 
+                    {
+                        CollectionAuditTrailModel addOn = new();
+                        addOn.Activity = bankAudit.Activity;
+                        addOn.UserName = bankAudit.UserName;
+                        addOn.LogDateTime = bankAudit.LogDateTime;
+                        Console.WriteLine(bankAudit.Activity);
+                        currentTrail.Add(addOn);
+                    });
+                }).ContinueWith( Task => CompletedFetch());
+            }catch(NullReferenceException ee){
+                //Do nothing
+                throw ee;
+            }
+        }
+        else{
+             BackToList();
+        }
+    }
+    private async Task<byte[]> GetEmployeeDetails(long employeeId)
+    {
+        var employeeDetail = await GlobalService.GetEmployeeById(employeeId, GlobalClass.token);
+        return employeeDetail.Picture;
+    }
+  
+    private void BackToList()
+    {
+        if(GlobalClass.collection.ControlNumber.StartsWith("CL"))
+        {
+            NavigationManager.NavigateTo("/collection/list");
+        } else {
+            NavigationManager.NavigateTo("/billing/list");
+        }
+    }
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+}
+
+

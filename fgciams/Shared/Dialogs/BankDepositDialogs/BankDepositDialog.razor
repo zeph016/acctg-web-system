@@ -1,0 +1,205 @@
+@inject IBankService bankService
+@inject IBankDepositService bankDepositService
+@inject IDialogService dialogService
+@inject ISnackbar snackbarService
+@inject ICheckService checkService
+@inject ICollectionService collectionService
+
+<MudDialog Class='customdialog2'>
+    <TitleContent>
+        <div class='d-flex align-center'>
+            <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Class="mr-3" />
+            <MudText Class='txt-uppercase' Typo='Typo.h6'>Deposit</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudPaper Class='pa-2' Elevation='0'>
+            <MudGrid Class='pa-2' Spacing='1'>
+                <MudItem xs='6'>
+                    <MudGrid Class='pa-2' Spacing='1'>
+                        <MudItem Class='pb-2' xs='12'>
+                            <MudText Class='lblhelper-type d-flex'>
+                                Bank
+                                <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                            </MudText>
+                            <BlazoredTypeahead 
+                                SearchMethod=Extensions.SearchBank 
+                                ValueChanged='((BankModel b) => OnBankSelected(b))'
+                                ValueExpression='(() => bank)'
+                                Value='bank'
+                                Context='bank' Debounce="500" placeholder='BANK & ACCOUNT NO.' Disabled='@isView'>
+                                <SelectedTemplate>
+                                    @if (bank.Id != 0) {
+                                        <MudText Class='font12'>@Extensions.BankShortCutName(bank.Id)</MudText>
+                                    } else {
+                                        <MudText Class='font12'> - </MudText>
+                                    }
+                                </SelectedTemplate>
+                                <ResultTemplate>
+                                    @Extensions.BankShortCutName(bank.Id)
+                                </ResultTemplate>
+                            </BlazoredTypeahead>
+                        </MudItem>
+                        @* <MudItem xs='4'>
+                            <MudSelect @bind-Value="GlobalClass.collection.PaymentTypeId" 
+                                Text="@Extensions.GetEnumDescription(GlobalClass.collection.PaymentTypeId)" Placeholder="Type of Deposit" Margin='Margin.Dense' Variant='Variant.Outlined'
+                                AnchorOrigin="Origin.BottomCenter" Label='Type of Deposit' Disabled='@isView'>
+                                @foreach (Enums.CollectionPaymentType category in Enum.GetValues(typeof(Enums.CollectionPaymentType)))
+                                {
+                                    <MudSelectItem Value="@category">@Extensions.GetEnumDescription(category)</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem Class='d-flex align-end' xs='4'>
+                            <MudTextField @bind-Value='GlobalClass.bankDeposit.checkNumber' Label='Check Number' Variant='Variant.Outlined'
+                                Margin='Margin.Dense' Disabled='@isView'>
+                            </MudTextField>
+                        </MudItem>
+                        <MudItem xs='4'>
+                            <MudDatePicker Class='txtfield-right font14-txtfield' @bind-Date='GlobalClass.bankDeposit.DepositDate' Label='Date of Deposit' Margin='Margin.Dense' IconSize='Size.Small' 
+                                Variant='Variant.Outlined' DateFormat='MM/dd/yyyy' Disabled='@isView'/>
+                        </MudItem> *@
+                        <MudItem Class='d-flex align-end' xs='6'>
+                            <MudDatePicker Class='txtfield-right font14-txtfield' @bind-Date='GlobalClass.bankDeposit.DepositDate' Label='Date of Deposit' Margin='Margin.Dense' IconSize='Size.Small' 
+                                Variant='Variant.Outlined' DateFormat='MM/dd/yyyy' Disabled='@isView'/>
+                        </MudItem>
+                        <MudItem Class='align-end' xs='6'>
+                                <div class='@(GlobalClass.bankDeposit.Amount > 0 ? "tfield-color-green":"tfield-color-red")'>
+                                <MudNumericField Class='txtfield-right font14-txtfield' @bind-Value='GlobalClass.bankDeposit.Amount' Label='Amount' 
+                                    Format='N2' HideSpinButtons Variant='Variant.Outlined' Margin='Margin.Dense' Disabled='@isView'/>
+                            </div>
+                        </MudItem>
+                        <MudItem xs='12'>
+                            <MudTextField @bind-Value='GlobalClass.collection.Description' Variant='Variant.Outlined' Label='Description' Margin='Margin.Dense' Disabled='@isView'/>
+                        </MudItem>
+                        <MudItem xs='12'>
+                            <MudTextField @bind-Value='GlobalClass.bankDeposit.Remarks' Lines='3' Label='Remarks' Margin='Margin.Dense' Variant='Variant.Outlined' Disabled='@isView'/>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+                <MudItem xs='6'>
+                    <CollectionListDepositComponent Height='445px'/>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </DialogContent>
+    <DialogActions>
+        <MudCheckBox @bind-Checked='@GlobalClass.collection.IsPDC' Label='Post Dated Check' Size='Size.Small' Color='Color.Dark' Dense Disabled='@isView'/>
+        <MudSpacer />
+        <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text' Size='Size.Small' DisableElevation>@(GlobalClass.collection.isDeposit == true? "Close":"Cancel")</MudButton>
+        @if(!GlobalClass.collection.isDeposit)
+        {
+        <MudButton Class='btn-ios-d font12' OnClick="(() => Submit(Enums.ActionMode.Create))" Variant='Variant.Filled' Color='Color.Success' Size='Size.Small' DisableElevation>
+            Deposit
+        </MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+@code 
+{
+    [CascadingParameter]public MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public Color color { get; set; }
+    [Parameter] public string dialogTitle { get; set; } = string.Empty;
+    [Parameter] public string buttonText { get; set; } = string.Empty;
+    private BankModel bank = new();
+    private bool isView = false;
+    private FilterParameter filterParameter = new();
+    protected override async Task OnInitializedAsync()
+    {
+        filterParameter.isActive = true;
+        GlobalClassList.listOfChecks = await checkService.LoadCheck(filterParameter, GlobalClass.token);
+        GlobalClass.bankDeposit = await bankDepositService.GetBankDeposit(GlobalClass.collection.Id,GlobalClass.token);
+        if(GlobalClass.bankDeposit.Id != 0)
+        {
+            bank.BankName = GlobalClass.bankDeposit.BankName;
+            bank.Id = GlobalClass.bankDeposit.BankId;
+            GlobalClass.bankDeposit.Amount = GlobalClass.collection.NetAmount;
+            isView = true;
+        }
+        else
+        {
+            GlobalClass.bankDeposit.DepositDate = DateTime.Now;
+            GlobalClass.bankDeposit.DepositCategoryId = GlobalClass.collection.PaymentTypeId;
+            GlobalClass.bankDeposit.checkNumber = String.Join(",",GlobalClassList.selectedCollections.Select( x => x.CheckNumber));
+            GetTotalAmount();
+        }
+        StateHasChanged();
+        
+    }
+    private void MapCollectionDeposit()
+    {
+        GlobalClassList.selectedCollections.ToList().ForEach( col => 
+        {
+            CollectionDepositModel deposit = new();
+            deposit.CollectionId = col.Id;
+            deposit.IsActive = true;
+            GlobalClass.bankDeposit.CollectionDeposits.Add(deposit);
+        });
+    }
+    private void GetTotalAmount()
+    {
+        GlobalClass.bankDeposit.Amount = 0;
+        GlobalClassList.selectedCollections.ToList().ForEach( col => 
+        {
+            GlobalClass.bankDeposit.Amount = GlobalClass.bankDeposit.Amount + col.NetAmount;
+        });
+    }
+    private async Task Submit(Enums.ActionMode actionMode)
+    {
+        var parameters = new DialogParameters();
+        string contentText = " Collection";
+        string dialogTitle = "Deposit";
+        parameters.Add("contentText", contentText);
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("actionMode", actionMode);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Canceled) 
+        {   
+            GlobalClass.bankDeposit.UserId = GlobalClass.currentUserAccount.EmployeeId;
+            GlobalClass.bankDeposit.StatusId = 1;
+            GlobalClass.bankDeposit.StatusDate = GlobalClass.bankDeposit.DepositDate = DateTime.Parse(GlobalClass.bankDeposit.DepositDate?.ToString("yyyy-MM-dd"));
+            GlobalClass.bankDeposit.Description = GlobalClass.collection.Description;
+            if(GlobalClass.bankDeposit.Id == 0)
+            {
+                await bankDepositService.AddBankDeposit(BankDepositProperties(),GlobalClass.token);
+            } else {
+                await bankDepositService.UpdateBankDeposit(BankDepositProperties(),GlobalClass.token);
+            }
+            await UpdateCollection();
+            MudDialog.Cancel();
+            Extensions.ShowAlert("Collection successfuly save.",Variant.Filled,snackbarService,Severity.Success);
+        }
+    }
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+    private void OnBankSelected(BankModel b)
+    {
+        bank = b;
+        GlobalClass.bankDeposit.BankId = b.Id;
+    }
+    private BankDepositModel BankDepositProperties()
+    {
+        GlobalClass.bankDeposit.IsActive = true;
+        GlobalClass.bankDeposit.CollectionId = GlobalClass.collection.Id;
+        GlobalClass.bankDeposit.StatusDate = GlobalClass.bankDeposit.DepositDate;
+        GlobalClass.bankDeposit.UserId = GlobalClass.currentUserAccount.EmployeeId;
+        MapCollectionDeposit();
+        return GlobalClass.bankDeposit;
+    }
+    private string CheckDate()
+    {
+        return "Check Date: "+GlobalClassList.listOfChecks.Where(check => check.CheckNo == GlobalClass.collection.CheckNumber).Select(check => check.CheckDate?.ToString("MM/dd/yyyy")).FirstOrDefault();
+    
+    }
+    private async Task UpdateCollection()
+    {
+        GlobalClass.collection.UserId = GlobalClass.currentUserAccount.EmployeeId;
+        GlobalClass.collection.CollectionId = GlobalClass.collection.Id;
+        GlobalClass.collection.TransactionDate = Convert.ToDateTime(GlobalClass.collection.TransactionDate?.ToString("yyyy-MM-dd"));
+        GlobalClass.collection.Activity = "Deposit Collection";
+        GlobalClass.collection = await collectionService.UpdateCollection(GlobalClass.collection,GlobalClass.token);
+    }
+}

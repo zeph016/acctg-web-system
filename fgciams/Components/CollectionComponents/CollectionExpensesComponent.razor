@@ -1,0 +1,254 @@
+@inject IDialogService dialogService
+@inject ICollectionService collectionService
+@inject ISnackbar snackbarService
+
+<MudPaper Square Elevation='0'>
+    @if(isDataFetch)
+    {
+        <div class='d-flex align-center'>
+            <MudText Class='pa-2'>
+                <small>Collection Expenses</small>
+            </MudText>
+            <MudSpacer />
+            <MudPaper Class='txt-oflow-el pa-2' Square Elevation='0' MaxWidth='230px'>
+                <MudTooltip>
+                    <small>Total Expenses:</small>
+                    <small class='font-bold @(totalExpense > 0 ? "color-green":"color-red")'>
+                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @totalExpense.ToString("N2")
+                    </small>
+                </MudTooltip>
+            </MudPaper>
+        </div>
+        
+        <MudTable Class='small-toolbar-gutter2 ' Items="@collectionModel.CollectionExpenses" Hover 
+            Breakpoint="Breakpoint.Xs" RowsPerPage='15' ApplyButtonPosition='TableApplyButtonPosition.End' Height='@TableHeight'
+            RowEditCommit='( (object model) => SaveExpense(model))'
+            RowEditCancel='( async (object model) => await ResetItem(model))'
+            CanCancelEdit FixedHeader FixedFooter Bordered Dense>
+            <ToolBarContent>
+                <MudText Typo='Typo.caption'>
+                    @collectionModel.CollectionExpenses.Count() 
+                    @(collectionModel.CollectionExpenses.Count() == 1 ? "item" : "items") 
+                    in total
+                </MudText>
+                <MudSpacer/>
+                @if(IsShowActionButtons)
+                {
+                <MudTooltip Text="Add Row" Arrow Placement='Placement.Left'>
+                    <MudIconButton OnClick='AddRow' Icon="@Icons.Material.Filled.Add" Size="Size.Small" Color='Color.Info' Title='Add'/>
+                </MudTooltip>
+                }
+            </ToolBarContent>
+            <ColGroup>
+                <col />
+                <col />
+                <col />
+            </ColGroup>
+            <HeaderContent>
+                <MudTh Class='customheader-1'>
+                    <MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<DivisionModel, object>(x=>x.divisionName)">
+                        <small>Expense Name</small>
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh Class='customheader-1'>
+                    <small>Amount</small>
+                </MudTh>
+                @if(IsShowActionButtons)
+                {
+                <MudTh Class='customheader-1 text-center pa-2'>
+                    <small>Actions</small>
+                </MudTh>
+                }
+            </HeaderContent>
+            <RowTemplate>
+                    <MudTd Class='text-left pa-2 font12'>@context.ExpenseName</MudTd>
+                    <MudTd Class='text-right pa-2 font12'>
+                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)  @context.Amount.ToString("N2")
+                    </MudTd>
+                    @if(IsShowActionButtons)
+                    {
+                    <MudTd Class='text-center pa-2'>
+                        <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                        TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
+                            <MudMenuItem OnClick='(() => RemoveRow(context))'>
+                                <div class='d-flex align-center gap-2 '>
+                                    <MudIcon Icon='@Icons.Material.Filled.Delete' Size='Size.Small' />
+                                    <MudText Typo='Typo.body2'>Remove</MudText>
+                                </div>
+                            </MudMenuItem>
+                        </MudMenu>
+                    </MudTd>
+                    }
+            </RowTemplate>
+            <RowEditingTemplate>
+                <MudTd>
+                    <MudText Class='lblhelper-type'>Expense</MudText>
+                    <BlazoredTypeahead SearchMethod='LoadExpenseLine' Context='rowExpenseLine'
+                        ValueChanged='((ExpenseLineModel exp) => OnRowSelectedExpenseLine(exp,context))'
+                        Value='context.rowExpenseLine'
+                        ValueExpression='(()=>context.rowExpenseLine)'
+                        Debounce='500' MaximumSuggestions='5' Placeholder='Expense line' DisableClear>
+                        <SelectedTemplate>
+                            <div class='overflow-hidden wspace-nowrap'>
+                                @if (!String.IsNullOrEmpty(rowExpenseLine.ExpenseName)) {
+                                <MudText Class='font12'>@rowExpenseLine.ExpenseName</MudText>
+                                } else {
+                                <MudText Class='font12'> - </MudText>
+                                }
+                            </div>
+                        </SelectedTemplate>
+                        <ResultTemplate>
+                            @rowExpenseLine.ExpenseName
+                        </ResultTemplate>
+                    </BlazoredTypeahead>
+                    @if(context.isExpenseNameEmpty)
+                    {
+                        <MudText Class='font12' Color='Color.Error'>Required*</MudText>
+                    }
+                </MudTd>
+                <MudTd>
+                    <MudTextField T='decimal' ValueChanged='( (decimal ammount) => OnAmountValuedChange(ammount,context))' Value='context.Amount' Format="N2" Placeholder='Expense Name'/>
+                    @if(context.isAmountNotValid)
+                    {
+                        <MudText Class='font12' Color='Color.Error'>Required*</MudText>
+                    }
+                </MudTd>
+                <MudTd>
+                    -
+                </MudTd>
+            </RowEditingTemplate>
+            <PagerContent>
+            </PagerContent>
+        </MudTable>
+    }
+    else 
+    {
+        <SkeletonBankDialog/>
+    }
+</MudPaper>
+
+@code{
+    [Parameter] public bool IsShowActionButtons {get;set;}
+    [Parameter] public string TableHeight { get; set; } = string.Empty;
+    [Parameter] public CollectionModel collection { get; set; } = new CollectionModel();
+    private CollectionModel collectionModel = new();
+    private bool isDataFetch;
+    private decimal totalExpense;
+    protected override async Task OnInitializedAsync()
+    {
+        Task t = Task.WhenAll(GetCollection());
+        await t;
+        if (t.Status == TaskStatus.RanToCompletion)
+            CompletedFetch();
+    }
+
+    private void CompletedFetch()
+    {
+        isDataFetch = true;
+        StateHasChanged();
+    }
+    private async Task GetCollection()
+    {
+        collectionModel = await collectionService.GetCollection(GlobalClass.collection.Id,GlobalClass.token);
+        GetCollectionIntance();
+        //For display expense Line
+        collectionModel.CollectionExpenses.ForEach( async (x) => 
+        {
+            x.rowExpenseLine = (await LoadExpenseLine(x.ExpenseName)).FirstOrDefault()?? new();
+        });
+        totalExpense = collectionModel.CollectionExpenses.Sum(x=>x.Amount);
+        Console.WriteLine(totalExpense);
+    }
+    private void AddRow()
+    {
+        CollectionExpenseModel collectionExpense = new();
+        collectionExpense.CollectionId = GlobalClass.collection.Id;
+        //Audit trail
+        collectionModel.Activity = "Add Collection Expense";
+        collectionModel.CollectionExpenses.Add(collectionExpense);
+        GlobalClass.collection.CollectionExpenses = collectionModel.CollectionExpenses;
+    }
+    private async Task RemoveRow(CollectionExpenseModel collectionExpense)
+    {
+        if(collectionExpense.Id == 0 )
+        {
+            collectionModel.CollectionExpenses.Remove(collectionExpense);
+            GlobalClass.collection.CollectionExpenses = collectionModel.CollectionExpenses;
+        }
+        else
+        {
+            collectionExpense.IsActive = false;
+            collectionModel.Activity = "Remove Collection Expense";
+            await Prompt(Enums.ActionMode.Delete, collectionExpense);
+        }
+    }
+    private void SaveExpense(object model)
+    {
+        if(((CollectionExpenseModel)model).isExpenseNameEmpty || ((CollectionExpenseModel)model).isAmountNotValid)
+        {
+            Extensions.ShowAlert("Expense name and amount is required.",Variant.Filled,snackbarService,Severity.Success);
+        }
+    }
+    private async Task Prompt(Enums.ActionMode action, CollectionExpenseModel collectionExpense)
+    {
+        var parameters = new DialogParameters();
+        string contentText = " Collection Expense";
+        string dialogTitle = action == Enums.ActionMode.Create ? "Update Collection Expense" :"Remove Collection Expense";
+        parameters.Add("contentText", contentText);
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("actionMode", action);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Canceled) 
+        {
+            if(action == Enums.ActionMode.Delete)
+            {
+                //For Front End
+                collectionModel.CollectionExpenses.Remove(collectionExpense);
+                //For updating
+                GlobalClass.collection.CollectionExpenses.Remove(collectionExpense);
+                GlobalClass.collection.RemovedCollectionExpenses.Add(collectionExpense);
+                StateHasChanged();
+            }
+        }
+    }
+    private async Task<IEnumerable<ExpenseLineModel>> LoadExpenseLine(string expenseName)
+    {
+      return await Task.Run(() => 
+      GlobalClassList.expenseLineList
+        .Where(exp => exp.WithLedger && exp.ExpenseName.ToLower().Contains(expenseName.ToLower()))
+        .ToList());
+    }
+    private void OnRowSelectedExpenseLine(ExpenseLineModel exp,CollectionExpenseModel model)
+    {
+        model.ExpenseName = exp.ExpenseName;
+        model.ExpenseId = exp.Id;
+        model.rowExpenseLine = exp;
+        model.isExpenseNameEmpty = false;
+    }
+    private void OnAmountValuedChange(decimal ammount,CollectionExpenseModel currentAmount)
+    {
+        currentAmount.Amount = ammount;
+        if(ammount > 0)
+            currentAmount.isAmountNotValid = false;
+        else
+            currentAmount.isAmountNotValid = true;
+        StateHasChanged();
+    }
+    private async Task ResetItem(object collectionExpense)
+    {
+        if(((CollectionExpenseModel)collectionExpense).Id == 0)
+            collectionModel.CollectionExpenses.Remove(((CollectionExpenseModel)collectionExpense));
+        else
+            await GetCollection();
+        StateHasChanged();
+    }
+    private void GetCollectionIntance()
+    {
+        //Prevent error null return
+        collectionModel.RemovedCollectionExpenses = collectionModel.RemovedCollectionExpenses?? new(); 
+        collectionModel.CollectionExpenses = collectionModel.CollectionExpenses?? new();
+        collectionModel.CollectionId = GlobalClass.collection.Id;
+        collectionModel.UserId = GlobalClass.currentUserAccount.EmployeeId;
+    }
+}

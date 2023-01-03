@@ -56,6 +56,8 @@
     private async Task Back()
     {
       var parameters = new DialogParameters();
+      GlobalClass.voucher.PeriodFrom = GlobalClass.voucherBIRModel.PeriodFrom;
+      GlobalClass.voucher.PeriodTo = GlobalClass.voucherBIRModel.PeriodTo;
       var options = new DialogOptions()
       {
           CloseButton = false,
@@ -65,7 +67,7 @@
           DisableBackdropClick = true
       };
       var resultDialog = await dialogService.Show<Shared.Dialogs.BIRDialogs.BIRDialog>("", options).Result;
-        if(!resultDialog.Cancelled)
+        if(!resultDialog.Canceled)
         {
             navigationManager.NavigateTo($"/bir/print");
         }
@@ -78,6 +80,7 @@
         string contentText = "B.I.R";
         Enums.ActionMode action  = GlobalClass.voucherBIRModel.Id == 0 ? Enums.ActionMode.Create : Enums.ActionMode.Update;
         string dialogTitle = action + contentText;
+        parameters.Add("dialogTitle", "Save BIR");
         parameters.Add("contentText", contentText);
         parameters.Add("actionMode", action);
         var options = new DialogOptions()
@@ -89,7 +92,7 @@
             DisableBackdropClick = true
         };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Cancelled)
+        if (!resultDialog.Canceled)
         {
             if (action == Enums.ActionMode.Create)
             {

@@ -1,4 +1,4 @@
-@page "/pettycash/print"
+@page "/petty-cash/print"
 
 @inject IPettyCashService pettyCashService
 @inject IDialogService dialogService
@@ -6,49 +6,41 @@
 @inject NavigationManager navigationManager
 
 <div class='page-cont d-flex'>
-    <div class='d-flex flex-1 pa-2'>
-        <MudCard Class='d-flex flex-1 flex-column pa-0' Elevation='1'>
-            <MudCardContent class='d-flex align-stretch justify-center rounded pa-2 default-report-viewscreen bgc-f2f2f2'>
+    <div class='rpt-container'>
+        <MudCard Class='rpt-container__document-cont' Elevation='1'>
+            <div class='rpt-container__iframe-cont'>
                 @if (string.IsNullOrWhiteSpace(PDFContent))
                 {
-                    <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
-                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-                    </MudOverlay>
+                    <MudProgressCircular Color="Color.Primary" Indeterminate />
                 }
                 else
                 {
                     <iframe src='@PDFContent' />
                 }
-            </MudCardContent>
-            <MudCardActions Class='d-flex align-center pa-0 gap-2'>
-                <div class='flex-1 border-thin-right bgc-f2f2f2 height100'></div>
-                <div class='d-flex align-center pa-2 gap-2'>
-                    <MudButton Class='btn-ios-d font12' OnClick="(() => Back())"  Variant='Variant.Text' DisableElevation Size='Size.Small'>@(isSaved ? "RETURN" : "CANCEL")</MudButton>
-                     @if (_processing) {
-                        <MudButton Class='width100px font12' OnClick="(() =>  Prompt())" Variant='Variant.Filled' DisableElevation Disabled='_processing' Color='Color.Success' Size='Size.Small'>
-                            <MudProgressCircular Class="progsize-21" Size="Size.Small" Indeterminate="true" />
-                            <MudText Class='font12 pl-2'>SAVING</MudText>
-                         </MudButton>
-                     } else {
-                        <MudButton Class='width100px font12' OnClick="(() =>  Prompt())" Variant='Variant.Filled' DisableElevation Disabled='isSaved' Color='Color.Success' Size='Size.Small'>
-                            <MudText Class='font12'>SAVE</MudText>
-                        </MudButton>
-                     }
-                </div>
-            </MudCardActions>
+            </div>
         </MudCard>
+        <ReportControls 
+            controlPosition='rptctrls-side-bottom'
+            confirmStr='SAVE VOUCHER'
+            isSaved='isSaved' 
+            processing='_processing'
+            BackEventClick='Back'
+            PromptEventClick='Prompt' />
     </div>
 </div>
 
 @code
 {
-    private string PDFContent = default!;
+    private string PDFContent = string.Empty;
     private PettyCashModel returnedModel {get;set;} = new();
     private bool isSaved, _processing;
     protected override async Task OnInitializedAsync()
     {
         GlobalClass.pageTitle = "Petty Cash Report";
-        PDFContent = await pettyCashService.GetPettyCashReport(GlobalClass.pettyCash);
+        if(GlobalClass.pettyCash.Id == 0 || GlobalClass.pettyCash == null)
+            ToList();
+        else
+            PDFContent = await pettyCashService.GetPettyCashReport(GlobalClass.pettyCash);
         StateHasChanged();
     }
     protected override async Task OnParametersSetAsync()
@@ -58,23 +50,21 @@
 
     private async Task Prompt()
     {
-        _processing = true;
         var parameters = new DialogParameters();
-        string contentText = "petty cash";
+        string contentText = " petty cash";
         string dialogTitle = PettyCashEntry.currActionMode + contentText;
         parameters.Add("contentText", contentText);
+        parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("actionMode", PettyCashEntry.currActionMode);
-        var options = new DialogOptions()
-        {
-            CloseButton = false,
-            MaxWidth = MaxWidth.ExtraSmall,
-            FullWidth = true,
-            NoHeader = false,
-            DisableBackdropClick = true
-        };
+        parameters.Add("controlNumber", GlobalClass.pettyCash.ControlNumber);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Cancelled)
+        if (!resultDialog.Canceled)
         {   
+            //lazy loader
+            _processing = true;
+            StateHasChanged();
+            await Task.Delay(500);
             if (PettyCashEntry.currActionMode == Enums.ActionMode.Create)
                 if(await Save())
                     Extensions.ShowAlert("Created Petty Cash Voucher", Variant.Filled, snackBarService, Severity.Success);
@@ -93,7 +83,7 @@
     private async Task<bool> Save()
     {
         returnedModel = await pettyCashService.AddPettyCash(GlobalClass.pettyCash, GlobalClass.token);
-        navigationManager.NavigateTo($"/pettycash-list");
+        navigationManager.NavigateTo($"/petty-cash/list");
          _processing = false;
          isSaved = true;
         return true;
@@ -101,14 +91,14 @@
     private async Task<bool> Update()
     {
         returnedModel = await pettyCashService.UpdatePettyCash(GlobalClass.pettyCash, GlobalClass.token);
-        string toPage = "pettycash-list";
-        navigationManager.NavigateTo($"/refresh/{toPage}");
+        navigationManager.NavigateTo($"/petty-cash/list");
         _processing = false;
         isSaved = true;
         return true;
     }
     private void Back()
     {
-        navigationManager.NavigateTo($"/pettycash");
+        navigationManager.NavigateTo($"/petty-cash");
     }
+     private void ToList() => navigationManager.NavigateTo($"/petty-cash/list");
 }

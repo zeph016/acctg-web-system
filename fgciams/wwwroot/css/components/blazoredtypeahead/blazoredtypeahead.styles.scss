@@ -1,0 +1,125 @@
+.blzrtypahead-unset-width {
+  .blazored-typeahead__results {
+    position: fixed;
+    width: unset;
+  }
+}
+
+.blzrtypahead-unset-width15p {
+  .blazored-typeahead__results {
+    position: fixed;
+    width: unset;
+    max-width: 15%;
+  }
+}
+
+.blzrthead-disabled-minheight15 {
+  .blazored-typeahead__input-mask-wrapper--disabled {
+    background-color: inherit;
+    min-height: 35px;
+  }
+}
+.blzrthead-disabled-white {
+  .blazored-typeahead__input-mask-wrapper--disabled {
+    background-color: inherit;
+  }
+}
+.blzrthead-custom-lbl {
+  background-color: white;
+  display: inline;
+  font-size: 12px;
+  padding: 0px 4px 0px 4px;
+  position: absolute;
+  z-index: 1;
+}
+.blzrtheadfilter-lbl-req {
+  @extend .blzrthead-custom-lbl;
+  top: 45px;
+  left: 72px;
+}
+.blztheadfilter-lbl-payproj {
+  @extend .blzrthead-custom-lbl;
+  top: 92px;
+  left: 72px;
+}
+.blztheadfilter-lbl-line3 {
+  @extend .blzrthead-custom-lbl;
+  top: 138px;
+  left: 72px;
+}
+.blztheadfilter-lbl-line6 {
+  @extend .blzrthead-custom-lbl;
+  top: 186px;
+  left: 72px;
+}
+
+.blzrtheadfilter-lbl-pj {
+  @extend .blzrthead-custom-lbl;
+  top: 45px;
+  left: 20px;
+}
+
+.blzsmall-minheight20px {
+  min-height: 20px;
+}
+.small-oflow-elipsis {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.blzsmallreq-160px {
+  @extend .small-oflow-elipsis;
+  width: 160px;
+}
+.blzsmallreq-170px {
+  @extend .small-oflow-elipsis;
+  width: 170px;
+}
+.blzsmallpayproj-170px {
+  @extend .small-oflow-elipsis;
+  @extend .blzsmall-minheight20px;
+  width: 170px;
+}
+
+.blzsmallpayproj-220px {
+  @extend .small-oflow-elipsis;
+  @extend .blzsmall-minheight20px;
+  width: 220px;
+}
+.avatar-20px {
+  height: 20px !important;
+  width: 20px !important;
+}
+
+.blzsmallmain-205px {
+  @extend .small-oflow-elipsis;
+  width: 205px;
+}
+
+.blzsmallpayee-rfp {
+  @extend .small-oflow-elipsis;
+  @media only screen and (max-width: 1366px) {
+    max-width: calc(49vw - 300px);
+  }
+  max-width: calc(37vw - 300px);
+}
+
+.blzrth-maxheight-55px {
+  .blazored-typeahead__results {
+    min-height: 55px !important;
+  }
+}
+
+.blzrth-result-height-rfp-sig {
+  @extend .blzrth-maxheight-55px;
+  .blazored-typeahead__results {
+    max-height: calc(100vh - 640px) !important;
+  }
+}
+
+.blzrth-result-height-rfp-payee {
+  @extend .blzrth-maxheight-55px;
+  .blazored-typeahead__results {
+    max-height: calc(100vh - 200px) !important;
+  }
+}

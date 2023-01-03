@@ -1,0 +1,17 @@
+.atrail-pc__container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr 1fr;
+  gap: 4px;
+  grid-auto-flow: row;
+  grid-template-areas: "audit-trail-info audit-trail-info audit-trail-signatories audit-trail-signatories" "audit-trail-table audit-trail-table audit-trail-table audit-trail-table" "audit-trail-table audit-trail-table audit-trail-table audit-trail-table" "audit-trail-table audit-trail-table audit-trail-table audit-trail-table";
+}
+.atrail-pc__container .audit-trail-info {
+  grid-area: audit-trail-info;
+}
+.atrail-pc__container .audit-trail-signatories {
+  grid-area: audit-trail-signatories;
+}
+.atrail-pc__container .audit-trail-table {
+  grid-area: audit-trail-table;
+}/*# sourceMappingURL=audit-trails.css.map */

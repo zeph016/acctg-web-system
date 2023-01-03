@@ -1,0 +1,516 @@
+@page "/collection/list"
+@page "/collection/list/{ReferenceNo}"
+@page "/collection/list/bank-deposit/{collectionControlNumber}"
+@page "/collection/list/billing/CN/{ORcontrolNumber}"
+
+@inject IGlobalService globalService
+@inject ISnackbar snackbarService
+@inject IJSRuntime JSRuntime
+@inject IDialogService dialogService
+@inject ICollectionService collectionService
+@inject NavigationManager navigationManager
+
+<div class='page-cont'>
+    <div class='drawer-right-min'>
+        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <FilterComponent OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
+                FilterClick='FilterTable' ResetTableClick='ReloadTable'
+                contentVisible='openSideFilter' moduleName="collection-list"/>
+        </MudDrawer>
+    </div>
+    <MudContainer Class='py-2 pl-2 pr-10  table-toolbar-custom1' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+        @if (!dataFetched)
+        {
+
+        }
+        else
+        {
+            <MudTable Class='table-style-1 ' @ref='tableVariable' ServerData='new Func<TableState, Task<TableData<CollectionModel>>>(LoadCollectionList)' Hover Loading='isLoading'
+                Breakpoint="Breakpoint.Xs" SelectedItems="GlobalClassList.selectedCollections" SelectedItemsChanged='((HashSet<CollectionModel> model) => SelectItems(model))'
+                RowsPerPage='15' Elevation='1' Height='calc(100vh - 215px)'  FixedHeader FixedFooter CustomFooter Bordered Dense MultiSelection>
+                <ToolBarContent>
+                    <MudText Typo='Typo.caption'>
+                        @GlobalClassList.collectionList.Count()
+                        @(GlobalClassList.collectionList.Count() == 1 ? "item" : "items") 
+                        in total
+                    </MudText>
+                    <MudSpacer/>
+                    <MudTooltip Text="Refresh Table" Arrow Placement='Placement.Top'>
+                        <MudIconButton Class='@(isLoading ? "mudbtnico-rotate":"")' OnClick='ReloadTable' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" 
+                            Color='@(isLoading ? Color.Info : Color.Default)'/>
+                    </MudTooltip>
+                    <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' ActivationEvent="MouseEvent.MouseOver"
+                        TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
+                        <MudMenuItem OnClick='(() => OpenCollectionDialog(new CollectionModel(),Enums.ActionMode.Create))'>
+                            <div class='d-flex align-center gap-2 '>
+                                <MudIcon Icon='@Icons.Material.Filled.Add' Size='Size.Small' Color='Color.Dark' />
+                                <MudText Typo='Typo.body2' Color='Color.Dark'>Add Collection</MudText>
+                            </div>
+                        </MudMenuItem>
+                        <MudMenuItem OnClick='(() => MultipleDeposit() )'>
+                            <div class='d-flex align-center gap-2 '>
+                                <MudIcon Icon='@Icons.Material.Filled.AccountBalance' Size='Size.Small' Color='Color.Dark' />
+                                <MudText Typo='Typo.body2' Color='Color.Dark'>Deposit Collections</MudText>
+                            </div>
+                        </MudMenuItem>
+                        <MudMenuItem OnClick="(() => openSideFilter = !openSideFilter)"  >
+                            <div class='d-flex align-center gap-2 '>
+                                <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
+                                <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
+                            </div>
+                        </MudMenuItem>
+                    </MudMenu>
+                </ToolBarContent>
+                <ColGroup>
+                    <col style='width:35px'/>
+                    <col style="width:1%" />
+                    <col style="width:1%" />
+                    <col style="width:1%" />
+                    <col />
+                    <col />
+                    <col style="width:1%"/>
+                    <col style="width:1%" />
+                    <col style="width:1%" />
+                    <col style='width:50px' />
+                    <col style='width:110px' />
+                    <col style="width:50px" />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh Class='@(isPinnedCtrlNo ? "th-sticky-left customheader-6":"customheader-6")'>
+                        <div class='d-flex align-center justify-space-around'>
+                            <MudTooltip Text='Pin control number column' Arrow Placement='Placement.Top'>
+                                <MudIconButton Class='ico-15x15' OnClick='(() => isPinnedCtrlNo = !isPinnedCtrlNo)' Color='@(isPinnedCtrlNo ? Color.Info:Color.Dark)' 
+                                    Icon='@Icons.Material.Filled.PushPin' Size='Size.Small'/>
+                            </MudTooltip>
+                            <MudTableSortLabel SortLabel='SortControlNumber' T='CollectionModel'
+                                InitialDirection='SortDirection.None'>
+                                Control No.
+                            </MudTableSortLabel>
+                            <MudTableSortLabel SortLabel='SortDate' T='CollectionModel'
+                                InitialDirection='SortDirection.Descending'>
+                                Date
+                            </MudTableSortLabel>
+                        </div>
+                    </MudTh>
+                    <MudTh Class='customheader-6 text-center'>
+                        <MudTableSortLabel SortLabel='SortRefNo' T='CollectionModel'
+                            InitialDirection='SortDirection.None'>
+                                Ref No.
+                        </MudTableSortLabel>
+                    </MudTh>
+                    <MudTh Class='customheader-6 text-center'>OR</MudTh>
+                    <MudTh Class='customheader-6'>Charging</MudTh>
+                    <MudTh Class='customheader-6'>Description</MudTh>
+                    <MudTh Class='customheader-6 text-center'>Expense</MudTh>
+                    <MudTh Class='customheader-6'>Category</MudTh>
+                    <MudTh Class='customheader-6'>DEP</MudTh>
+                    <MudTh Class='customheader-6 text-center'>Misc</MudTh>
+                    <MudTh Class='@(isPinnedAmt ? "th-sticky-amt customheader-6 text-right":"customheader-6 text-right")'>
+                        <MudTooltip Text='Pin amount column' Arrow Placement='Placement.Top'>
+                            <MudIconButton Class='ico-15x15' OnClick='(() => isPinnedAmt = !isPinnedAmt)' Color='@(isPinnedAmt ? Color.Info:Color.Dark)' 
+                                Icon='@Icons.Material.Filled.PushPin' Size='Size.Small'/>
+                        </MudTooltip>
+                        <MudTableSortLabel Class='text-right' SortLabel='SortNetAmount' T='CollectionModel'
+                            InitialDirection='SortDirection.None'>
+                            NET Amount
+                        </MudTableSortLabel>
+                    </MudTh>
+                    <MudTh Class='@(isPinnedAmt ? "th-sticky-action customheader-6":"customheader-6")'>Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd Class='@(isPinnedCtrlNo ? "col-sticky-left":"")' DataLabel='Control No.'>
+                        <div class='d-flex align-center'>
+                            <MudChip Class='mudchip-tbl' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, snackbarService, JSRuntime))' Variant='Variant.Outlined'
+                                Color='Color.Error' Size='Size.Small'>
+                                @(!string.IsNullOrWhiteSpace(context.ControlNumber) ? context.ControlNumber : "None")
+                            </MudChip>
+                            <MudChip Class='mudchip-tbl' Icon='@Icons.Material.Filled.CalendarMonth' Variant='Variant.Outlined' Color='Color.Dark' Size='Size.Small'>
+                                @Convert.ToDateTime(context.TransactionDate).ToShortDateString()
+                            </MudChip>
+                        </div>
+                    </MudTd>
+                    <MudTd Class='text-center' DataLabel="Reference Number">
+                        <div class='custom-chip-small-outlined'>
+                            <small>@context.ReferenceNo</small>
+                        </div>
+                    </MudTd>
+                    <MudTd Class='text-center' DataLabel='Official Receipt'>
+                        <div class='custom-chip-small-outlined'>
+                            <small>@context.OfficialReceipt</small>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel='Charge Name'>
+                        <div class='dynamic-div-1'>
+                            <small>@context.ChargeName</small>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel='Description'> 
+                        <div class='dynamic-div-1'>
+                            <small>@context.Description</small>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel='Expense Name'>
+                        <MudChip Class='mudchip-tbl-nw'
+                            Color='Color.Dark' Size='Size.Small' Variant='Variant.Outlined'>
+                            @context.ExpenseName
+                        </MudChip>
+                    </MudTd>
+                    <MudTd Class='text-center' DataLabel="Collection Category Id">
+                        <MudChip Class='mudchip-tbl-nw' Color='Color.Info' Size='Size.Small' Variant='Variant.Outlined'>
+                            @Extensions.GetEnumDescription(context.CollectionCategoryId)
+                        </MudChip>
+                    </MudTd>
+                    <MudTd Class='text-center pa-2' DataLabel='Filed'>
+                        <MudCheckBox Class='mudchip-tbl-nw' @bind-Checked='@context.isDeposit' ReadOnly Dense Size='Size.Small' />
+                    </MudTd>
+                    <MudTd Class='@(isPinnedAmt ? "br-none text-center":"text-center")' DataLabel='Misc'>
+                        <MudToggleIconButton Size='Size.Small' ToggledSize='Size.Small'
+                            Icon="@Icons.Material.Filled.ExpandMore" Color="@Color.Tertiary" Title="Expand " ToggledChanged="(()=> GetCollectionExpenses(context))"
+                            ToggledIcon="@Icons.Material.Filled.ExpandLess" ToggledColor="@Color.Info" ToggledTitle="Collapse"/>
+                    </MudTd>
+                    <MudTd Class='@(isPinnedAmt ? "col-sticky-amt":"")' DataLabel='Amount'>
+                        <div class='tooltipw100'>
+                            <MudTooltip Class='flex-1' Text='@(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + context.NetAmount.ToString("N2"))' 
+                                Arrow Placement='Placement.Top' Style='@(context.NetAmount > 0 ? "font-bold color-green":"font-bold color-red")'>
+                                <div class='amount-container'>
+                                    <small class='@(context.NetAmount > 0 ? "font-bold color-green":"font-bold color-red")'>
+                                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                                    </small>
+                                    <MudSpacer />
+                                    <small class='@(context.NetAmount > 0 ? "txt-green":"txt-red")'>
+                                        @context.NetAmount.ToString("N2")
+                                    </small>
+                                </div>
+                            </MudTooltip>
+                        </div>
+                    </MudTd>
+                    <MudTd Class='@(isPinnedAmt ? "col-sticky-action text-center":"text-center")' DataLabel='Action'>
+                        <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
+                            TransformOrigin='Origin.TopRight' Dense Size='Size.Small'>
+                            <MudMenuItem OnClick='(() => OpenCollectionDialog(context,Enums.ActionMode.Update))'>
+                                <div class='d-flex align-center gap-2 '>
+                                    <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' Color='Color.Dark' />
+                                    <MudText Typo='Typo.body2' Color='Color.Dark'>Edit</MudText>
+                                </div>
+                            </MudMenuItem>
+                            <MudMenuItem OnClick="(() => CancelDeposit(context))">
+                                    <div class='d-flex align-center gap-2 menu-grow-anim'>
+                                        <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small' Color='Color.Dark' />
+                                        <MudText Typo='Typo.body2' Color='Color.Dark'>Cancel</MudText>
+                                    </div>
+                            </MudMenuItem>
+                            <MudMenuItem OnClick='(() => SingleDeposit(context))'>
+                                <div class='d-flex align-center gap-2 '>
+                                    <MudIcon Icon='@Icons.Material.Filled.AccountBalance' Size='Size.Small' Color='Color.Dark'/>
+                                    <MudText Typo='Typo.body2' Color='Color.Dark'>@(context.isDeposit == true? "View":"Deposit")</MudText>
+                                </div>
+                            </MudMenuItem>
+                            <MudMenuItem OnClick="(() => GoToAuditTrail(context))">
+                                <div class='d-flex align-center gap-2 '>
+                                    <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' Color='Color.Dark' />
+                                    <MudText Typo='Typo.body2' Color='Color.Dark'>Audit Trail</MudText>
+                                </div>
+                            </MudMenuItem>
+                        </MudMenu>
+                    </MudTd>
+                </RowTemplate>
+                <ChildRowContent>
+                    <MudTr>
+                        <td colspan="12">
+                            <div class='@(context.showSubDetails ? "fade-in":"fade-out overflow-hidden") d-flex align-start transition-05s-ease bgc-f2f2f2 ' 
+                                style='@(context.showSubDetails ? "max-height:200px" : "max-height:0px")'>
+                                <CollectionChildRowComponent 
+                                    collOR='@context.OfficialReceipt' 
+                                    collCN='@context.CheckNumber'
+                                    collRemarks='@context.Remarks' 
+                                    collDebit='context.Debit'
+                                    collCredit='context.Credit'
+                                    collTax='context.Tax'
+                                    collMob='context.Mobilization' 
+                                    collRet='context.Retention' 
+                                    collOthers='context.Others' 
+                                    collGrossAmt='context.GrossAmount' 
+                                    collNetAmt='context.NetAmount' 
+                                    IsCollection='true'
+                                    CollectionExpenses='context.CollectionExpenses' />
+                            </div>
+                        </td>
+                    </MudTr>
+                </ChildRowContent>
+                <NoRecordsContent>
+                    <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No records found</MudText>
+                </NoRecordsContent>
+                <PagerContent>
+                    <MudDivider />
+                    <div class='d-flex align-center justify-end bgc-F4F5FB'>
+                        <div class='d-flex align-center justify-end px-2'>
+                            <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>Cash on Hand: </MudText>
+                            <div class='d-flex align-center gap-2'>
+                                <MudChip Class='rounded' Color='Color.Default' Size='Size.Small'>
+                                    <MudText Class='font-bold font12' Style='@(GlobalClassList.collectionList.Sum(coll=>coll.Credit) > 0 ? "color:green":"color:red")'>
+                                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @cashHands.ToString("N2")
+                                    </MudText>
+                                </MudChip>
+                            </div>
+                        </div>
+                    </div>
+                    <MudTablePager PageSizeOptions="@GlobalVariable.pageSize" />
+                </PagerContent>
+            </MudTable>
+        }
+         
+    </MudContainer>
+</div>
+
+@code
+{
+    [Parameter] public string ORcontrolNumber { get; set; } = string.Empty;
+    [Parameter] public string ReferenceNo {get;set;} = string.Empty;
+    [Parameter] public string collectionControlNumber {get;set;} = string.Empty;
+    private bool dataFetched, isLoading = true, toggleSidebar = true, isPinnedCtrlNo = true, isPinnedAmt = true;
+    private int totalItems, colspanMain = 8;
+    private bool openSideFilter;
+    private string searchTerm = string.Empty;
+    private Project currentProject = new();
+    private FilterParameter filterParameter = new();
+    public static Enums.ActionMode currentAction = Enums.ActionMode.Create;
+    private IEnumerable<CollectionModel>? pageData;
+    private MudTable<CollectionModel> tableVariable = new MudTable<CollectionModel>();
+    private DateRange dateRange = new DateRange(DateTime.Now, DateTime.Now);
+    private DateRange depositDateRange = new DateRange(DateTime.Now, DateTime.Now);
+    private decimal cashHands = 0.00m;
+
+    protected override async Task OnInitializedAsync()
+    {
+        GlobalClass.pageTitle = "Collections";
+        Task t = Task.WhenAll(LocationCollections(), CashOnHands());
+        await t;
+        if (t.Status == TaskStatus.RanToCompletion)
+            CompletedFetch();
+        SignalR();
+    }
+
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+    private async Task LocationCollections()
+    {
+        filterParameter.isActive = true;
+        filterParameter.IsCollection = true;
+        if(!String.IsNullOrEmpty(ReferenceNo))
+        {
+           filterParameter.IsControlNumber = true;
+           filterParameter.ControlNumber = ReferenceNo;
+        }
+        if(!String.IsNullOrEmpty(collectionControlNumber) || !String.IsNullOrEmpty(ORcontrolNumber))        
+        {
+           filterParameter.IsControlNumber = true;
+           filterParameter.ControlNumber = collectionControlNumber == string.Empty? collectionControlNumber : ORcontrolNumber;
+        }
+        await tableVariable.ReloadServerData();
+        //GlobalClassList.collectionList = await collectionService.GetCollections(filterParameter,GlobalClass.token);
+        StateHasChanged();
+    }
+    private async Task Prompt(CollectionModel collection,Enums.ActionMode actionMode)
+    {
+        var parameters = new DialogParameters();
+        string contentText = " this collection";
+        string dialogTitle = actionMode.ToString();
+        parameters.Add("contentText", contentText);
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("actionMode", actionMode);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Canceled) 
+        {   
+            collection.UserId = GlobalClass.currentUserAccount.EmployeeId;
+            collection.Activity = "Cancel Collection";
+            collection.IsVoid = true;
+            var collectionUpdate = await collectionService.UpdateCollection(collection,GlobalClass.token);
+            Extensions.ShowAlert("Collection successfully cancelled.",Variant.Filled,snackbarService,Severity.Success);
+        }
+    }
+    private async Task OpenCollectionDialog(CollectionModel collection, Enums.ActionMode actionMode)
+    {
+        var parameters = new DialogParameters();
+        GlobalClass.collection = collection;
+        string dialogTitle = GlobalClass.collection.Id != 0 ? "Edit Collection" : "Add Collection";
+        string buttonText = GlobalClass.collection.Id != 0 ? "Update" : "Add";
+        Color color = GlobalClass.collection.Id != 0 ? Color.Info : Color.Success;
+        parameters.Add("color", color);
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", buttonText);
+        parameters.Add("currentAction", actionMode);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.Large, FullWidth = false, NoHeader = false, DisableBackdropClick = false };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.CollectionDialogs.CollectionDialog>("", parameters, options).Result;
+        if (resultDialog.Canceled)
+            Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
+        await tableVariable.ReloadServerData();
+    }
+    private async Task<TableData<CollectionModel>> LoadCollectionList(TableState tableState)
+    {
+        isLoading = true;
+        IEnumerable<CollectionModel> data = await collectionService.GetCollections(filterParameter,GlobalClass.token);
+        switch (tableState.SortLabel)
+        {
+            case "SortControlNumber":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.Id);
+                break;
+            case "SortDate":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.TransactionDate);
+                break;
+            case "SortRefNo":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.ReferenceNo);
+                break;
+            case "SortNetAmount":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.NetAmount);
+                break;
+        }
+        GlobalClassList.collectionList = data.ToList();
+        pageData = data.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
+        totalItems = data.Count();
+        isLoading = !isLoading;
+        StateHasChanged();
+        return new TableData<CollectionModel>(){TotalItems = totalItems, Items = pageData};
+    }
+    private async Task ReloadTable()
+    {
+        filterParameter = new();
+        filterParameter.IsCollection = true;
+        await tableVariable.ReloadServerData();
+    }
+    private bool EnableClearButton()
+    {
+      if(filterParameter.IsControlNumber) 
+        return true;
+      if(filterParameter.IsName)
+        return true;
+      if(filterParameter.IsProject)
+        return true;
+      if(filterParameter.IsCheckNumber)
+        return true;
+      if(filterParameter.IsDate)
+        return true;
+      if(filterParameter.IsExpense)
+        return true;
+      if(filterParameter.IsDepositDate)
+        return true;
+      if(filterParameter.IsBank)
+        return true;
+      return false;
+    }
+    private async Task FilterTable()
+    {
+        filterParameter = GlobalVariable.filterParameter;
+        filterParameter.isActive = true;
+        await tableVariable.ReloadServerData();
+    }
+    private async Task ClearFilter()
+    {
+      filterParameter = new();
+      filterParameter.IsCollection = true;
+      dateRange = new DateRange(DateTime.Now, DateTime.Now);
+      await tableVariable.ReloadServerData();
+    }
+    private async Task<IEnumerable<Project>> LoadCharging(string chargingName)
+    {
+      var filterParameter = new FilterParameter()
+      {
+        IsProject = true,
+        ProjectName = chargingName,
+        IsId = false
+      };
+      var charging = await globalService.LoadChargeProjectLine(filterParameter, GlobalClass.token);
+      return charging;
+    }
+    private void OnProjectSelected(Project p)
+    {
+        currentProject = p;
+        filterParameter.ProjectName = p.ProjectName;
+        filterParameter.ProjectId = p.ProjectId;
+        filterParameter.ProjectCategoryId = p.ProjectCategoryId;
+    }
+    private async Task CashOnHands()
+    {
+        cashHands = await collectionService.GetCashOnHands(GlobalClass.token);
+    }
+    private void GoToAuditTrail(CollectionModel collection)
+    {
+        GlobalClass.collection = collection;
+        navigationManager.NavigateTo("/collection/trail");
+    }
+    private async Task MultipleDeposit()
+    {
+        if(GlobalClassList.selectedCollections.Count != 0)
+        {
+            await DepositDialog();
+        } else {
+            Extensions.ShowAlert("Please select a collection/s",Variant.Filled,snackbarService,Severity.Error);
+        }
+    }
+    private async Task SingleDeposit(CollectionModel collection)
+    {
+        GlobalClassList.selectedCollections.Clear();
+        GlobalClassList.selectedCollections.Add(collection);
+        GlobalClass.collection = collection;
+        await DepositDialog();
+    }
+    private async Task DepositDialog()
+    {
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.Medium, FullWidth = true, NoHeader = false, DisableBackdropClick = false };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.BankDepositDialogs.BankDepositDialog>("", options).Result;
+        if (resultDialog.Canceled)
+            GlobalClassList.selectedCollections.Clear();
+        await ReloadTable();
+    }
+    private bool isAnyDeposited()
+    {
+        return GlobalClassList.selectedCollections.Any( coll => coll.isDeposit);
+    }
+    private async Task GetCollectionExpenses(CollectionModel collection)
+    {
+        collection.showSubDetails = !collection.showSubDetails;
+        collection.CollectionExpenses = (await collectionService.GetCollection(collection.Id,GlobalClass.token)).CollectionExpenses;
+    }
+
+    private void SelectItems(HashSet<CollectionModel> model)
+    {
+        foreach (var item in GlobalClassList.selectedCollections)
+        {
+            if (item.isDeposit)
+                GlobalClassList.selectedCollections.Remove(item);
+        }
+    }
+    private async Task CancelDeposit(CollectionModel collection)
+    {
+        if(!collection.isDeposit)
+        {
+            await Prompt(collection,Enums.ActionMode.Cancel);
+        } else {
+            Extensions.ShowAlert("You can't cancel the collection that has already been deposited.", Variant.Filled, snackbarService, Severity.Error);
+        }
+        await tableVariable.ReloadServerData();
+    }
+    private void SignalR()
+    {
+        try
+        {
+            if(GlobalVariable.AMSHubConnection != null)
+                GlobalVariable.AMSHubConnection.On<CollectionModel>("SaveCollection", async (billing) => 
+                {
+                    if(billing.IsCollection)
+                    {
+                        await tableVariable.ReloadServerData();
+                        StateHasChanged();
+                    }
+                });
+        }catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            throw;
+        }
+    }
+
+}

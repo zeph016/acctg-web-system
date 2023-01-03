@@ -1,66 +1,26 @@
 @page "/voucher/list"
 @page "/voucher-list"
+@page "/voucher/list/{controlNumber}"
 
 @inject IDialogService dialogService
 @inject IVoucherService voucherService
 @inject NavigationManager navigationManager
-@inject ISnackbar snackBar
+@inject ISnackbar snackbarService
+@inject IJSRuntime JSRuntime
 @inject ApplicationState AppState
 @inject IGlobalService globalService
 @inject IRequestForPaymentService requestForPaymentService
 
 <div class='page-cont'>
-  <div class='drawer-right'>
+  <div class='drawer-right-min'>
     <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
-      <div class='drawer-right__filtercont'>
-        <div class='icon-area d-flex align-center'>
-          <MudIconButton OnClick='OpenSideFilter' Icon='@Icons.Filled.FilterList' arial-label='Close Filter' Size='Size.Medium' />
-        </div>
-        <div class='filter-title d-flex align-center'>
-          <p class='title875'>Filter</p>
-          <MudSpacer />
-          <MudIconButton OnClick='OpenSideFilter' Icon='@Icons.Filled.Close' aria-label='Close Filter' Size='Size.Medium' />
-        </div>
-        <div class='filter-content d-flex flex-column pl-4 pr-4 gap-1 @visibility'>
-          <div class='d-flex align-center gap-2 @visibility'>
-            <MudCheckBox Class='pt-1' @bind-Checked='filterParameter.IsControlNumber' Dense Size='Size.Small' />
-            <MudTextField Class='txtfield-75' @bind-Value='filterParameter.ControlNumber' Placeholder='Control Number'
-            Clearable='true' Variant='Variant.Outlined' Disabled='!filterParameter.IsControlNumber'/>
-          </div>
-          <div class='d-flex align-center gap-2 @visibility'>
-            <MudCheckBox Class='pt-1' @bind-Checked='filterParameter.IsAccountingStatus' Dense Size='Size.Small' />
-            <MudSelect Class='selectparent-75 fa-icon-center' MultiSelectionTextFunc='@(new Func<List<string>, string>(AccountingStatus))' @bind-SelectedValues='hasAccountingStatus' 
-              @bind-Value="selectedStatus" Dense="true" MultiSelection=true Disabled='!filterParameter.IsAccountingStatus' PlaceHolder='Accounting Status'
-              Variant='Variant.Outlined'>
-              @if(GlobalClassList.accountingStatusList != null)
-              {
-                @foreach (var item in GlobalClassList.accountingStatusList.Where(x=> (int)x.StatusEnumCategoryId == 11 || (int)x.StatusEnumCategoryId == 12 || (int)x.StatusEnumCategoryId == 13))
-                {
-                  <MudSelectItem Value="@item">@item.StatusName</MudSelectItem>
-                }
-              }
-            </MudSelect>
-          </div>
-          <div class='d-flex align-center gap-2 @visibility'>
-          <MudCheckBox Class='pt-1' @bind-Checked='filterParameter.IsPayee' Dense Size='Size.Small' />
-          <MudTextField Class='txtfield-75' @onclick='PayeeSearchLookup' @bind-Value='filterParameter.PayeeName' Placeholder='Payee' 
-          ReadOnly Disabled='!filterParameter.IsPayee' Variant='Variant.Outlined' />
-          </div>
-          <div class='d-flex align-center gap-2 @visibility'>
-            <MudCheckBox Class='pt-1' @bind-Checked='filterParameter.IsDate' Dense Size='Size.Small'/>
-            <MudDateRangePicker Class='txtfield-75' @bind-DateRange='dateRange' Disabled='!filterParameter.IsDate' Variant='Variant.Outlined' ></MudDateRangePicker>
-          </div>
-          <div class='d-flex align-center justify-end pt-1'>
-            <MudButton Class='wspace-nowrap' OnClick='ClearSearch' Variant='Variant.Filled' Color='Color.Secondary' Disabled=!EnableClearButton()>Clear Filter</MudButton>
-            &nbsp;
-            <MudButton Class='wspace-nowrap' OnClick='FilterItems' Variant='Variant.Filled' Color='Color.Secondary'>Apply Filter</MudButton>
-          </div>
-        </div>
-      </div>
+      <FilterComponent OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
+            FilterClick='FilterTable' ResetTableClick='ReloadTable'
+            contentVisible='openSideFilter' moduleName="voucher-list"/>
     </MudDrawer>
   </div>
 
-  <MudContainer Class='voucherlist' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+  <MudContainer Class='py-2 pl-2 pr-10  table-toolbar-custom1' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
     @if (!dataFetched)
     {
       <SkeletonPageList />
@@ -68,82 +28,119 @@
     else
     {
       <MudPaper>
-        <MudTable Class='configtables row-popup-anim-2px' ServerData='new Func<TableState, Task<TableData<VoucherModel>>>(LoadVoucherServer)' Hover='true' Height='calc(100vh - 185px)'
-        Breakpoint='Breakpoint.Sm' Bordered FixedHeader FixedFooter Dense Striped='false'
-        RowsPerPage='30' @ref='tableVariable'>
+        <MudTable Class='table-style-1 ' ServerData='new Func<TableState, Task<TableData<VoucherModel>>>(LoadVoucherServer)' Height='calc(100vh - 185px)'
+          Breakpoint='Breakpoint.Sm' Hover Bordered FixedHeader FixedFooter Dense RowsPerPage='15' @ref='tableVariable'>
           <ToolBarContent>
             <MudText Typo='Typo.caption'>
               @totalItems
               @(totalItems == 1 ? "item" : "items")
-              in Total
+              in total
             </MudText>
             <MudSpacer/>
             <MudTooltip Text="Refresh Table">
-              <MudIconButton Icon="@Icons.Filled.Refresh" Size="Size.Small" OnClick='ClearSearch' ></MudIconButton>
+              <MudIconButton OnClick='ReloadTable' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" ></MudIconButton>
             </MudTooltip>
-            <MudMenu StartIcon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
+            <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' ActivationEvent='MouseEvent.MouseOver'
               TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
               @if(AccessLevelAddmin() || AccessLevelRequestors())
               {
-                  <MudMenuItem OnClick='(()=> navigationManager.NavigateTo($"/voucher/create"))'>
-                  <div class='d-flex align-center gap-2 menu-grow-anim'>
-                      <MudIcon Icon='@Icons.Filled.Add' Size='Size.Small' />
-                    <MudText Typo='Typo.body2'>Add</MudText>
-                  </div>
-              </MudMenuItem>                        
+                <MudMenuItem OnClick='(()=> navigationManager.NavigateTo($"/voucher"))'>
+                    <div class='d-flex align-center gap-2 '>
+                        <MudIcon Icon='@Icons.Material.Filled.Add' Size='Size.Small' />
+                      <MudText Typo='Typo.body2'>Add</MudText>
+                    </div>
+                </MudMenuItem>         
+                <MudMenuItem OnClick="(() => openSideFilter = !openSideFilter)"  >
+                    <div class='d-flex align-center gap-2 '>
+                        <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
+                        <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
+                    </div>
+                </MudMenuItem>               
               }
           </MudMenu>
           </ToolBarContent>
           <ColGroup>
-            <col style='width: 20px' />
+            <col style='width:20px' />
             <col />
             <col />
-            <col style='width: 10px' />
-            <col style='width: 20px' />
-            <col style='width: 20px' />
-            <col style='width: 1%' />
-            <col style='width: 1%' />
-            <col style='width: 20px'/>
+            <col style='width:10px' />
+            <col style='width:1%' />
+            <col style='width:50px' />
+            <col style='width:50px' />
+            <col style='width:110px' />
+            <col style='width:50px' />
           </ColGroup>
           <HeaderContent>
-            <MudTh Class='customheader-1'>
-              <div class='d-flex align-center justify-start'>
+            <MudTh Class='@(isPinnedCtrlNo ? "th-sticky-left customheader-6":"customheader-6")'>
+              <div class='d-flex align-center justify-space-around gap-2'>
+                <MudTooltip Text='Pin control number column' Arrow Placement='Placement.Top'>
+                    <MudIconButton Class='ico-15x15' OnClick='(() => isPinnedCtrlNo = !isPinnedCtrlNo)' Color='@(isPinnedCtrlNo ? Color.Info:Color.Dark)' 
+                        Icon='@Icons.Material.Filled.PushPin' Size='Size.Small'/>
+                </MudTooltip>
                 <MudTableSortLabel SortLabel='SortControlNumber' T='VoucherModel'
                 InitialDirection='SortDirection.None'>
                   Control No.
                 </MudTableSortLabel>
-                <MudSpacer />
                 <MudTableSortLabel SortLabel='SortDate' T='VoucherModel'
                 InitialDirection='SortDirection.Descending'>
                   Date
                 </MudTableSortLabel>
               </div>
             </MudTh>
-            <MudTh Class='customheader-1'>Payee</MudTh>
-            <MudTh Class='customheader-1'>Description</MudTh>
-            <MudTh Class='customheader-1 text-center pa-2'></MudTh>
-            <MudTh Class='customheader-1 text-center'>Status</MudTh>
-            <MudTh Class='customheader-1 text-center'>Filed</MudTh>
-            <MudTh Class='customheader-1 text-right pa-2'>Checks</MudTh>
-            <MudTh Class='customheader-1 text-right'>Amount</MudTh>
-            <MudTh Class='customheader-1 pa-2'>Action</MudTh>
+            <MudTh Class='customheader-6'>
+               <MudTableSortLabel SortLabel='SortPayee' T='VoucherModel'
+                InitialDirection='SortDirection.Descending'>
+                  Payee
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh Class='customheader-6'>Description</MudTh>
+            <MudTh Class='customheader-6 text-center'></MudTh>
+            <MudTh Class='customheader-6 text-center'>
+               <MudTableSortLabel Class='text-right' SortLabel='SortStatus' T='VoucherModel'
+                InitialDirection='SortDirection.None'>
+                  Status
+              </MudTableSortLabel>
+            </MudTh>
+            <MudTh Class='customheader-6 text-center'>Filed</MudTh>
+            <MudTh Class='customheader-6 text-center'>Checks</MudTh>
+            <MudTh Class='@(isPinnedAmt ? "th-sticky-amt-vl customheader-6 text-right":"customheader-6 text-right")'>
+              <MudTooltip Text='Pin amount column' Arrow Placement='Placement.Top'>
+                <MudIconButton Class='ico-15x15' OnClick='(() => isPinnedAmt = !isPinnedAmt)' Color='@(isPinnedAmt ? Color.Info:Color.Dark)' 
+                    Icon='@Icons.Material.Filled.PushPin' Size='Size.Small'/>
+              </MudTooltip>
+              <MudTableSortLabel Class='text-right' SortLabel='SortAmount' T='VoucherModel'
+                InitialDirection='SortDirection.None'>
+                  Amount
+              </MudTableSortLabel>
+            </MudTh>
+            <MudTh Class='@(isPinnedAmt ? "th-sticky-action customheader-6":"customheader-6")'>Action</MudTh>
           </HeaderContent>
           <RowTemplate>
-            <MudTd DataLabel='control no.'>
+            <MudTd Class='@(isPinnedCtrlNo ? "col-sticky-left":"")' DataLabel='control no.'>
               <div class='d-flex align-center'>
-                  <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small'>
+                  <MudChip Class='mudchip-tbl' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, snackbarService, JSRuntime))' 
+                      Variant='Variant.Outlined' Color='Color.Error' Size='Size.Small'>
                     @context.ControlNumber
                   </MudChip>
-                  <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Text' Icon='@Icons.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
+                  <MudChip Class='mudchip-tbl' Icon='@Icons.Material.Filled.CalendarMonth' 
+                    Variant='Variant.Outlined' Color='Color.Dark' Size='Size.Small'>
                     @Convert.ToDateTime(context.VoucherDate).ToShortDateString()
                   </MudChip>
               </div>
             </MudTd>
-            <MudTd Class='wspace-nowrap font12' DataLabel='Payee'>@context.PayeeName</MudTd>
-            <MudTd Class='wbreak-breakword font12' DataLabel='Description'>@context.Description</MudTd>
-            <MudTd Class='wspace-nowrap text-center pa-2' DataLabel='Signatories'>
+            <MudTd DataLabel='Payee'>
+              <div class='dynamic-div-1'>
+                <small>@context.PayeeName</small>
+              </div>
+            </MudTd>
+            <MudTd DataLabel='Description'>
+               <div class='dynamic-div-1'>
+                <small>@context.Description</small>
+               </div>
+            </MudTd>
+            <MudTd DataLabel='Signatories'>
               <MudTooltip Text='Signatories' Placement='Placement.Top'>
-                <MudMenu Icon="@Icons.Filled.Groups" AnchorOrigin='Origin.BottomRight' ActivationEvent='MouseEvent.MouseOver'
+                <MudMenu Icon="@Icons.Material.Filled.Groups" AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
                   TransformOrigin='Origin.TopLeft' Dense Size='Size.Small'>
                   <MudMenuItem>
                     <MudPaper class='pa-2 bgc-e7f2fb min-width200px'>
@@ -169,59 +166,57 @@
             <MudTd Class='text-left' DataLabel='Status'>
               @if (dataFetched)
               {
-                <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Filled' Size='Size.Small'
-                  Style="@Extensions.GetAcctgStatusColor(context.AccountingStatusId)">
+                <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Outlined' Size='Size.Small'
+                  Style="@Extensions.BorderColor(context.AccountingStatusId)">
                   @context.StatusName
                 </MudChip>
               }
             </MudTd>
-            <MudTd Class='text-center' DataLabel='Filed'>
-               <MudCheckBox Class='chip-radius-5 font-bold font10' @bind-Checked=context.IsFiled ReadOnly Dense Size='Size.Small' />
+            <MudTd DataLabel='Filed'>
+               <MudCheckBox Class='chip-radius-5 font-bold font10' @bind-Checked=context.IsFiled ReadOnly Dense Size='Size.Small' 
+                  UnCheckedColor='Color.Dark' Color='Color.Info' />
             </MudTd>
-            <MudTd Class='wspace-nowrap pa-2'>
+            <MudTd Class='@(isPinnedAmt ? "br-none":"")'>
               <div class='d-flex align-center justify-center'>
-                @if (!string.IsNullOrWhiteSpace(context.CheckNumber)) {
+                <MudTooltip Text='Checks' Arrow Placement='Placement.Top'>
+                @if (!string.IsNullOrWhiteSpace(context.CheckNumber)) 
+                {
                   <MudToggleIconButton @bind-Toggled='context.isShowChecks'
-                    Icon="@Icons.Filled.ExpandMore" Color="@Color.Tertiary" Title="Expand" Size='Size.Small' ToggledSize='Size.Small'
-                    ToggledIcon="@Icons.Filled.ExpandLess" ToggledColor="@Color.Info" ToggledTitle="Collapse"/>
-                } else {
+                    Icon="fa-solid fa-money-check" Color="@Color.Default" Title="Expand" Size='Size.Small' ToggledSize='Size.Small'
+                    ToggledIcon="fa-solid fa-money-check" ToggledColor="@Color.Info" ToggledTitle="Collapse"/>
+                } 
+                else 
+                {
                   <MudText Class='font12'> - </MudText>
                 }
+              </MudTooltip>
               </div>
             </MudTd>        
-            <MudTd Class='wspace-nowrap text-right' DataLabel='Amount'>
-              <div class='d-flex align-center gap-2'>
-                @if (context.TotalAmount > 0)
-                {
-                  <MudText Class='font-bold color-green font12'>
-                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) 
-                  </MudText>
-                  <MudSpacer />
-                  <MudText Class='font-bold color-green font12' Typo='Typo.body2'>
-                    @context.TotalAmount.ToString("N2")
-                  </MudText>
-                }
-                else
-                {
-                  <MudText Class='font-bold font12' Color='Color.Error'>
-                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
-                  </MudText>
-                  <MudSpacer />
-                  <MudText Class='font-bold font12' Color='Color.Error'>
-                    @context.TotalAmount.ToString("N2")
-                  </MudText>
-                }
+            <MudTd Class='@(isPinnedAmt ? "col-sticky-amt-vl":"")' DataLabel='Amount'>
+              <div class='tooltipw100'>
+                <MudTooltip Class='flex-1' Text='@(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + context.TotalAmount.ToString("N2"))' 
+                    Arrow Placement='Placement.Top' Color='@(context.TotalAmount > 0 ? Color.Success:Color.Error)'>
+                    <div class='amount-container'>
+                      <small class='@(context.TotalAmount > 0 ? "font-bold color-green":"font-bold color-red")'>
+                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                      </small>
+                      <MudSpacer />
+                      <small class='@(context.TotalAmount > 0 ? "txt-green":"txt-red")'>
+                         @context.TotalAmount.ToString("N2")
+                      </small>
+                    </div>
+                </MudTooltip>
               </div>
             </MudTd>
-            <MudTd Class='text-center pa-2' DataLabel='Action'>
-              <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
+            <MudTd Class='@(isPinnedAmt ? "col-sticky-action text-center":"text-center")' DataLabel='Action'>
+              <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
               TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
                 @if((!ViewMenu(context) && AccessLevelAddmin())
                 || (!ViewMenu(context)) && AccessLevelRequestors())
                 {
                   <MudMenuItem OnClick='(()=> EditVoucher(context))'>
-                    <a class='d-flex align-center gap-2 menu-grow-anim'>
-                      <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small' />
+                    <a class='d-flex align-center gap-2 '>
+                      <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' />
                       <MudText Typo='Typo.body2'>Edit</MudText>
                     </a>
                   </MudMenuItem>
@@ -229,14 +224,14 @@
                   if(AccessLevelAddmin())
                   {
                     <MudMenuItem OnClick='(()=> ApprovedVoucher(context))'>
-                      <div class='d-flex align-center gap-2 menu-grow-anim'>
-                        <MudIcon Icon='@Icons.Filled.CheckCircle' Size='Size.Small' />
+                      <div class='d-flex align-center gap-2 '>
+                        <MudIcon Icon='@Icons.Material.Filled.CheckCircle' Size='Size.Small' />
                         <MudText Typo='Typo.body2'>Approve</MudText>
                       </div>
                     </MudMenuItem>
                     <MudMenuItem OnClick='(()=> CancelVoucher(context))'>
-                      <div class='d-flex align-center gap-2 menu-grow-anim'>
-                        <MudIcon Icon='@Icons.Filled.Cancel' Size='Size.Small' />
+                      <div class='d-flex align-center gap-2 '>
+                        <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small' />
                         <MudText Typo='Typo.body2'>Cancel</MudText>
                       </div>
                     </MudMenuItem>
@@ -245,30 +240,33 @@
                 }
                 else if(AccountingStatus(Enums.ActionMode.Approve).Id == context.AccountingStatusId && AccessLevelAddmin())
                 {
+                  if(!context.IsFiled && string.IsNullOrWhiteSpace(context.CheckNumber))
+                  {
                    <MudMenuItem OnClick='(()=> VoidVoucher(context))'>
-                      <div class='d-flex align-center gap-2 menu-grow-anim'>
-                        <MudIcon Icon='@Icons.Filled.CancelPresentation' Size='Size.Small' />
+                      <div class='d-flex align-center gap-2 '>
+                        <MudIcon Icon='@Icons.Material.Filled.CancelPresentation' Size='Size.Small' />
                         <MudText Typo='Typo.body2'>Generate (Void)</MudText>
                       </div>
                     </MudMenuItem>
+                  }
                 }
                 <MudMenuItem OnClick='(()=> {navigationManager.NavigateTo($"/voucher-audit");GlobalClass.voucher = context;})'>
-                  <a class='d-flex align-center gap-2 menu-grow-anim'>
-                    <MudIcon Icon='@Icons.Filled.ListAlt' Size='Size.Small' />
+                  <a class='d-flex align-center gap-2 '>
+                    <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' />
                     <MudText Typo='Typo.body2'>Audit Trail</MudText>
                   </a>
               </MudMenuItem>
                 <MudMenuItem OnClick='(() => context.ShowReport = ShowReport(context.ShowReport, context))'>
-                  <div class='d-flex align-center gap-2 menu-grow-anim'>
-                    <MudIcon Icon='@Icons.Filled.PictureAsPdf' Size='Size.Small' />
+                  <div class='d-flex align-center gap-2 '>
+                    <MudIcon Icon='@Icons.Material.Filled.PictureAsPdf' Size='Size.Small' />
                     <MudText Typo='Typo.body2'>Show Report</MudText>
                   </div>
                 </MudMenuItem>
-                @if(context.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.VA)
+                @if(context.AccountingStatusId == AccountingStatusId(Enums.AccountingStatusEnumCategory.VA))
                 {
                 <MudMenuItem OnClick='(() => ShowBIRDialog(context))'>
-                  <div class='d-flex align-center gap-2 menu-grow-anim'>
-                    <MudIcon Icon='@Icons.Filled.DocumentScanner' Size='Size.Small' />
+                  <div class='d-flex align-center gap-2 '>
+                    <MudIcon Icon='@Icons.Material.Filled.DocumentScanner' Size='Size.Small' />
                     <MudText Typo='Typo.body2'>BIR</MudText>
                   </div>
                 </MudMenuItem>
@@ -280,41 +278,44 @@
             <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No records found</MudText>
           </NoRecordsContent>
           <ChildRowContent>
-            @if (context.ShowReport)
-            {
+            <MudTr>
               <td colspan="9">
-                <div class='d-flex align-center pa-2 bgc-f2f2f2'>
-                    <MudSpacer />
-                    <MudButton OnClick='(() => context.ShowReport = ShowReport(context.ShowReport, context))' EndIcon="@Icons.Rounded.Close" IconColor='Color.Error' Size='Size.Small' >
-                        Close Report
-                    </MudButton>
-                </div>
-                <MudTr Class='d-flex align-stretch justify-center default-report-container'>
-                    @if (string.IsNullOrWhiteSpace(PDFContent))
-                    {
-                    <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
-                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-                    </MudOverlay>
-                    }
-                    else
-                    {
-                    <iframe src='@PDFContent' />
-                    }
-                </MudTr>
-              </td>
-            }
-            @if (context.isShowChecks && !context.ShowReport)
-            {
-              <MudTr>
-                <td colspan="9">
+                 <div class='transition-05s-ease overflow-hidden' style='@(context.ShowReport ? "max-height:500px" : "max-height:0px")'>
+                    <div class='d-flex align-center'>
+                        <MudSpacer />
+                        <MudButton Class='btn-ios-d font12' OnClick='(() => context.ShowReport = ShowReport(context.ShowReport, context))' EndIcon="@Icons.Rounded.Close" 
+                            Size='Size.Small' Variant='Variant.Text'>
+                            Close Report
+                      </MudButton>
+                    </div>
+                    <div class='d-flex align-stretch justify-center default-report-container'>
+                      @if(context.ShowReport)
+                      {
+                        @if (string.IsNullOrWhiteSpace(PDFContent))
+                        {
+                          <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
+                              <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                          </MudOverlay>
+                        }
+                        else if(context.ShowReport)
+                        {
+                          <iframe src='@PDFContent' />
+                        }
+                      }
+                    </div>
+                 </div>
+                <div class='transition-05s-ease overflow-hidden' style='@(context.isShowChecks && !context.ShowReport ? "max-height:500px" : "max-height:0px")'>
+                  @if (!string.IsNullOrWhiteSpace(context.CheckNumber))
+                  {
                     <CheckListComponent stringChecks=@context.CheckNumber />
-                </td>
-              </MudTr>
-            }
+                  }
+                </div>
+              </td>
+            </MudTr>
           </ChildRowContent>
-            <PagerContent>
-                <MudTablePager />
-            </PagerContent>
+          <PagerContent>
+              <MudTablePager PageSizeOptions='@GlobalVariable.pageSize'/>
+          </PagerContent>
         </MudTable>
       </MudPaper>
     }
@@ -322,12 +323,13 @@
 </div>
 
 @code{
-  private bool dataFetched, openSideFilter;
+  [Parameter] public string controlNumber {get;set;} = string.Empty;
+  private bool dataFetched, openSideFilter, isPinnedCtrlNo = true, isPinnedAmt = true;
   private int totalItems;
-  private string PDFContent = string.Empty, searchTerm = string.Empty, visibility = "visibility-animation-hide";
+  private string PDFContent = string.Empty, searchTerm = string.Empty;
   private AccountingStatusModel selectedStatus = new();
   private IEnumerable<VoucherModel>? pageData;
-  private MudTable<VoucherModel>? tableVariable;
+  private MudTable<VoucherModel> tableVariable = new MudTable<VoucherModel>();
   private FilterParameter filterParameter = new();
   private IEnumerable<AccountingStatusModel> hasAccountingStatus = new HashSet<AccountingStatusModel>();
   private DateRange dateRange = new DateRange(DateTime.Now, DateTime.Now);
@@ -337,6 +339,9 @@
     if (GlobalClass.currentUserAccount == null || GlobalClassList.accountingStatusList == null)
       await Task.Delay(1);
     VoucherHubConnection();
+
+    VoucherEntryPage.currActionMode = Enums.ActionMode.Create;
+    GlobalClass.voucher = new();
     CompletedFetch();
   }
 
@@ -354,17 +359,21 @@
       }
       return $"{status}";
   }
-  private void FilterItems()
+  private void FilterTable()
   {
-    filterParameter.DateFrom = dateRange.Start.GetValueOrDefault();
-    filterParameter.DateTo = dateRange.End.GetValueOrDefault();
-    filterParameter.AccountingStatusId = string.Join(",", hasAccountingStatus.Select(x=>x.Id));
-    tableVariable?.ReloadServerData();
+    filterParameter = GlobalVariable.filterParameter;
+    tableVariable.ReloadServerData();
   }
   private async Task<TableData<VoucherModel>> LoadVoucherServer(TableState tableState)
   {
-    IEnumerable<VoucherModel> data = await voucherService.LoadVouchers(filterParameter, GlobalClass.token);
     
+    if(!String.IsNullOrEmpty(controlNumber))
+    {
+        filterParameter.IsControlNumber = true;
+        filterParameter.ControlNumber = controlNumber;
+        Console.WriteLine("Not null");
+    }
+    IEnumerable<VoucherModel> data = await voucherService.LoadVouchers(filterParameter, GlobalClass.token);
     switch (tableState.SortLabel)
     {
       case "SortControlNumber":
@@ -373,8 +382,17 @@
       case "SortDate":
         data = data.OrderByDirection(tableState.SortDirection, x=>x.VoucherDate);
         break;
+      case "SortPayee":
+        data = data.OrderByDirection(tableState.SortDirection, x=>x.PayeeName);
+        break;
+      case "SortStatus":
+        data = data.OrderByDirection(tableState.SortDirection, x=>x.StatusName);
+        break;
+      case "SortAmount":
+        data = data.OrderByDirection(tableState.SortDirection, x=>x.TotalAmount);
+        break;
     }
-
+    //Testing
     GlobalClassList.Vouchers = data.ToList();
     pageData = GlobalClassList.Vouchers.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
     
@@ -395,16 +413,9 @@
         parameters.Add("buttonText", "Select");
         parameters.Add("color", Color.Success);
         parameters.Add("lookUpType", Enums.LookUpType.Project);
-        var options = new DialogOptions()
-        {
-            CloseButton = false,
-            MaxWidth = MaxWidth.Small,
-            FullWidth = true,
-            NoHeader = false,
-            DisableBackdropClick = false
-        };
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.Small, FullWidth = true, NoHeader = false, DisableBackdropClick = false };
         var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Cancelled)
+        if (!resultDialog.Canceled)
         {
             var payee = (Project)resultDialog.Data;
             filterParameter.PayeeId = payee.ProjectId;
@@ -413,20 +424,16 @@
             StateHasChanged();
         }
   }
-  private async Task<bool> PromptMessage(Enums.ActionMode actionMode)
+  private async Task<bool> PromptMessage(Enums.ActionMode actionMode, string? controlNumber)
   {
         bool isNotCancel;
         var parameters = new DialogParameters();
-        string contentText = "Voucher ";
-        string dialogTitle = actionMode == Enums.ActionMode.Cancel ? "Cancel " + contentText 
-        : actionMode == Enums.ActionMode.Approve ? "Approve " + contentText 
-        : "Void " + contentText;
-
-        parameters.Add("actionMode", actionMode == Enums.ActionMode.Cancel ? Enums.ActionMode.Cancel 
-        : actionMode == Enums.ActionMode.Approve ? Enums.ActionMode.Approve
-        : Enums.ActionMode.Void );
-
+        string contentText = "Voucher";
+        string dialogTitle = actionMode.ToString();
+        parameters.Add("actionMode", actionMode);
+        parameters.Add("dialogTitle", dialogTitle + " " + contentText);
         parameters.Add("contentText", contentText);
+        parameters.Add("controlNumber", controlNumber);
         var options = new DialogOptions()
         {
             CloseButton = false,
@@ -436,8 +443,9 @@
             DisableBackdropClick = true
         };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Cancelled)
-            isNotCancel = true;
+        if (!resultDialog.Canceled) {
+          isNotCancel = true;
+        }
         else
             isNotCancel = false;
 
@@ -445,18 +453,15 @@
 
       return isNotCancel;
   }
-  private async Task EditVoucher(VoucherModel voucher)
+  private void EditVoucher(VoucherModel voucher)
   {
     GlobalClass.voucher = voucher;
-
-    
-    navigationManager.NavigateTo($"/voucher/create");
+    navigationManager.NavigateTo($"/voucher");
   }
   private async Task VoidVoucher(VoucherModel voucher)
   {
-    if(await PromptMessage(Enums.ActionMode.Void))
+    if(await PromptMessage(Enums.ActionMode.Void, voucher.ControlNumber))
     {
-      
       voucher.AccountingStatusId = AccountingStatus(Enums.ActionMode.Void).Id;
       voucher.Activity = "Update voucher status to generated (void)";
       voucher.UserId = GlobalClass.currentUserAccount.EmployeeId;
@@ -467,16 +472,16 @@
       voucher.StatusEnumCategoryId = AccountingStatus(Enums.ActionMode.Void).StatusEnumCategoryId;
             
       var updatedStatus = await voucherService.UpdateVoucherStatus(voucher, GlobalClass.token);
-      Extensions.ShowAlert("Voucher has been voided", Variant.Filled, snackBar, Severity.Success);
+      Extensions.ShowAlert("Voucher has been voided", Variant.Filled, snackbarService, Severity.Success);
       if(GlobalVariable.AMSHubConnection != null)
         await GlobalVariable.AMSHubConnection.InvokeAsync("SaveVoucher", updatedStatus);
     }
     else
-      Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackBar, Severity.Normal);
+      Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackbarService, Severity.Normal);
   }
   private async Task ApprovedVoucher(VoucherModel voucher)
   {
-    if(await PromptMessage(Enums.ActionMode.Approve))
+    if(await PromptMessage(Enums.ActionMode.Approve, voucher.ControlNumber))
     {
       
       voucher.AccountingStatusId = AccountingStatus(Enums.ActionMode.Approve).Id;
@@ -489,16 +494,16 @@
       voucher.StatusEnumCategoryId = AccountingStatus(Enums.ActionMode.Approve).StatusEnumCategoryId;
             
       var updatedStatus = await voucherService.UpdateVoucherStatus(voucher, GlobalClass.token);
-      Extensions.ShowAlert("Voucher has been approved", Variant.Filled, snackBar, Severity.Success);
+      Extensions.ShowAlert("Voucher has been approved", Variant.Filled, snackbarService, Severity.Success);
       if(GlobalVariable.AMSHubConnection != null)
         await GlobalVariable.AMSHubConnection.InvokeAsync("SaveVoucher", updatedStatus);
     }
     else
-      Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackBar, Severity.Normal);
+      Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackbarService, Severity.Normal);
   }
   private async Task CancelVoucher(VoucherModel voucher)
   {
-    if(await PromptMessage(Enums.ActionMode.Cancel))
+    if(await PromptMessage(Enums.ActionMode.Cancel, voucher.ControlNumber))
     {
       voucher.AccountingStatusId = AccountingStatus(Enums.ActionMode.Cancel).Id;
       voucher.Activity = "Update voucher status to cancelled";
@@ -510,12 +515,12 @@
       voucher.StatusEnumCategoryId = AccountingStatus(Enums.ActionMode.Cancel).StatusEnumCategoryId;
 
       var updatedStatus = await voucherService.UpdateVoucherStatus(voucher, GlobalClass.token);
-      Extensions.ShowAlert("Voucher was cancelled", Variant.Filled, snackBar, Severity.Success);
+      Extensions.ShowAlert("Voucher was cancelled", Variant.Filled, snackbarService, Severity.Success);
       if(GlobalVariable.AMSHubConnection != null)
         await GlobalVariable.AMSHubConnection.InvokeAsync("SaveVoucher", updatedStatus);
     }
     else
-      Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackBar, Severity.Normal);
+      Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackbarService, Severity.Normal);
   }
   private bool ViewMenu(VoucherModel voucher)
   {
@@ -525,6 +530,7 @@
   }
   private bool ShowReport(bool isShow, VoucherModel voucher)
   {
+    Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(voucher,Newtonsoft.Json.Formatting.Indented));
     Task t = Task.WhenAll(LoadVoucherReport(voucher));
     if(t.Status == TaskStatus.RanToCompletion)
       return isShow = !isShow;
@@ -535,30 +541,16 @@
     PDFContent = await voucherService.GenerateReport(voucher);
     StateHasChanged();
   }
-
-  private void OpenSideFilter()
-  {
-    openSideFilter = !openSideFilter;
-    if(openSideFilter)
-    visibility = "visibility-animation-show";
-    if(!openSideFilter)
-    visibility = "visibility-animation-hide";
-  }
   private void VoucherHubConnection()
   {
     try
     {
-      var statusId = GlobalClassList.accountingStatusList
-      .Where(x=>x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.VC)
-      .Select(x=>x.Id).FirstOrDefault();
       if(GlobalVariable.AMSHubConnection != null)
-        GlobalVariable.AMSHubConnection.On<VoucherModel>("SaveVoucher", (_voucher) =>{
-        GlobalClassList.Vouchers.RemoveAll(x=>x.Id == _voucher.Id);
-        GlobalClassList.Vouchers.Add(_voucher);
-        GlobalClassList.Vouchers = GlobalClassList.Vouchers.Where(x=>x.AccountingStatusId != statusId).OrderBy(x=>x.ControlNumber).ToList();
-        StateHasChanged();
-
-      });
+        GlobalVariable.AMSHubConnection.On<PettyCashModel>("SaveVoucher",(pettyCashModel) => 
+        {
+            tableVariable.ReloadServerData();
+            StateHasChanged();
+        });
     }
     catch (System.Exception ex)
     {
@@ -611,7 +603,13 @@
       filterParameter = new();
       hasAccountingStatus = new HashSet<AccountingStatusModel>();
       dateRange = new DateRange(DateTime.Now, DateTime.Now);
-      Task.Run(async()=> await tableVariable!.ReloadServerData());
+      Task.Run(async()=> await tableVariable.ReloadServerData());
+    }
+    private async Task ReloadTable()
+    {
+      filterParameter = new FilterParameter();
+      controlNumber = "";
+      await tableVariable.ReloadServerData();
     }
     private bool EnableClearButton()
     {
@@ -627,6 +625,7 @@
     }
     private async Task ShowBIRDialog(VoucherModel voucher)
     {
+      GlobalClass.voucherBIRModel = new();
       var parameters = new DialogParameters();
       GlobalClass.voucher = voucher;
       var options = new DialogOptions()
@@ -638,5 +637,12 @@
           DisableBackdropClick = true
       };
       var resultDialog = await dialogService.Show<Shared.Dialogs.BIRDialogs.BIRDialog>("", options).Result;
+    }
+    private long AccountingStatusId(Enums.AccountingStatusEnumCategory id)
+    {
+        return GlobalClassList.accountingStatusList
+            .Where( acctg => id == acctg.StatusEnumCategoryId)
+            .Select( acctg => acctg.Id)
+            .FirstOrDefault();
     }
 }

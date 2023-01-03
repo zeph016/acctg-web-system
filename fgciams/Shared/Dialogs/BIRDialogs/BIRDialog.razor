@@ -8,24 +8,47 @@
 <MudDialog Class='customdialog2'>
     <TitleContent>
         <div class='d-flex align-center'>
-            <MudIcon Icon="@Icons.Filled.DocumentScanner" Class="mr-3" />
+            <MudIcon Icon="@Icons.Material.Filled.DocumentScanner" Class="mr-3" />
             <MudText Typo='Typo.h6'>B.I.R.</MudText>
         </div>
     </TitleContent>
     <DialogContent>
         @if(dataFetch)
         {
-            <div>
+            <div class='font14-txtfield'>
                 <MudGrid Spacing='1'>
-                    <MudItem xs=12>
-                        <MudPaper Class='d-flex gap-2 pa-2'>
+                    <MudItem xs=4>
+                        <MudPaper Class='d-flex align-center gap-2 pa-2'>
                             <MudText Class='wspace-nowrap font10 font-bold txt-uppercase'>Period: </MudText>
-                            <MudDateRangePicker Class='txt-top-0 font14-txtfield txtfield-right' @bind-DateRange=@voucherPeriod IconSize='Size.Small' />
+                            <MudDateRangePicker Class='txt-top-0 font14-txtfield txtfield-right' @bind-DateRange='@voucherPeriod' IconSize='Size.Small' 
+                                Margin='Margin.Dense' DisableToolbar @ref='@dateRangePeriod'>
+                                 <PickerActions>
+                                    <MudButton Class='btn-ios-d font12' OnClick='(() => DateRangeToday(new(), dateRangePeriod))' Size='Size.Small' DisableElevation>
+                                        Today
+                                    </MudButton>
+                                    <MudSpacer />
+                                    <MudButton Class='btn-ios-d font12' OnClick='(() => CancelDateRangePicker(new(), dateRangePeriod))' Size='Size.Small' DisableElevation>
+                                        Cancel
+                                    </MudButton>
+                                    <MudButton Class='btn-ios-d font12' OnClick='(() => SubmitDateRangePicker(new(), dateRangePeriod))' Size='Size.Small' DisableElevation Color='Color.Primary' Variant='Variant.Filled'>
+                                        Submit
+                                    </MudButton>
+                                </PickerActions>
+                            </MudDateRangePicker>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs=4></MudItem>
+                    <MudItem xs=4>
+                        <MudPaper Class='d-flex align-center justify-space-around gap-2 pa-2'>
+                            <p class='rflex-bold-title'>Control No.:</p>
+                            <MudChip Color='Color.Error' Size='Size.Small' Label Variant='Variant.Outlined'>
+                                <p class='font14'>@GlobalClass.voucher.ControlNumber</p>
+                            </MudChip>
                         </MudPaper>
                     </MudItem>
                     <MudItem xs=12>
                         <MudPaper Class='d-flex flex-column pa-2 gap-2'>
-                            <MudText Typo='Typo.h6'>Authorized Personnel</MudText>
+                            <p class='rflex-bold-title'>Authorized Personnel</p>
                             <MudGrid Spacing='1'>
                                 <MudItem xs=6>
                                      <MudTextField @bind-Value='@GlobalClass.voucherBIRModel.Personnel' Text="L. SENDICO / Govt. EE Benefits Officer II" Margin='Margin.Dense'
@@ -40,7 +63,7 @@
                     </MudItem>
                     <MudItem xs=6>
                         <MudPaper Class='d-flex flex-column pa-2 gap-2'>
-                            <MudText Typo='Typo.h6'>Payee</MudText>
+                            <p class='rflex-bold-title'>Payee</p>
                             <BlazoredTypeahead SearchMethod='LoadPayee' DisableClear placeholder='Search'
                                 ValueExpression="@(()=>payee)" Value="payee" ValueChanged="@((Project p) => SelectedPayee(p) )" Debounce='500' MaximumSuggestions='10'>
                                 <SelectedTemplate>
@@ -72,7 +95,7 @@
                     </MudItem>
                     <MudItem xs=6>
                         <MudPaper Class='d-flex flex-column pa-2 gap-2'>
-                            <MudText Typo='Typo.h6'>Payor</MudText>
+                            <p class='rflex-bold-title'>Payor</p>
                             <BlazoredTypeahead SearchMethod='LoadPayor' DisableClear placeholder='Search'
                                 ValueExpression="@(()=>payor)" Value="payor" ValueChanged="@((Project p) => SelectedPayor(p) )" Debounce='500' MaximumSuggestions='10'>
                                 <SelectedTemplate>
@@ -126,6 +149,7 @@
     private Project payor = new();
     private SupplierModel currentSupplier = new();
     private bool readOnlyAddress,readOnlyZIPCode,readOnlyTIN;
+    private MudDateRangePicker dateRangePeriod = new MudDateRangePicker();
     protected override async Task OnInitializedAsync()
     {
         Task t= Task.WhenAll(LoadVoucherBIR());
@@ -142,7 +166,13 @@
                     ProjectName=GlobalClass.voucher.PayeeName},GlobalClass.token)).FirstOrDefault()?? new();
                     await PayeeInformation(payee.ProjectId);
                     GlobalClass.voucherBIRModel.PayeeName = payee.ProjectName;
+                    GlobalClass.voucherBIRModel.PayeeId = payee.ProjectId;
+                    GlobalClass.voucherBIRModel.PayeeCategoryId = payee.ProjectCategoryId;
                     voucherPeriod = new DateRange(GlobalClass.voucher.PeriodFrom,GlobalClass.voucher.PeriodTo);
+                    if(GlobalClass.voucherBIRModel.PayorId != 0)
+                    {
+                       payor = (await LoadPayor(GlobalClass.voucherBIRModel.PayorName)).Where(x=>x.ProjectId == GlobalClass.voucherBIRModel.PayorId).FirstOrDefault()?? new();
+                    }
                 } else {
                     payee = new();
                 }
@@ -178,7 +208,11 @@
     }
     private async Task LoadVoucherBIR()
     {
-        GlobalClass.voucherBIRModel = await birService.GetVoucherBIR(GlobalClass.voucher.Id,GlobalClass.token);
+        var current = new VoucherBIRModel();
+        current = await birService.GetVoucherBIR(GlobalClass.voucher.Id,GlobalClass.token);
+        if(current.Id != 0)
+            GlobalClass.voucherBIRModel = current;
+        GlobalClass.voucherBIRModel.VoucherDetails = GlobalClass.voucher.VoucherDetails;
     }
     private async Task SelectedPayee(Project p)
     {
@@ -213,6 +247,15 @@
     private void Submit()
     {
         GlobalClass.voucherBIRModel.PeriodFrom = voucherPeriod.Start;
+         GlobalClass.voucherBIRModel.VoucherDetails.ForEach ( vDetails => 
+        {
+            if(vDetails.IsEWT == true)
+            {
+                //for reporting ATC and description
+                vDetails.TaxCodeDescription = GlobalClassList.taxCodes.Where( code => GlobalClass.voucher.EWTValue == code.TaxRate).Select( code => code.Description).FirstOrDefault()?? "";
+                vDetails.TaxCodeATC = GlobalClassList.taxCodes.Where( code => GlobalClass.voucher.EWTValue == code.TaxRate).Select( code => code.ATCInd).FirstOrDefault()?? "";
+            }
+        });
         if(GlobalClass.voucherBIRModel.PeriodFrom.HasValue)
         {
             GlobalClass.voucherBIRModel.PeriodTo = voucherPeriod.End;
@@ -229,16 +272,23 @@
     {
         if(GlobalClass.voucherBIRModel.Id == 0)
         {
-             payee = (await globalService.LoadPayees(new FilterParameter(){IsProject=true,
-             ProjectName=GlobalClass.voucher.PayeeName},GlobalClass.token)).FirstOrDefault()?? new();
+            payee = (await globalService.LoadPayees(new FilterParameter(){IsProject=true,
+            ProjectName=GlobalClass.voucher.PayeeName},GlobalClass.token)).FirstOrDefault()?? new();
+            GlobalClass.voucherBIRModel.PayeeName = payee.ProjectName;
+            GlobalClass.voucherBIRModel.PayeeId = payee.ProjectId;
+            GlobalClass.voucherBIRModel.PayeeCategoryId = payee.ProjectCategoryId;
+            Console.WriteLine("no id");
         } else {
             payee = (await globalService.LoadPayees(new FilterParameter(){IsProject=true,
-             ProjectName=GlobalClass.voucherBIRModel.PayeeName},GlobalClass.token)).FirstOrDefault()?? new();
-             if(GlobalClass.voucherBIRModel.PayeeCategoryId == Enums.ProjectCategory.Supplier)
-             {
-                //ReadOnly Address,ZIP Code,TINd);
+            ProjectName=GlobalClass.voucherBIRModel.PayeeName},GlobalClass.token)).FirstOrDefault()?? new();
+            GlobalClass.voucherBIRModel.PayeeName = payee.ProjectName;
+            GlobalClass.voucherBIRModel.PayeeId = payee.ProjectId;
+            GlobalClass.voucherBIRModel.PayeeCategoryId = payee.ProjectCategoryId;
+            if(GlobalClass.voucherBIRModel.PayeeCategoryId == Enums.ProjectCategory.Supplier)
+            {
+            //ReadOnly Address,ZIP Code,TINd);
                 readOnlyAddress = true; //readOnlyZIPCode = true; readOnlyTIN = true;
-             }
+            }
         }
         payor.ProjectName = GlobalClass.voucherBIRModel.PayorName;
         payor = (await LoadPayor(GlobalClass.voucherBIRModel.PayorName)).Where(x=>x.ProjectId == GlobalClass.voucherBIRModel.PayorId).FirstOrDefault()?? new();
@@ -255,5 +305,20 @@
     {
         GlobalClass.voucherBIRModel.PayorId = payor.ProjectId;
         GlobalClass.voucherBIRModel.PayorName = payor.ProjectName;
+    }
+
+    private void DateRangeToday(MudDatePicker datePickerName, MudDateRangePicker dateRangePickerName)
+    {
+        voucherPeriod = new DateRange(DateTime.Now.AddDays(-1).Date, DateTime.Now.Date);
+        SubmitDateRangePicker(new(), dateRangePickerName);
+        
+    }
+    private void CancelDateRangePicker(MudDatePicker datePickerName, MudDateRangePicker dateRangePickerName)
+    {
+        dateRangePickerName.Close(false);
+    }
+    private void SubmitDateRangePicker(MudDatePicker datePickerName, MudDateRangePicker dateRangePickerName)
+    {
+        dateRangePickerName.Close(true);
     }
 }

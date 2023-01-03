@@ -1,15 +1,25 @@
 .liquidationpage__grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 130px 1fr;
+  grid-template-columns: 1fr 1fr minmax(50px, 300px) minmax(50px, 200px) minmax(50px, 170px);
   grid-template-rows: 40px 40px 40px calc(100vh - 240px);
   gap: 0px 0px;
-  grid-template-areas: "liq-header liq-header liq-header liq-header liq-header" "liq-period liq-period liq-period liq-controlno liq-controlno" "liq-remarks liq-remarks liq-remarks liq-remarks liq-remarks" "liq-details liq-details liq-details liq-details liq-details";
+  grid-template-areas: "liq-header liq-header liq-header liq-header liq-header" "liq-period liq-period liq-blank liq-date liq-controlno" "liq-remarks liq-remarks liq-remarks liq-remarks liq-remarks" "liq-details liq-details liq-details liq-details liq-details";
+}
+.liquidationpage .dflex-alcenter, .liquidationpage .liq-controlno, .liquidationpage .liq-date__date-cont, .liquidationpage .liq-period__daterange-cont {
+  display: flex;
+  align-items: center;
 }
 .liquidationpage .liq-header {
   grid-area: liq-header;
 }
+.liquidationpage .liq-blank {
+  grid-area: liq-blank;
+}
 .liquidationpage .liq-period {
   grid-area: liq-period;
+}
+.liquidationpage .liq-date {
+  grid-area: liq-date;
 }
 .liquidationpage .liq-controlno {
   grid-area: liq-controlno;
@@ -21,14 +31,13 @@
   grid-area: liq-details;
 }
 .liquidationpage .liq-header,
-.liquidationpage .liq-period,
 .liquidationpage .liq-remarks,
-.liquidationpage .liq-controlno,
 .liquidationpage .liq-details {
   border-top: solid thin lightgray;
 }
 .liquidationpage .liq-header,
-.liquidationpage .liq-period,
+.liquidationpage .liq-blank,
+.liquidationpage .liq-date,
 .liquidationpage .liq-remarks,
 .liquidationpage .liq-details {
   border-right: solid thin lightgray;
@@ -37,6 +46,21 @@
 .liquidationpage .liq-controlno {
   border-right: solid thin lightgray;
 }
+.liquidationpage .liq-header,
 .liquidationpage .liq-details {
   border-bottom: solid thin lightgray;
+}
+.liquidationpage .liq-period__daterange-cont {
+  gap: 8px;
+  padding: 8px;
+  width: 300px;
+}
+.liquidationpage .liq-date__date-cont {
+  padding: 8px;
+  width: 200px;
+}
+.liquidationpage .liq-controlno {
+  justify-content: space-between;
+  padding: 8px;
+  overflow: hidden;
 }/*# sourceMappingURL=liquidation.style.css.map */

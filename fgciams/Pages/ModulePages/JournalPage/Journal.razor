@@ -1,0 +1,373 @@
+@page "/journal"
+
+@inject IJournalService journalService
+@inject IVoucherService voucherService
+@inject NavigationManager navigationManager
+@inject IJSRuntime JSRuntime
+@inject ISnackbar SnackbarService
+
+<div class='page-cont'>
+    <div class='drawer-right-min'>
+        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            @* <FilterComponent OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
+                FilterClick='FilterTable' ResetTableClick='ReloadTable'
+                contentVisible='openSideFilter' moduleName="pettycash-list"/> *@
+        </MudDrawer>
+    </div>
+
+    <MudContainer Class='py-2 pl-2 pr-10  table-toolbar-custom1' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+        @if(isDataFetch)
+        {
+            <MudTable Class='table-style-1' id="journalTable" ServerData='new Func<TableState, Task<TableData<VoucherDetailModel>>>(LoadJournalsFromServer)' Hover 
+                Breakpoint="Breakpoint.Xs" FixedHeader FixedFooter Bordered Dense @ref='tableState'
+                RowsPerPage='15'>
+                <ToolBarContent>
+                    <MudText Typo='Typo.caption'>
+                        @GlobalClassList.journalList.Count() 
+                        @(GlobalClassList.journalList.Count() == 1 ? "item" : "items") 
+                        in total
+                    </MudText>
+                    <MudSpacer/>
+                    <MudTooltip Text="Refresh Table">
+                        <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='( async () => { await tableState.ReloadServerData(); })'/>
+                    </MudTooltip>
+                    <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                        TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
+                        <MudMenuItem OnClick='Export'>
+                            <div class='d-flex align-center gap-2 '>
+                                <MudIcon Icon='@Icons.Material.Filled.FileDownload' Size='Size.Small' />
+                                <MudText Typo='Typo.body2'>Export to Excel</MudText>
+                            </div>
+                        </MudMenuItem>
+                    </MudMenu>
+                </ToolBarContent>
+                <ColGroup>
+                    <col style='width: 1%' />
+                    <col />
+                    <col />
+                    @foreach (var bank in currentBanks)
+                    {
+                        <col />
+                        <col />
+                    }
+                    @foreach (var expLine in currentExpenses)
+                    {
+                        <col />
+                    }
+                    <col />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh Class='customheader-6'>
+                        <div class='d-flex align-center justify-space-around'>
+                            <MudTableSortLabel SortLabel='SortDate' T='VoucherDetailModel'
+                                InitialDirection='SortDirection.Ascending'>
+                                    Date
+                            </MudTableSortLabel>
+                            <MudTableSortLabel SortLabel='SortControlNumber' T='VoucherDetailModel'
+                                InitialDirection='SortDirection.Ascending'>
+                                Control No.
+                            </MudTableSortLabel>
+                        </div>
+                    </MudTh>
+                    <MudTh Class='customheader-6 text-center'>Payee</MudTh>
+                    <MudTh Class='customheader-6 text-center'>Check No.</MudTh>
+                    @foreach (var bank in currentBanks)
+                    {
+                        <MudTh Class='customheader-6'>@bank.ShortcutName</MudTh>
+                        <MudTh Class='customheader-6'>Running Bal.</MudTh>
+                    }
+                    @foreach (var expLine in currentExpenses)
+                    {
+                        <MudTh Class='customheader-6'>@expLine.ExpenseName</MudTh>
+                    }
+                    <MudTh Class='customheader-6'>Cash ADV to be Liquidated</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                        <MudTd DataLabel="Voucher date">
+                            <div class='d-flex align-center'>
+                                @if(context.VoucherDate != DateTime.MinValue)
+                                { 
+                                    <MudChip Class='chip-radius-5 font-bold font10 min-width100px' Variant='Variant.Outlined' Icon='@Icons.Material.Filled.CalendarMonth' Size='Size.Small'>
+                                        @Convert.ToDateTime(context.VoucherDate).ToShortDateString()
+                                    </MudChip>
+                                }
+                                @if(!String.IsNullOrEmpty(context.ControlNumber))
+                                {   
+                                   
+                                    <MudTooltip Text='@($"See {context.ControlNumber}")' Arrow Placement='Placement.Top'>
+                                        <MudButton Class='chip-radius-5 txt-uppercase font-bold font10 min-width100px' StartIcon='@Icons.Material.Filled.Link'
+                                            Href='@FindReference(context.ControlNumber)' Target='_blank'
+                                            Variant='Variant.Outlined' Color='Color.Error' Size='Size.Small' DisableElevation>
+                                                @context.ControlNumber
+                                        </MudButton>
+                                    </MudTooltip>
+                                }
+                            </div>
+                        </MudTd>
+                        <MudTd DataLabel="Payee">
+                            <MudTooltip Text='@context.ProjectName' Arrow Placement='Placement.Top'>
+                                <div class='jrnl-td-width'>
+                                    <small>@context.ProjectName</small>
+                                </div>
+                            </MudTooltip>
+                        </MudTd>
+                        <MudTd DataLabel="Check No.">
+                            @if(!string.IsNullOrWhiteSpace(context.CheckNumber))
+                            {
+                                <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' OnClick='(() => CopyTextToClipboard(context.ControlNumber))' 
+                                    Variant='Variant.Outlined' Color='Color.Dark' Size='Size.Small'>
+                                    @context.CheckNumber
+                                </MudChip>
+                            }
+                        </MudTd>
+                        @foreach (var bank in currentBanks)
+                        {
+                            @if(GlobalClassList.journalList.IndexOf(context) == 0)//First row
+                            {
+                                <MudTd></MudTd>
+                                <MudTd>
+                                    <div class='jrnl-td-amtwidth'>
+                                        <small>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</small>
+                                        <small>@bank.BeginningBalance.ToString("N2")</small>
+                                    </div>
+                                </MudTd>
+                            } 
+                            else
+                            {
+                                if(bank.Id == context.BankId)
+                                {
+                                    <MudTd>
+                                        <div class='jrnl-td-amtwidth'>
+                                            <small>@(context.CheckAmount <= 0 ? "-":Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso))</small>
+                                            <small>@(context.CheckAmount <= 0 ? "":context.CheckAmount.ToString("N2"))</small>
+                                        </div>
+                                    </MudTd>
+                                    <MudTd>
+                                        <div class='jrnl-td-amtwidth'>
+                                            <small>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</small>
+                                            <small>@context.currentRunningBal.ToString("N2")</small>
+                                        </div>
+                                    </MudTd>
+                                }
+                                else 
+                                {
+                                    <MudTd>-</MudTd>
+                                    <MudTd>
+                                        <div class='jrnl-td-amtwidth'>
+                                            <small>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</small>
+                                            <small>@(bankDetail(context,bank.Id).runningBalance.ToString("N2"))</small>
+                                        </div>
+                                    </MudTd>
+                                
+                                }
+                            }
+                        }
+                        @foreach (var expLine in currentExpenses)
+                        {
+                            if(haveExpense(context.ControlNumber, expLine.ExpenseName) && expLine.Id == context.ExpenseId)
+                            {
+                                <MudTd>
+                                    <div class='jrnl-td-amtwidth'>
+                                        <small>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</small>
+                                        <small>@ExpenseAMount(context.ControlNumber, expLine.ExpenseName).ToString("N2")</small>
+                                    </div>
+                                </MudTd>
+                            } 
+                            else
+                            {
+                                <MudTd>-</MudTd>
+                            }
+                        }
+                        <MudTd DataLabel="Short Name">
+                            <div class='jrnl-td-amtwidth'>
+                                <small>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</small>
+                                <small>@(context.TotalAmount > 0 ? context.TotalAmount.ToString("N2") :"")</small>
+                            </div>
+                        </MudTd>
+                </RowTemplate>
+                
+                <PagerContent>
+                    <!--No pager for exporting all data in excel-->
+                    @* <MudTablePager PageSizeOptions='@GlobalVariable.pageSize' /> *@
+                </PagerContent>
+            </MudTable>
+        }
+        else
+        {
+            <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
+                <MudSkeleton SkeletonType='SkeletonType.Text' Height='100px' Animation='Animation.Wave' />
+                <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='71vh' Animation='Animation.Wave' />
+            </MudPaper>
+        }
+    </MudContainer>
+</div>
+@code
+{
+    private FilterParameter filterParameter = new();
+    private bool isLoading = true, isDataFetch, openSideFilter;
+    private MudTable<VoucherDetailModel> tableState = new();
+    private IEnumerable<VoucherDetailModel>? pageData;
+    private List<VoucherModel> vouchers = new();
+    private List<BankModel> currentBanks = new();
+    private List<ExpenseLineModel> currentExpenses = new();
+    private BankDetail detail = new();
+    private bool isExport = false;
+    protected override async Task OnInitializedAsync()
+    {
+        GlobalClass.pageTitle = "JOURNAL";
+        Task t = Task.WhenAll(VoucherDetails());
+        await t;
+        if(t.Status == TaskStatus.RanToCompletion)
+        {
+            StateHasChanged();
+            isDataFetch = true;
+        }
+    }
+    private async Task<TableData<VoucherDetailModel>> LoadJournalsFromServer(TableState tableState)
+    {
+        isLoading = true;
+        IEnumerable<VoucherDetailModel> data = await journalService.GetJournals(filterParameter, GlobalClass.token);
+        switch (tableState.SortLabel)
+        {
+            case "SortControlNumber":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.Id);
+                break;
+            case "SortDate":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.VoucherDate);
+                break;
+        }
+        GlobalClassList.journalList = data.OrderBy( j => j.CheckNumber).ToList();
+        GlobalClassList.journalList.Insert(0,new VoucherDetailModel());//Add 1st row for beginning balance
+
+        pageData = GlobalClassList.journalList.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
+        var total = GlobalClassList.journalList.Count();
+
+        //Set data before the table is load
+        await Task.Run( () => GetBanksAndExpenses())
+        .ContinueWith( t => SetBankBeginningBal() );
+        //Temporary
+        await Task.Delay(500);
+        return new TableData<VoucherDetailModel>()
+        {
+            TotalItems = total,
+            Items = pageData
+        };
+    }
+    private async Task VoucherDetails()
+    {
+        FilterParameter parameter = new();
+        vouchers =  await voucherService.LoadVouchers(parameter, GlobalClass.token);
+    }
+    private bool haveExpense(string controlNumber, string expName)
+    {
+        return (vouchers.Where( v => v.ControlNumber == controlNumber).FirstOrDefault()?? new()).VoucherDetails.Any( x=> x.ExpenseName == expName);
+    }
+    private decimal ExpenseAMount(string controlNumber, string expName)
+    {
+        return (vouchers.Where( v => v.ControlNumber == controlNumber).FirstOrDefault()?? new()).VoucherDetails.Where( x=> x.ExpenseName.Contains(expName)).Select(x=>x.Amount).Sum();
+    }
+    private void GetBanksAndExpenses()
+    {
+        GlobalClassList.journalList.ForEach( j => 
+        {
+            GlobalClassList.banks.ForEach( b => 
+            {
+                if(j.BankId == b.Id)
+                {
+                    if(!currentBanks.Contains(b))
+                        currentBanks.Add(b);
+                }
+            });
+            GlobalClassList.expenseLineList.ForEach( e => 
+            {
+                if(haveExpense(j.ControlNumber, e.ExpenseName))
+                {
+                    if(!currentExpenses.Contains(e))
+                        currentExpenses.Add(e);
+                }
+            });
+        });
+    }
+    private async Task<decimal> GetBankBeginningBalance(string bankId)
+    {
+        FilterParameter param = new();
+        param.BankId = bankId;
+        param.IsBank = true;
+        return await journalService.GetBankBeginningBal(param, GlobalClass.token);
+    }
+    private void SetBankBeginningBal()
+    {
+    var currentCNo = "";
+    decimal calculate = 0;
+        currentBanks.ForEach( async (b) =>
+        { 
+           b.RunningBalance = b.BeginningBalance =  await GetBankBeginningBalance(b.Id.ToString()); StateHasChanged();
+            GlobalClassList.journalList.ForEach( j => 
+            {
+                //Clear next check number if equals
+                if(currentCNo == j.CheckNumber)
+                {
+                    j.CheckNumber = "";
+                    j.CheckAmount = 0;
+                }
+                else
+                {
+                    currentCNo = j.CheckNumber;
+                }
+
+                if(b.Id == j.BankId)
+                {
+                    if(GlobalClassList.journalList.IndexOf(j) == 0)
+                    {
+                        j.currentRunningBal = b.BeginningBalance;  StateHasChanged();
+                    }
+                    else
+                    {
+                        if(b.isStart)
+                            b.isStart = false;
+                        if(currentCNo == j.CheckNumber)
+                            calculate = b.RunningBalance - j.CheckAmount;
+                        b.RunningBalance = calculate; // for calculate next 
+                        j.currentRunningBal = calculate; // for table
+
+                        BankDetail detail = new();
+                        detail.bankID = b.Id;
+                        detail.runningBalance = calculate;
+                        j.bankDetails.Add(detail);
+
+                        StateHasChanged();
+                    }
+                } 
+                else
+                {
+                    BankDetail detail = new();
+                    detail.bankID = b.Id;
+                    if(b.isStart)
+                    {
+                        detail.runningBalance = b.BeginningBalance;
+                    } else
+                    {
+                        detail.runningBalance = b.RunningBalance;
+                    }
+                     j.bankDetails.Add(detail);
+                }
+            });
+        });
+    }
+    private BankDetail bankDetail(VoucherDetailModel detail,long id)
+    {
+        return detail.bankDetails.Where(b => b.bankID == id).FirstOrDefault()?? new();
+    }
+    private string FindReference(string voucherControlNumber)
+    {
+        return String.Format("{0}voucher/list/{1}", navigationManager.BaseUri, voucherControlNumber);
+    }
+    private async Task CopyTextToClipboard(string ctrlNo)
+    {
+        await Extensions.CopyTextToClipboard(ctrlNo, SnackbarService, JSRuntime);
+    }
+    protected async Task Export()
+    {
+        await JSRuntime.InvokeVoidAsync("exportTableToExcel", "journalTable","");
+    }
+}  

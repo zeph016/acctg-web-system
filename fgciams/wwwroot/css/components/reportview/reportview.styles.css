@@ -1,3 +1,196 @@
+.dflex-row-align-center {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+}
+
+.dflex-row, .rptctrls-container__controls {
+  align-items: center;
+  display: flex;
+}
+
+.dflex-col, .rpt-container, .rpt-container__document-cont, .rpt-container__iframe-cont, .rpt-container-listview, .rpt-container-listview__document-cont, .rpt-container-listview__iframe-cont {
+  flex-direction: column;
+  display: flex;
+}
+
+.dflex-ac {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+}
+
+.flex-full, .rpt-container, .rpt-container__document-cont, .rpt-container__iframe-cont, .rpt-container-listview, .rpt-container-listview__document-cont, .rpt-container-listview__iframe-cont {
+  flex: 1 1 0%;
+} /*# sourceMappingURL=flexgridmods.styles.css.map */
+.visibility-animation-hide {
+  display: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s linear 0.2s, opacity 0.2s linear;
+}
+
+.visibility-animation-show {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  transition-delay: 0s;
+}
+
+.transition-05s-ease {
+  transition: all 0.5s;
+  transition-timing-function: ease;
+}
+
+.transition-025s-ease {
+  transition: all 0.25s;
+  transition-timing-function: ease;
+}
+
+.menu-grow-anim {
+  transition: all 0.15s ease-in-out !important;
+}
+
+.menu-grow-anim:hover {
+  transform: scale(1.025) !important;
+}
+
+.row-popup-anim-2px tr {
+  transition: all 0.2s ease-in-out;
+}
+
+.row-popup-anim-2px tr:hover {
+  transform: translateY(-2px);
+}
+
+.fade-in, .rpt-container, .rpt-container__document-cont, .rpt-container__iframe-cont, .rpt-container-listview, .rpt-container-listview__document-cont, .rpt-container-listview__iframe-cont, .rptctrls-container__controls {
+  -webkit-animation: fadein 1s;
+  animation: fadein 1s;
+  visibility: visible;
+}
+
+.fade-out {
+  -webkit-animation: fadeout 1s;
+  animation: fadeout 1s;
+  visibility: hidden;
+}
+
+@-webkit-keyframes fadein {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes fadein {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@-webkit-keyframes fadeout {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes fadeout {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.icon-rotate180 .mud-button-icon-end {
+  transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
+}
+
+.mudbtnico-rotate {
+  -webkit-animation: mudbtnico-rotate 0.5s linear infinite;
+  animation: mudbtnico-rotate 0.5s linear infinite;
+}
+
+@-webkit-keyframes mudbtnico-rotate {
+  0% {
+    transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+  }
+}
+@keyframes mudbtnico-rotate {
+  0% {
+    transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+  }
+}
+.mudbtnico-rotate-90 .mud-icon-root {
+  transform: rotate(0deg);
+  transition: all 0.5s ease;
+  -webkit-transition: all 0.5s ease; /** Chrome & Safari **/
+  -moz-transition: all 0.5s ease; /** Firefox **/
+  -o-transition: all 0.5s ease; /** Opera **/
+}
+
+.mudbtnico-rotate-90:hover .mud-button-root {
+  color: #2196f3 !important;
+}
+
+.mudbtnico-rotate-90:hover .mud-icon-root {
+  transform: rotate(90deg);
+  transition: all 0.5s ease;
+  -webkit-transition: all 0.5s ease; /** Chrome & Safari **/
+  -moz-transition: all 0.5s ease; /** Firefox **/
+  -o-transition: all 0.5s ease; /** Opera **/
+}
+
+.sticky-div {
+  z-index: 1;
+  position: -webkit-sticky;
+  position: sticky;
+  left: 0;
+  background-color: white;
+} /*# sourceMappingURL=animation.styles.css.map */
 .default-report-container {
   height: calc(100vh - 300px);
 }
@@ -10,4 +203,86 @@
   transform-origin: 0px 0px 0px;
   width: 1200px;
   height: 500px;
+}
+
+.rpt-container {
+  padding: 4px;
+}
+.rpt-container__document-cont {
+  padding: 4px;
+}
+.rpt-container__iframe-cont {
+  align-items: center;
+  justify-content: center;
+}
+
+.rpt-container-listview {
+  height: 600px;
+  padding: 4px;
+}
+.rpt-container-listview__document-cont {
+  background-color: #2A2A2E !important;
+  padding: 4px;
+}
+.rpt-container-listview__iframe-cont {
+  align-items: center;
+  justify-content: center;
+}
+.rpt-container-listview__iframe-scaled {
+  zoom: 0.75;
+}
+
+.rptctrls-container {
+  border-radius: 5px;
+}
+.rptctrls-container__controls {
+  background-color: transparent;
+  padding: 4px;
+  gap: 4px;
+}
+
+.rptctrls-bottom {
+  bottom: 5%;
+  position: absolute;
+  right: 50%;
+  left: 50%;
+  width: -webkit-max-content;
+  width: -moz-max-content;
+  width: max-content;
+}
+
+.rptctrls-side-bottom {
+  bottom: 4%;
+  position: absolute;
+  right: 3%;
+  width: -webkit-max-content;
+  width: -moz-max-content;
+  width: max-content;
+}
+
+.rptctrls-side-bottom-list {
+  bottom: 10%;
+  position: relative;
+  left: 40%;
+  width: -webkit-max-content;
+  width: -moz-max-content;
+  width: max-content;
+}
+
+.rptctrls-side-top {
+  position: absolute;
+  top: 15%;
+  right: 5%;
+  width: -webkit-max-content;
+  width: -moz-max-content;
+  width: max-content;
+}
+
+.rptctrls-side-top-rel {
+  position: relative;
+  bottom: 80%;
+  left: 41%;
+  width: -webkit-max-content;
+  width: -moz-max-content;
+  width: max-content;
 }/*# sourceMappingURL=reportview.styles.css.map */

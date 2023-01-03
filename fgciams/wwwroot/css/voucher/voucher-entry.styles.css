@@ -49,4 +49,68 @@
 }
 .voucherpage .voucher-details {
   border-bottom: solid thin lightgray;
+}
+
+.vou-entry-amtinfo-grid {
+  border-top: solid thin lightgray;
+  display: grid;
+  grid-template-columns: 30px 120px 1fr 1fr 1fr 120px 1fr 120px;
+  grid-template-rows: 1fr 1fr 1fr 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas: "amtinfo-cont1 amtinfo-cont2 amtinfo-cont2 amtinfo-cont2 amtinfo-cont3 amtinfo-cont4 amtinfo-cont5 amtinfo-cont6" "amtinfo-cont1 amtinfo-cont2 amtinfo-cont2 amtinfo-cont2 amtinfo-cont3 amtinfo-cont4 amtinfo-cont5 amtinfo-cont6" "amtinfo-tags amtinfo-tags amtinfo-tags amtinfo-tags amtinfo-cont3 amtinfo-cont4 amtinfo-cont5 amtinfo-cont6" "amtinfo-tags amtinfo-tags amtinfo-tags amtinfo-tags amtinfo-cont3 amtinfo-cont4 amtinfo-cont5 amtinfo-cont6";
+}
+.vou-entry-amtinfo-grid small {
+  font-size: 10px;
+  white-space: nowrap;
+  padding: 0px 2px 0px 2px;
+}
+.vou-entry-amtinfo-grid .grid-item-end .mud-grid-item, .vou-entry-amtinfo-grid .amtinfo-cont6 .mud-grid-item, .vou-entry-amtinfo-grid .amtinfo-cont5 .mud-grid-item, .vou-entry-amtinfo-grid .amtinfo-cont4 .mud-grid-item, .vou-entry-amtinfo-grid .amtinfo-cont3 .mud-grid-item {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+}
+.vou-entry-amtinfo-grid .amtinfo-cont1 {
+  grid-area: amtinfo-cont1;
+}
+.vou-entry-amtinfo-grid .amtinfo-cont2 {
+  grid-area: amtinfo-cont2;
+}
+.vou-entry-amtinfo-grid .amtinfo-cont3 {
+  grid-area: amtinfo-cont3;
+}
+.vou-entry-amtinfo-grid .amtinfo-cont4 {
+  grid-area: amtinfo-cont4;
+}
+.vou-entry-amtinfo-grid .amtinfo-cont5 {
+  grid-area: amtinfo-cont5;
+}
+.vou-entry-amtinfo-grid .amtinfo-cont6 {
+  grid-area: amtinfo-cont6;
+}
+.vou-entry-amtinfo-grid .amtinfo-tags {
+  align-items: start;
+  display: flex;
+  justify-items: start;
+  border: solid thin lightgray;
+  border-left-style: none;
+  border-bottom-style: none;
+  grid-area: amtinfo-tags;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.vou-entry-amtinfo-grid .amtinfo-tags__chkbxcont {
+  align-items: start;
+  display: flex;
+  min-width: 355px;
+  width: 100%;
+}
+.vou-entry-amtinfo-grid .border-left, .vou-entry-amtinfo-grid .amtinfo-cont5 {
+  border-left: solid thin lightgray;
+}
+.vou-entry-amtinfo-grid .border-right, .vou-entry-amtinfo-grid .amtinfo-cont3, .vou-entry-amtinfo-grid .amtinfo-cont5 {
+  border-right: solid thin lightgray;
+}
+.vou-entry-amtinfo-grid .bg-f4f5fb, .vou-entry-amtinfo-grid .amtinfo-cont1, .vou-entry-amtinfo-grid .amtinfo-cont2, .vou-entry-amtinfo-grid .amtinfo-cont3, .vou-entry-amtinfo-grid .amtinfo-cont5 {
+  background-color: #f4f5fb;
 }/*# sourceMappingURL=voucher-entry.styles.css.map */

@@ -11,13 +11,13 @@
 <div class='page-cont d-flex overflow-auto'>
     @if (!dataFetched)
     {
-      <MudPaper Class='d-flex flex-1 ma-2 pa-2'>
-        <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='100%' Width='100%' Animation='Animation.Wave' />
-      </MudPaper>
+        <div class='flex-1 pa-2'>
+            <SkeletonPageList />
+        </div>
     }
     else
     {
-      <MudContainer Class='checkwriterpage pt-2 pr-2 pb-2 pl-2 gap-2' Fixed='false' MaxWidth='MaxWidth.Large'>
+      <MudContainer Class='checkwriterpage pt-2 gap-2' Fixed='false' MaxWidth='MaxWidth.Large'>
             <MudPaper Class='flex-1' Elevation='1' Height='fit-content'>
                 <MudCardContent Class='checkwriterpage__grid pa-2'>
                         <div class='chkw-header d-flex align-center pa-2 gap-2 bgc-F4F5FB rounded-tr rounded-tl'>
@@ -32,15 +32,15 @@
                                 </MudItem>
                                 <MudItem Class='d-flex align-center justify-end' xs=4>
                                     <MudTooltip Text='New Cheque'>
-                                        <MudButton Class='btn-ios-d pa-1 font12' OnClick='New' StartIcon="@Icons.Filled.Add" Variant='Variant.Filled'
+                                        <MudButton Class='btn-ios-d pa-1 font12' OnClick='CreateNew' StartIcon="@Icons.Material.Filled.Add" Variant='Variant.Filled'
                                         Color='Color.Info' Size='Size.Small' DisableElevation>new</MudButton>
                                     </MudTooltip>
                                 </MudItem>
                             </MudGrid>
                         </div>
-                        <div class="chkw-payee d-flex align-center pa-2 gap-2">
+                        <div class="chkw-payee">
                             <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>
-                                Pay To
+                                Pay To:
                                 <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
                             </MudText>
                             <BlazoredTypeahead SearchMethod='LoadProject' Context='selpayee' DisableClear placeholder='Payee'
@@ -59,16 +59,37 @@
                                 </ResultTemplate>
                             </BlazoredTypeahead>
                         </div>
-                        <div class="chkw-banks d-flex align-center pa-2 gap-2">
+                        <div class="chkw-checkdate">
                             <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>
-                                Bank
+                                Check Date:
                                 <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
                             </MudText>
-                            <BlazoredTypeahead SearchMethod=SearchBank ValueChanged="((BankModel bank)=>SelectedBank(bank))" ValueExpression='(()=>bank)' Value="bank"
+                            <MudDatePicker Class='txtfield-font12-no-margin txtfield-right' @bind-Date='@checkDate' @ref='@dateCheckDate'
+                                IconSize='Size.Small' Margin='Margin.Dense' DisableToolbar>
+                                <PickerActions>
+                                    <MudButton Class='btn-ios-d font12' OnClick='DateRangeToday' Size='Size.Small' DisableElevation>
+                                        Today
+                                    </MudButton>
+                                    <MudSpacer />
+                                    <MudButton Class='btn-ios-d font12' OnClick='CancelDateRangePicker' Size='Size.Small' DisableElevation>
+                                        Cancel
+                                    </MudButton>
+                                    <MudButton Class='btn-ios-d font12' OnClick='SubmitDateRangePicker' Size='Size.Small' DisableElevation Color='Color.Primary' Variant='Variant.Filled'>
+                                        Submit
+                                    </MudButton>
+                                </PickerActions>
+                            </MudDatePicker>
+                        </div>
+                        <div class='chkw-banks'>
+                            <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>
+                                Bank:
+                                <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                            </MudText>
+                            <BlazoredTypeahead SearchMethod=Extensions.SearchBank ValueChanged="((BankModel bank)=>SelectedBank(bank))" ValueExpression='(()=>bank)' Value="bank"
                                 Context='selbank' Debounce="500" placeholder='BANK & ACCOUNT NO.'>
                                 <SelectedTemplate>
                                     @if (selbank.Id != 0) {
-                                        <MudText Class='font12'>@selbank.BankName | @selbank.AccountNo</MudText>
+                                        <MudText Class='font12'>@selbank.ShortcutName</MudText>
                                     } else if (bankValid) {
                                         <MudText Class='font12 font-bold txt-uppercase' Color='Color.Error'>Required</MudText>
                                     } else {
@@ -76,24 +97,30 @@
                                     }
                                 </SelectedTemplate>
                                 <ResultTemplate>
-                                    @selbank.BankName | @selbank.AccountNo
+                                    @selbank.ShortcutName
                                 </ResultTemplate>
                             </BlazoredTypeahead>
                         </div>
-                        <div class="chkw-checkno d-flex align-center pa-2 gap-2">
+                        <div class='chkw-checkno'>
                             <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>
                                     Check No.
                                 <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
                             </MudText>
                             <MudTextField Class='txtfield-overflow-ellipsis font14-txtfield txt-top-0 txtfield-center' Mask='@(new PatternMask("00000 00000"))' @bind-Value="@GlobalClass.checkModel.CheckNo"
-                            Variant='Variant.Text' Margin='Margin.Dense' DisableClear Error="@checkNoValid" />
+                                Variant='Variant.Text' Margin='Margin.Dense' DisableClear Error="@checkNoValid" />
+                        </div>
+                        <div class='chkw-blankcont d-flex justify-center align-center gap-2'>
+                            <MudText Class='wspace-nowrap txt-uppercase font-bold font10'>Control No:</MudText>
+                            <MudChip Class='chip-radius-5 txt-uppercase font-bold font12' Color='Color.Error' Size='Size.Medium' Variant='Variant.Outlined'>
+                                @(GlobalClass.checkModel.Id == 0 ? "Auto":GlobalClass.checkModel.ControlNumber)
+                            </MudChip>
                         </div>
                         <div class="chkw-voucher d-flex align-center pa-2 gap-2 overflowx-auto overflowy-hidden">
                             <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>
-                                    Voucher
+                                    Voucher:
                                 <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
                             </MudText>
-                            <MudTooltip Text='Add Voucher'>
+                            <MudTooltip Text='Add Voucher' Arrow Placement='Placement.Bottom'>
                                 <MudIconButton OnClick='(()=> AddVoucher())' Icon="@Icons.Material.Filled.Add" aria-label="Add RFP" Color='Color.Info' Size='Size.Small' />
                             </MudTooltip>
                             @if (GlobalClass.checkModel.CheckVouchers.Count() == 0) {
@@ -103,14 +130,11 @@
                             }
                             @foreach (var item in GlobalClass.checkModel.CheckVouchers)
                             { 
-                                <MudChip OnClose='(()=> RemoveVoucher(item))' Size='Size.Small'>@(GetVoucherControlNumber(item))</MudChip>
+                                <MudChip OnClose='(()=> RemoveVoucher(item))' Size='Size.Small' Color='Color.Tertiary'>@(GetVoucherControlNumber(item))</MudChip>
                             }
                         </div>
+                        
                         <div class="chkw-desc d-flex align-center pa-2 gap-2">
-                            <MudText Class='txt-uppercase font-bold font10'>Description:</MudText>
-                            <MudTextField Class='txtfield-overflow-ellipsis font14-txtfield txt-top-0' @bind-Value="@GlobalClass.checkModel.Description" />
-                        </div>
-                        <div class="chkw-remarks d-flex align-center pa-2 gap-2">
                             <MudText Class='txt-uppercase font-bold font10'>Remarks:</MudText>
                             <MudTextField Class='txtfield-overflow-ellipsis font14-txtfield txt-top-0' @bind-Value="@GlobalClass.checkModel.Remarks" />
                         </div>
@@ -119,22 +143,25 @@
                                 <MudCardHeader Class='pa-2 border-thin-bottom bgc-F4F5FB height2-05rem'>
                                     <MudText Class='txt-uppercase font12 font-bold'>Amount in words</MudText>
                                     <MudSpacer />
-                                    <MudIcon Icon='@Icons.Filled.ShortText' Size='Size.Small' />
+                                    <MudIcon Icon='@Icons.Material.Filled.ShortText' Size='Size.Small' />
                                 </MudCardHeader>
                                 <MudSpacer />
-                                <MudPaper Class='d-flex align-center pa-2 ma-2 chkwriter-bgc-grad' Elevation='1' Height='60%'>
-                                    <MudTextField Class='txtfield-overflow-ellipsis font16-txtfield txt-top-0 txtbold txtfield-center txtem' @bind-Value="@GlobalClass.checkModel.AmountInWords" DisableUnderLine ReadOnly/>
+                                <MudPaper Class='d-flex align-center justify-center pa-2 ma-2 chkwriter-bgc-grad' Elevation='1' Height='60%'>
+                                    <p class="amountwords">
+                                        <em>@GlobalClass.checkModel.AmountInWords</em>
+                                    </p>
+                                    @* <MudTextField Class='txtfield-overflow-ellipsis font16-txtfield txt-top-0 txtbold txtfield-center txtem' @bind-Value="@GlobalClass.checkModel.AmountInWords" DisableUnderLine ReadOnly/> *@
                                 </MudPaper>
                                 <MudSpacer />
                             </div>
-                            <div class='d-flex flex-column border-thin-left overflow-auto'>
+                            <div class='d-flex flex-column border-thin-left overflow-auto blzrtypahead-unset-width width300px'>
                                 <MudCardHeader Class='pa-2 border-thin-bottom bgc-F4F5FB height2-05rem'>
                                     <MudText Class='txt-uppercase font12 font-bold'>Signatory</MudText>
                                     <MudSpacer />
-                                    <MudIcon Icon='@Icons.Filled.PersonPin' Size='Size.Small' />
+                                    <MudIcon Icon='@Icons.Material.Filled.PersonPin' Size='Size.Small' />
                                 </MudCardHeader>
                                 <MudCardContent Class='d-flex flex-column pa-2 gap-2'>
-                                    <div class='d-flex align-center gap-2 min-width25'>
+                                    <div class='d-flex align-center gap-2 blzrthead-disabled-minheight15'>
                                         @if (preparedBy.Picture.Count() == 0) {
                                             <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
                                         } else {
@@ -142,7 +169,7 @@
                                         }
                                         <div class='d-flex flex-grow-1 flex-column'>
                                             <BlazoredTypeahead SearchMethod='LoadEmployee' Context='selprep' DisableClear placeholder='Prepared By'
-                                            @bind-Value='preparedBy' Debounce='500' MaximumSuggestions='5'>
+                                            @bind-Value='preparedBy' Debounce='500' MaximumSuggestions='5' Disabled>
                                                 <SelectedTemplate>
                                                     <div class='overflow-hidden wspace-nowrap'>
                                                         @if (selprep.EmployeeId != 0) {
@@ -172,27 +199,21 @@
                                 <MudCardHeader Class='pa-2 border-thin-top bgc-F4F5FB height2-05rem'>
                                     <MudText Class='txt-uppercase font12 font-bold'>Amount</MudText>
                                     <MudSpacer />
-                                    <MudIcon Icon='@Icons.Filled.Equalizer' Size='Size.Small' />
+                                    <MudIcon Icon='@Icons.Material.Filled.Equalizer' Size='Size.Small' />
                                 </MudCardHeader>
                                 <MudCardContent Class='d-flex align-center pa-2 gap-2 border-thin-top'>
-                                    @if (GlobalClass.checkModel.Amount > 0) {
-                                        <MudIcon Class='color-green' Icon='@Icons.Outlined.LabelImportant' Size='Size.Small'/>
-                                        <MudSpacer />
-                                        <MudText Class='font-bold align-self-end color-green' Typo='Typo.body2' >
+                                    <MudIcon Class='@(GlobalClass.checkModel.Amount > 0 ? "color-green":"color-red")' Icon='@Icons.Outlined.LabelImportant' Size='Size.Small'/>
+                                    <MudSpacer />
+                                    <small Class='font-bold align-self-end @(GlobalClass.checkModel.Amount > 0 ? "color-green":"color-red")'>
                                         @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.checkModel.Amount.ToString("N2")
-                                        </MudText>
-                                    } else {
-                                        <MudIcon Icon='@Icons.Outlined.LabelImportant' Size='Size.Small' Color='Color.Error' />
-                                        <MudSpacer />
-                                        <MudText Class='font-bold align-self-end' Typo='Typo.body2' Color='Color.Error' >
-                                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.checkModel.Amount.ToString("N2")
-                                        </MudText>
-                                    }
+                                    </small>
                                 </MudCardContent>
                                 <MudCardActions Class='d-flex gap-2 border-thin-top'>
                                      <MudSpacer />
-                                    <MudButton Class='btn-ios-d font12' OnClick='(() => {New();NavigationManager.NavigateTo("/check/list");})' Variant='Variant.Text' Size='Size.Medium' DisableElevation>Cancel</MudButton>
-                                    <MudButton Class='btn-ios-d font12' OnClick="(() => PrintCheck())" Variant="Variant.Filled" Color='Color.Primary' Size='Size.Medium' DisableElevation>GENERATE</MudButton>
+                                    <MudButton Class='btn-ios-d font12' OnClick='Cancel' Variant='Variant.Text' Size='Size.Medium' DisableElevation>Cancel</MudButton>
+                                    <MudButton Class='btn-ios-d font12' OnClick="(() => PrintCheck())" Variant="Variant.Filled" Color='@(GlobalClass.checkModel.Id == 0 ? Color.Primary:Color.Info)' Size='Size.Medium' DisableElevation>
+                                        @(GlobalClass.checkModel.Id == 0 ? "GENERATE" : "UPDATE")
+                                    </MudButton>
                                 </MudCardActions>
                             </div>
                         </div>
@@ -215,22 +236,25 @@
     private string PDFContent  = default!;
     private List<Project> payeeList = new();
     public static Enums.ActionMode currentActionMode {get;set;} = Enums.ActionMode.Create;
+    private MudDatePicker dateCheckDate = new MudDatePicker();
     protected override async Task OnInitializedAsync()
     {   
-        GlobalClass.pageTitle = "Check Writer";
-        while (GlobalClass.currentUserAccount == null)
+        GlobalClass.pageTitle = "Check Entry";
+        while (GlobalClass.currentUserAccount == null || GlobalVariable.ServerTime == null)
             await Task.Delay(1);
         Task t = Task.WhenAll(VoucherNotInCheck(),GetPayees());
         await t;
         if(t.Status == TaskStatus.RanToCompletion)
-            if(GlobalClass.checkModel == null)
+        {
+            if(currentActionMode == Enums.ActionMode.Create)
             {
                 New();
                 MapDefaults();
-                currentActionMode = Enums.ActionMode.Create;
+               // currentActionMode = Enums.ActionMode.Create;
             } else {
                 RemapCheck();
             }
+        }
         dataFetched =true;
     }
     private async Task VoucherNotInCheck()
@@ -261,7 +285,7 @@
     private async Task AddVoucher()
     {
         var parameters = new DialogParameters();
-        string dialogTitle = "Vouchers";
+        string dialogTitle = "Voucher look up";
         parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("buttonText", "Select");
         parameters.Add("color", Color.Success);
@@ -275,12 +299,9 @@
             DisableBackdropClick = true
         };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GlobalRFPLiquidationLookUp.GlobalRFPLiquidationLookUp>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Cancelled)
+        if (!resultDialog.Canceled)
         {
             StateHasChanged();
-                GlobalClass.checkModel.CheckVouchers.ForEach( x=>{
-                    Console.WriteLine(x.VoucherId);
-                });
         }
     }
 
@@ -298,12 +319,6 @@
         preparedBy = GlobalClass.currentUserAccount;
         bank = new();
         payee = new();
-    }
-    private async Task<IEnumerable<BankModel>> SearchBank(string bankAccount)
-    {
-        var banks = GlobalClassList.banks;
-        return await Task.FromResult(banks.Where(x => x.AccountNo.Contains(bankAccount, StringComparison.OrdinalIgnoreCase)
-        || x.BankName.Contains(bankAccount, StringComparison.OrdinalIgnoreCase)).ToList());
     }
     private async Task<IEnumerable<UserAccount>> LoadEmployee(string employeeName)
     {
@@ -340,6 +355,7 @@
     {
         GlobalClass.checkModel.Id = 0;
         GlobalClass.checkModel.PreparedByName = GlobalClass.currentUserAccount.EmployeeName;
+        checkDate = GlobalVariable.ServerTime;
     }
     private void RemapCheck()
     {
@@ -367,7 +383,7 @@
         //Audit Trail
         GlobalClass.checkModel.Activity = status == Enums.AccountingStatusEnumCategory.CI ? "Check Issued":"Check Updated";
         GlobalClass.checkModel.StatusName = Enums.AccountingStatusEnumCategory.CI.ToString();
-        GlobalClass.checkModel.AccountingStatusId = (int)Enums.AccountingStatusEnumCategory.CI;
+        GlobalClass.checkModel.AccountingStatusId = AccountingStatusId(Enums.AccountingStatusEnumCategory.CI);
     }
     private bool isValidated()
     {
@@ -416,11 +432,51 @@
     }
     private async Task SelectedBank(BankModel model)
     {
+        if(model == null)
+            model = new();
         bank = model;
         GlobalClass.checkModel.CheckNo = (await CheckNo(model.Id)).ToString();
     }
     private async Task<long> CheckNo(long bankId)
     {
         return await bankService.GetCheckNo(bankId,GlobalClass.token);
+    }
+    private long AccountingStatusId(Enums.AccountingStatusEnumCategory id)
+    {
+        return GlobalClassList.accountingStatusList
+            .Where( acctg => id == acctg.StatusEnumCategoryId)
+            .Select( acctg => acctg.Id)
+            .FirstOrDefault();
+    }
+    private void DateRangeToday()
+    {
+        checkDate = DateTime.Now;
+        SubmitDateRangePicker();
+    }
+    private void CancelDateRangePicker()
+    {
+        dateCheckDate.Close(false);
+    }
+    private void SubmitDateRangePicker()
+    {
+        dateCheckDate.Close(true);
+    }
+    private async Task CreateNew()
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("contentText", "create new Check");
+        parameters.Add("dialogTitle", "Create New");
+        parameters.Add("buttonText", "Create New");
+        parameters.Add("actionMode", Enums.ActionMode.Prompt);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.Small, FullWidth = false, NoHeader = false };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(string.Empty,parameters,options).Result;
+        if(!resultDialog.Canceled)
+        {
+            New();
+        }
+    }
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo($"check/list");
     }
 }

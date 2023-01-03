@@ -62,17 +62,12 @@
         string contentText = "Liquidation";
         string dialogTitle = GlobalClass.forPrintingOrSaveLiquidation.Id == 0 ? "Create " + contentText : "Update " + contentText;
         parameters.Add("contentText", contentText);
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("controlNumber", GlobalClass.forPrintingOrSaveLiquidation.ControlNumber);
         parameters.Add("actionMode", GlobalClass.forPrintingOrSaveLiquidation.Id == 0 ? Enums.ActionMode.Create : Enums.ActionMode.Update);
-        var options = new DialogOptions()
-        {
-            CloseButton = false,
-            MaxWidth = MaxWidth.ExtraSmall,
-            FullWidth = true,
-            NoHeader = false,
-            DisableBackdropClick = true
-        };
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Cancelled)
+        if (!resultDialog.Canceled)
         {
             if (GlobalClass.forPrintingOrSaveLiquidation.Id == 0)
             {

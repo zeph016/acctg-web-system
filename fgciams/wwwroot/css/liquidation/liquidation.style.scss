@@ -1,20 +1,34 @@
 .liquidationpage {
   &__grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 130px 1fr;
+    grid-template-columns: 1fr 1fr minmax(50px, 300px) minmax(50px, 200px) minmax(
+        50px,
+        170px
+      );
     grid-template-rows: 40px 40px 40px calc(100vh - 240px);
     gap: 0px 0px;
     grid-template-areas:
       "liq-header liq-header liq-header liq-header liq-header"
-      "liq-period liq-period liq-period liq-controlno liq-controlno"
+      "liq-period liq-period liq-blank liq-date liq-controlno"
       "liq-remarks liq-remarks liq-remarks liq-remarks liq-remarks"
       "liq-details liq-details liq-details liq-details liq-details";
+  }
+
+  .dflex-alcenter {
+    display: flex;
+    align-items: center;
   }
   .liq-header {
     grid-area: liq-header;
   }
+  .liq-blank {
+    grid-area: liq-blank;
+  }
   .liq-period {
     grid-area: liq-period;
+  }
+  .liq-date {
+    grid-area: liq-date;
   }
   .liq-controlno {
     grid-area: liq-controlno;
@@ -26,15 +40,14 @@
     grid-area: liq-details;
   }
   .liq-header,
-  .liq-period,
   .liq-remarks,
-  .liq-controlno,
   .liq-details {
     border-top: solid thin lightgray;
   }
 
   .liq-header,
-  .liq-period,
+  .liq-blank,
+  .liq-date,
   .liq-remarks,
   .liq-details {
     border-right: solid thin lightgray;
@@ -45,7 +58,32 @@
     border-right: solid thin lightgray;
   }
 
+  .liq-header,
   .liq-details {
     border-bottom: solid thin lightgray;
+  }
+
+  .liq-period {
+    &__daterange-cont {
+      @extend .dflex-alcenter;
+      gap: 8px;
+      padding: 8px;
+      width: 300px;
+    }
+  }
+
+  .liq-date {
+    &__date-cont {
+      @extend .dflex-alcenter;
+      padding: 8px;
+      width: 200px;
+    }
+  }
+
+  .liq-controlno {
+    @extend .dflex-alcenter;
+    justify-content: space-between;
+    padding: 8px;
+    overflow: hidden;
   }
 }

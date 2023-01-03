@@ -1,0 +1,33 @@
+
+<div class='custom-chip-dr-outlined'>
+    <MudDateRangePicker Class='txt-datepicker-custom-small' @bind-DateRange="_dateRange" ReadOnly DisableToolbar Editable='false'
+        IconSize='Size.Small' Margin='Margin.Dense' @ref='_dateRangePicker' DisableUnderline>
+        <PickerActions>
+            <MudButton Class='btn-ios-d font12' OnClick='CancelDatePicker' Variant='Variant.Text' Size='Size.Small' DisableElevation>
+                Close
+            </MudButton>
+        </PickerActions>
+    </MudDateRangePicker>
+</div>
+
+
+@code {
+    [Parameter] public DateTime dateFrom { get; set; }
+    [Parameter] public DateTime dateTo { get; set; }
+    private DateRange _dateRange = new DateRange();
+    private MudDateRangePicker _dateRangePicker = new MudDateRangePicker();
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+    }
+
+    protected override void OnInitialized()
+    {
+        _dateRange = new DateRange(dateFrom, dateTo);
+        StateHasChanged();
+    }
+    private void CancelDatePicker()
+    {
+       _dateRangePicker.Close(false);
+    }
+}

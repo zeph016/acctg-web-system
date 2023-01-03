@@ -61,18 +61,13 @@
     var parameters = new DialogParameters();
         string contentText = "Voucher";
         string dialogTitle = GlobalClass.forPrintingOrSaveVoucher.Id == 0 ? "Create " + contentText : "Update " + contentText;
-        parameters.Add("contentText", contentText);
+        parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("actionMode", GlobalClass.forPrintingOrSaveVoucher.Id == 0 ? Enums.ActionMode.Create : Enums.ActionMode.Update);
-        var options = new DialogOptions()
-        {
-            CloseButton = false,
-            MaxWidth = MaxWidth.ExtraSmall,
-            FullWidth = true,
-            NoHeader = false,
-            DisableBackdropClick = true
-        };
+        parameters.Add("contentText", contentText);
+        parameters.Add("controlNumber", GlobalClass.forPrintingOrSaveVoucher.ControlNumber);
+        var options = new DialogOptions() { CloseButton = false,  MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Cancelled)
+        if (!resultDialog.Canceled)
         {
           var SavedVoucher = new VoucherModel();
           if(GlobalClass.forPrintingOrSaveVoucher.Id == 0)
@@ -90,7 +85,10 @@
             isSaved = true;
           }
           pdfReport = await voucherService.GenerateReport(SavedVoucher);
-          
+
+          //Dont need after saving set to new() for signal R
+          SavedVoucher.VoucherDetails = new();
+
           if(GlobalVariable.AMSHubConnection != null)
             await GlobalVariable.AMSHubConnection.InvokeAsync("SaveVoucher", SavedVoucher);
         }
@@ -105,7 +103,7 @@
     {
       isPrint = true;
       GlobalClass.voucher = GlobalClass.forPrintingOrSaveVoucher;
-      navigationManager.NavigateTo($"/voucher/create");
+      navigationManager.NavigateTo($"/voucher");
     }
     else
     {

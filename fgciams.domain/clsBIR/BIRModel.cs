@@ -5,10 +5,6 @@ namespace fgciams.domain.clsBIR
 {
     public class VoucherBIRModel 
     {
-        public VoucherBIRModel()
-        {
-            VoucherDetails = new List<VoucherDetailModel>();
-        }
         public Int64 Id { get; set; }
         public Int64 VoucherBIRId { get; set; }
         public Int64 VoucherId { get; set; }
@@ -16,17 +12,17 @@ namespace fgciams.domain.clsBIR
         public DateTime? PeriodTo { get; set; }
         public Int64 PayeeId { get; set; }
         public Enums.ProjectCategory PayeeCategoryId { get; set; }
-        public string PayeeName { get; set; }
-        public string PayeeRegisteredAddress { get; set; }
-        public string PayeeZipCode { get; set; }
-        public string PayeeTIN { get; set; }
+        public string PayeeName { get; set; } = string.Empty;
+        public string PayeeRegisteredAddress { get; set; } = string.Empty;
+        public string PayeeZipCode { get; set; } = string.Empty;
+        public string PayeeTIN { get; set; } = string.Empty;
         public Int64 PayorId { get; set; }
-        public string PayorName { get; set; }
-        public string PayorRegisteredAddress { get; set; }
-        public string PayorZipCode { get; set; }
-        public string PayorTIN { get; set; }
-        public List<VoucherDetailModel> VoucherDetails { get; set; }
-        public VoucherModel Voucher { get; set; }
+        public string PayorName { get; set; } = string.Empty;
+        public string PayorRegisteredAddress { get; set; } = string.Empty;
+        public string PayorZipCode { get; set; } = string.Empty;
+        public string PayorTIN { get; set; } = string.Empty;
+        public VoucherModel Voucher { get; set; } = new();
+        public List<VoucherDetailModel> VoucherDetails = new();
         public string PreparedBy 
         {     
             get
@@ -35,7 +31,7 @@ namespace fgciams.domain.clsBIR
                 }
             set{}
         }
-        public string Personnel {get;set;}
-        public string PersonnelTin {get;set;}
+        public string Personnel {get;set;}  = string.Empty;
+        public string PersonnelTin {get;set;} = string.Empty;
     }
 }

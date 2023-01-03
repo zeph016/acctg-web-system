@@ -3,9 +3,9 @@
 <MudDialog Class="customdialog">
      <TitleContent>
          <div class='d-flex align-center'>
-            <MudIcon Icon="@Icons.Filled.Search" Class="mr-3" />
+            <MudIcon Icon="@Icons.Material.Filled.Search" Class="mr-3" />
             <MudText Typo='Typo.h6'>Search Icon</MudText>
-            <MudIconButton Icon="@Icons.Filled.Close" style="color: white;" OnClick="Close" Class="mr-3" />
+            <MudIconButton Icon="@Icons.Material.Filled.Close" style="color: white;" OnClick="Close" Class="mr-3" />
         </div>
     </TitleContent>
     <DialogContent>
@@ -16,7 +16,7 @@
         <MudContainer>
             <MudContainer class='d-flex gap-2 mt-3' Fixed='false' MaxWidth='MaxWidth.Medium'>
                 <MudTextField Class='flex-grow-1' @bind-Value='searchString' Variant='Variant.Outlined' Placeholder='Search Icon' Margin="Margin.Dense"
-                Adornment='Adornment.End' AdornmentIcon='@Icons.Filled.Search' OnAdornmentClick='(() => GetIconStringsList(numberOfIconsView))'/>
+                Adornment='Adornment.End' AdornmentIcon='@Icons.Material.Filled.Search' OnAdornmentClick='(() => GetIconStringsList(numberOfIconsView))'/>
                 <MudSelect @bind-Value='GlobalClass.selectedIconType' Dense='true' Variant='Variant.Outlined' Margin="Margin.Dense">
                 @foreach (var item in iconTypes)
                 {
@@ -78,12 +78,12 @@
     void Close() => mudDialog?.Close(DialogResult.Ok(101));
     private void PopulateIconTypes()
     {
-        iconTypes.Add(MudBlazor.Icons.Filled);
+        @* iconTypes.Add(MudBlazor.Icons.Material.Filled);
         iconTypes.Add(MudBlazor.Icons.Outlined);
         iconTypes.Add(MudBlazor.Icons.Rounded);
         iconTypes.Add(MudBlazor.Icons.Sharp);
         iconTypes.Add(MudBlazor.Icons.TwoTone);
-        GlobalClass.selectedIconType = MudBlazor.Icons.Filled;
+        GlobalClass.selectedIconType = MudBlazor.Icons.Material.Filled; *@
     }
     public void GetIconStringsList(int numberOfIcons)
     {

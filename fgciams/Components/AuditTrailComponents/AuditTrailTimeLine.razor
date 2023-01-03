@@ -1,0 +1,342 @@
+<MudTimeline Class='rounded-br rounded-bl pt-2 pr-2' TimelinePosition='TimelinePosition.Start'>
+    @if (auditMode == Enums.AuditTrailMode.PettyCashTrail)
+    {
+        @foreach(var item in pCashAuditTrails)
+        {
+            <style>
+                .timeline-container-@AcctgModel(item.Activity).StatusName .mud-timeline-item-dot-inner
+                {
+                    background-color: @AcctgModel(item.Activity).StatusColor !important;
+                    width:18px !important;
+                    height:18px !important;
+                }
+                .alert-container-@AcctgModel(item.Activity).StatusName .mud-icon-root
+                {
+                    color: @AcctgModel(item.Activity).StatusColor !important;
+                }
+            </style>
+            <div class='timeline-container-@AcctgModel(item.Activity).StatusName alert-container-@AcctgModel(item.Activity).StatusName'>
+                <MudTimelineItem Class='pb-2' Size='Size.Small' Elevation='25'>
+                    <MudCard Outlined Elevation='25'>
+                        <MudAlert Class='d-flex align-center pa-2 alert-m-flex1 bgc-white' ContentAlignment='HorizontalAlignment.Center' Icon="@Extensions.Icon(@AcctgModel(item.Activity).StatusIcon)" Dense>
+                            <div class='d-flex align-center gap-2'>
+                                <MudText Typo="Typo.subtitle2"><b>@item.Activity</b></MudText>
+                                @if (item.Id == currentTrailId)
+                                {
+                                    <MudText>--</MudText>
+                                    <MudChip Class='rounded txt-uppercase font10' Size='Size.Small' Variant='Variant.Filled' Color='Color.Info'>
+                                        Current Status
+                                    </MudChip>
+                                }
+                                <MudSpacer />
+                                <MudText Typo="Typo.caption">@item.LogDateTime.ToString("MMMM dd, yyyy hh:mm tt")</MudText>
+                            </div>
+                            <MudText Typo="Typo.caption">by: &nbsp; @item.UserName</MudText>
+                        </MudAlert>
+                    </MudCard>
+                </MudTimelineItem>
+            </div>
+        }
+    }
+    @if (auditMode == Enums.AuditTrailMode.LiquidationTrail)
+    {
+        @foreach(var item in liqAuditTrails)
+        {
+            <style>
+                .timeline-container-@AcctgModel(item.Activity).StatusName .mud-timeline-item-dot-inner
+                {
+                    background-color: @AcctgModel(item.Activity).StatusColor !important;
+                    width:18px !important;
+                    height:18px !important;
+                }
+                .alert-container-@AcctgModel(item.Activity).StatusName .mud-icon-root
+                {
+                    color: @AcctgModel(item.Activity).StatusColor !important;
+                }
+            </style>
+            <div class='timeline-container-@AcctgModel(item.Activity).StatusName alert-container-@AcctgModel(item.Activity).StatusName'>
+                <MudTimelineItem Class='pb-2' Size='Size.Small' Elevation='25'>
+                    <MudCard Outlined Elevation='25'>
+                        <MudAlert Class='d-flex align-center pa-2 alert-m-flex1 bgc-white' ContentAlignment='HorizontalAlignment.Center' Icon="@Extensions.Icon(@AcctgModel(item.Activity).StatusIcon)" Dense>
+                            <div class='d-flex align-center gap-2'>
+                                <MudText Typo="Typo.subtitle2"><b>@item.Activity</b></MudText>
+                                @if (item.Id == currentTrailId)
+                                {
+                                    <MudText>--</MudText>
+                                    <MudChip Class='rounded txt-uppercase font10' Size='Size.Small' Variant='Variant.Filled' Color='Color.Info'>
+                                        Current Status
+                                    </MudChip>
+                                }
+                                <MudSpacer />
+                                <MudText Typo="Typo.caption">@item.LogDateTime.ToString("MMMM dd, yyyy hh:mm tt")</MudText>
+                            </div>
+                            <MudText Typo="Typo.caption">by: &nbsp; @item.UserName</MudText>
+                        </MudAlert>
+                    </MudCard>
+                </MudTimelineItem>
+            </div>
+        }
+    }
+    @if (auditMode == Enums.AuditTrailMode.CheckTrail)
+    {
+        @foreach(var item in checkAuditTrails)
+        {
+            <style>
+                .timeline-container-@AcctgModel(item.Activity).StatusName .mud-timeline-item-dot-inner
+                {
+                    background-color: @AcctgModel(item.Activity).StatusColor !important;
+                    width:18px !important;
+                    height:18px !important;
+                }
+                .alert-container-@AcctgModel(item.Activity).StatusName .mud-icon-root
+                {
+                    color: @AcctgModel(item.Activity).StatusColor !important;
+                }
+            </style>
+            <div class='timeline-container-@AcctgModel(item.Activity).StatusName alert-container-@AcctgModel(item.Activity).StatusName'>
+                <MudTimelineItem Class='pb-2' Size='Size.Small' Elevation='25'>
+                    <MudCard Outlined Elevation='25'>
+                        <MudAlert Class='d-flex align-center pa-2 alert-m-flex1 bgc-white' ContentAlignment='HorizontalAlignment.Center' Icon="@Extensions.Icon(@AcctgModel(item.Activity).StatusIcon)" Dense>
+                            <div class='d-flex align-center gap-2'>
+                                <MudText Typo="Typo.subtitle2"><b>@item.Activity</b></MudText>
+                                @if (item.Id == currentTrailId)
+                                {
+                                    <MudText>--</MudText>
+                                    <MudChip Class='rounded txt-uppercase font10' Size='Size.Small' Variant='Variant.Filled' Color='Color.Info'>
+                                        Current Status
+                                    </MudChip>
+                                }
+                                <MudSpacer />
+                                <MudText Typo="Typo.caption">@item.LogDateTime.ToString("MMMM dd, yyyy hh:mm tt")</MudText>
+                            </div>
+                            <MudText Typo="Typo.caption">by: &nbsp; @item.UserName</MudText>
+                        </MudAlert>
+                    </MudCard>
+                </MudTimelineItem>
+            </div>
+        }
+    }
+    @if (auditMode == Enums.AuditTrailMode.CollectionTrail)
+    {
+        @foreach(var item in collectionAuditTrails.OrderBy(item => item.LogDateTime))
+        {
+            <style>
+                .timeline-container-@AcctgModel(item.Activity).StatusName .mud-timeline-item-dot-inner
+                {
+                    background-color: @AcctgModel(item.Activity).StatusColor !important;
+                    width:18px !important;
+                    height:18px !important;
+                }
+                .alert-container-@AcctgModel(item.Activity).StatusName .mud-icon-root
+                {
+                    color: @AcctgModel(item.Activity).StatusColor !important;
+                }
+            </style>
+            <div class='timeline-container-@AcctgModel(item.Activity).StatusName alert-container-@AcctgModel(item.Activity).StatusName'>
+                <MudTimelineItem Class='pb-2' Size='Size.Small' Elevation='25'>
+                    <MudCard Outlined Elevation='25'>
+                        <MudAlert Class='d-flex align-center pa-2 alert-m-flex1 bgc-white' ContentAlignment='HorizontalAlignment.Center' Icon="@Extensions.Icon(@AcctgModel(item.Activity).StatusIcon)" Dense>
+                            <div class='d-flex align-center gap-2'>
+                                <MudText Typo="Typo.subtitle2"><b>@item.Activity</b></MudText>
+                                @if (item.Id == currentTrailId)
+                                {
+                                    <MudChip Class='rounded txt-uppercase font10' Size='Size.Small' Variant='Variant.Filled' Color='Color.Info'>
+                                        BANK DEPOSIT
+                                    </MudChip>
+                                }
+                                <MudSpacer />
+                                <MudText Typo="Typo.caption">@item.LogDateTime.ToString("MMMM dd, yyyy hh:mm tt")</MudText>
+                            </div>
+                            <MudText Typo="Typo.caption">by: &nbsp; @item.UserName</MudText>
+                        </MudAlert>
+                    </MudCard>
+                </MudTimelineItem>
+            </div>
+        }
+    }
+    @if (auditMode == Enums.AuditTrailMode.RFPTrail)
+    {
+        @foreach(var item in RFPAuditTrail)
+        {
+            <style>
+                .timeline-container-@AcctgModel(item.Activity).StatusName .mud-timeline-item-dot-inner
+                {
+                    background-color: @AcctgModel(item.Activity).StatusColor !important;
+                    width:18px !important;
+                    height:18px !important;
+                }
+                .alert-container-@AcctgModel(item.Activity).StatusName .mud-icon-root
+                {
+                    color: @AcctgModel(item.Activity).StatusColor !important;
+                }
+            </style>
+            <div class='timeline-container-@AcctgModel(item.Activity).StatusName alert-container-@AcctgModel(item.Activity).StatusName'>
+                <MudTimelineItem Class='pb-2' Size='Size.Small' Elevation='25'>
+                    <MudCard Outlined Elevation='25'>
+                        <MudAlert Class='d-flex align-center pa-2 alert-m-flex1 bgc-white' ContentAlignment='HorizontalAlignment.Center' Icon="@Extensions.Icon(@AcctgModel(item.Activity).StatusIcon)" Dense>
+                            <div class='d-flex align-center gap-2'>
+                                <MudText Typo="Typo.subtitle2"><b>@item.Activity</b></MudText>
+                                @if (item.Id == currentTrailId)
+                                {
+                                    <MudChip Class='rounded txt-uppercase font10' Size='Size.Small' Variant='Variant.Filled' Color='Color.Info'>
+                                        BANK DEPOSIT
+                                    </MudChip>
+                                }
+                                <MudSpacer />
+                                <MudText Typo="Typo.caption">@item.LogDateTime.ToString("MMMM dd, yyyy hh:mm tt")</MudText>
+                            </div>
+                            <MudText Typo="Typo.caption">by: &nbsp; @item.UserName</MudText>
+                        </MudAlert>
+                    </MudCard>
+                </MudTimelineItem>
+            </div>
+        }
+    }
+    @if (auditMode == Enums.AuditTrailMode.VoucherTrail)
+    {
+        @foreach(var item in VoucherAuditTrail)
+        {
+            <style>
+                .timeline-container-@AcctgModel(item.Activity).StatusName .mud-timeline-item-dot-inner
+                {
+                    background-color: @AcctgModel(item.Activity).StatusColor !important;
+                    width:18px !important;
+                    height:18px !important;
+                }
+                .alert-container-@AcctgModel(item.Activity).StatusName .mud-icon-root
+                {
+                    color: @AcctgModel(item.Activity).StatusColor !important;
+                }
+            </style>
+            <div class='timeline-container-@AcctgModel(item.Activity).StatusName alert-container-@AcctgModel(item.Activity).StatusName'>
+                <MudTimelineItem Class='pb-2' Size='Size.Small' Elevation='25'>
+                    <MudCard Outlined Elevation='25'>
+                        <MudAlert Class='d-flex align-center pa-2 alert-m-flex1 bgc-white' ContentAlignment='HorizontalAlignment.Center' Icon="@Extensions.Icon(@AcctgModel(item.Activity).StatusIcon)" Dense>
+                            <div class='d-flex align-center gap-2'>
+                                <MudText Typo="Typo.subtitle2"><b>@item.Activity</b></MudText>
+                                @if (item.Id == currentTrailId)
+                                {
+                                    <MudChip Class='rounded txt-uppercase font10' Size='Size.Small' Variant='Variant.Filled' Color='Color.Info'>
+                                        BANK DEPOSIT
+                                    </MudChip>
+                                }
+                                <MudSpacer />
+                                <MudText Typo="Typo.caption">@item.LogDateTime.ToString("MMMM dd, yyyy hh:mm tt")</MudText>
+                            </div>
+                            <MudText Typo="Typo.caption">by: &nbsp; @item.UserName</MudText>
+                        </MudAlert>
+                    </MudCard>
+                </MudTimelineItem>
+            </div>
+        }
+    }
+    @if (auditMode == Enums.AuditTrailMode.VoucherBatch)
+    {
+        @foreach(var item in VoucherRouteTrail)
+        {
+            <style>
+                .timeline-container-@AcctgModel(item.Activity).StatusName .mud-timeline-item-dot-inner
+                {
+                    background-color: @AcctgModel(item.Activity).StatusColor !important;
+                    width:18px !important;
+                    height:18px !important;
+                }
+                .alert-container-@AcctgModel(item.Activity).StatusName .mud-icon-root
+                {
+                    color: @AcctgModel(item.Activity).StatusColor !important;
+                }
+            </style>
+            <div class='timeline-container-@AcctgModel(item.Activity).StatusName alert-container-@AcctgModel(item.Activity).StatusName'>
+                <MudTimelineItem Class='pb-2' Size='Size.Small' Elevation='25'>
+                    <MudCard Outlined Elevation='25'>
+                        <MudAlert Class='d-flex align-center pa-2 alert-m-flex1 bgc-white' ContentAlignment='HorizontalAlignment.Center' Icon="@Extensions.Icon(@AcctgModel(item.Activity).StatusIcon)" Dense>
+                            <div class='d-flex align-center gap-2'>
+                                <MudText Typo="Typo.subtitle2"><b>@item.Activity</b></MudText>
+                                @if (item.Id == currentTrailId)
+                                {
+                                    <MudChip Class='rounded txt-uppercase font10' Size='Size.Small' Variant='Variant.Filled' Color='Color.Info'>
+                                        BANK DEPOSIT
+                                    </MudChip>
+                                }
+                                <MudSpacer />
+                                <MudText Typo="Typo.caption">@item.LogDateTime.ToString("MMMM dd, yyyy hh:mm tt")</MudText>
+                            </div>
+                            <MudText Typo="Typo.caption">by: &nbsp; @item.UserName</MudText>
+                        </MudAlert>
+                    </MudCard>
+                </MudTimelineItem>
+            </div>
+        }
+    }
+    @if (auditMode == Enums.AuditTrailMode.DebitTrail)
+    {
+        @foreach(var item in DebitList)
+        {
+            <style>
+                .timeline-container-@AcctgModel(item.Activity).StatusName .mud-timeline-item-dot-inner
+                {
+                    background-color: @AcctgModel(item.Activity).StatusColor !important;
+                    width:18px !important;
+                    height:18px !important;
+                }
+                .alert-container-@AcctgModel(item.Activity).StatusName .mud-icon-root
+                {
+                    color: @AcctgModel(item.Activity).StatusColor !important;
+                }
+            </style>
+            <div class='timeline-container-@AcctgModel(item.Activity).StatusName alert-container-@AcctgModel(item.Activity).StatusName'>
+                <MudTimelineItem Class='pb-2' Size='Size.Small' Elevation='25'>
+                    <MudCard Outlined Elevation='25'>
+                        <MudAlert Class='d-flex align-center pa-2 alert-m-flex1 bgc-white' ContentAlignment='HorizontalAlignment.Center' Icon="@Extensions.Icon(@AcctgModel(item.Activity).StatusIcon)" Dense>
+                            <div class='d-flex align-center gap-2'>
+                                <MudText Typo="Typo.subtitle2"><b>@item.Activity</b></MudText>
+                                @if (item.Id == currentTrailId)
+                                {
+                                    <MudChip Class='rounded txt-uppercase font10' Size='Size.Small' Variant='Variant.Filled' Color='Color.Info'>
+                                        BANK DEPOSIT
+                                    </MudChip>
+                                }
+                                <MudSpacer />
+                                <MudText Typo="Typo.caption">@item.LogDateTime.ToString("MMMM dd, yyyy hh:mm tt")</MudText>
+                            </div>
+                            <MudText Typo="Typo.caption">by: &nbsp; @item.UserName</MudText>
+                        </MudAlert>
+                    </MudCard>
+                </MudTimelineItem>
+            </div>
+        }
+    }
+</MudTimeline>
+
+
+@code {
+    [Parameter] public Enums.AuditTrailMode auditMode { get; set; }
+    [Parameter] public List<PettyCashAuditTrail> pCashAuditTrails { get; set; } = new List<PettyCashAuditTrail>();
+    [Parameter] public List<LiquidationAuditTrailModel> liqAuditTrails { get; set; } = new List<LiquidationAuditTrailModel>();
+    [Parameter] public List<CheckAuditTrailModel> checkAuditTrails { get; set; } = new List<CheckAuditTrailModel>();
+    [Parameter] public List<CollectionAuditTrailModel> collectionAuditTrails { get; set; } = new List<CollectionAuditTrailModel>();
+    [Parameter] public List<RequestForPaymentAuditTrailModel> RFPAuditTrail { get; set; } = new List<RequestForPaymentAuditTrailModel>();
+    [Parameter] public List<VoucherAuditTrailModel> VoucherAuditTrail { get; set; } = new List<VoucherAuditTrailModel>();
+    [Parameter] public List<VoucherRouteBatchAuditTrailModel> VoucherRouteTrail { get; set; } = new List<VoucherRouteBatchAuditTrailModel>();
+    [Parameter] public List<DebitAuditTrailModel> DebitList { get; set; } = new List<DebitAuditTrailModel>();
+    private long currentTrailId;
+
+    private AccountingStatusModel AcctgModel(string activityString)
+    {
+        AccountingStatusModel accountingStatusModel = new();
+        accountingStatusModel.StatusName = "Update";
+        accountingStatusModel.StatusColor = "LIME";
+        accountingStatusModel.StatusIcon = Icons.Material.Filled.CheckCircleOutline;
+        if(activityString.Equals("Create Petty Cash"))
+            accountingStatusModel = GlobalClassList.accountingStatusList.Find(x=> x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCG) ?? accountingStatusModel;
+        if(activityString.Equals("Approve Petty Cash"))
+            accountingStatusModel = GlobalClassList.accountingStatusList.Find(x=> x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCA) ?? accountingStatusModel;
+        if(activityString.Equals("Cancel Petty Cash"))
+            accountingStatusModel = GlobalClassList.accountingStatusList.Find(x=> x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCC) ?? accountingStatusModel;
+        if(activityString.Equals("Receive Petty Cash")) 
+            accountingStatusModel = GlobalClassList.accountingStatusList.Find(x=> x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCR) ?? accountingStatusModel;
+        if(activityString.Equals("Petty Cash liquidated")) 
+            accountingStatusModel = GlobalClassList.accountingStatusList.Find(x=> x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCL) ?? accountingStatusModel;
+        return accountingStatusModel;
+    }
+}

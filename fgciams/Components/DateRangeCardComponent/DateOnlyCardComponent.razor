@@ -1,0 +1,20 @@
+
+<div class='custom-chip-small'>
+    <MudDatePicker Class='font10-txtfield txt-bold txt-top-0 mt-1' @bind-Date="date" DisableUnderline 
+        Margin='Margin.Dense' IconSize='Size.Small' ReadOnly DisableToolbar Editable='false' @ref='_datePicker'>
+        <PickerActions>
+             <MudButton Class='btn-ios-d font12' OnClick='CancelDatePicker' Variant='Variant.Text' Size='Size.Small' DisableElevation>
+                Close
+            </MudButton>
+        </PickerActions>    
+    </MudDatePicker>
+</div>
+
+@code {
+    [Parameter] public DateTime? date { get; set; } = DateTime.Now.Date;
+
+    private MudDatePicker _datePicker = new MudDatePicker();
+    
+    private void CancelDatePicker() =>  _datePicker.Close(false);
+    
+}

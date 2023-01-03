@@ -1,0 +1,26 @@
+.dflex-row-align-center {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+}
+
+.dflex-row {
+  align-items: center;
+  display: flex;
+}
+
+.dflex-col {
+  flex-direction: column;
+  display: flex;
+}
+
+.dflex-ac {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+}
+
+.flex-full {
+  flex: 1 1 0%;
+}/*# sourceMappingURL=flexgridmods.styles.css.map */

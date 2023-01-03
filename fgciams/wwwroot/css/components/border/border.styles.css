@@ -10,7 +10,7 @@
   border: solid thin lightgray;
 }
 
-.border-thin-top {
+.border-thin-top, .border-thin-topbot {
   border-top: solid thin lightgray;
 }
 
@@ -18,7 +18,7 @@
   border-right: solid thin lightgray;
 }
 
-.border-thin-bottom {
+.border-thin-bottom, .border-thin-topbot {
   border-bottom: solid thin lightgray;
 }
 
@@ -34,8 +34,24 @@
   border: solid thin rgba(119, 136, 153, 0.6901960784) !important;
 }
 
+.border-thin-notop {
+  border-right: solid thin lightgray;
+}
+
 .border-bottom-only {
   border-top: none;
   border-right: none;
   border-left: none;
+}
+
+.br-none {
+  border-right: none !important;
+}
+
+.bl-thin {
+  border-left: solid thin lightgray;
+}
+
+.br-thin {
+  border-right: solid thin lightgray;
 }/*# sourceMappingURL=border.styles.css.map */

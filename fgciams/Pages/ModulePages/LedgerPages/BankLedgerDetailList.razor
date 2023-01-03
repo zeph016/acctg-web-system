@@ -1,0 +1,224 @@
+@page "/bank-ledger/detail/list"
+@page "/bank-ledger/detail/list/{bankId:long}"
+
+@inject ILedgerService ledgerService
+@inject NavigationManager navigationManager
+
+<div class='page-cont'>
+    <div class='drawer-right-min'>
+        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <LedgerFilterComponent OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
+                filterParameter='filterParameter' FilterClick='ReloadTable' ResetTableClick='ResetTable'
+                contentVisible='openSideFilter' moduleName="bank-ledgerDetail-list"/>
+        </MudDrawer>
+    </div>
+    <MudContainer Class='py-2 pl-2 pr-10  table-toolbar-custom1' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+        <MudTable Class='table-style-1 overflow-hidden' ServerData='new Func<TableState, Task<TableData<CheckLedgerModel>>>(LoadLedgerLists)' @ref='tableVariable' Hover Loading='isLoading'
+            Breakpoint="Breakpoint.Xs" FixedHeader FixedFooter CustomFooter Bordered Dense Virtualize Height='calc(100vh - 235px)'
+            Elevation='1' Square>
+            <ToolBarContent>
+                <MudText Typo='Typo.caption'>
+                    @GlobalClassList.checkLegderList.Count() 
+                    @(GlobalClassList.checkLegderList.Count()  == 1 ? "item" : "items") 
+                    in total
+                </MudText>
+                <MudSpacer/>
+                <MudTooltip Text="Refresh Table" Arrow Placement='Placement.Top'>
+                    <MudIconButton Class='@(isLoading ? "mudbtnico-rotate":"")' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small"
+                        Color='@(isLoading ? Color.Info : Color.Default)'/>
+                </MudTooltip>
+                <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' ActivationEvent="MouseEvent.MouseOver"
+                    TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
+                    <MudMenuItem OnClick="(() => openSideFilter = !openSideFilter)"  >
+                        <div class='d-flex align-center gap-2 '>
+                            <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
+                            <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
+                        </div>
+                    </MudMenuItem>
+
+                    
+                </MudMenu>
+            </ToolBarContent>
+            <ColGroup>
+                <col style="width:1%" />
+                <col />
+                <col />
+                <col />
+                <col />
+                <col /> 
+                <col />
+            </ColGroup>
+            <HeaderContent>
+                <MudTh Class='customheader-6'>
+                    <div class='d-flex align-center justify-center'>
+                        <MudTableSortLabel SortLabel='SortDate' T='CheckLedgerModel'
+                            InitialDirection='SortDirection.Descending'>
+                            Check/Deposit Date
+                        </MudTableSortLabel>
+                    </div>
+                </MudTh>
+                <MudTh Class='customheader-6 text-center'>Payee Name</MudTh>
+                <MudTh Class='customheader-6 text-center'>Check No</MudTh>
+                <MudTh Class='customheader-6 text-center'>Bank Name</MudTh>
+                <MudTh Class='customheader-6 text-right'>Debit</MudTh>
+                <MudTh Class='customheader-6 text-right'>Credit</MudTh>
+                <MudTh Class='customheader-6 text-right'>
+                    <MudTooltip Text='Running Balance'>
+                        Running Balance
+                    </MudTooltip>
+                </MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd Class='text-center pa-2' DataLabel='Control No.'>
+                    <div class='d-flex align-center justify-center'>
+                        <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Icon='@Icons.Material.Filled.CalendarMonth' Variant='Variant.Outlined'
+                            Color='Color.Default' Size='Size.Small'>
+                            @Convert.ToDateTime(context.TransactionDate).ToShortDateString()
+                        </MudChip>
+                    </div>
+                </MudTd>
+                <MudTd Class='text-left pa-2 mudtd-mw-30vw300px' DataLabel='Payee Name'>
+                    <div class='dynamic-div-1'>
+                        <small>@context.PayeeName</small>
+                    </div>
+                </MudTd>
+                <MudTd Class='mudtd-mw-150px pa-2' DataLabel='Check No'>
+                    <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Default' Size='Size.Small' Variant='Variant.Outlined'>
+                        <small>@context.CheckNo</small>
+                    </MudChip>
+                </MudTd>
+                <MudTd Class='font12 text-center pa-2' DataLabel="Bank">
+                    <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Info' Size='Size.Small'>
+                        <small>@context.BankName</small>
+                    </MudChip>
+                </MudTd>
+                <MudTd Class='wspace-nowrap text-right pa-2' DataLabel='Amount'>
+                    <MudText Class='font-bold font12' Style='@(context.Debit > 0 ? "color:green":"color:red")'>
+                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)  @context.Debit.ToString("N2")
+                    </MudText>
+                </MudTd>
+                <MudTd Class='wspace-nowrap text-right pa-2' DataLabel='Amount'>
+                    <MudText Class='font-bold font12' Style='@(context.Credit > 0 ? "color:green":"color:red")'>
+                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)  @context.Credit.ToString("N2")
+                    </MudText>
+                </MudTd>
+                <MudTd Class='wspace-nowrap text-right pa-2' DataLabel='Amount'>
+                    <MudText Class='font-bold font12' Style='@(context.RunningBalance > 0 ? "color:green":"color:red")'>
+                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)  @context.RunningBalance.ToString("N2")
+                    </MudText>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                    <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No records found</MudText>
+            </NoRecordsContent>
+            <PagerContent>
+                <MudTablePager PageSizeOptions='@GlobalVariable.pageSize' />
+            </PagerContent>
+        </MudTable>
+        <div class='d-flex align-center gap-4 border-thin overflow-auto bgc-white'>
+            <MudSpacer />
+            <div class='d-flex align-center justify-end pa-2'>
+                <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>Total Debit: </MudText>
+                <div class='d-flex align-center gap-2'>
+                    <MudChip Class='rounded' Color='Color.Default' Size='Size.Small'>
+                        <MudText Class='font-bold color-green font12'>
+                           @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)  
+                           @Debit().ToString("N2")
+                        </MudText>
+                    </MudChip>
+                </div>
+            </div>
+            <div class='d-flex align-center justify-end pa-2'>
+                <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>Total Credit: </MudText>
+                <div class='d-flex align-center gap-2'>
+                    <MudChip Class='rounded' Color='Color.Default' Size='Size.Small'>
+                        <MudText Class='font-bold color-green font12'>
+                           @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)  
+                           @Credit().ToString("N2")
+                        </MudText>
+                    </MudChip>
+                </div>
+            </div>
+            <div class='d-flex align-center justify-end pa-2'>
+                <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>Total Balance: </MudText>
+                <div class='d-flex align-center gap-2'>
+                    <MudChip Class='rounded' Color='Color.Default' Size='Size.Small'>
+                        <MudText Class='font-bold color-green font12'>
+                           @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)  
+                           @TotalBalance().ToString("N2")
+                        </MudText>
+                    </MudChip>
+                </div>
+            </div>
+        </div>
+    </MudContainer>
+</div>
+
+@code
+{
+    [Parameter] public long bankId {get; set;}
+    private bool isLoading, toggleSidebar = true, openSideFilter;
+    private FilterParameter filterParameter = new();
+    private DateRange? dateRange = new DateRange(DateTime.Now, DateTime.Now);
+    private IEnumerable<CheckLedgerModel>? pageData;
+    private MudTable<CheckLedgerModel> tableVariable = new MudTable<CheckLedgerModel>();
+    protected override void OnInitialized()
+    {
+        GlobalClass.pageTitle = "BANK LEDGER LIST";
+        StateHasChanged();
+    }
+    private async Task<TableData<CheckLedgerModel>> LoadLedgerLists(TableState tableState)
+    {
+        isLoading = true;
+        DefaultParameter();
+        IEnumerable<CheckLedgerModel> data = await ledgerService.GetCheckLedger(filterParameter, GlobalClass.token);
+        switch (tableState.SortLabel)
+        {
+            case "SortDate":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.TransactionDate);
+                break;
+        }
+        GlobalClassList.checkLegderList = data.ToList();
+        pageData = data.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
+        var total = data.Count();
+        isLoading = !isLoading;
+        StateHasChanged();
+        
+        return new TableData<CheckLedgerModel>()
+        {
+            TotalItems = total,
+            Items = pageData
+        };
+    }
+    private async Task ResetTable()
+    {
+        DefaultParameter();
+        await ReloadTable();
+    }
+    private async Task ReloadTable()
+    {
+        //DefaultParameter();
+        filterParameter = GlobalVariable.filterParameter;
+        await tableVariable.ReloadServerData();
+    }
+    private decimal Credit()
+    {
+        return  GlobalClassList.checkLegderList.Sum(amount => amount.Credit);
+    }
+    private decimal TotalBalance()
+    {
+        return  GlobalClassList.checkLegderList.Sum(amount => amount.Debit)-GlobalClassList.checkLegderList.Sum(amount => amount.Credit);
+    }
+    private decimal Debit()
+    {
+        return  GlobalClassList.checkLegderList.Sum(amount => amount.Debit);
+    }
+    private void DefaultParameter()
+    {
+        filterParameter = new();
+        filterParameter.IsDate = false;
+        filterParameter.isActive = true;
+        filterParameter.IsBank = true;
+        filterParameter.BankId = bankId.ToString();
+    }
+}

@@ -1,0 +1,15 @@
+.subledger-container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: 1fr;
+  gap: 8px;
+  grid-template-areas: "subledger-table subledger-side";
+}
+
+.subledger-table {
+  grid-area: subledger-table;
+}
+
+.subledger-side {
+  grid-area: subledger-side;
+}/*# sourceMappingURL=subledgerlist.styles.css.map */

@@ -7,11 +7,11 @@
     <div class='d-flex align-center'>
       @if (GlobalClass.bank.Id != 0)
       {
-        <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3 mb-n1" />
+        <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1" />
       }
       else
       {
-        <MudIcon Icon="@Icons.Filled.Add" Class="mr-3 mb-n1" />
+        <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-3 mb-n1" />
       }
       <MudText Class='txt-uppercase' Typo='Typo.h6'>@dialogTitle</MudText>
     </div>
@@ -129,17 +129,17 @@
                   <MudTd Class='text-right pa-2' DataLabel="Short Name">@context.CheckNoRangeTo</MudTd>
                   <MudTd Class='text-center' DataLabel='Date Log'>@context.LogDateTime.ToShortDateString()</MudTd>
                   <MudTd Class='text-center pa-2'>
-                      <MudMenu Icon='@Icons.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                      <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
                       TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
                           <MudMenuItem OnClick="(()=>EditRange(context, Enums.ActionMode.Update))">
                               <div class='d-flex align-center gap-2'>
-                                  <MudIcon Icon='@Icons.Filled.Edit' Size='Size.Small' />
+                                  <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' />
                                   <MudText Typo='Typo.body2'>Edit</MudText>
                               </div>
                           </MudMenuItem>
                           <MudMenuItem OnClick="(()=>EditRange(context, Enums.ActionMode.Deactivate))">
                               <div class='d-flex align-center gap-2'>
-                                  <MudIcon Icon='@Icons.Filled.DeleteForever' Size='Size.Small' />
+                                  <MudIcon Icon='@Icons.Material.Filled.DeleteForever' Size='Size.Small' />
                                   <MudText Typo='Typo.body2'>Remove</MudText>
                               </div>
                           </MudMenuItem>
@@ -208,15 +208,37 @@
 
   private async Task Submit()
   {
-    if (!GlobalClass.bank.IsActive)
+    if(currentAction == Enums.ActionMode.Create)
     {
-      currentAction = Enums.ActionMode.Deactivate;
-      await PromptMessage();
+      if (!GlobalClass.bank.IsActive)
+      {
+        currentAction = Enums.ActionMode.Deactivate;
+        await PromptMessage();
+      }
+      else if (isValidated())
+        await PromptMessage();
+      else
+        Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbarService, Severity.Error);
+    } else 
+    {
+      if(GlobalClassList.bankCheckNumberList.Count == 0)
+      {
+        Extensions.ShowAlert("Please add check number ranges", Variant.Filled, snackbarService, Severity.Error);
+      } else if (GlobalClass.bank.BankCheckNumberId == 0)
+      {
+        Extensions.ShowAlert("Please select a default check range", Variant.Filled, snackbarService, Severity.Error);
+      } else {
+        if (!GlobalClass.bank.IsActive)
+        {
+          currentAction = Enums.ActionMode.Deactivate;
+          await PromptMessage();
+        }
+        else if (isValidated())
+          await PromptMessage();
+        else
+          Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbarService, Severity.Error);
+      }
     }
-    else if (isValidated())
-      await PromptMessage();
-    else
-      Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbarService, Severity.Error);
   }
   private bool ValidateEntries()
   {
@@ -265,12 +287,13 @@
       parameters.Add("contentText", contentText);
       var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
       var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-      if (!resultDialog.Cancelled)
+      if (!resultDialog.Canceled)
       {
         try
         {
           if (currentAction == Enums.ActionMode.Create)
           {
+            GlobalClass.bank.BankCheckNumberId = null;
             GlobalClass.bank = await bankService.AddBank(GlobalClass.bank, GlobalClass.token);
             GlobalClassList.banks.Add(GlobalClass.bank);
           }
@@ -339,9 +362,6 @@
   private bool isValidated()
   {
 
-    if (currentAction == Enums.ActionMode.Update)
-      if (GlobalClass.bank.BankCheckNumberId == null)
-        Extensions.ShowAlert("Please sselect a default check range", Variant.Filled, snackbarService, Severity.Error);
     
     if(GlobalClass.bankCheckNumberModel.CheckNoRangeFrom > GlobalClass.bankCheckNumberModel.CheckNoRangeTo)
     {
@@ -400,7 +420,7 @@
       parameters.Add("actionMode", subAction);
       var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
       var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-      if (!resultDialog.Cancelled) 
+      if (!resultDialog.Canceled) 
       {   
         if (subAction == Enums.ActionMode.Create) {
           await bankService.AddBankCheckNumber(GlobalClass.bankCheckNumberModel,GlobalClass.token);

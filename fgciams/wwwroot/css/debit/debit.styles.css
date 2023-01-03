@@ -1,0 +1,78 @@
+.dflex-row-align-center {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+}
+
+.dflex-row {
+  align-items: center;
+  display: flex;
+}
+
+.dflex-col {
+  flex-direction: column;
+  display: flex;
+}
+
+.dflex-ac, .debit-container .debit-header, .debit-container .debit-bank, .debit-container .debit-controlno, .debit-container .debit-date, .debit-container .debit-amount {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+}
+
+.flex-full {
+  flex: 1 1 0%;
+} /*# sourceMappingURL=flexgridmods.styles.css.map */
+.debit-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 150px 150px;
+  grid-template-rows: 40px 50px 60px 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas: "debit-header debit-header debit-header debit-header debit-header debit-header  debit-header" "debit-bank debit-bank debit-bank debit-bank debit-bank debit-controlno debit-controlno" "debit-amount debit-amount debit-amount debit-amount debit-amount debit-date debit-date" "debit-remarks debit-remarks debit-remarks debit-remarks debit-remarks debit-sidebar debit-sidebar";
+  padding: 8px;
+}
+.debit-container .debit-header {
+  background-color: #f4f5fb;
+  border-radius: 4px 4px 0px 0px;
+  border: solid thin lightgray;
+  grid-area: debit-header;
+}
+.debit-container .debit-bank {
+  justify-content: space-between;
+  border-right: solid thin lightgray;
+  border-left: solid thin lightgray;
+  grid-area: debit-bank;
+}
+.debit-container .debit-controlno {
+  justify-content: space-around;
+  border-right: solid thin lightgray;
+  grid-area: debit-controlno;
+}
+.debit-container .debit-date {
+  border: solid thin lightgray;
+  border-left-style: none;
+  grid-area: debit-date;
+}
+.debit-container .debit-amount {
+  border: solid thin lightgray;
+  grid-area: debit-amount;
+}
+.debit-container .debit-amount__amtcont {
+  width: 100%;
+}
+.debit-container .debit-remarks {
+  display: flex;
+  border: solid thin lightgray;
+  border-top-style: none;
+  align-items: starts;
+  gap: 4px;
+  grid-area: debit-remarks;
+  padding: 8px;
+}
+.debit-container .debit-sidebar {
+  border-right: solid thin lightgray;
+  border-bottom: solid thin lightgray;
+  grid-area: debit-sidebar;
+}/*# sourceMappingURL=debit.styles.css.map */

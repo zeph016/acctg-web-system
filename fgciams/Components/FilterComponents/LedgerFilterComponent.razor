@@ -1,0 +1,417 @@
+@inject IGlobalService GlobalService
+
+<div class='drawer-right__filtercont'>
+    <div class='icon-area d-flex align-center @(contentVisible ? "pl-3":"")'>
+        <MudTooltip Text='Filter' Arrow Placement='Placement.Left'>
+            <MudIconButton OnClick='OpenFilter' Icon='@Icons.Material.Filled.FilterList' arial-label='Close Filter' Size='Size.Small' />
+        </MudTooltip>
+    </div>
+    <div class='filter-title d-flex align-center'>
+        <MudText Typo='Typo.button'>Filter</MudText>
+        <MudSpacer />
+        <MudIconButton OnClick='OpenFilter' Icon='@Icons.Material.Filled.Close' aria-label='Close Filter' Size='Size.Small' />
+    </div>
+    <div class='filter-content @(contentVisible ? "fade-in":"fade-out")'>
+        <MudGrid Spacing='1'>
+            @if (!moduleName.Contains("bankledger-list", StringComparison.InvariantCultureIgnoreCase) )
+            {
+                <MudItem Class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        currentProject = new();
+                        filterParameter.IsCharged = !filterParameter.IsCharged;
+                    })' Checked='filterParameter.IsCharged' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem Class='pr-3' xs=10>
+                    <div class='blzrtheadfilter-lbl-req @(!filterParameter.IsCharged ? "color-gray":"")'>
+                        <small>Project/Charging</small>
+                    </div>
+                    <div class='blzrthead-disabled-minheight15'>
+                        <BlazoredTypeahead Disabled='@(!filterParameter.IsCharged)' SearchMethod='LoadCharging' Context='project' 
+                            Debounce='500' MaximumSuggestions='5' Placeholder='Project/Charging' DisableClear
+                            Value="currentProject" ValueExpression="(()=>currentProject)"
+                            ValueChanged="((Project p)=>OnProjectValueChanged(p))">
+                            <SelectedTemplate>
+                                <small class='blzsmallpayproj-220px ml-2 pt-1'>@currentProject.ProjectName</small>
+                            </SelectedTemplate>
+                            <ResultTemplate>
+                                <div class='d-flex flex-column'>
+                                    <small>@project.ProjectName</small>
+                                    <small>@project.Location</small>
+                                </div>
+                            </ResultTemplate>
+                        </BlazoredTypeahead>
+                    </div>
+                </MudItem>
+            }
+            @if(moduleName.Contains("bankledger-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                <MudItem Class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        bank = new();
+                        filterParameter.IsBank = !filterParameter.IsBank;
+                    })' Checked='filterParameter.IsBank' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem Class='pr-3' xs=10>
+                    <div class='blzrtheadfilter-lbl-req @(!filterParameter.IsBank ? "color-gray":"")'>
+                        <small>Bank</small>
+                    </div>
+                    <div class='blzrthead-disabled-minheight15'>
+                        <BlazoredTypeahead Disabled='!filterParameter.IsBank'
+                            SearchMethod=Extensions.SearchBank Context='bank'
+                            ValueChanged="((BankModel b)=> OnBankSelected(b))" 
+                            Value="bank" 
+                            ValueExpression="(()=>bank)"
+                            Debounce='500' MaximumSuggestions='5' aria-placeholder="Charge to" EnableDropDown DisableClear>
+                            <SelectedTemplate>
+                                <div class='d-flex flex-column'>
+                                    <small class='blzsmallpayproj-170px ml-2 pt-1'>@bank.ShortcutName | @bank.AccountNo</small>
+                                </div>
+                            </SelectedTemplate>
+                            <ResultTemplate>
+                                <div class='d-flex flex-column'>
+                                    <small>@bank.ShortcutName | @bank.AccountNo</small>
+                                </div>
+                            </ResultTemplate>
+                        </BlazoredTypeahead>
+                    </div>
+                </MudItem>
+            }
+            @if (moduleName.Contains("subledger-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                <MudItem Class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        currentContractor = new();
+                        IsContractor = !IsContractor;
+                    })' Checked='IsContractor' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem Class='pr-3' xs=10>
+                    <div class='blztheadfilter-lbl-payproj @(!IsContractor ? "color-gray":"")'>
+                        <small>Contractor</small>
+                    </div>
+                    <div class='blzrthead-disabled-minheight15'>
+                        <BlazoredTypeahead Disabled='@(!IsContractor)'
+                            SearchMethod='(async(String search)=> await SearchContractors(search))' Context='projectContractor'
+                            ValueChanged="((SubContractorProjectModel p)=> OnContractorValueChanged(p))" 
+                            Value="currentContractor" 
+                            ValueExpression="(()=>currentContractor)"
+                            Debounce='500' MaximumSuggestions='5' aria-placeholder="Charge to" DisableClear>
+                            <SelectedTemplate>
+                                <small class='blzsmallpayproj-220px ml-2 pt-1'>@projectContractor.SubContractorName</small>
+                            </SelectedTemplate>
+                            <ResultTemplate>
+                                <div class='d-flex flex-column'>
+                                    <small>@projectContractor.SubContractorName</small>
+                                </div>
+                            </ResultTemplate>
+                        </BlazoredTypeahead>
+                    </div>
+                </MudItem>
+                <MudItem Class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        currentScopeOfWork = new();
+                        IsSoW = !IsSoW;
+                    })' Checked='IsSoW' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem Class='pr-3' xs=10>
+                    <div class='blztheadfilter-lbl-line3 @(!IsSoW ? "color-gray":"")'>
+                        <small>Scope of work</small>
+                    </div>
+                    <div class='blzrthead-disabled-minheight15'>
+                        <BlazoredTypeahead Disabled='!IsSoW'
+                            SearchMethod='(async(String search)=>await SearchSOW(search))' Context='sow'
+                            ValueChanged="((SubContractorProjectModel p)=> OnScopeOfWorkValueChanged(p))" 
+                            Value="currentScopeOfWork" 
+                            ValueExpression="(()=>currentScopeOfWork)"
+                            Debounce='500' MaximumSuggestions='5' aria-placeholder="Charge to" DisableClear EnableDropDown>
+                            <SelectedTemplate>
+                                <small class='blzsmallpayproj-170px ml-2 pt-1'>@currentScopeOfWork.ScopeOfWork</small>
+                            </SelectedTemplate>
+                            <ResultTemplate>
+                                <div class='d-flex flex-column'>
+                                    <small>@sow.ScopeOfWork</small>
+                                </div>
+                            </ResultTemplate>
+                        </BlazoredTypeahead>
+                    </div>
+                </MudItem>
+                <MudItem Class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        filterParameter.ControlNumber = string.Empty;
+                        filterParameter.IsControlNumber = !filterParameter.IsControlNumber;
+                    })' Checked='filterParameter.IsControlNumber' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                 <MudItem xs=10>
+                    <MudTextField Class='txtfield-75 mr-2' @bind-Value='filterParameter.ControlNumber' Label='Control No.' Placeholder='Control No.' Immediate
+                        Clearable Disabled="@(!filterParameter.IsControlNumber)" Variant='Variant.Outlined' Margin='Margin.Dense' />
+                </MudItem>
+            }
+            @if (!moduleName.Contains("subledger-list", StringComparison.InvariantCultureIgnoreCase)
+                && !moduleName.Contains("bank-ledgerDetail-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                <MudItem Class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        filterParameter.ReferenceNumber = string.Empty;
+                        filterParameter.IsReferenceNumber = !filterParameter.IsReferenceNumber;
+                    })' Checked='filterParameter.IsReferenceNumber' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem xs=10>
+                    <MudTextField Class='txtfield-75 mr-2' @bind-Value='filterParameter.ReferenceNumber' Label='Reference No.' Placeholder='Reference No.' Immediate
+                        Clearable Disabled="@(!filterParameter.IsReferenceNumber)" Variant='Variant.Outlined' Margin='Margin.Dense' />
+                </MudItem>
+            }
+            <MudItem class='d-flex align-center justify-center' xs=2>
+                <MudCheckBox @bind-Checked="@filterParameter.IsDate" Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+            </MudItem>
+            <MudItem xs=10>
+                <MudDateRangePicker Class='txtfield-75 mr-1' @bind-DateRange=@dateRangeFilter @ref="@_dateRangeFilter" Label='Date Range' IconSize='Size.Small' DisableToolbar
+                    Placeholder="Date Range" Disabled="@(!filterParameter.IsDate)" Variant='Variant.Outlined' Margin='Margin.Dense'>
+                    <PickerActions>
+                        <MudButton Class='btn-ios-d font12' OnClick='(() => DateRangeToday(dateRangeFilter))' Size='Size.Small' DisableElevation Variant='Variant.Text'>
+                            Today
+                        </MudButton>
+                        <MudSpacer />
+                        <MudButton Class='btn-ios-d font12' OnClick='(() => CancelDatePicker(_dateRangeFilter))' Size='Size.Small' DisableElevation>
+                            Cancel
+                        </MudButton>
+                        <MudButton Class='btn-ios-d font12' OnClick='(() => SubmitDatePicker(_dateRangeFilter))' Variant='Variant.Filled' Size='Size.Small' DisableElevation Color='Color.Primary'>
+                            Submit
+                        </MudButton>
+                    </PickerActions>   
+                </MudDateRangePicker>
+            </MudItem>
+            @if (!moduleName.Contains("bankledger-list", StringComparison.InvariantCultureIgnoreCase)
+            && !moduleName.Contains("subledger-list", StringComparison.InvariantCultureIgnoreCase)
+            && !moduleName.Contains("bank-ledgerDetail-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                <MudItem class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        currentExpLine = new();
+                        filterParameter.ExpenseId = 0;
+                        filterParameter.IsExpense = !filterParameter.IsExpense;
+                    })' Checked='filterParameter.IsExpense' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                @if (moduleName.Contains("arledger-list", StringComparison.InvariantCultureIgnoreCase) 
+                || moduleName.Contains("subcon-ar-list", StringComparison.InvariantCultureIgnoreCase)
+                || moduleName.Contains("subcon-ap-list", StringComparison.InvariantCultureIgnoreCase)
+                )
+                {
+                    <MudItem xs=10>
+                        <MudSelect Class='txtfield-75 mr-2' Label='Expense' @bind-Value='filterParameter.ExpenseId'  Clearable Text=''
+                            IconSize='Size.Small' Dense Disabled='!filterParameter.IsExpense'  Placeholder='Expense' Variant='Variant.Outlined'
+                            AnchorOrigin='Origin.BottomCenter' TransformOrigin='Origin.TopCenter'>
+                            @foreach (var item in expenseLineList)
+                            {
+                                <MudSelectItem Value="@item.Id">@item.ExpenseName</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem Class='pr-3' xs=10>
+                        <div class='blztheadfilter-lbl-line6 @(!IsSoW ? "color-gray":"")'>
+                            <small>Expense</small>
+                        </div>
+                        <div class='blzrthead-disabled-minheight15'>
+                            <BlazoredTypeahead  Disabled='!filterParameter.IsExpense'
+                                SearchMethod='( async (String search)=> await SearchExpenseLine(search))' Context='exp'
+                                ValueChanged="((ExpenseLineModel exp)=> OnExpenseLineValueChanged(exp))" 
+                                Value="currentExpLine" 
+                                ValueExpression="(()=>currentExpLine)"
+                                Debounce='500' MaximumSuggestions='99' aria-placeholder="Charge to" EnableDropDown DisableClear>
+                                <SelectedTemplate>
+                                    <small class='blzsmallpayproj-170px ml-2 pt-1'>@exp.ExpenseName</small>
+                                </SelectedTemplate>
+                                <ResultTemplate>
+                                    <div class='d-flex flex-column'>
+                                        <small>@exp.ExpenseName</small>
+                                    </div>
+                                </ResultTemplate>
+                            </BlazoredTypeahead>
+                        </div>
+                    </MudItem>
+                }
+            }
+        </MudGrid>
+        <MudCardActions>
+            <MudButton Class='btn-ios-d font12' OnClick='ResetTable' Variant='Variant.Text' Size='Size.Small' DisableElevation Color='Color.Error'>
+                Reset
+            </MudButton> 
+            <MudSpacer />
+            <MudButton Class='btn-ios-d font12' OnClick='OpenFilter' Variant='Variant.Text' Size='Size.Small' DisableElevation>
+                Cancel
+            </MudButton> 
+            <MudButton Class='btn-ios-d font12 mr-2' OnClick='MapToGlobalFilter' Variant='Variant.Filled' Color='Color.Secondary' Size='Size.Small' DisableElevation>
+                Filter
+            </MudButton>
+        </MudCardActions>
+    </div>
+</div>
+
+
+@code {
+    [Parameter] public EventCallback OpenSideFilterClick { get; set; }
+    [Parameter] public EventCallback FilterClick { get; set; }
+    [Parameter] public EventCallback ResetTableClick { get; set; }
+    [Parameter] public FilterParameter filterParameter { get; set; } = new FilterParameter();
+    [Parameter] public string moduleName { get; set; } = string.Empty;
+    [Parameter] public bool contentVisible { get; set; }
+    private bool IsContractor, IsSoW;
+    private DateRange dateRangeFilter = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
+    private List<VoucherDetailModel> ListOfSubLedgers = new();
+    private List<SubContractorProjectModel> currentContractorsList = new();
+    private List<ExpenseLineModel> expenseLineList = new List<ExpenseLineModel>();
+    private SubContractorProjectModel currentContractor = new();
+    private ExpenseLineModel currentExpLine = new();
+    private Project currentProject = new();
+    private SubContractorProjectModel currentScopeOfWork = new();
+    private BankModel bank = new();
+    private SubContractorProjectModel contractAmount = new();
+    private MudDateRangePicker _dateRangeFilter = new MudDateRangePicker();
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        while (GlobalClassList.requestTypes == null || GlobalClassList.accountingStatusList == null)
+            await Task.Delay(1);
+         await Task.Run(() => {
+            if (moduleName.Contains("arledger-list", StringComparison.InvariantCultureIgnoreCase) 
+            || moduleName.Contains("subcon-ar-list", StringComparison.InvariantCultureIgnoreCase))
+                expenseLineList = GlobalClassList.expenseLineList.Where( e => e.AccountLineGroupName == "Accounts Receivable").ToList();
+            else
+                expenseLineList = GlobalClassList.expenseLineList.Where( e => e.AccountLineGroupName == "Accounts Payable").ToList();
+         });
+    }
+    
+    private async Task<IEnumerable<Project>> LoadCharging(string chargingName)
+    {
+      var filterParameter = new FilterParameter()
+      {
+        IsProject = true,
+        ProjectName = chargingName,
+        IsId = false
+      };
+      var charging = await GlobalService.LoadChargeProjectLine(filterParameter, GlobalClass.token);
+      return charging;
+    }
+
+    protected async Task ResetTable()
+    {
+        filterParameter = new FilterParameter();
+        currentProject = new();
+        await ResetTableClick.InvokeAsync();
+        await OpenSideFilterClick.InvokeAsync();
+    }
+    protected async Task OpenFilter()
+    {
+        contentVisible = !contentVisible;
+        await OpenSideFilterClick.InvokeAsync();
+    }
+
+    protected async Task MapToGlobalFilter()
+    {
+        if(moduleName.Contains("subcon-ar-list", StringComparison.InvariantCultureIgnoreCase))
+        {
+            filterParameter.IsAR = true;
+            filterParameter.IsAP = false;
+        } else if(moduleName.Contains("subcon-ap-list", StringComparison.InvariantCultureIgnoreCase))
+        {
+            filterParameter.IsAR = false;
+            filterParameter.IsAP = true;
+        }
+        GlobalVariable.filterParameter = filterParameter;
+        if (filterParameter.IsDate)
+        {
+            GlobalVariable.filterParameter.DateFrom = Convert.ToDateTime(dateRangeFilter.Start);
+            GlobalVariable.filterParameter.DateTo = Convert.ToDateTime(dateRangeFilter.End);
+        }
+        await FilterClick.InvokeAsync();
+        await OpenSideFilterClick.InvokeAsync();
+    }
+
+    private void DateRangeToday(DateRange dateRangeName)
+    {
+        if (dateRangeName == dateRangeFilter)
+            dateRangeFilter = new DateRange(DateTime.Now.AddDays(-1).Date, DateTime.Now.Date);
+    }
+
+    private void SubmitDatePicker(MudDateRangePicker dateRangePickerName)
+    {
+        dateRangePickerName.Close(true);
+    }
+    private void CancelDatePicker(MudDateRangePicker dateRangePickerName)
+    {
+        dateRangePickerName.Close(false);
+    }
+    private async Task<IEnumerable<ExpenseLineModel>> SearchExpenseLine(string expLine)
+    {
+        return await Task.Run(() => GlobalClassList.expenseLineList.Where(x=> x.WithLedger && x.AccountLineGroupName == "Accounts Payable" && x.ExpenseName.Contains(expLine, StringComparison.InvariantCultureIgnoreCase)));
+    }
+
+    private void OnExpenseLineValueChanged(ExpenseLineModel exp)
+    {
+        currentExpLine = exp;
+        filterParameter.ExpenseId = exp.Id;
+    }
+    private void OnBankSelected(BankModel b)
+    {
+        bank = b;
+        filterParameter.IsBank = true;
+        filterParameter.BankId = b.Id.ToString();
+    }
+
+    private async Task OnProjectValueChanged(Project p)
+    {
+        currentContractor = new();
+        currentScopeOfWork = new();
+        ListOfSubLedgers = new();
+        contractAmount = new();
+        currentProject = p;
+        currentContractorsList = await GlobalService.VoucherDetailsSubCon(p.ProjectId,GlobalClass.token);
+        filterParameter.ProjectId = p.ProjectId;
+        filterParameter.ProjectCategoryId = p.ProjectCategoryId;
+        filterParameter.PayeeId = p.ProjectId;
+        filterParameter.PayeeName = p.ProjectName;
+        
+    }
+
+     private void OnContractorValueChanged(SubContractorProjectModel contractor)
+    {
+        currentScopeOfWork = new();
+        ListOfSubLedgers = new();
+        currentContractor = contractor;
+        filterParameter.SubLedgerCategoryId = contractor.SubContactorCategoryId;
+        filterParameter.SubledgerId = contractor.SubContractorId;
+        filterParameter.ScopeOfWorkId = 0;
+    }
+
+    private async Task<IEnumerable<SubContractorProjectModel>> SearchContractors(string contractorName)
+    {
+        return await Task.Run(()=> currentContractorsList
+        .Where(x => x.SubContractorName.Contains(contractorName, StringComparison.InvariantCultureIgnoreCase))
+        .GroupBy(c => c.SubContractorName)
+        .Select(subCon => subCon.FirstOrDefault()?? new())
+        .ToList())?? new();
+    }
+
+    private async Task<IEnumerable<SubContractorProjectModel>> SearchSOW(string sow)
+    {
+        return await Task.Run(() => currentContractorsList.Where(x=> x.ScopeOfWork.Contains(sow, StringComparison.InvariantCultureIgnoreCase)));
+    }
+
+    private void OnScopeOfWorkValueChanged(SubContractorProjectModel SOW)
+    {
+        currentScopeOfWork = SOW;
+        filterParameter.ScopeOfWorkId = SOW.ScopeOfWorkId;
+    }
+}

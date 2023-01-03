@@ -2,12 +2,13 @@
 @inject IVoucherService voucherService
 @inject IVoucherRouteBatchService voucherBatchRouteService
 @inject ISnackbar snackbarService
+@inject IJSRuntime JSRuntime
 @inject IGlobalService globalService
 @inject NavigationManager navigationManager
 @inject IDialogService dialogService
 
 <div class='page-cont d-flex'>
-  <MudContainer Class='vroutebatchpage d-flex pt-2 pr-2 pb-4 pl-2' Fixed='false' MaxWidth='MaxWidth.ExtraLarge'>
+  <MudContainer Class='vroutebatchpage pa-2' Fixed='false' MaxWidth='MaxWidth.Large'>
     @if (!dataFetched)
     {
       <MudPaper Class='d-flex flex-1 flex-column pa-2' style="height: calc(100vh - 125px);">
@@ -17,12 +18,12 @@
     }
     else
     {
-      <div class='d-flex flex-1 flex-column align-center gap-2'>
-        <div class='d-flex flex-1 gap-2'>
+      <MudGrid Spacing='1'>
+        <MudItem xs=6>
           <MudTable Class='small-toolbar-gutter3 toolbar-sm-font12' ServerData='@(new Func<TableState, Task<TableData<VoucherModel>>>(LoadVoucherServer))' 
-            Height='calc(100% - 90px)' FixedHeader FixdFooter Hover Dense  @ref='tableVariable'>
+            Height='calc(100vh - 300px)' FixedHeader FixedFooter Hover Dense  @ref='tableVariable'>
             <ToolBarContent>
-              <div class='d-flex flex-1 align-center'>
+              <div class='d-flex flex-1 align-center gap-2'>
                 <MudText Typo='Typo.caption'>
                   @showSelectedVouchers.Count() 
                   @(showSelectedVouchers.Count() == 1 ? "item" : "items") 
@@ -30,7 +31,7 @@
                 </MudText>
                 <MudSpacer />
                 <MudTooltip Text="Refresh Table">
-                  <MudIconButton Icon="@Icons.Filled.Refresh" Size="Size.Small" OnClick='(()=> tableVariable!.ReloadServerData())' ></MudIconButton>
+                  <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='(()=> tableVariable!.ReloadServerData())' ></MudIconButton>
                 </MudTooltip>
                 <MudTextField Class='txtfield-75 width5' T='string' ValueChanged='@(s=>OnSearch(s))' Placeholder='Control Number' Margin='Margin.Dense'
                 Adornment='Adornment.Start' AdornmentIcon='@Icons.Material.Filled.Search' IconSize='Size.Small'
@@ -46,51 +47,59 @@
               <col style="width:10px"/>
             </ColGroup>
             <HeaderContent>
-                <MudTh Class='customheader-2'></MudTh>
-                <MudTh Class='customheader-2'>Date</MudTh>
-                <MudTh Class='customheader-2 text-center wspace-nowrap'>Control No.</MudTh>
-                <MudTh Class='customheader-2 text-center'>Status</MudTh>
-                <MudTh Class='customheader-2 text-center'></MudTh>
-                <MudTh Class='customheader-2 text-right'>Amount</MudTh>
+                <MudTh Class='customheader-6'></MudTh>
+                <MudTh Class='customheader-6 text-center'>Date</MudTh>
+                <MudTh Class='customheader-6 text-center wspace-nowrap'>Control No.</MudTh>
+                <MudTh Class='customheader-6 text-center'>Status</MudTh>
+                <MudTh Class='customheader-6 text-center'></MudTh>
+                <MudTh Class='customheader-6 text-right'>Amount</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd Class='text-center'>
+                <MudTd Class='@(RowState(context,true))'>
                   <MudTooltip Text='Select'>
-                    <MudCheckBox @bind-Checked='@context.IsSelected'  Size='Size.Small' Color='Color.Info' Dense />
+                    <MudCheckBox Checked='@context.IsSelected' CheckedChanged='( (bool b)=> AllTagIsRouted(context) )'  Size='Size.Small' Color='Color.Info' Dense />
                   </MudTooltip>
                 </MudTd>
-                <MudTd DataLabel="Date">
-                  <MudText Class='font12'>@context.VoucherDate.ToShortDateString()</MudText>
-                </MudTd>
-                <MudTd Class='text-center' DataLabel="Ctrl #">
-                  <MudChip Class='chip-radius-5 font-bold font10' Color='Color.Error' Variant='Variant.Filled' Size='Size.Small'>
-                   @context.ControlNumber
+                <MudTd Class='@(RowState(context,false))' DataLabel="Date">
+                  <MudChip Class='chip-radius-5 font-bold font10' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, snackbarService, JSRuntime))'
+                      Color='Color.Default' Variant='Variant.Outlined' Size='Size.Small'>
+                      @context.VoucherDate.ToShortDateString()
                   </MudChip>
                 </MudTd>
-                <MudTd Class='text-center' DataLabel="Status">
-                  <MudChip Class='chip-radius-5 font-bold font10' Color='Color.Info' Variant='Variant.Filled' Size='Size.Small'>
-                    @context.StatusName
-                  </MudChip>
+                <MudTd Class='@(RowState(context,true))' DataLabel="Ctrl #">
+                  <MudTooltip Text='@($"See {context.ControlNumber}")' Arrow Placement='Placement.Top'>
+                        <MudButton Class='btn-tbl-link' StartIcon='@Icons.Material.Filled.Link'
+                        Href='@FindReference(context)' Target='_blank'
+                        Color='Color.Error' Variant='Variant.Outlined' Size='Size.Small' DisableElevation>
+                            @context.ControlNumber
+                        </MudButton>
+                    </MudTooltip>
                 </MudTd>
-                <MudTd Class='text-center' DataLabel="Desc">
+                <MudTd Class='@(RowState(context,true))' DataLabel="Status">
+                   <MudChip Class='chip-radius-5 font-bold font10' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, snackbarService, JSRuntime))'
+                      Color='Color.Info' Variant='Variant.Outlined' Size='Size.Small'>
+                      @context.StatusName
+                    </MudChip>
+                </MudTd>
+                <MudTd Class='@(RowState(context,true))' DataLabel="Desc">
                   <MudToggleIconButton @bind-Toggled='@context.ShowDesc' Size='Size.Small' ToggledSize='Size.Small'
-                     Icon="@Icons.Filled.Description" Color="@Color.Default" Title="Show Description"
-                     ToggledIcon="@Icons.Filled.Description" ToggledColor="@Color.Info" ToggledTitle="Show Description"/>
+                    Icon="@Icons.Material.Filled.Description" Color="@Color.Default" Title="Show Description"
+                    ToggledIcon="@Icons.Material.Filled.Description" ToggledColor="@Color.Info" ToggledTitle="Show Description"/>
                 </MudTd>
-                <MudTd DataLabel="Amt">
-                  <div class='d-flex align-center wspace-nowrap text-right gap-2'>
-                    @if (context.TotalAmount > 0)
-                    {
-                      <MudText Class='font-bold color-green font12'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) </MudText>
-                      <MudSpacer />
-                      <MudText Class='font-bold color-green font12'>@context.TotalAmount.ToString("N2")</MudText>
-                    }
-                    else
-                    {
-                      <MudText Class='font-bold font12' Color='Color.Error'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
-                      <MudSpacer />
-                      <MudText Class='font-bold font12' Color='Color.Error'>@context.TotalAmount.ToString("N2")</MudText>
-                    }
+                <MudTd Class='@(RowState(context,false))' DataLabel="Amt">
+                  <div class='tooltipw100'>
+                      <MudTooltip Class='flex-1' Text='@(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + context.TotalAmount.ToString("N2"))' 
+                        Arrow Placement='Placement.Top' Color='Color.Success'>
+                        <div class='amount-container'>
+                          <small class='@(context.TotalAmount > 0 ? "font-bold color-green":"font-bold color-red")'>
+                            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                          </small>
+                          <MudSpacer />
+                          <small class='@(context.TotalAmount > 0 ? "txt-green":"txt-red")'>
+                            @context.TotalAmount.ToString("N2")
+                          </small>
+                        </div>
+                      </MudTooltip>
                   </div>
                 </MudTd>
             </RowTemplate>
@@ -104,24 +113,26 @@
                     <td colspan='3'></td>
                     <td colspan='3'>
                       <MudPaper Class='ma-2 pa-2'>
-                        <MudText Typo='Typo.body2'>@context.Description</MudText> 
+                        <small>
+                          @(!string.IsNullOrWhiteSpace(context.Description) ? context.Description:"No description")
+                        </small> 
                       </MudPaper>
                     </td>
                 </MudTr>
               }
             </ChildRowContent>
-            <PagerContent>
-                <MudTablePager />
-            </PagerContent>
           </MudTable>
-          <MudTable Class='small-toolbar-gutter3 toolbar-sm-font12' Items='GlobalClassList.VoucherBatchList' Height='calc(100% - 90px)' 
-           FixedHeader FixedFooter Hover Dense>
+        </MudItem>
+        <MudItem xs=6>
+          <MudTable Class='small-toolbar-gutter3 toolbar-sm-font12' Items='GlobalClassList.VoucherBatchList' Height='calc(100vh - 300px)' 
+            FixedHeader FixedFooter Hover Dense>
             <ToolBarContent>
               <div class='d-flex flex-1 align-center pa-2'>
                 <MudGrid Spacing='1'>
                   <MudItem Class='d-flex align-center gap-2' xs=4>
                     <MudText Class='wspace-nowrap txt-uppercase font-bold font10'>date :</MudText>
-                    <MudDatePicker Class='txt-top-0 font14-txtfield txtfield-right ' @bind-Date='BatchDate' IconSize='Size.Small' Margin='Margin.Dense' />
+                    <MudDatePicker Class='txt-top-0 font14-txtfield txtfield-right ' @bind-Date='BatchDate' IconSize='Size.Small' Margin='Margin.Dense' 
+                      DisableToolbar ReadOnly MinDate='@Convert.ToDateTime(BatchDate).AddDays(-1)' MaxDate='@BatchDate'/>
                   </MudItem>
                   <MudItem Class='d-flex align-center gap-2' xs=8>
                     <MudText Class='wspace-nowrap txt-uppercase font-bold font10'>remarks :</MudText>
@@ -135,56 +146,52 @@
               <col style="width:10px"/>
               <col style="width:10px"/>
               <col />
-              @* <col style="width:10px"/> *@
               <col style="width:10px"/>
             </ColGroup>
             <HeaderContent>
-                <MudTh Class='customheader-2'></MudTh>
-                <MudTh Class='customheader-2'>Date</MudTh>
-                <MudTh Class='customheader-2 text-center wspace-nowrap'>Control No.</MudTh>
-                <MudTh Class='customheader-2 text-center'>Status</MudTh>
-                @* <MudTh Class='customheader-2 text-center'></MudTh> *@
-                <MudTh Class='customheader-2 text-right'>Amount</MudTh>
+                <MudTh Class='customheader-6'></MudTh>
+                <MudTh Class='customheader-6 text-center'>Date</MudTh>
+                <MudTh Class='customheader-6 text-center wspace-nowrap'>Control No.</MudTh>
+                <MudTh Class='customheader-6 text-center'>Status</MudTh>
+                <MudTh Class='customheader-6 text-right'>Amount</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd Class='text-center'>
                   <MudTooltip Text='Remove'>
-                    <MudIconButton OnClick='(()=>RemoveBatch(context))' Icon='@Icons.Filled.RemoveCircle' Size='Size.Small' Color='Color.Error' />
+                    <MudIconButton OnClick='(()=>RemoveBatch(context))' Icon='@Icons.Material.Filled.RemoveCircle' Size='Size.Small' Color='Color.Error' />
                   </MudTooltip>
                 </MudTd>
                 <MudTd DataLabel="Voucher Date">
-                  <MudText Class='font12'>@context.VoucherDate.ToShortDateString()</MudText>
+                  <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Icon='@Icons.Material.Filled.CalendarMonth' Variant='Variant.Outlined' Color='Color.Dark' Size='Size.Small'>
+                    @context.VoucherDate.ToShortDateString()
+                  </MudChip>
                 </MudTd>
                 <MudTd Class='text-center' DataLabel="Control Number">
-                    <MudChip Class='chip-radius-5 font-bold font10' Color='Color.Error' Variant='Variant.Filled' Size='Size.Small'>
-                       @context.ControlNumber
+                    <MudChip Class='chip-radius-5 font-bold font10' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, snackbarService, JSRuntime))'
+                      Color='Color.Error' Variant='Variant.Outlined' Size='Size.Small'>
+                      @context.ControlNumber
                     </MudChip>
                 </MudTd>
                 <MudTd Class='text-center' DataLabel="Status">
-                  <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Filled' Size='Size.Small'
-                    Style="@Extensions.GetAcctgStatusColor(context.AccountingStatusId)">
+                  <MudChip Class='chip-radius-5 font-bold font10' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, snackbarService, JSRuntime))'
+                    Variant='Variant.Outlined' Size='Size.Small' Style="@Extensions.BorderColor(context.AccountingStatusId)">
                     @context.StatusName
                   </MudChip>
                 </MudTd>
-                @* <MudTd Class='text-center' DataLabel="Description">
-                  <MudToggleIconButton @bind-Toggled='@context.ShowDesc' Size='Size.Small' ToggledSize='Size.Small'
-                      Icon="@Icons.Filled.Description" Color="@Color.Default" Title="Show Description"
-                      ToggledIcon="@Icons.Filled.Description" ToggledColor="@Color.Info" ToggledTitle="Show Description"/>
-                </MudTd> *@
                 <MudTd DataLabel="Amt">
-                  <div class='d-flex align-center wspace-nowrap text-right gap-2'>
-                    @if (context.TotalAmount > 0)
-                    {
-                      <MudText Class='font-bold color-green font12'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) </MudText>
-                      <MudSpacer />
-                      <MudText Class='font-bold color-green font12'>@context.TotalAmount.ToString("N2")</MudText>
-                    }
-                    else
-                    {
-                      <MudText Class='font-bold font12' Color='Color.Error'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
-                      <MudSpacer />
-                      <MudText Class='font-bold font12' Color='Color.Error'>@context.TotalAmount.ToString("N2")</MudText>
-                    }
+                  <div class='tooltipw100'>
+                    <MudTooltip Class='flex-1' Text='@(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + context.TotalAmount.ToString("N2"))' 
+                      Arrow Placement='Placement.Top' Color='Color.Success'>
+                      <div class='amount-container'>
+                        <small class='@(context.TotalAmount > 0 ? "font-bold color-green":"font-bold color-red")'>
+                          @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                        </small>
+                        <MudSpacer />
+                        <small class='@(context.TotalAmount > 0 ? "txt-green":"txt-red")'>
+                          @context.TotalAmount.ToString("N2")
+                        </small>
+                      </div>
+                    </MudTooltip>
                   </div>
                 </MudTd>
             </RowTemplate>
@@ -204,53 +211,51 @@
                 </MudTr>
               }
             </ChildRowContent>
-            <PagerContent>
-                <MudTablePager />
-            </PagerContent>
           </MudTable>
-        </div>
-
-        
-      
-        <MudPaper Class='d-flex align-center justify-center pa-2 gap-2' Width='700px'>
-          <div class='d-flex justify-start min-width25 gap-1'>
-            @if(preparedBy.Picture.Count() == 0) {
-            <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
-            } else {
-            <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(preparedBy.Picture)}")' Size='Size.Medium' />
-            }
-            <div class='d-flex flex-grow-1 flex-column'>
-              <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear placeholder='Prepared By'
-                @bind-Value='preparedBy' Debounce='500' MaximumSuggestions='5'>
-                  <SelectedTemplate>
-                      <div class='overflow-hidden wspace-nowrap'>
+        </MudItem>
+        <MudItem xs=12>
+          <MudPaper Class='d-flex align-center mx-10 gap-2'>
+            <div class='d-flex align-center justify-center gap-2 width300px blzrtypahead-unset-width pa-2'>
+              @if(preparedBy.Picture.Count() == 0) {
+                <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
+              } else {
+                <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(preparedBy.Picture)}")' Size='Size.Medium' />
+              }
+              <div class='d-flex flex-grow-1 flex-column blzrthead-disabled-minheight15'>
+                <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear placeholder='Prepared By'
+                  @bind-Value='preparedBy' Debounce='500' MaximumSuggestions='5' Disabled>
+                    <SelectedTemplate>
+                        <div class='overflow-hidden wspace-nowrap'>
                           @if (context.EmployeeId != 0) {
                             <MudText Class='font12'>@context.EmployeeName</MudText>
-                            } else {
+                          } else {
                             <MudText Class='font12'> - </MudText>
-                            }
-                      </div>
-                  </SelectedTemplate>
-                    <ResultTemplate>
-                      <div class='ddavatar'>
-                        <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@context.Picture)}")' Size='Size.Small'/>
-                        @context.EmployeeName | @context.Designation
-                      </div>
-                    </ResultTemplate>
-              </BlazoredTypeahead>
-              <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
-                Prepared By
-                <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
-              </MudText>
+                          }
+                        </div>
+                    </SelectedTemplate>
+                      <ResultTemplate>
+                        <div class='ddavatar'>
+                          <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@context.Picture)}")' Size='Size.Small'/>
+                          @context.EmployeeName | @context.Designation
+                        </div>
+                      </ResultTemplate>
+                </BlazoredTypeahead>
+                <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
+                  Prepared By
+                  <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                </MudText>
+              </div>
             </div>
-          </div>
-          <MudSpacer />
-          <MudButton OnClick='(()=> navigationManager.NavigateTo($"/voucher/batch/list"))' Variant='Variant.Text' Color='Color.Transparent'>Cancel</MudButton>
-          <MudButton OnClick='MoveToBatch' Variant='Variant.Filled' Color='Color.Info' Size='Size.Medium' DisableElevation>Move</MudButton>
-          <MudText>&#x2192;</MudText>
-          <MudButton OnClick='SaveVoucherRouteBatch' Disabled=isDisableSave Variant='Variant.Filled' Color='Color.Primary' DisableElevation>Save</MudButton>  
-        </MudPaper>
-      </div>
+            <MudSpacer />
+            <div class='d-flex align-center justify-center gap-1 width300px blzrtypahead-unset-width pa-2'>
+              <MudButton Class='btn-ios-d font12' OnClick='(()=> navigationManager.NavigateTo($"/voucher/batch/list"))' Variant='Variant.Text' Color='Color.Transparent' Size='Size.Small' DisableElevation>Cancel</MudButton>
+              <MudButton Class='btn-ios-d font12' OnClick='MoveToBatch' Variant='Variant.Filled' Color='Color.Info' Size='Size.Small' DisableElevation>Move</MudButton>
+              <MudText>&#x2192;</MudText>
+              <MudButton Class='btn-ios-d font12' OnClick='SaveVoucherRouteBatch' Disabled=isDisableSave Variant='Variant.Filled' Color='Color.Primary' Size='Size.Small' DisableElevation>Save</MudButton>
+            </div>
+          </MudPaper>  
+        </MudItem>
+      </MudGrid>
     }
   </MudContainer>
 </div>
@@ -321,25 +326,24 @@
   }
   private void MoveToBatch()
   {
-      foreach (var item in showSelectedVouchers.Where(x=>x.IsSelected))
-      {
-        if(!GlobalClassList.VoucherBatchList.Any(x=>x.VoucherId == item.Id)) {
-          var routeBatch = new VoucherRouteBatchDetailModel();
-          routeBatch.VoucherId = item.Id;
-          routeBatch.VoucherDate = item.VoucherDate;
-          routeBatch.ControlNumber = item.ControlNumber;
-          routeBatch.Description = item.Description;
-          routeBatch.StatusName = item.StatusName;
-          routeBatch.TotalAmount = item.TotalAmount;
-          routeBatch.IsActive = true;
-          routeBatch.IsFiled = true;
-          GlobalClassList.VoucherBatchList.Add(routeBatch);
-        }
+    foreach (var item in showSelectedVouchers.Where(x=>x.IsSelected))
+    {
+      if(!GlobalClassList.VoucherBatchList.Any(x=>x.VoucherId == item.Id)) {
+        var routeBatch = new VoucherRouteBatchDetailModel();
+        routeBatch.VoucherId = item.Id;
+        routeBatch.VoucherDate = item.VoucherDate;
+        routeBatch.ControlNumber = item.ControlNumber;
+        routeBatch.Description = item.Description;
+        routeBatch.StatusName = item.StatusName;
+        routeBatch.TotalAmount = item.TotalAmount;
+        routeBatch.IsActive = true;
+        routeBatch.IsFiled = true;
+        GlobalClassList.VoucherBatchList.Add(routeBatch);
       }
-      Task.Run(async()=> await tableVariable!.ReloadServerData());
-
+    }
+    Task.Run(async()=> await tableVariable!.ReloadServerData());
     if(GlobalClassList.VoucherBatchList.Count > 0)
-      isDisableSave = false;
+    isDisableSave = false;
   }
   private VoucherRouteBatchModel MapProperties()
   {
@@ -358,6 +362,7 @@
     var parameters = new DialogParameters();
     string contentText = "Voucher Route Batch ";
     string dialogTitle = GlobalClass.voucherRouteBatch == null ? "Create " + contentText : "Update " + contentText;
+    parameters.Add("dialogTitle", dialogTitle);
     parameters.Add("contentText", contentText);
     parameters.Add("actionMode", GlobalClass.voucherRouteBatch == null ? Enums.ActionMode.Create : Enums.ActionMode.Update);
     var options = new DialogOptions()
@@ -370,18 +375,20 @@
     };
     var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
 
-    if (!resultDialog.Cancelled) {
-
+    if (!resultDialog.Canceled) 
+    {
+      VoucherRouteBatchModel voucherBatch = new VoucherRouteBatchModel();
       if(GlobalClass.voucherRouteBatch != null) {
-        await voucherBatchRouteService.UpdateVoucherRouteBatch(MapProperties(), GlobalClass.token);
+        voucherBatch = await voucherBatchRouteService.UpdateVoucherRouteBatch(MapProperties(), GlobalClass.token);
         Extensions.ShowAlert("Successfully updated", Variant.Filled, snackbarService,Severity.Success);
         navigationManager.NavigateTo($"/voucher/batch/list");
       } else {
-        await voucherBatchRouteService.AddVoucherRouteBatch(MapProperties(), GlobalClass.token);
+        voucherBatch = await voucherBatchRouteService.AddVoucherRouteBatch(MapProperties(), GlobalClass.token);
         Extensions.ShowAlert("Successfully added", Variant.Filled, snackbarService,Severity.Success);
         navigationManager.NavigateTo($"/voucher/batch/list");
       }
-
+      if(GlobalVariable.AMSHubConnection != null)
+        await GlobalVariable.AMSHubConnection.InvokeAsync("SaveVoucherRouteBatch",voucherBatch);
     }
     GlobalClass.voucherRouteBatch = default!;
   }
@@ -461,5 +468,25 @@
   {
     Console.WriteLine("Selected all");
     isSelectAll = !isSelectAll;
+  }
+  private void AllTagIsRouted(VoucherModel voucher)
+  {
+    if(voucher.VoucherRouteTags.All( tags => tags.IsRouted ))
+    {
+      voucher.IsSelected = !voucher.IsSelected;
+    } else
+      Extensions.ShowAlert("Voucher tags was not yet approve, please go to voucher route to see which tags are not approve.", Variant.Filled, snackbarService, Severity.Error);
+  }
+  private string RowState(VoucherModel voucher, bool isCenter)
+  {
+    if(voucher.VoucherRouteTags.All( tags => tags.IsRouted ))
+    {
+      return isCenter == true ? "text-center" :"";
+    } else
+      return isCenter == true ? "text-center unselectable-row" : "unselectable-row";
+  }
+  private string FindReference(VoucherModel voucher)
+  {
+    return  String.Format("{0}voucher/list/{1}", navigationManager.BaseUri, voucher.ControlNumber);
   }
 }

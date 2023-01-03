@@ -1,0 +1,287 @@
+@inject IGlobalService GlobalService 
+
+<div class='drawer-right__filtercont'>
+    <div class='icon-area d-flex align-center @(contentVisible ? "pl-3":"")'>
+        <MudTooltip Text='Filter' Arrow Placement='Placement.Left'>
+            <MudIconButton OnClick='OpenFilter' Icon='@Icons.Material.Filled.FilterList' arial-label='Close Filter' Size='Size.Small' />
+        </MudTooltip>
+    </div>
+    <div class='filter-title d-flex align-center'>
+        <MudText Typo='Typo.button'>Filter</MudText>
+        <MudSpacer />
+        <MudIconButton OnClick='OpenFilter' Icon='@Icons.Material.Filled.Close' aria-label='Close Filter' Size='Size.Small' />
+    </div>
+    <div class='filter-content @(contentVisible ? "fade-in":"fade-out")'>
+        <MudGrid Spacing='1'>
+            <!-- No searching for supplier in PO-->
+            @if(lookUpType != Enums.LookUpType.POBilling && lookUpType != Enums.LookUpType.PO && lookUpType != Enums.LookUpType.Voucher)
+            {
+                 <MudItem Class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        payee = new();
+                        filterParameter.IsPayee = !filterParameter.IsPayee;
+                    })' Checked='filterParameter.IsPayee' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem Class='pr-3' xs=10>
+                    <div class='blzrtheadfilter-lbl-req'>
+                        <small>@(lookUpType == Enums.LookUpType.PO ? "Supplier":"Payee")</small>
+                    </div>
+                    <div class='blzrthead-disabled-minheight15'>
+                        <BlazoredTypeahead SearchMethod=LoadProject EnableDropDown DisableClear
+                            @bind-Value='payee' Debounce="500" placeholder='Payee' >
+                            <SelectedTemplate>
+                                <small class='blzsmallpayproj-170px ml-2 pt-1'>@payee.ProjectName</small>
+                            </SelectedTemplate>
+                            <ResultTemplate>
+                                <div class='d-flex flex-column'>
+                                    <small>@context.ProjectName</small>
+                                    <small>@context.Location</small>
+                                </div>
+                            </ResultTemplate>
+                        </BlazoredTypeahead>
+                    </div>
+                </MudItem> 
+            }
+            @if(lookUpType == Enums.LookUpType.Voucher)
+            {
+                <MudItem Class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        requestor = new();
+                        filterParameter.IsRequestor = !filterParameter.IsRequestor;
+                    })' Checked='filterParameter.IsRequestor' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem Class='pr-3' xs=10>
+                    <div class='blzrtheadfilter-lbl-req'>
+                        <small>Requested By</small>
+                    </div>
+                    <div class='blzrthead-disabled-minheight15'>
+                        <BlazoredTypeahead SearchMethod=LoadEmployee EnableDropDown DisableClear
+                            @bind-Value='requestor' Debounce="500" placeholder='Requested By' >
+                            <SelectedTemplate>
+                                <MudAvatar Class='avatar-20px' Image='@(requestor.Picture.Count() > 0 ? 
+                                    $"data:image/png;base64, {Convert.ToBase64String(@requestor.Picture)}":"images/fglogo/fgci1-gs.png")' Size='Size.Small' />
+                                <small class='blzsmallpayproj-170px ml-2 pt-1'>@requestor.EmployeeName</small>
+                            </SelectedTemplate>
+                            <ResultTemplate>
+                                <div class='d-flex flex-column'>
+                                    <small>@context.EmployeeName</small>
+                                    <small>@context.Designation</small>
+                                </div>
+                            </ResultTemplate>
+                        </BlazoredTypeahead>
+                    </div>
+                </MudItem>
+                <MudItem Class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        payee = new();
+                        filterParameter.IsPayee = !filterParameter.IsPayee;
+                    })' Checked='filterParameter.IsPayee' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem Class='pr-3' xs=10>
+                    <div class='blzrtheadfilter-lbl-req'>
+                        <small>Payee</small>
+                    </div>
+                    <div class='blzrthead-disabled-minheight15'>
+                        <BlazoredTypeahead SearchMethod=LoadProject EnableDropDown DisableClear
+                            @bind-Value='payee' Debounce="500" placeholder='Payee' >
+                            <SelectedTemplate>
+                                <small class='blzsmallpayproj-170px ml-2 pt-1'>@payee.ProjectName</small>
+                            </SelectedTemplate>
+                            <ResultTemplate>
+                                <div class='d-flex flex-column'>
+                                    <small>@context.ProjectName</small>
+                                    <small>@context.Location</small>
+                                </div>
+                            </ResultTemplate>
+                        </BlazoredTypeahead>
+                    </div>
+                </MudItem>
+                <MudItem Class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        hasAccountingStatus = new HashSet<AccountingStatusModel>();
+                        filterParameter.IsAccountingStatus = !filterParameter.IsAccountingStatus;
+                    })' Checked='filterParameter.IsAccountingStatus' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudSelect Class='txtfield-75' MultiSelectionTextFunc='@(new Func<List<string>, string>(AccountingStatus))' @bind-SelectedValues='hasAccountingStatus' IconSize='Size.Small'
+                    @bind-Value="selectedStatus" Dense="true" MultiSelection=true Disabled='!filterParameter.IsAccountingStatus' Placeholder='Accounting Status' Variant='Variant.Outlined'>
+                    @if(GlobalClassList.accountingStatusList != null)
+                    {
+                        foreach (var item in GlobalClassList.accountingStatusList.Where(x=> 
+                        (int)x.StatusEnumCategoryId == 11 || 
+                        (int)x.StatusEnumCategoryId == 12 || 
+                        (int)x.StatusEnumCategoryId == 13 ))
+                        {
+                        <MudSelectItem Value="@item">@item.StatusName</MudSelectItem>
+                        }
+                    }
+                </MudSelect>
+            }
+            @if(lookUpType != Enums.LookUpType.Voucher && lookUpType != Enums.LookUpType.PO)
+            {
+                <MudItem Class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        filterParameter.ControlNumber = string.Empty;
+                        filterParameter.IsControlNumber = !filterParameter.IsControlNumber;
+                    })' Checked='filterParameter.IsControlNumber' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem xs=10>
+                    <MudTextField Class='txtfield-75 mr-2' @bind-Value='filterParameter.ControlNumber' Label='Control Number' Placeholder='Control Number' Immediate
+                        Clearable Disabled="@(!filterParameter.IsControlNumber)" Variant='Variant.Outlined' Margin='Margin.Dense'/>
+                </MudItem>
+            }
+            @if(lookUpType == Enums.LookUpType.PO)
+            {
+                <MudItem Class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        filterParameter.PONumber = string.Empty;
+                        filterParameter.IsPONumber = !filterParameter.IsPONumber;
+                    })' Checked='filterParameter.IsPONumber' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem xs=10>
+                    <MudTextField Class='txtfield-75 mr-2' @bind-Value='filterParameter.PONumber' Label='PO Control Number' Placeholder='PO Control Number' Immediate
+                        Clearable Disabled="@(!filterParameter.IsPONumber)" Variant='Variant.Outlined' Margin='Margin.Dense'/>
+                </MudItem>
+            }
+            
+            <MudItem class='d-flex align-center justify-center' xs=2>
+                <MudCheckBox CheckedChanged='( (bool b)=> 
+                    { 
+                        dateRangeFilter = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
+                        filterParameter.IsDate = !filterParameter.IsDate;
+                    })' Checked='filterParameter.IsDate' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+            </MudItem>
+            <MudItem xs=10>
+                <MudDateRangePicker Class='txtfield-75 mr-1' @bind-DateRange=@dateRangeFilter @ref="@_dateRangeFilter" Label='Date Range' PickerVariant="PickerVariant.Dialog"
+                    IconSize='Size.Small' DisableToolbar  AnchorOrigin='Origin.BottomLeft' TransformOrigin='Origin.BottomRight'
+                    Placeholder="Date Range" Disabled="@(!filterParameter.IsDate)" Variant='Variant.Outlined' Margin='Margin.Dense'>
+                    <PickerActions>
+                        <MudButton Class='btn-ios-d font12' OnClick='(() => DateRangeToday(dateRangeFilter))' Size='Size.Small' DisableElevation Variant='Variant.Text'>
+                            Today
+                        </MudButton>
+                        <MudSpacer />
+                        <MudButton Class='btn-ios-d font12' OnClick='(() => CancelDatePicker(_dateRangeFilter))' Size='Size.Small' DisableElevation>
+                            Cancel
+                        </MudButton>
+                        <MudButton Class='btn-ios-d font12' OnClick='(() => SubmitDatePicker(_dateRangeFilter))' Variant='Variant.Filled' Size='Size.Small' DisableElevation Color='Color.Primary'>
+                            Submit
+                        </MudButton>
+                    </PickerActions>   
+                </MudDateRangePicker>
+            </MudItem>
+            <MudItem Class='d-flex align-center justify-end gap-2' xs=12>
+                <MudButton Class='btn-ios-d font12' OnClick='ResetTable' Variant='Variant.Text' Size='Size.Small' DisableElevation Color='Color.Error'>
+                    Reset
+                </MudButton> 
+                <MudSpacer />
+                <MudButton Class='btn-ios-d font12' OnClick='OpenFilter' Variant='Variant.Text' Size='Size.Small' DisableElevation>
+                    Cancel
+                </MudButton> 
+                <MudButton Class='btn-ios-d font12 mr-2' OnClick='MapToGlobalFilter' Variant='Variant.Filled' Color='Color.Secondary' Size='Size.Small' DisableElevation>
+                    Filter
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OpenSideFilterClick { get; set; }
+    [Parameter] public EventCallback FilterClick { get; set; }
+    [Parameter] public EventCallback ResetTableClick { get; set; }
+    [Parameter] public bool contentVisible { get; set; }
+    [Parameter] public Enums.LookUpType lookUpType { get; set; }
+    private FilterParameter filterParameter = new FilterParameter();
+    private Project payee = new();
+    private UserAccount requestor  = new();
+    private AccountingStatusModel selectedStatus = new();
+    private IEnumerable<AccountingStatusModel> hasAccountingStatus {get; set;} = new HashSet<AccountingStatusModel>();
+    private DateRange dateRangeFilter = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
+    private MudDateRangePicker _dateRangeFilter = new MudDateRangePicker();
+    protected async Task OpenFilter()
+    {
+        contentVisible = !contentVisible;
+        await OpenSideFilterClick.InvokeAsync();
+    }
+    protected async Task ResetTable()
+    {
+        filterParameter = new FilterParameter();
+        GlobalVariable.filterParameter = new FilterParameter();
+        await ResetTableClick.InvokeAsync();
+    }
+    protected async Task MapToGlobalFilter()
+    {
+        GlobalVariable.filterParameter = filterParameter;
+        if(filterParameter.IsDate)
+        {
+            GlobalVariable.filterParameter.DateFrom = Convert.ToDateTime(dateRangeFilter.Start);
+            GlobalVariable.filterParameter.DateTo = Convert.ToDateTime(dateRangeFilter.End);
+        }
+        if(filterParameter.IsPayee)
+        {
+            GlobalVariable.filterParameter.PayeeId = payee.ProjectId;
+            GlobalVariable.filterParameter.PayeeCategoryId = payee.ProjectCategoryId;
+        }
+        if(filterParameter.IsRequestor)
+        {
+            GlobalVariable.filterParameter.Name = requestor.EmployeeName;
+        }
+        if(filterParameter.IsAccountingStatus)
+        {
+            GlobalVariable.filterParameter.AccountingStatusId = string.Join(",", hasAccountingStatus.Select(x => x.Id));;
+        }
+        await FilterClick.InvokeAsync();
+    }
+
+    private async Task<IEnumerable<Project>> LoadProject(string projectName)
+    {
+        var filterParameter = new FilterParameter()
+        {
+        IsProject = true,
+        ProjectName = projectName,
+        IsId = false
+        };
+        var projects = await GlobalService.LoadPayees(filterParameter, GlobalClass.token);
+        return projects;
+    }
+    private void DateRangeToday(DateRange dateRangeName)
+    {
+        if (dateRangeName == dateRangeFilter)
+            dateRangeFilter = new DateRange(DateTime.Now.AddDays(-1).Date, DateTime.Now.Date);
+    }
+    private void SubmitDatePicker(MudDateRangePicker dateRangePickerName)
+    {
+        dateRangePickerName.Close(true);
+    }
+    private void CancelDatePicker(MudDateRangePicker dateRangePickerName)
+    {
+        dateRangePickerName.Close(false);
+    }
+
+    private async Task<IEnumerable<UserAccount>> LoadEmployee(string employeeName)
+    {
+        var filterParameter = new FilterParameter()
+        {
+            IsName = true,
+            Name = employeeName,
+            IsLookUp = true
+        };
+        var employee = await GlobalService.LoadAllEmployee(filterParameter, GlobalClass.token);
+        return employee;
+    }
+
+    private string AccountingStatus(List<string> selectedStatus)
+    {
+        var status = "";
+        foreach (var item in hasAccountingStatus)
+        {
+        status = string.Join(", ", hasAccountingStatus.Select(x => x.StatusName));      
+        }
+        return $"{status}";
+    }
+}

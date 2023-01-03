@@ -1,0 +1,304 @@
+@page "/subcon-ledger/list"
+
+@inject IGlobalService globalService
+@inject IVoucherService voucherService
+@inject ISnackbar snackbarService
+@inject NavigationManager navigationManager
+
+<div class='page-cont'>
+     <div class='drawer-right-min'>
+        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <LedgerFilterComponent OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
+                FilterClick='FilterTable' ResetTableClick='ReloadTable'
+                contentVisible='openSideFilter' moduleName="subledger-list"/>
+        </MudDrawer>
+     </div>
+    <MudContainer Class='py-2 pl-2 pr-10  table-toolbar-custom1' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+        <MudTable Class='rounded-b-0 table-style-1 overflow-hidden' ServerData='new Func<TableState, Task<TableData<VoucherDetailModel>>>(LoadSubLedgerLists)' @ref='tableVariable' Hover Loading='isLoading'
+            Breakpoint="Breakpoint.Xs" FixedHeader FixedFooter CustomFooter Bordered Dense Virtualize Height='calc(100vh - 235px)'
+            RowsPerPage='15' Elevation='1'>
+            <ToolBarContent>
+                <MudText Typo='Typo.caption'>
+                    @ListOfSubLedgers.Count() 
+                    @(ListOfSubLedgers.Count() > 1 ? "items" : "item") 
+                    in total
+                </MudText>
+                <MudSpacer/>
+                <MudTooltip Text="Refresh Table" Arrow Placement='Placement.Top'>
+                    <MudIconButton Class='@(isLoading ? "mudbtnico-rotate":"")' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='(()=>ReloadTable())' 
+                        Color='@(isLoading ? Color.Info : Color.Default)'/>
+                </MudTooltip>
+                <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' ActivationEvent="MouseEvent.MouseOver"
+                    TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
+                    <MudMenuItem OnClick="(() => openSideFilter = !openSideFilter)"  >
+                        <div class='d-flex align-center gap-2 '>
+                            <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
+                            <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
+                        </div>
+                    </MudMenuItem>
+                </MudMenu>
+            </ToolBarContent>
+            <ColGroup>
+                <col style="width:20px" />
+                <col style="width:20px" />
+                <col />
+                <col />
+                <col />
+                <col />
+                <col style="width:20px" />
+            </ColGroup>
+            <HeaderContent>
+                <MudTh Class='customheader-6'>Control No.</MudTh>
+                <MudTh Class='customheader-6'>Date</MudTh>
+                <MudTh Class='customheader-6'>Project</MudTh>
+                <MudTh Class='customheader-6'>Contractor</MudTh>
+                <MudTh Class='customheader-6'>Description</MudTh>
+                <MudTh Class='customheader-6'>Remarks</MudTh>
+                <MudTh Class='customheader-6 text-right'>Amount</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd Class='text-center' DataLabel="Division Name">
+                    <MudTooltip Text='@($"See {context.ControlNumber}")' Arrow Placement='Placement.Top'>
+                        <MudButton Class='btn-tbl-link' StartIcon='@Icons.Material.Filled.Link'
+                            Href='@FindReference(context.ControlNumber)' Target='_blank'
+                            Variant='Variant.Outlined' Color='Color.Error' Size='Size.Small' DisableElevation>
+                                @context.ControlNumber
+                        </MudButton>
+                    </MudTooltip>
+                </MudTd>
+                <MudTd Class='text-center' DataLabel="Short Name">
+                    <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Text' Icon='@Icons.Material.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
+                        @context.VoucherDate.ToShortDateString()
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="Project Name">
+                    <div class='dynamic-div-1'>
+                        <small>@context.ProjectName</small>
+                    </div>
+                </MudTd>
+                <MudTd DataLabel="SubContractor Name">
+                    <div class='dynamic-div-1'>
+                        <small>@context.SubLedgerName</small>
+                    </div>
+                </MudTd>
+                <MudTd DataLabel="Description">
+                    <div class='dynamic-div-1'>
+                        <small>@context.Description</small>
+                    </div>
+                </MudTd>
+                <MudTd DataLabel="Remarks">
+                    <div class='dynamic-div-1'>
+                        <small>@context.Remarks</small>
+                    </div>
+                </MudTd>
+                <MudTd Class='wspace-nowrap text-right' DataLabel='Amount'>
+                    <div class='d-flex align-center gap-2'>
+                        <MudText Class='font-bold color-green font12'>
+                            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) 
+                        </MudText>
+                        <MudSpacer />
+                        <MudText Class='font-bold color-green font12' Typo='Typo.body2'>
+                            @context.Amount.ToString("N2")
+                        </MudText>
+                    </div>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                    <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No records found</MudText>
+            </NoRecordsContent>
+            <PagerContent>
+                <div class='d-flex align-center gap-4 overflow-auto border-thin-top bgc-F4F5FB'>
+                    <MudSpacer />
+                    <div class='d-flex align-center justify-end'>
+                        <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>Contract Amount: </MudText>
+                        <div class='d-flex align-center gap-2'>
+                            <MudChip Class='rounded' Color='Color.Default' Size='Size.Small'>
+                                <MudText Class='font-bold color-green font12'>
+                                    @(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + @contractAmount.ContractAmount.ToString("N2"))
+                                </MudText>
+                            </MudChip>
+                        </div>
+                    </div>
+                    <div class='d-flex align-center justify-end'>
+                        <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>Balance: </MudText>
+                        <div class='d-flex align-center gap-2'>
+                            <MudChip Class='rounded' Color='Color.Default' Size='Size.Small'>
+                                <MudText Class='font-bold color-green font12'>
+                                    @(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + @Balance().ToString("N2"))
+                                </MudText>
+                            </MudChip>
+                        </div>
+                    </div>
+                    <div class='d-flex align-center justify-end'>
+                        <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>Total Amount: </MudText>
+                        <div class='d-flex align-center gap-2'>
+                            <MudChip Class='rounded' Color='Color.Default' Size='Size.Small'>
+                                <MudText Class='font-bold color-green font12'>
+                                    @(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + @TotalAmount().ToString("N2"))
+                                </MudText>
+                            </MudChip>
+                        </div>
+                    </div>
+                </div>
+                <MudTablePager PageSizeOptions='@GlobalVariable.pageSize' />
+            </PagerContent>
+        </MudTable>
+       
+    </MudContainer>
+</div>
+
+@code
+{
+    private bool isLoading, toggleSidebar = true, openSideFilter;
+    private Project currentProject = new();
+    private List<SubContractorProjectModel> currentContractorsList = new();
+    private List<SubContractorProjectModel> currentScopeOfWorkList = new();
+    private SubContractorProjectModel currentContractor = new();
+    private SubContractorProjectModel currentScopeOfWork = new();
+    private SubContractorProjectModel contractAmount = new();
+    private FilterParameter filterParameter = new();
+    private List<VoucherDetailModel> ListOfSubLedgers = new();
+    private DateRange? dateRange = new DateRange(DateTime.Now, DateTime.Now);
+    private IEnumerable<VoucherDetailModel>? pageData;
+    private MudTable<VoucherDetailModel> tableVariable = new MudTable<VoucherDetailModel>();
+    
+    protected override void OnInitialized()
+    {
+        GlobalClass.pageTitle = "SUB-CON LEDGERS";
+        StateHasChanged();
+        //Pass validation not required by sub-con Ledger
+        filterParameter.BankId = "1";
+        filterParameter.ExpenseId = 1;
+    }
+    private async Task<IEnumerable<Project>> LoadCharging(string chargingName)
+    {
+      var filterParameter = new FilterParameter()
+      {
+        IsProject = true,
+        ProjectName = chargingName,
+        IsId = false
+      };
+      var charging = await globalService.LoadChargeProjectLine(filterParameter, GlobalClass.token);
+      return charging;
+    }
+    private async Task OnProjectValueChanged(Project p)
+    {
+        currentContractor = new();
+        currentScopeOfWork = new();
+        ListOfSubLedgers = new();
+        contractAmount = new();
+        currentProject = p;
+        currentContractorsList = await globalService.VoucherDetailsSubCon(p.ProjectId,GlobalClass.token);
+        filterParameter.ProjectId = p.ProjectId;
+        filterParameter.ProjectCategoryId = p.ProjectCategoryId;
+    }
+    private async Task<IEnumerable<SubContractorProjectModel>> SearchContractors(string contractorName)
+    {
+        return await Task.Run(()=> currentContractorsList
+        .Where(x => x.SubContractorName.Contains(contractorName, StringComparison.InvariantCultureIgnoreCase))
+        .GroupBy(c => c.SubContractorName)
+        .Select(subCon => subCon.FirstOrDefault()?? new())
+        .ToList())?? new();
+    }
+    private async Task<IEnumerable<SubContractorProjectModel>> SearchSOW(string sow)
+    {
+        return await Task.Run(() => currentContractorsList.Where(x=> x.ScopeOfWork.Contains(sow, StringComparison.InvariantCultureIgnoreCase)));
+    }
+    private async Task OnContractorValueChanged(SubContractorProjectModel contractor)
+    {
+        currentScopeOfWork = new();
+        ListOfSubLedgers = new();
+        currentContractor = contractor;
+        filterParameter.SubLedgerCategoryId = contractor.SubContactorCategoryId;
+        filterParameter.SubledgerId = contractor.SubContractorId;
+        filterParameter.ScopeOfWorkId = 0;
+        
+        await Search();
+    }
+    private async Task OnScopeOfWorkValueChanged(SubContractorProjectModel SOW)
+    {
+        currentScopeOfWork = SOW;
+        filterParameter.ScopeOfWorkId = SOW.ScopeOfWorkId;
+        await Search();
+        Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(filterParameter,Newtonsoft.Json.Formatting.Indented));
+    }
+    private async Task Search()
+    {
+        isLoading = true;
+
+        //This will work if filterParameter isDate = true
+        filterParameter.DateFrom = dateRange.Start.GetValueOrDefault();
+        filterParameter.DateTo = dateRange.End.GetValueOrDefault();
+        
+        ListOfSubLedgers = await voucherService.GetProjectSubledgers(filterParameter,GlobalClass.token);
+        if(filterParameter.ScopeOfWorkId != 0)
+            contractAmount = await voucherService.GetContractAmount(currentContractor.SubContractorId,currentProject.ProjectId,currentScopeOfWork.ScopeOfWorkId,GlobalClass.token);
+        isLoading = false;
+        StateHasChanged();
+    }
+
+     private async Task<TableData<VoucherDetailModel>> LoadSubLedgerLists(TableState tableState)
+    {
+        isLoading = true;
+        filterParameter.BankId = "1";
+        filterParameter.ExpenseId = 1;
+        IEnumerable<VoucherDetailModel> data = await voucherService.GetProjectSubledgers(filterParameter,GlobalClass.token);
+        ListOfSubLedgers = data.ToList();
+        pageData = data.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
+        var total = data.Count();
+        isLoading = !isLoading;
+        return new TableData<VoucherDetailModel>()
+        {
+            TotalItems = total,
+            Items = pageData
+        };
+    }
+
+    private async Task FilterTable()
+    {
+        filterParameter = GlobalVariable.filterParameter;
+        await tableVariable.ReloadServerData();
+    }
+
+    private async Task ReloadTable()
+    {
+        filterParameter = new FilterParameter();
+        await tableVariable.ReloadServerData();
+    }
+    private decimal Balance()
+    {
+        return contractAmount.ContractAmount - ListOfSubLedgers.Sum(amount => amount.Amount);
+    }
+
+    private decimal TotalAmount()
+    {
+        decimal totalAmt = 0.00m;
+        foreach (var items in ListOfSubLedgers)
+            totalAmt = totalAmt + items.Amount;
+        return totalAmt;
+    }
+
+    private void ResetValues()
+    {
+        currentProject = new Project();
+        currentContractor = new SubContractorProjectModel();
+        currentScopeOfWork = new SubContractorProjectModel();
+        ListOfSubLedgers = new List<VoucherDetailModel>();
+    }
+    private void ClearFilter()
+    {
+        filterParameter.IsControlNumber = false;
+        filterParameter.ControlNumber = string.Empty;
+        filterParameter.IsDate = false;
+        dateRange = new DateRange(DateTime.Now, DateTime.Now);
+        ListOfSubLedgers.Clear();
+    }
+    private void InvalidSearch()
+    {
+        Extensions.ShowAlert("Please complete search filters", Variant.Filled,snackbarService,Severity.Error);
+    }
+    private string FindReference(string voucherControlNumber)
+    {
+        return String.Format("{0}voucher/list/{1}", navigationManager.BaseUri, voucherControlNumber);
+    }
+}

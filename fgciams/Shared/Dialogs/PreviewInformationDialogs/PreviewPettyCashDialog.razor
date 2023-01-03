@@ -1,0 +1,122 @@
+@inject ISnackbar SnackbarService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager navigationManager
+@inject ISnackbar SnackbarService
+
+<MudDialog Class='pcview-dialog'>
+    <TitleContent>
+        <div class='d-flex align-center'>
+            <p Class='pcview-dialog__title' Typo='Typo.h6'>@dialogTitle</p>
+            <MudSpacer />
+            <MudChip Class='txt-uppercase font-bold' OnClick='(() => CopyTextToClipboard(pettyCash.ControlNumber))' Label Variant='Variant.Filled'>
+                <small class='color-white'>@pettyCash.ControlNumber</small>
+            </MudChip>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div class="pcview-dialog__grid">
+            <div class="pcgrid-lblstatus">
+                <p class='pcview-dialog__label'>Status:</p>
+            </div>
+            <div class="pcgrid-lbldate">
+                <p class='pcview-dialog__label'>Date:</p>
+            </div>
+            <div class="pcgrid-lblpayee">
+                <p class='pcview-dialog__label'>Payee:</p>
+            </div>
+            <div class="pcgrid-lblamt">
+                <p class='pcview-dialog__label'>Amount:</p>
+            </div>
+            <div class="pcgrid-status">
+                <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@Extensions.BorderColor(pettyCash.StatusId)' Variant='Variant.Outlined'>
+                    @pettyCash.StatusName.ToUpper()
+                </MudChip>
+            </div>
+            <div class="pcgrid-date">
+                <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Variant='Variant.Outlined' 
+                    Icon='@Icons.Material.Filled.CalendarMonth'>
+                    @Convert.ToDateTime(pettyCash.RequestDate).ToShortDateString()
+                </MudChip>
+            </div>
+            <div class="pcgrid-payee">
+                  <p class='pcview-dialog__txt'>@pettyCash.PayeeName</p>
+            </div>
+            <div class="pcgrid-amt">
+                <MudChip OnClick='(() => CopyTextToClipboard(pettyCash.Amount.ToString("N2")))' Class='cursor-pointer' Variant='Variant.Text' 
+                    Size='Size.Small' Color='@(pettyCash.Amount > 0 ? Color.Success:Color.Error)'>
+                    <p class='pcview-dialog__txt font-bold @(pettyCash.Amount > 0 ? "color-green":"color-red")'>
+                        @(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + @pettyCash.Amount.ToString("N2"))
+                    </p>
+                </MudChip>
+            </div>
+            <div class="pcgrid-controls">
+                <MudTooltip Text='@(pettyCash.StatusId != 1 ? "Cannot modify Petty Cash, Check Status":"Modify Petty Cash")' Arrow Placement='Placement.Top'>
+                    <MudIconButton Class='pcview-dialog__btn-circular' OnClick='(() => EditPettyCash(pettyCash))' Icon="@Icons.Material.Filled.Edit" aria-label="Edit" Size='Size.Small' 
+                        Variant='Variant.Filled' Color='Color.Tertiary' Disabled='@(pettyCash.StatusId != 1 ? true:false)'/>
+                </MudTooltip>
+                @* <MudIconButton Class='mudbtnico-rotate-90' Icon="@Icons.Material.Filled.MoreVert" aria-label="More" Size='Size.Small' 
+                    Variant='Variant.Outlined' Color='Color.Dark' /> *@
+            </div>
+            <div class="pcgrid-particulars">
+                <p class='pcview-dialog__txt--content-title'>Particulars:</p>
+                <p class='pcview-dialog__txt'>@pettyCash.Particular</p>
+            </div>
+            <div class="pcgrid-remarks">
+                <p class='pcview-dialog__txt--content-title'>Remarks:</p>
+                <p class='pcview-dialog__txt'>@pettyCash.Remarks</p>
+            </div>
+            <div class="pcgrid-signatories">
+                 <p class='pcview-dialog__txt--content-title'>Signatories:</p>
+                <MudPaper Class='pa-2 bgc-e7f2fb min-width200px'>
+                    <MudText Class='font10 font-bold'>Requested By:</MudText>
+                    <SignatoriesComponent employeeId='@pettyCash.RequestedById' />
+                </MudPaper>
+                <MudPaper Class='pa-2 bgc-e7f2fb min-width200px'>
+                    <MudText Class='font10 font-bold'>Approved By:</MudText>
+                    <SignatoriesComponent employeeId='@pettyCash.ApprovedById' />
+                </MudPaper>
+                <MudPaper Class='pa-2 bgc-e7f2fb min-width200px'>
+                    <MudText Class='font10 font-bold'>Received By:</MudText>
+                    <SignatoriesComponent employeeId='@pettyCash.ReceivedById' />
+                </MudPaper>
+            </div>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Class='btn-ios-d font12' Color="Color.Primary" OnClick="Close" Variant='Variant.Filled'
+            DisableElevation Size='Size.Small'>Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = new();
+    [Parameter] public PettyCashModel pettyCash { get; set; } = new();
+    [Parameter] public string dialogTitle { get; set; } = string.Empty;
+    [Parameter] public string moduleName { get; set; } = string.Empty;
+    [Parameter] public string subModuleName { get; set; } = string.Empty;
+    public static Enums.ActionMode currActionMode { get; set; }
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        
+    }
+
+    private void Close() => MudDialog.Close(DialogResult.Ok(true));
+    private void Cancel() => MudDialog.Cancel();
+
+     private async Task CopyTextToClipboard(string stringToCopy)
+    {
+        await Extensions.CopyTextToClipboard(stringToCopy, SnackbarService, JSRuntime);
+    }
+
+    private void EditPettyCash(PettyCashModel pettyCashModel)
+    {
+        GlobalClass.pettyCash = pettyCashModel;
+        PettyCashEntry.currActionMode = Enums.ActionMode.Update;
+        navigationManager.NavigateTo($"/petty-cash");
+    }
+}

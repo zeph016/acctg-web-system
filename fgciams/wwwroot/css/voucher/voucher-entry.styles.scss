@@ -61,3 +61,87 @@
     border-bottom: solid thin lightgray;
   }
 }
+
+.vou-entry-amtinfo-grid {
+  border-top: solid thin lightgray;
+  display: grid;
+  grid-template-columns: 30px 120px 1fr 1fr 1fr 120px 1fr 120px;
+  grid-template-rows: 1fr 1fr 1fr 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "amtinfo-cont1 amtinfo-cont2 amtinfo-cont2 amtinfo-cont2 amtinfo-cont3 amtinfo-cont4 amtinfo-cont5 amtinfo-cont6"
+    "amtinfo-cont1 amtinfo-cont2 amtinfo-cont2 amtinfo-cont2 amtinfo-cont3 amtinfo-cont4 amtinfo-cont5 amtinfo-cont6"
+    "amtinfo-tags amtinfo-tags amtinfo-tags amtinfo-tags amtinfo-cont3 amtinfo-cont4 amtinfo-cont5 amtinfo-cont6"
+    "amtinfo-tags amtinfo-tags amtinfo-tags amtinfo-tags amtinfo-cont3 amtinfo-cont4 amtinfo-cont5 amtinfo-cont6";
+  small {
+    font-size: 10px;
+    white-space: nowrap;
+    padding: 0px 2px 0px 2px;
+  }
+  .grid-item-end {
+    .mud-grid-item {
+      display: flex;
+      align-items: center;
+      justify-content: end;
+    }
+  }
+
+  .amtinfo-cont1 {
+    @extend .bg-f4f5fb;
+    grid-area: amtinfo-cont1;
+  }
+
+  .amtinfo-cont2 {
+    @extend .bg-f4f5fb;
+    grid-area: amtinfo-cont2;
+  }
+
+  .amtinfo-cont3 {
+    @extend .border-right, .bg-f4f5fb, .grid-item-end;
+    grid-area: amtinfo-cont3;
+  }
+
+  .amtinfo-cont4 {
+    @extend .grid-item-end;
+    grid-area: amtinfo-cont4;
+  }
+
+  .amtinfo-cont5 {
+    @extend .border-left, .border-right, .bg-f4f5fb, .grid-item-end;
+    grid-area: amtinfo-cont5;
+  }
+
+  .amtinfo-cont6 {
+    @extend .grid-item-end;
+    grid-area: amtinfo-cont6;
+  }
+
+  .amtinfo-tags {
+    align-items: start;
+    display: flex;
+    justify-items: start;
+    &__chkbxcont {
+      align-items: start;
+      display: flex;
+      min-width: 355px;
+      width: 100%;
+    }
+    border: solid thin lightgray;
+    border-left-style: none;
+    border-bottom-style: none;
+    grid-area: amtinfo-tags;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .border-left {
+    border-left: solid thin lightgray;
+  }
+
+  .border-right {
+    border-right: solid thin lightgray;
+  }
+  .bg-f4f5fb {
+    background-color: #f4f5fb;
+  }
+}

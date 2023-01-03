@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using fgciams.domain.clsSubContractProject;
 
 namespace fgciams.service.VoucherServices
 {
@@ -21,5 +22,8 @@ namespace fgciams.service.VoucherServices
         Task<string> GenerateReport(VoucherModel voucher);
         Task<List<VoucherModel>> VoucherNotInCheck(FilterParameter param,string token);
         Task<VoucherModel> GetVATandEWT(Project voucher, string token);
+        Task<List<VoucherDetailModel>> GetProjectSubledgers(FilterParameter parameter, string token);
+        Task<SubContractorProjectModel> GetContractAmount(long subContractorId, long projectId, long SOWId, string token);
+        Task<List<VoucherDetailModel>> GetSunbConProjects(FilterParameter parameter, string token);
     }
 }

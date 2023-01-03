@@ -46,6 +46,13 @@
 .bgc-transparent {
   background-color: transparent !important;
 }
+.bgc-FBFBFB {
+  background-color: #fbfbfb !important;
+}
+
+.bgc-crimson {
+  background-color: crimson !important;
+}
 //behind tables
 .bgc-4d43521a {
   background-color: #4d43521a;
@@ -57,6 +64,9 @@
 .color-green {
   color: #008000;
 }
+.color-red {
+  color: red;
+}
 .color-beige {
   color: #f5f5dc;
 }
@@ -65,6 +75,9 @@
 }
 .color-sec {
   color: var(--mud-palette-text-secondary) !important;
+}
+.color-gray {
+  color: gray;
 }
 
 .mudtoolbar-bg-8080805c {
@@ -92,10 +105,23 @@
   }
 }
 
+.tfield-color-blred {
+  .mud-input {
+    color: var(--mud-palette-error) !important;
+    font-weight: bold;
+  }
+}
+
 .chkwriter-bgc-grad {
   background-image: linear-gradient(to bottom right, #ffffff14, #535e9b1c);
 }
 
 .border-c-l {
   border-color: lightgrey;
+}
+
+.mudiconend-color-tertiary {
+  .mud-button-icon-end {
+    color: var(--mud-palette-tertiary) !important;
+  }
 }

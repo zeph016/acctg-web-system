@@ -1,4 +1,5 @@
 using fgciams.domain.clsCheck;
+using fgciams.domain.clsCollection;
 using fgciams.domain.clsFilterParameter;
 
 namespace fgciams.service.CheckServices
@@ -10,5 +11,6 @@ namespace fgciams.service.CheckServices
         Task<CheckModel> UpdateCheckStatus(CheckModel check,string token);
         Task<CheckModel> UpdateCheck(CheckModel check,string token);
         Task<string> GetCheckReport(CheckModel model);
+        Task<List<CheckAuditTrailModel>> GetAudiTrail(long ID, string token);
     }
 }

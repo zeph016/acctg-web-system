@@ -1,0 +1,63 @@
+
+<div class='drawer-right__filtercont'>
+    <div class='icon-area d-flex align-center @(contentVisible ? "pl-3":"")'>
+        <MudTooltip Text='Filter' Arrow Placement='Placement.Left'>
+            <MudIconButton OnClick='OpenFilter' Icon='@Icons.Material.Filled.FilterList' arial-label='Close Filter' Size='Size.Small' />
+        </MudTooltip>
+    </div>
+    <div class='filter-title d-flex align-center'>
+        <MudText Typo='Typo.button'>Filter</MudText>
+        <MudSpacer />
+        <MudIconButton OnClick='OpenFilter' Icon='@Icons.Material.Filled.Close' aria-label='Close Filter' Size='Size.Small' />
+    </div>
+    <div class='filter-content @(contentVisible ? "fade-in":"fade-out")'>
+        <MudGrid Spacing='1'>
+            <MudItem xs=12>
+                <MudTextField Class='txtfield-75 mr-2' @bind-Value='filterParameter.ControlNumber' Label='Control Number' Placeholder='Control Number' Immediate
+                    Clearable Disabled="@(!filterParameter.IsControlNumber)" Variant='Variant.Outlined' Margin='Margin.Dense'/>
+            </MudItem>
+            <MudItem Class='d-flex align-center justify-end gap-2' xs=12>
+                <MudButton Class='btn-ios-d font12' OnClick='ResetTable' Variant='Variant.Text' Size='Size.Small' DisableElevation Color='Color.Error'>
+                    Reset
+                </MudButton> 
+                <MudSpacer />
+                <MudButton Class='btn-ios-d font12' OnClick='OpenFilter' Variant='Variant.Text' Size='Size.Small' DisableElevation>
+                    Cancel
+                </MudButton> 
+                <MudButton Class='btn-ios-d font12 mr-2' OnClick='MapToGlobalFilter' Variant='Variant.Filled' Color='Color.Secondary' Size='Size.Small' DisableElevation>
+                    Filter
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </div>
+</div>
+
+@code  {
+    [Parameter] public EventCallback OpenSideFilterClick { get; set; }
+    [Parameter] public EventCallback FilterClick { get; set; }
+    [Parameter] public EventCallback ResetTableClick { get; set; }
+    [Parameter] public bool contentVisible { get; set; }
+    [Parameter] public FilterParameter filterParameter { get; set; } = new FilterParameter();
+    [Parameter] public string moduleName { get; set; } = string.Empty;
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        filterParameter.IsControlNumber = true;
+        await base.SetParametersAsync(parameters);
+    }
+    protected async Task OpenFilter()
+    {
+        contentVisible = !contentVisible;
+        await OpenSideFilterClick.InvokeAsync();
+    }
+    protected async Task MapToGlobalFilter()
+    {
+        GlobalVariable.filterParameter = filterParameter;
+        await FilterClick.InvokeAsync();
+    }
+     protected async Task ResetTable()
+    {
+        filterParameter = new FilterParameter();
+        await ResetTableClick.InvokeAsync();
+    }
+}

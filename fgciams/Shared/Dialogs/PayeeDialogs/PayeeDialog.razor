@@ -8,11 +8,11 @@
         <div class='d-flex align-center'>
             @if (GlobalClass.payee.Id != 0)
             {
-                <MudIcon Icon="@Icons.Filled.Edit" Class="mr-3" />
+                <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" />
             }
             else
             {
-                <MudIcon Icon="@Icons.Filled.Add" Class="mr-3" />
+                <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-3" />
             }
             <MudText Class='txt-uppercase' Typo='Typo.h6'>@dialogTitle</MudText>
         </div>
@@ -129,7 +129,7 @@
         parameters.Add("actionMode", currentAction);
         var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Cancelled) 
+        if (!resultDialog.Canceled) 
         {   
             try
             {
@@ -137,8 +137,11 @@
                     GlobalClass.payee.PayeeCategoryId = GlobalClass.payee.PayeeCategory.Id;
                     GlobalClass.payee = await payeeService.AddPayee(GlobalClass.payee, GlobalClass.token);
                     GlobalClassList.payeeList.Add(GlobalClass.payee);
-                } else
-                    GlobalClass.payee.PayeeCategory = GlobalClassList.payeeCategoryList.Find(x=>x.Id == GlobalClass.payee.PayeeCategoryId)?? new();
+                } 
+                else
+                {
+                    GlobalClass.payee = await payeeService.UpdatePayee(GlobalClass.payee, GlobalClass.token);
+                }
                 if(GlobalVariable.AMSHubConnection != null)
                     await GlobalVariable.AMSHubConnection.InvokeAsync("SavePayee",GlobalClass.payee);
                 MudDialog.Close(DialogResult.Ok(currentAction));
