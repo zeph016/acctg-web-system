@@ -32,8 +32,9 @@
                         </SelectedTemplate>
                         <ResultTemplate>
                             <div class='d-flex flex-column'>
-                                <small>@proj.ProjectName</small>
+                                <small class='font-bold'>@proj.ProjectName</small>
                                 <small>@proj.Location</small>
+                                <small>@Extensions.ProjectReference(proj)</small>
                             </div>
                         </ResultTemplate>
                     </BlazoredTypeahead>

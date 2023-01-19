@@ -58,6 +58,10 @@
   width: 295px;
 }
 
+.width260px {
+  width: 260px;
+}
+
 .width250px {
   width: 250px;
 }
@@ -170,8 +174,28 @@
   min-width: 100px !important;
 }
 
+.min-width75px {
+  min-width: 75px !important;
+}
+
+.min-width50px {
+  min-width: 50px !important;
+}
+
 .min-width44px {
   min-width: 44px;
+}
+
+.max-height0px {
+  max-height: 0px;
+}
+
+.max-height200px {
+  max-height: 200px;
+}
+
+.max-height4kpx {
+  max-height: 4000px;
 }
 
 .height2-45rem {

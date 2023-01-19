@@ -2,27 +2,30 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.ComponentModel;
+using System.Net;
+using Microsoft.AspNetCore.Components;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 using System.Reflection;
 using fgciams.Common;
 using Microsoft.JSInterop;
 using Blazored.LocalStorage;
+using MudBlazor;
+using Microsoft.AspNetCore.SignalR.Client;
+using System.IdentityModel.Tokens.Jwt;
+
 using fgciams.domain.clsEnums;
 using fgciams.domain.clsUserAccount;
 using fgciams.domain.clsAccountingStatus;
 using fgciams.domain.clsFilterParameter;
-using fgciams.service.UserAccountServices;
-using fgciams.service.GlobalServices;
-using System.IdentityModel.Tokens.Jwt;
-using MudBlazor;
-using System.Net;
-using Microsoft.AspNetCore.SignalR.Client;
 using fgciams.domain.clsBank;
+using fgciams.domain.clsExpenseLine;
 
-using Microsoft.AspNetCore.Components;
-
-
+using fgciams.service.ExpenseLineServices;
+using fgciams.service.GlobalServices;
+using fgciams.service.UserAccountServices;
+using fgciams.domain.clsProject;
+using fgciams.domain.clsRequest;
 
 public static class Extensions
 {
@@ -158,16 +161,6 @@ public static class Extensions
     {
         return iconType.GetType().GetProperty(iconName)?.GetValue(iconType, null)?.ToString() ?? string.Empty;
     }
-    // public static List<object> IconTypes()
-    // {
-    //     List<object> icons = new List<object>();
-    //         icons.Add(.Icons.Material.Filled);
-    //         icons.Add(Icons.Material.Outlined);
-    //         icons.Add(Icons.Material.Rounded);
-    //         icons.Add(Icons.Material.Sharp);
-    //         icons.Add(Icons.Material.TwoTone);
-    //     return icons;
-    // }
     public static string GetIconPrefix(string iconName)
     {
         return iconName.Split('.')[0]+"."+iconName.Split('.')[1]?? string.Empty;
@@ -176,17 +169,6 @@ public static class Extensions
     {
         return iconName.Split(".")[2];
     }
-    // public static object GetIconType(string iconName){
-    //     object obj = new();
-    //     foreach(var icons in IconTypes())
-    //     {
-    //         if(icons.ToString() == GetIconPrefix(iconName)){
-    //             obj =  icons;
-    //             break;
-    //         }
-    //     }
-    //     return obj;
-    // }
     public static string Icon(string iconName)
     {
         // return GetIconValue(GetIconType(iconName),GetIconName(iconName));
@@ -203,6 +185,20 @@ public static class Extensions
         var acctgStatus = GlobalClassList.accountingStatusList.Where(x=>x.Id == statusId).FirstOrDefault();
         if (acctgStatus != null)
             return "border-color:" + acctgStatus.StatusColor;
+        return string.Empty;
+    }
+    public static string FontColor(long statusId)
+    {
+        var acctgStatus = GlobalClassList.accountingStatusList.Where(x=>x.Id == statusId).FirstOrDefault();
+        if (acctgStatus != null)
+            return "color:" + acctgStatus.StatusColor;
+        return string.Empty;
+    }
+     public static string BGColor(long statusId)
+    {
+        var acctgStatus = GlobalClassList.accountingStatusList.Where(x=>x.Id == statusId).FirstOrDefault();
+        if (acctgStatus != null)
+            return "background-color:" + acctgStatus.StatusColor + ";color:white";
         return string.Empty;
     }
     public static HubConnection ConnectionBuilder(string connection)
@@ -245,11 +241,25 @@ public static class Extensions
             .SelectMany( bank => new List<string> { bank.ShortcutName, bank.AccountNo })
             .Aggregate( ( shortcutName, accountNumber ) => shortcutName+" | "+accountNumber);
     }
-    public static async Task<IEnumerable<BankModel>> SearchBank(string bankAccount)
+    public static string DivisionShorcutName(long divId)
+    {
+        return GlobalClassList.divisionList.Where( div => div.Id == divId)
+            .Select( div => div.shortcutName).FirstOrDefault()?? string.Empty;
+    }
+    public static async Task<IEnumerable<BankModel>> SearchBank(string bankAccount, bool isDistinct)
     {
         var banks = GlobalClassList.banks;
-        return await Task.FromResult(banks.Where(x => x.AccountNo.Contains(bankAccount, StringComparison.OrdinalIgnoreCase)
-        || x.BankName.Contains(bankAccount, StringComparison.OrdinalIgnoreCase) || x.ShortcutName.Contains(bankAccount, StringComparison.OrdinalIgnoreCase)).ToList());
+        if(isDistinct)
+        {
+            return await Task.FromResult(banks.Where(x => x.AccountNo.Contains(bankAccount, StringComparison.OrdinalIgnoreCase)
+            || x.BankName.Contains(bankAccount, StringComparison.OrdinalIgnoreCase) || x.ShortcutName.Contains(bankAccount, StringComparison.OrdinalIgnoreCase))
+            .DistinctBy( b => b.BankName).ToList());
+        } else 
+        {
+            return await Task.FromResult(banks.Where(x => x.AccountNo.Contains(bankAccount, StringComparison.OrdinalIgnoreCase)
+            || x.BankName.Contains(bankAccount, StringComparison.OrdinalIgnoreCase) || x.ShortcutName.Contains(bankAccount, StringComparison.OrdinalIgnoreCase))
+            .ToList());
+        }
     }
     public static Enums.SupplierCategory POSupplierCategory(Enums.ProjectCategory cat)
     {
@@ -274,5 +284,122 @@ public static class Extensions
                 refresh.Invoke();
                 Console.WriteLine("Test");
             });
+    }
+
+    public static string DetermineActionTaken(string activity)
+    {
+        if(activity.Contains("Create", StringComparison.InvariantCultureIgnoreCase) || activity.Contains("Add Liquidation", StringComparison.InvariantCultureIgnoreCase))
+            return Enums.ActionMode.Create.ToString();
+        if(activity.Contains("Approve", StringComparison.InvariantCultureIgnoreCase))
+            return Enums.ActionMode.Approve.ToString();
+        if(activity.Contains("Update", StringComparison.InvariantCultureIgnoreCase) || activity.Contains("Edit", StringComparison.InvariantCultureIgnoreCase))
+            return Enums.ActionMode.Update.ToString();
+        if(activity.Contains("Cancel", StringComparison.InvariantCultureIgnoreCase))
+            return Enums.ActionMode.Cancel.ToString();
+        if(activity.Contains("Receive", StringComparison.InvariantCultureIgnoreCase))
+            return Enums.ActionMode.Receive.ToString();
+        if(activity.Contains("Liquidated", StringComparison.InvariantCultureIgnoreCase))
+            return "Liquidated";
+        return string.Empty;
+    }
+
+    public static string DetermineActionColor(bool isBGColor, string activity, string moduleName)
+    {
+        AccountingStatusModel accountingStatusModel = new();
+        var enumsKeyWord = new Enums.AccountingStatusEnumCategory();
+        if(activity.Contains("Create", StringComparison.InvariantCultureIgnoreCase) || activity.Contains("Add", StringComparison.InvariantCultureIgnoreCase))
+        {
+            if(moduleName.Equals("pettyCash", StringComparison.InvariantCultureIgnoreCase))
+                enumsKeyWord = Enums.AccountingStatusEnumCategory.PCG;
+            if(moduleName.Equals("liquidation", StringComparison.InvariantCultureIgnoreCase))
+                enumsKeyWord = Enums.AccountingStatusEnumCategory.LG;
+        }
+           
+        if(activity.Contains("Approve", StringComparison.InvariantCultureIgnoreCase) || activity.Contains("Approved", StringComparison.InvariantCultureIgnoreCase))
+        {
+            if(moduleName.Equals("pettyCash", StringComparison.InvariantCultureIgnoreCase))
+                enumsKeyWord = Enums.AccountingStatusEnumCategory.PCA;
+            if(moduleName.Equals("liquidation", StringComparison.InvariantCultureIgnoreCase))
+                enumsKeyWord = Enums.AccountingStatusEnumCategory.LA;
+        }
+        if(activity.Contains("Cancel", StringComparison.InvariantCultureIgnoreCase))
+        {
+            if(moduleName.Equals("pettyCash", StringComparison.InvariantCultureIgnoreCase))
+                enumsKeyWord = Enums.AccountingStatusEnumCategory.PCC;
+        }
+        if(activity.Contains("Receive Petty Cash", StringComparison.InvariantCultureIgnoreCase))
+        {
+            if(moduleName.Equals("pettyCash", StringComparison.InvariantCultureIgnoreCase))
+                enumsKeyWord = Enums.AccountingStatusEnumCategory.PCR;
+        }
+        if(activity.Contains("Liquidated", StringComparison.InvariantCultureIgnoreCase)) 
+        {
+            if(moduleName.Equals("pettyCash", StringComparison.InvariantCultureIgnoreCase))
+                enumsKeyWord = Enums.AccountingStatusEnumCategory.PCL;
+        }
+           
+        if(activity.Contains("Update", StringComparison.InvariantCultureIgnoreCase) || activity.Contains("Edit", StringComparison.InvariantCultureIgnoreCase))
+        {
+            if (isBGColor)
+                return "background-color: lightblue";
+            else 
+                return "border-color: lightblue";
+        }
+
+        accountingStatusModel = GlobalClassList.accountingStatusList.Find(x=> x.StatusEnumCategoryId == enumsKeyWord) ?? accountingStatusModel;
+
+        if (isBGColor)
+            return BGColor(accountingStatusModel.Id) ?? string.Empty;
+        else 
+            return BorderColor(accountingStatusModel.Id) ?? string.Empty;
+    }
+    public static async Task<IEnumerable<ExpenseLineModel>> LoadExpense(string expenseLine, IExpenseLineService expenseLineService)
+    {
+      var charging = await expenseLineService.LoadExpenseLine(GlobalClass.token);
+      return charging.Where(x=>x.ExpenseName.Contains(expenseLine, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+    public static string ProjectReference(Project project)
+    {
+        if(GlobalClassList.payeeList.Where( p => p.Id == project.ProjectId && p.PayeeName == project.ProjectName).FirstOrDefault() != null)
+            return "[AIS Payee List]";
+        switch(project.ProjectCategoryId)
+        {
+            case Enums.ProjectCategory.Supplier:
+                return "[POBS Supplier Masterlist]";
+            case Enums.ProjectCategory.Employee:
+                return "[Employee Masterlist]";
+            case Enums.ProjectCategory.Company:
+                return "[Company Masterlist]";
+            case Enums.ProjectCategory.Project:
+                return "[Project Masterlist]";
+            case Enums.ProjectCategory.Product:
+                return "[Product Masterlist]";
+            case Enums.ProjectCategory.Equipment:
+                return "[Equipment Masterlist]";
+            case Enums.ProjectCategory.OtherDepartment:
+                return "[Other Department]";
+            case Enums.ProjectCategory.OtherProject:
+                return "[Other Project]";
+            case Enums.ProjectCategory.OtherEquipment:
+                return "[Other Equipment]";
+            case Enums.ProjectCategory.NonEmployee:
+                return "[Non Employee]";
+            case Enums.ProjectCategory.PrivateCustomer:
+                return "[Private Customer]";
+            case Enums.ProjectCategory.EquipmentNonEmployee:
+                return "[Equipmen Non Employee]";
+            case Enums.ProjectCategory.FGDepartment:
+                return "[FG Department Masterlist]";
+            case Enums.ProjectCategory.EquipmentPPEType:
+                return "[Equipment PPE Type]";
+            case Enums.ProjectCategory.ProjectChargingLine:
+                return "[Project Charging Line]";
+            default:
+                return String.Format("[{0}]", project.ProjectCategoryId.ToString());
+        }
+    }
+    public static ExpenseLineModel DefaultExpenseNone()
+    {
+        return GlobalClassList.expenseLineList.Where( ex => ex.ExpenseName == "None").FirstOrDefault()?? new();
     }
 }

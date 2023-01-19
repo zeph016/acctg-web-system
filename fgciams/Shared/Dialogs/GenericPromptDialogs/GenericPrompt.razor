@@ -1,3 +1,5 @@
+@inject ISnackbar snackbarService
+
 <MudDialog Class='customdialog'>
     <TitleContent>
         <div class='d-flex align-center'>
@@ -15,6 +17,10 @@
         <MudText Class='font14 pa-2'>
             @contentText
         </MudText>
+        @if(isVoid)
+        {
+            <MudTextField T=string @bind-value='@GlobalVariable.PromptRemarks' Class='font14 pa-2' Label='Remarks'></MudTextField>
+        }
         <MudText Class="font12 mud-text-secondary pa-2">@note</MudText>
         @if(isCheckModule)
         {
@@ -36,6 +42,7 @@
     [Parameter] public bool isCheckModule { get; set; } = false;
     [Parameter] public string controlNumber { get; set; } = string.Empty;
     [Parameter] public string note { get; set; } = string.Empty;
+    [Parameter] public bool isVoid { get; set; } = false;
     private Color color { get; set; }
     private bool dataFetched;
     private DateTime? checkStatusDate = DateTime.Now;
@@ -59,7 +66,17 @@
         Task.Run(StateHasChanged);
     }
 
-    private void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    private void Submit()
+    {
+        if(actionMode == Enums.ActionMode.Void)
+            if(GlobalVariable.PromptRemarks.Equals(string.Empty))
+                Extensions.ShowAlert("Remarks are required", Variant.Filled, snackbarService, Severity.Error);
+            else
+                MudDialog.Close(DialogResult.Ok(true));
+        else
+            MudDialog.Close(DialogResult.Ok(true));
+            
+    }
     private void Cancel() => MudDialog.Cancel();
 
     private void CheckActionsMode()
@@ -68,11 +85,11 @@
             contentText = $"Are you sure you want to"
                             + $"{(contentText.Contains("collection", StringComparison.InvariantCultureIgnoreCase) ? " deposit" : " save")}"
                             + $" this {contentText}?";
-            buttonText = "Confirm";
+            buttonText = "Add";
             color = Color.Info;
         } else if (actionMode == Enums.ActionMode.Update) {
             contentText = $"Are you sure you want to update this {contentText}?";
-            buttonText = "Confirm";
+            buttonText = "Update";
             color = Color.Info;
         } else if (actionMode == Enums.ActionMode.Approve) {
             contentText = $"Are you sure you want to approve {contentText}?";

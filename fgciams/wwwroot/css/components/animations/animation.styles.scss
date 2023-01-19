@@ -10,7 +10,18 @@
   opacity: 1;
   transition-delay: 0s;
 }
-
+.transition-2s-ease {
+  transition: all 2s;
+  transition-timing-function: ease;
+}
+.transition-1-5s-ease {
+  transition: all 1.5s;
+  transition-timing-function: ease;
+}
+.transition-1s-ease {
+  transition: all 1s;
+  transition-timing-function: ease;
+}
 .transition-05s-ease {
   transition: all 0.5s;
   transition-timing-function: ease;
@@ -64,6 +75,13 @@
 
 .icon-rotate180 {
   .mud-button-icon-end {
+    transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+  }
+}
+
+.mudbtn-rotate-180 {
+  .mud-icon-root {
     transform: rotate(180deg);
     -webkit-transform: rotate(180deg);
   }
@@ -129,3 +147,28 @@
   left: 0;
   background-color: white;
 }
+
+
+@keyframes bounce-in {
+ 0% {
+  opacity: 0;
+  transform: scale3d(.3, .3, .3);
+ }
+ 30% {
+  transform: scale3d(1.1, 1.1, 1.1);
+ }
+ 60% {
+  opacity: 1;
+  transform: scale3d(1.03, 1.03, 1.03);
+ }
+ 80% {
+  transform: scale3d(.97, .97, .97);
+ }
+ to {
+  opacity: 1;
+  transform: scale3d(1, 1, 1);
+ }
+}
+    
+  
+    

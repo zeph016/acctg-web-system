@@ -24,13 +24,23 @@
                     <MudTextField @bind-Value='@GlobalClass.payee.PayeeName' Label='Payee Name' Error=@notValidPayee ErrorText="Required*" HelperText="Required*"
                         Margin='Margin.Dense' />
                 </MudItem>
-                <MudItem xs='6'>
+                <MudItem xs='3'>
                     <MudTextField @bind-Value='@GlobalClass.payee.ShortcutName' Label='Short Name' Error=@notValidShortName ErrorText="Required*" HelperText="Required*"
                          Margin='Margin.Dense' />
                 </MudItem>
                  <MudItem xs='6'>
-                     <MudTextField @bind-Value='@GlobalClass.payee.TINNo' Label='TIN #' Mask="@(new PatternMask("000 000 000"))" HelperText='Required*'
-                         Margin='Margin.Dense' />
+                    @if(isCorporated)
+                    {
+                     <MudTextField @bind-Value='@GlobalClass.payee.TINNo' Label='TIN #' Mask="@(new PatternMask("000-000-000-00000"))" HelperText='Required*'
+                        Error=@notValidTIN ErrorText="Required*" Margin='Margin.Dense' />
+                    } else 
+                    {
+                        <MudTextField @bind-Value='@GlobalClass.payee.TINNo' Label='TIN #' Mask="@(new PatternMask("000-000-000"))" HelperText='Required*'
+                        Error=@notValidTIN ErrorText="Required*" Margin='Margin.Dense' />
+                    }
+                </MudItem>
+                <MudItem xs='3'>
+                     <MudCheckBox T='bool' CheckedChanged='( ()=> isCorporated = !isCorporated )' Checked='@isCorporated' Label='Corporated' Size='Size.Medium'/>
                 </MudItem>
                 <MudItem xs='6'>
                     <MudTextField @bind-Value='@GlobalClass.payee.PayeeContactNo' Label='Contact #'  Mask="@(new PatternMask("0000 000 0000"))" HelperText="ex. 0922 132 4444 Required*"
@@ -90,7 +100,7 @@
     [Parameter] public string buttonText { get; set; } = string.Empty;
     [Parameter] public Enums.ActionMode currentAction { get; set; }
     private bool isReadOnly = false;
-    private bool notValidPayee,notValidCategory,notValidShortName = false;
+    private bool notValidPayee,notValidCategory,notValidShortName,notValidTIN,isCorporated = false;
     protected override async Task OnInitializedAsync()
     {
         if (currentAction == Enums.ActionMode.Create)
@@ -162,9 +172,11 @@
             notValidPayee = true;
         if(String.IsNullOrEmpty(GlobalClass.payee.ShortcutName))
             notValidShortName = true;
+        if(String.IsNullOrEmpty(GlobalClass.payee.TINNo))
+            notValidTIN = true;
         if(GlobalClass.payee.PayeeCategory == null || String.IsNullOrEmpty(GlobalClass.payee.PayeeCategory.CategoryName))
             notValidCategory = true;
-        if(notValidPayee || notValidCategory || notValidShortName) {
+        if(notValidPayee || notValidCategory || notValidShortName || notValidTIN) {
             GlobalVariable.errorPromptText = " incomplete field/s."; return false; }
          if(GlobalClassList.payeeList.Any(x=>x.PayeeName == GlobalClass.payee.PayeeName && x.Id != GlobalClass.payee.Id)) {
             GlobalVariable.errorPromptText = " duplicate entry found for payee name."; return false;}
@@ -172,6 +184,7 @@
     }
     private void ResetValidation()
     {
+        notValidTIN = false;
         notValidPayee = false;
         notValidCategory = false;
         notValidShortName = false;

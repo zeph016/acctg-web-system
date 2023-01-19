@@ -70,6 +70,10 @@
   background-color: crimson !important;
 }
 
+.bgc-F3F5F7 {
+  background-color: #F3F5F7;
+}
+
 .bgc-4d43521a {
   background-color: rgba(77, 67, 82, 0.1019607843);
 }
@@ -135,4 +139,8 @@
 
 .mudiconend-color-tertiary .mud-button-icon-end {
   color: var(--mud-palette-tertiary) !important;
+}
+
+.opacity30 {
+  opacity: 30%;
 }/*# sourceMappingURL=colors.styles.css.map */

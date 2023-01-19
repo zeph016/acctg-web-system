@@ -6,7 +6,28 @@
 @inject ISnackbar snackBar
 
 <div class='page-cont d-flex'>
-    <div class='d-flex flex-1 pa-2'>
+    <div class='rpt-container'>
+        <MudCard Class='rpt-container__document-cont'>
+            <div class='rpt-container__iframe-cont'>
+                @if (string.IsNullOrWhiteSpace(pdfReport))
+                {
+                    <MudProgressCircular Color='Color.Primary' Indeterminate />
+                }
+                else
+                {
+                    <iframe src='@pdfReport'/>
+                }
+            </div>
+        </MudCard>
+        <ReportControls 
+            ControlPosition='rptctrls-side-bottom'
+            ConfirmStr='SAVE Request'
+            IsSaved='isSaved' 
+            Processing='_processing'
+            BackEventClick='Back'
+            PromptEventClick='Prompt'/>
+    </div>
+    @* <div class='d-flex flex-1 pa-2'>
         <MudCard Class='d-flex flex-column flex-1 pa-0' Elevation='1'>
             <MudCardContent Class='d-flex align-stretch justify-center rounded pa-2 default-report-viewscreen bgc-f2f2f2'>
                 @if (string.IsNullOrWhiteSpace(pdfReport))
@@ -40,14 +61,14 @@
                 </div>
             </MudCardActions>
         </MudCard>
-    </div>
+    </div> *@
 </div>
 
 
 @code{
 
     string pdfReport = string.Empty;
-    bool isSaved, _processing;
+    bool isSaved = false, _processing;
 
     protected override async Task OnInitializedAsync()
     {
@@ -60,7 +81,7 @@
         pdfReport = await requestForPaymentService.GenerateRFPReport(GlobalClass.forPrintingOrSaveRFP);
         pdfReport += "#toolbar=0";
     }
-    private async Task SaveRFP()
+    private async Task Prompt()
     {
         _processing = true;
         var parameters = new DialogParameters();
@@ -100,17 +121,24 @@
     }
     private void Back()
     {
-      if(!isSaved)
-      {
-        GlobalClass.requestForPayment = GlobalClass.forPrintingOrSaveRFP;
-        GlobalClassList.requestForPayments = GlobalClass.forPrintingOrSaveRFP.RequestForPaymentDetails.ToList();
-        navigationManager.NavigateTo($"/request-payment");
-      }
-      else
-      {
-        navigationManager.NavigateTo($"/request-payment/list");
-        GlobalClass.forPrintingOrSaveRFP = default!;
-      }
+        if(GlobalClass.forPrintingOrSaveRFP != null)
+        {
+            if(!isSaved)
+            {
+                GlobalClass.requestForPayment = GlobalClass.forPrintingOrSaveRFP;
+                GlobalClassList.requestForPayments = GlobalClass.forPrintingOrSaveRFP.RequestForPaymentDetails.ToList();
+                navigationManager.NavigateTo($"/request-payment");
+            }
+            else
+            {
+                navigationManager.NavigateTo($"/request-payment/list");
+                GlobalClass.forPrintingOrSaveRFP = default!;
+            }
+        } else
+        {
+            navigationManager.NavigateTo($"/request-payment/list");
+            GlobalClass.forPrintingOrSaveRFP = default!;
+        }
        
        
     }

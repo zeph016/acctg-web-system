@@ -53,7 +53,7 @@
             <col style='width: 20px' />
             <col style='width: 20px' />
             <col />
-            <col />
+            <col style='width: 20px'/>
             <col style='width: 20px' />
             <col style='width: 20px' />
             <col style='width: 50px' />
@@ -75,7 +75,6 @@
                   InitialDirection='SortDirection.None'>
                     Control No.
                 </MudTableSortLabel>
-                <MudSpacer />
                 <MudTableSortLabel SortLabel='SortDate' T='VoucherModel'
                   InitialDirection='SortDirection.Descending'>
                     Date
@@ -84,7 +83,7 @@
             </MudTh>
             <MudTh Class='customheader-6'>Payee</MudTh>
             <MudTh Class='customheader-6'>Description</MudTh>
-            <MudTh Class='customheader-6'>Status</MudTh>
+            <MudTh Class='customheader-6 text-center'>Status</MudTh>
             <MudTh Class='customheader-6'></MudTh>
             <MudTh Class='customheader-6'></MudTh>
             <MudTh Class='customheader-6 text-center'>For Filing</MudTh>
@@ -101,7 +100,7 @@
             <MudTd>
               <MudCheckBox T='bool' CheckedChanged='( (bool b)=> RowSelected(b,context) )' Checked='context.IsSelected' Class='chip-radius-5 font-bold font10' Size='Size.Medium' UnCheckedColor='Color.Dark' Color='Color.Info' Dense/>
             </MudTd>
-            <MudTd Class='@(isPinnedCtrlNo ? "col-sticky-left":"")' DataLabel='Control No.'>
+            <MudTd Class='@(isPinnedCtrlNo ? "col-sticky-left text-center":"text-center")' DataLabel='Control No.'>
               <div class='d-flex align-center'>
                   <MudTooltip Text='@($"See {context.ControlNumber}")' Arrow Placement='Placement.Top'>
                       <MudButton Class='btn-tbl-link' StartIcon='@Icons.Material.Filled.Link'
@@ -110,7 +109,7 @@
                           @context.ControlNumber
                       </MudButton>
                   </MudTooltip>
-                  <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Outlined' Icon='@Icons.Material.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
+                  <MudChip Class='mudchip-tbl' Variant='Variant.Outlined' Icon='@Icons.Material.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
                     @Convert.ToDateTime(context.VoucherDate).ToShortDateString()
                   </MudChip>
               </div>
@@ -128,7 +127,7 @@
             <MudTd DataLabel='Status'>
               @if (dataFetched) 
               {
-                <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Outlined' Size='Size.Small'
+                <MudChip Class='mudchip-tbl' Variant='Variant.Outlined' Size='Size.Small'
                   Style="@Extensions.BorderColor(context.AccountingStatusId)">
                   @context.StatusName
                 </MudChip>
@@ -141,19 +140,19 @@
                   <MudMenuItem>
                     <MudPaper class='pa-2 bgc-e7f2fb min-width200px'>
                       <MudText Class='font10 font-bold'>Prepared By:</MudText>
-                      <SignatoriesComponent employeeId='@context.PreparedById' />
+                      <SignatoriesComponent employeeId='@context.PreparedById' avatarSize='Size.Medium' />
                     </MudPaper>
                   </MudMenuItem>
                   <MudMenuItem>
                     <MudPaper class='pa-2 bgc-e7f2fb min-width200px'>
                       <MudText Class='font10 font-bold'>Verified By:</MudText>
-                      <SignatoriesComponent employeeId='@context.VerifiedById' />
+                      <SignatoriesComponent employeeId='@context.VerifiedById' avatarSize='Size.Medium' />
                     </MudPaper>
                   </MudMenuItem>
                   <MudMenuItem>
                     <MudPaper class='pa-2 bgc-e7f2fb min-width200px'>
                       <MudText Class='font10 font-bold'>Approved By:</MudText>
-                      <SignatoriesComponent employeeId='@context.ApprovedById' />
+                      <SignatoriesComponent employeeId='@context.ApprovedById' avatarSize='Size.Medium' />
                     </MudPaper>
                   </MudMenuItem>
                 </MudMenu>
@@ -174,16 +173,20 @@
               </MudTooltip>
             </MudTd>
             <MudTd Class='text-center' DataLabel='Filed'>
+              <div class='d-flex align-center justify-center'>
                <MudCheckBox Class='chip-radius-5 font-bold font10' Checked="(context.VoucherRouteTags.All(x=> x.IsRouted) == true ? true:false)" ReadOnly Dense Size='Size.Small' 
                   UnCheckedColor='Color.Dark' Color='Color.Info' />
+              </div>
             </MudTd>
             <MudTd Class='text-center' DataLabel='Filed'>
+              <div class='d-flex align-center justify-center'>
                <MudCheckBox Class='chip-radius-5 font-bold font10' 
-               T='bool'
-               Checked="(context.VoucherRouteTags.All(x=> x.IsRouted) == true ? true
-                    : (getTagsNumbers(context.VoucherRouteTags) == 0) ? true : false)" 
-                  ReadOnly Dense Size='Size.Small' 
-                  UnCheckedColor='Color.Dark' Color='Color.Info' />
+                T='bool'
+                Checked="(context.VoucherRouteTags.All(x=> x.IsRouted) == true ? true
+                      : (getTagsNumbers(context.VoucherRouteTags) == 0) ? true : false)" 
+                    ReadOnly Dense Size='Size.Small' 
+                    UnCheckedColor='Color.Dark' Color='Color.Info' />
+              </div>
             </MudTd>
             <MudTd Class='@(isPinnedAmt ? "col-sticky-amt":"")' DataLabel='Amount'>
               <div class='tooltipw100'>
@@ -214,12 +217,18 @@
                       <a class='d-flex align-center gap-2 '>
                           <MudIcon Icon='@(context.VoucherRouteTags.All(x=> x.IsRouted) == true ? "fa-solid fa-check":"fa-solid fa-clock")' Size='Size.Small' />
                           <MudTooltip Text='@(context.VoucherRouteTags.All(x=> x.IsRouted) == true ? "All tags has been Approved":"Pending tags("+getTagsName(context.VoucherRouteTags)+")")'>
-                            <MudText Typo='Typo.body2'>@(context.VoucherRouteTags.All(x=> x.IsRouted) == true ? "Approved" 
-                              : (getTagsNumbers(context.VoucherRouteTags) == 0) ? "Approved"
-                              : " Approve ("+getTagsNumbers(context.VoucherRouteTags)+" "+(getTagsNumbers(context.VoucherRouteTags) <= 1 ? "Pending":"Pendings")+")")</MudText>
+                            <MudText Typo='Typo.body2'>@(context.VoucherRouteTags.All(x=> x.IsRouted) == true ? "Approved for Filing" 
+                              : (getTagsNumbers(context.VoucherRouteTags) == 0) ? "Approved for Filing"
+                              : " Approve for Filing ("+getTagsNumbers(context.VoucherRouteTags)+" "+(getTagsNumbers(context.VoucherRouteTags) <= 1 ? "Pending":"Pendings")+")")</MudText>
                           </MudTooltip>
                       </a>
                     </MudMenuItem>
+                    <MudMenuItem OnClick='(()=> {navigationManager.NavigateTo($"/voucher-audit");GlobalClass.voucher = context;})'>
+                      <a class='d-flex align-center gap-2 '>
+                        <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' />
+                        <MudText Typo='Typo.body2'>Audit Trail</MudText>
+                      </a>
+              </MudMenuItem>
               </MudMenu>
             </MudTd>
           </RowTemplate>
@@ -305,14 +314,14 @@
           break;
       }
       
-      GlobalClassList.Vouchers = data.ToList();
+      GlobalClassList.Vouchers = data.Where( v => v.StatusName != "V-Generated").ToList();
       //Multiselection table server side rendering
       //if(checkAll)
       //  GlobalClassList.Vouchers.ForEach( v => v.IsSelected = true);
       GlobalClassList.selectedVoucherToRoute.ForEach(vSelected => {
         GlobalClassList.Vouchers.ForEach( v =>
         {
-          if(vSelected.IsSelected && v.ControlNumber == vSelected.ControlNumber)
+          if(v.IsSelected && v.ControlNumber == vSelected.ControlNumber)
             v.IsSelected = true;
         });
       });
@@ -378,8 +387,8 @@
     var options = new DialogOptions()
       {
           CloseButton = false,
-          MaxWidth = MaxWidth.ExtraSmall,
-          FullWidth = true,
+          MaxWidth = MaxWidth.Medium,
+          FullWidth = false,
           NoHeader = false,
           DisableBackdropClick = false
       };
@@ -412,7 +421,7 @@
   private async Task ApproveRoute(List<VoucherRouteTagModel> tag, VoucherModel voucher)
   {
     //checkpoint validation
-    if(getTagsNumbers(tag) >= 0)
+    if(getTagsNumbers(tag) == 0)
     {
       if(GetUserTagInVoucher(tag).Count > 0)
         await PromptConfirmation( tag , voucher);
@@ -507,7 +516,7 @@
       GlobalClassList.selectedVoucherToRoute.Add(voucher);
     else
     {
-      GlobalClassList.selectedVoucherToRoute.Remove(voucher);
+      GlobalClassList.selectedVoucherToRoute.RemoveAll( v => v.ControlNumber == voucher.ControlNumber);
       if(checkAll)
         checkAll = !checkAll;
     }

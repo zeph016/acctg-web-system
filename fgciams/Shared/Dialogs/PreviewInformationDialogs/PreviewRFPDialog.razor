@@ -1,0 +1,228 @@
+@inject IBillingDocumentService BillingDocumentService
+@inject IRequestForPaymentService RequestForPaymentService
+@inject ISnackbar SnackbarService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager navigationManager
+
+<MudDialog Class='rfpview-dialog'>
+    <TitleContent>
+        <div class='d-flex align-center'>
+            <p class='rfpview-dialog__title' Typo='Typo.h6'>@DialogTitle</p>
+            <MudSpacer />
+            <MudChip Class='txt-uppercase font-bold' OnClick='(() => CopyTextToClipboard(RequestForPaymentModel.ControlNumber))' Label Variant='Variant.Filled'>
+                <small class='color-white'>@RequestForPaymentModel.ControlNumber</small>
+            </MudChip>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div class='main-dialog-content @(!dataFetched ? "max-height200px":"max-height4kpx")'>
+            @if(!dataFetched)
+            {
+                <div class='circular-progress-cont'>
+                    <MudProgressCircular Indeterminate Size='Size.Large' Color='Color.Primary' />
+                </div>
+            }
+            else
+            {
+                <div class="rfpview-dialog__grid">
+                    <div class="rfpgrid-lblstatus">
+                        <p class='rfpview-dialog__label'>Status:</p>
+                    </div>
+                    <div class="rfpgrid-lbldatereq">
+                        <p class='rfpview-dialog__label'>Date Requested:</p>
+                    </div>
+                    <div class="rfpgrid-lbldateneed">
+                        <p class='rfpview-dialog__label'>Date Needed:</p>
+                    </div>
+                    <div class="rfpgrid-lbldateperiod">
+                        <p class='rfpview-dialog__label'>Period Date:</p>
+                    </div>
+                    <div class="rfpgrid-lblbillreq">
+                        <p class='rfpview-dialog__label'>Billing Requirements:</p>
+                    </div>
+                    <div class="rfpgrid-lblpayee">
+                        <p class='rfpview-dialog__label'>Payee:</p>
+                    </div>
+                    <div class="rfpgrid-status">
+                        <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@Extensions.BorderColor(RequestForPaymentModel.AccountingStatusId)' Variant='Variant.Outlined'
+                            Label>
+                            @RequestForPaymentModel.AccountingStaus.ToUpper()
+                        </MudChip>
+                    </div>
+                    <div class="rfpgrid-datreq">
+                        <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Variant='Variant.Outlined' 
+                            Icon='@Icons.Material.Filled.CalendarMonth'>
+                            @Convert.ToDateTime(RequestForPaymentModel.RequestDate).ToShortDateString()
+                        </MudChip>
+                    </div>
+                    <div class="rfpgrid-controls">
+                        <MudSpacer />
+                        <MudTooltip Text='@(!RequestForPaymentModel.AccountingStaus.Contains("Generated", StringComparison.InvariantCultureIgnoreCase) ? "Cannot modify Requested for payment, Check Status":"Modify Request for payment")' Arrow Placement='Placement.Top'>
+                            <MudIconButton Class='pcview-dialog__btn-circular' OnClick='(() => EditRFP(RequestForPaymentModel))' Icon="@Icons.Material.Filled.Edit" aria-label="Edit" Size='Size.Small' 
+                                Variant='Variant.Filled' Color='Color.Tertiary' Disabled='@(!RequestForPaymentModel.AccountingStaus.Contains("Generated", StringComparison.InvariantCultureIgnoreCase) ? true:false)'/>
+                        </MudTooltip>
+                    </div>
+                    <div class="rfpgrid-dateneed">
+                        <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Variant='Variant.Outlined' 
+                            Icon='@Icons.Material.Filled.CalendarMonth'>
+                            @Convert.ToDateTime(RequestForPaymentModel.DateNeeded).ToShortDateString()
+                        </MudChip>
+                    </div>
+                    <div class="rfpgrid-dateperiod">
+                        <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Variant='Variant.Outlined' 
+                            Icon='@Icons.Material.Filled.CalendarMonth'>
+                            @Convert.ToDateTime(RequestForPaymentModel.PeriodDateFrom).ToShortDateString() -
+                            @Convert.ToDateTime(RequestForPaymentModel.PeriodDateTo).ToShortDateString()
+                        </MudChip>
+                    </div>
+                    <div class="rfpgrid-billreq">
+                        @if(RequestForPaymentModel.RFPBillingDocuments.Count == 0)
+                        {
+                            <p class='rfpview-dialog__txt'>No Billing Requirements selected</p>
+                        }
+                        else
+                        {
+                            @foreach (var item in RequestForPaymentModel.RFPBillingDocuments)
+                            {
+                                <p class='rfpview-dialog__txt'>@item.DocumentName @(RequestForPaymentModel.RFPBillingDocuments.Count > 0 ? ",":"")</p>
+                            }
+                        }
+                    </div>
+                    <div class="rfpgrid-payee">
+                        <p class='rfpview-dialog__txt'>@RequestForPaymentModel.PayeeName</p>
+                    </div>
+                    <div class="rfpgrid-details">
+                        <div class="rfpgrid-details__grid">
+                            <div class="rfpdg-proj"> <p class='rfpview-dialog__label'>Project/Name</p></div>
+                            <div class="rfpdg-div"><p class='rfpview-dialog__label'>Division</p></div>
+                            <div class="rfpdg-exp"><p class='rfpview-dialog__label'>Expense</p></div>
+                            <div class="rfpdg-amt"><p class='rfpview-dialog__label'>Amount</p></div>
+                            <div class="rfpdg-body">
+                                <div class='rfpdg-body__items-cont'>
+                                    @if(RequestForPaymentModel.RequestForPaymentDetails.Count == 0)
+                                    {
+                                        <p class='rfpview-dialog__txt'>No payment details</p>
+                                    }
+                                    else
+                                    {
+                                        <MudGrid Spacing='1'>
+                                            @foreach (var item in RequestForPaymentModel.RequestForPaymentDetails)
+                                            {
+                                                <MudItem Class='rfpdg-body__item-row' xs='3'>
+                                                    <p class='rfpgrid-details__item-tbltxt'>@item.ChargedName</p>
+                                                </MudItem>
+                                                <MudItem Class='rfpdg-body__item-row' xs='3'>
+                                                    <MudChip Size='Size.Small' Label Color='Color.Info' Variant='Variant.Outlined'>
+                                                        <p class='rfpgrid-details__item-tbltxt'>@item.DivisionName</p>
+                                                    </MudChip>
+                                                </MudItem>
+                                                <MudItem Class='rfpdg-body__item-row' xs='3'>
+                                                    <MudChip Size='Size.Small' Label Color='Color.Tertiary' Variant='Variant.Outlined'>
+                                                        <p class='rfpgrid-details__item-tbltxt'>@item.ExpenseLineName</p>
+                                                    </MudChip>
+                                                </MudItem>
+                                                <MudItem Class='rfpdg-body__item-row' xs='3'>
+                                                    <p class='@(item.Amount > 0 ? "color-green":"color-red") rfpgrid-details__item-tbltxt font-bold'>
+                                                         @(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + @item.Amount.ToString("N2"))
+                                                    </p>
+                                                </MudItem>
+                                            }
+                                        </MudGrid>
+                                    }
+                                </div>
+                            </div>
+                            <div class="rfpdg-footer">
+                                <MudSpacer />
+                                <p class='rfpview-dialog__label'>Total Amount:</p>
+                                <MudChip OnClick='(() => CopyTextToClipboard(rfpDetailsTotalAmount.ToString("N2")))' Class='cursor-pointer' Variant='Variant.Text' 
+                                    Size='Size.Small' Color='@(rfpDetailsTotalAmount > 0 ? Color.Success:Color.Error)' Label>
+                                    <p class='rfpview-dialog__txt font-bold @(rfpDetailsTotalAmount > 0 ? "color-green":"color-red")'>
+                                        @(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + @rfpDetailsTotalAmount.ToString("N2"))
+                                    </p>
+                                </MudChip>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rfpgrid-signatories">
+                        <p class='pcview-dialog__txt--content-title'>Signatories:</p>
+                        <MudPaper Class='pa-2 bgc-e7f2fb min-width200px'>
+                            <MudText Class='font10 font-bold'>Prepared By:</MudText>
+                            <SignatoriesComponent employeeId='@RequestForPaymentModel.PreparedById' avatarSize='Size.Medium' />
+                        </MudPaper>
+                        <MudPaper Class='pa-2 bgc-e7f2fb min-width200px'>
+                            <MudText Class='font10 font-bold'>Requested By:</MudText>
+                            <SignatoriesComponent employeeId='@RequestForPaymentModel.RequestedById' avatarSize='Size.Medium' />
+                        </MudPaper>
+                        <MudPaper Class='pa-2 bgc-e7f2fb min-width200px'>
+                            <MudText Class='font10 font-bold'>Recommended By:</MudText>
+                            <SignatoriesComponent employeeId='@RequestForPaymentModel.RecommendedById' avatarSize='Size.Medium' />
+                        </MudPaper>
+                        <MudPaper Class='pa-2 bgc-e7f2fb min-width200px'>
+                            <MudText Class='font10 font-bold'>Recommended By:</MudText>
+                            <SignatoriesComponent employeeId='@RequestForPaymentModel.ApprovedById' avatarSize='Size.Medium' />
+                        </MudPaper>
+                    </div>
+                </div>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+         <MudButton Class='btn-ios-d font12' Color="Color.Primary" OnClick="Close" Variant='Variant.Filled'
+            DisableElevation Size='Size.Small'>Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private bool dataFetched;
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = new();
+    [Parameter] public RequestForPaymentModel RequestForPaymentModel { get; set; } = new();
+    [Parameter] public string DialogTitle { get; set; } = string.Empty;
+    private void Close() => MudDialog.Close(DialogResult.Ok(true));
+    private void Cancel() => MudDialog.Cancel();
+    private decimal rfpDetailsTotalAmount;
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(1000);
+        Task t = Task.WhenAll(GetRequestForPaymentDetails(), GetBillingDocuments());
+        await t;
+        if (t.Status == TaskStatus.RanToCompletion)
+            CompletedFetch();
+    }
+
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+
+    private async Task CopyTextToClipboard(string stringToCopy)
+    {
+        await Extensions.CopyTextToClipboard(stringToCopy, SnackbarService, JSRuntime);
+    }
+
+    private void EditRFP(RequestForPaymentModel model)
+    {
+        GlobalClass.requestForPayment = model;
+        RequestForPayment.currActionMode = Enums.ActionMode.Update;
+        navigationManager.NavigateTo($"/request-payment");
+    }
+
+    private async Task GetBillingDocuments()
+    {
+        var response = await BillingDocumentService.GetBillingDocument(RequestForPaymentModel.Id, GlobalClass.token);
+        if (response != null)
+            RequestForPaymentModel.RFPBillingDocuments = response;
+    }
+    private async Task GetRequestForPaymentDetails()
+    {
+        var response = await RequestForPaymentService.LoadRequestPaymentDetail(RequestForPaymentModel.Id, GlobalClass.token);
+        if (response != null)
+            RequestForPaymentModel.RequestForPaymentDetails = response; rfpDetailsTotalAmount = response.Sum(x=>x.Amount);
+    }
+}

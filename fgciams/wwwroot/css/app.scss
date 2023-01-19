@@ -38,6 +38,8 @@
 @import url("./components/transformmods/transform.styles.css");
 @import url("./components/flexgridmods/flexgridmods.styles.css");
 @import url("./components/filtercomponents/filtercomponents.styles.css");
+@import url("./components/signatories/signatories.styles.css");
+@import url("./components/autocompletebox/autocompletebox.css");
 @import url("./pettycash/pettycash-entry.styles.css");
 @import url("./voucher/voucher-entry.styles.css");
 @import url("./requestpayment/requestpayment.css");
@@ -271,4 +273,27 @@ a,
   background-size: contain;
   // padding-top: 10px;
   height: 100%;
+}
+
+
+.page-cont-L {
+  @extend .fade-in;
+  // background-image: linear-gradient(#f8f9fe, #ffffff);
+  // background-image: linear-gradient(#4d43522d, #ffffff);
+  background: #ffffff;
+  background-image: url(../images/fgbgimg.png);
+  background-image: url(../images/fgbgimg.png),
+    linear-gradient(rgba(80, 69, 85, 0), #ffffff);
+  // background-image: url(../images/fgbgimg.png),
+  //   linear-gradient(#4d43520c, #ffffff);
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: auto;
+  // padding-top: 10px;
+  height: 100%;
+}
+
+.td-amount-container {
+  display: flex;
+  align-items: center;
 }

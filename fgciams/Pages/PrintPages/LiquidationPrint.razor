@@ -8,40 +8,31 @@
 @inject IConfiguration config
 
 <div class='page-cont d-flex'>
-    <div class='d-flex flex-1 pa-2'>
-        <MudPaper Class='d-flex flex-column flex-1 pa-0'>
-            <MudCardContent Class='d-flex align-stretch justify-center rounded pa-2 default-report-viewscreen bgc-f2f2f2'>
-                @if (string.IsNullOrWhiteSpace(pdfReport))
+    <div class='rpt-container'>
+        <MudCard Class='rpt-container__document-cont' Elevation='1'>
+            <div class='rpt-container__iframe-cont'>
+                @if(string.IsNullOrWhiteSpace(pdfReport))
                 {
-                    <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
-                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-                    </MudOverlay>
+                    <MudProgressCircular Color="Color.Primary" Indeterminate />
                 }
                 else
                 {
                     <iframe src='@pdfReport' />
                 }
-            </MudCardContent>
-            <MudCardActions Class='d-flex align-center pa-0 gap-2'>
-                <div class='flex-1 border-thin-right bgc-f2f2f2 height100'></div>
-                <div class='d-flex align-center pa-2 gap-2'>
-                    <MudButton Class='width100px font12' OnClick='(()=> Back())' Variant='Variant.Text' Size='Size.Small' DisableElevation>@(isSaved ? "RETURN" : "CANCEL")</MudButton>
-                        @if (_processing) {
-                            <MudProgressCircular Class="progsize-21" Size="Size.Small" Indeterminate="true" />
-                            <MudText Class='font12 pl-2'>SAVING</MudText>
-                        } else {
-                            <MudButton Class='width100px font12' OnClick='(()=> SaveLiquidation())' Variant='Variant.Filled' Color='Color.Success' Size='Size.Small' Disabled='isSaved' DisableElevation>
-                                <MudText Class='font12'>SAVE</MudText>
-                            </MudButton>
-                        }
-                </div>
-            </MudCardActions>
-        </MudPaper>
+            </div>
+        </MudCard>
+         <ReportControls 
+            ControlPosition='rptctrls-side-bottom'
+            ConfirmStr='SAVE Liquidation'
+            IsSaved='isSaved' 
+            Processing='_processing'
+            BackEventClick='Back'
+            PromptEventClick='Prompt' />
     </div>
 </div>
 
 @code{
-    string pdfReport = default!;
+    string pdfReport = string.Empty;
     bool isSaved, _processing;
     protected override async Task OnInitializedAsync()
     {
@@ -49,12 +40,12 @@
         Task t = Task.WhenAll(LoadPDFReport());
         await t;
     }
-    async Task LoadPDFReport()
+    private async Task LoadPDFReport()
     {
         pdfReport = await liquidationService.PrintSaveLiquidation(GlobalClass.forPrintingOrSaveLiquidation);
         pdfReport += "#toolbar=0";
     }
-    async Task SaveLiquidation()
+    private async Task Prompt()
     {
         _processing = true;
         var liquidation = new LiquidationModel();

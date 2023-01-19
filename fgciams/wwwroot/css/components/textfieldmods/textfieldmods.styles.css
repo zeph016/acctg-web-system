@@ -23,6 +23,18 @@
 
 .flex-full {
   flex: 1 1 0%;
+}
+
+.dflex {
+  display: flex;
+}
+
+.dblock {
+  display: block;
+}
+
+.dblock-inline {
+  display: inline-block;
 } /*# sourceMappingURL=flexgridmods.styles.css.map */
 .txtdate-noline .mud-input-slot {
   text-align: right !important;

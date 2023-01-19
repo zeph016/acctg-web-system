@@ -7,6 +7,7 @@ using fgciams.domain.clsEnums;
 using fgciams.domain.clsPettyCash;
 using fgciams.domain.clsProject;
 using fgciams.domain.clsExpenseLine;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace fgciams.domain.clsLiquidation
 {
@@ -71,6 +72,8 @@ namespace fgciams.domain.clsLiquidation
         public bool ShowRemarks { get; set; }
         public Project selCharge = new Project();
         public ExpenseLineModel selExp = new ExpenseLineModel();
+        [NotMapped]
+        public bool IsEditRow { get; set; }
     }
     
 }

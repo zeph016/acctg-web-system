@@ -141,6 +141,12 @@
           <MudTd Class='@(isPinnedAmt ? "col-sticky-action text-center":"text-center")'>
             <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
               TransformOrigin='Origin.TopRight' Dense Size='Size.Small'>
+                <MudMenuItem OnClick='(() => PreviewLiquidation(context))'>
+                    <div class='d-flex align-center gap-2'>
+                        <MudIcon Icon='@Icons.Material.Filled.Preview' Size='Size.Small' Color='Color.Dark'/>
+                        <MudText Typo='Typo.body2'>View</MudText>
+                    </div>
+                </MudMenuItem>
                 @if((!EnableEditApproved(context) && AccessLevelAddmin()) 
                 || (!EnableEditApproved(context) && AccessLevelRequestors()))
                 {
@@ -150,7 +156,6 @@
                       <MudText Typo='Typo.body2'>Edit</MudText>
                     </a>
                   </MudMenuItem>
-
                   if(AccessLevelAddmin())
                   {
                     <MudMenuItem OnClick='(()=> ApproveLiquidation(context))'>
@@ -177,7 +182,7 @@
                     </a>
                   </MudMenuItem>
                 }
-                <MudMenuItem OnClick='(()=> navigateAuditTrail(context))'>
+                <MudMenuItem OnClick='(()=> ViewAuditTrail(context))'>
                   <a class='d-flex align-center gap-2 '>
                     <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' />
                     <MudText Typo='Typo.body2'>Audit Trail</MudText>
@@ -193,32 +198,32 @@
           </MudTd>
         </RowTemplate>
         <NoRecordsContent>
-          <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No records found</MudText>
+            <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>@noRecordsStr</MudText>
         </NoRecordsContent>
         <ChildRowContent>
           <MudTr>
               <td colspan="8">
-                <div class='transition-05s-ease overflow-hidden' style='@(context.ShowReport ? "max-height:700px" : "max-height:0px")'>
-                  <div class='d-flex align-center pa-2 bgc-f2f2f2'>
-                      <MudSpacer />
-                      <MudButton Class='btn-ios-d' OnClick='(() => context.ShowReport = ShowReport(context.ShowReport, context))' EndIcon="@Icons.Rounded.Close" Size='Size.Small' >
-                          Close Report
-                      </MudButton>
-                  </div>
-                  <div class='d-flex align-stretch justify-center default-report-container'>
-                    @if (context.ShowReport)
-                    {
-                      @if (string.IsNullOrWhiteSpace(PDFContent))
-                      {
-                        <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
-                            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-                        </MudOverlay>
-                      }
-                      else
-                      {
-                      <iframe src='@PDFContent' />
-                      }
-                      }
+                <div class='rpt-container-trtd' style='@(context.ShowReport ? "max-height:4000px" : "max-height:0px")'>
+                  <div class='rpt-container-listview'>
+                    <MudCard Class='rpt-container-listview__document-cont px-2' Elevation='1'>
+                      <div class='rpt-container-listview__iframe-cont'>
+                        @if(context.ShowReport)
+                        {
+                          @if(string.IsNullOrWhiteSpace(pdfContent))
+                          {
+                            <MudProgressCircular Color="Color.Primary" Indeterminate Size='Size.Large' />
+                          }
+                          else
+                          {
+                            <iframe class='rpt-container-listview__iframe-scaled' src='@pdfContent' />
+                          }
+                          <ReportControls 
+                            IsCloseOnly='true'
+                            ConfirmStr='Close Report' 
+                            BackEventClick='(() => context.ShowReport = !context.ShowReport)' />
+                        }
+                      </div>
+                    </MudCard>
                   </div>
                 </div>
               </td>
@@ -235,8 +240,8 @@
 @code{
 
   private bool dataFetched, openSideFilter, isLoading, isPinnedCtrlNo = true, isPinnedAmt = true;
-  private string PDFContent = default!;
-  private string searchTerm = string.Empty;
+  private string pdfContent = default!;
+  private string searchTerm = string.Empty, noRecordsStr = string.Empty;
   private int totalItems;
   private FilterParameter filterParameter = new();
   private IEnumerable<LiquidationModel>? pageData;
@@ -302,7 +307,7 @@
 
       }).ToList();
 
-      PDFContent = await liquidationService.PrintSaveLiquidation(liquidationDetail);
+      pdfContent = await liquidationService.PrintSaveLiquidation(liquidationDetail);
       StateHasChanged();
   }
   private async Task VoidLiquidation(LiquidationModel liquidation)
@@ -310,7 +315,7 @@
     if(await PromptMessage(Enums.ActionMode.Void, liquidation))
     {
       liquidation.StatusId = GlobalClassList.accountingStatusList.Where(x => x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.LG).Select(x => x.Id).FirstOrDefault();
-      liquidation.Activity = "Update liquidation status to generated (void)";
+      liquidation.Activity = "Activity: Update liquidation status to generated (void); Remarks: "+GlobalVariable.PromptRemarks;
       liquidation.UserId = GlobalClass.currentUserAccount.EmployeeId;
       var updatedStatus = await liquidationService.UpdateLiquidationStatus(liquidation, GlobalClass.token);
       Extensions.ShowAlert("Liquidation voided", Variant.Filled, snackbarService, Severity.Info);
@@ -373,6 +378,7 @@
     }
 
     GlobalClassList.liquidations = data.ToList();
+    noRecordsStr = (data.Count() == 0 ? "No records found":string.Empty);
     pageData = GlobalClassList.liquidations.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
     totalItems = GlobalClassList.liquidations.Count();
     isLoading = !isLoading;
@@ -408,6 +414,7 @@
     parameters.Add("dialogTitle", dialogTitle);
     parameters.Add("contentText", contentText);
     parameters.Add("controlNumber", model.ControlNumber);
+    parameters.Add("isVoid", actionMode == Enums.ActionMode.Void ? true : false);
     var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
     var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
     if (!resultDialog.Canceled)
@@ -466,9 +473,9 @@
     return GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.AccountingViewer
     || GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.OthersViewer;
   }
-  private void navigateAuditTrail(LiquidationModel liquidation)
+  private void ViewAuditTrail(LiquidationModel liquidation)
   {
-    GlobalClass.liquidationAudit = liquidation;
+    GlobalClass.liquidation = liquidation;
     navigationManager.NavigateTo($"/liquidation/audit");
   }
   private AccountingStatusModel AccountingStatus(Enums.ActionMode actionMode)
@@ -542,4 +549,13 @@
   {
       await Extensions.CopyTextToClipboard(ctrlNo, snackbarService, JSRuntime);
   }
+
+  private async Task PreviewLiquidation(LiquidationModel model)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("DialogTitle", "Liquidation");
+        parameters.Add("Liquidation", model);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.Small, FullWidth = true, NoHeader = false, DisableBackdropClick = false };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.PreviewInformationDialogs.PreviewLiquidationDialog>("", parameters, options).Result;
+    }
 }

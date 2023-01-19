@@ -10,6 +10,7 @@
 @inject ApplicationState AppState
 @inject IGlobalService globalService
 @inject IRequestForPaymentService requestForPaymentService
+@inject ICheckService checkService
 
 <div class='page-cont'>
   <div class='drawer-right-min'>
@@ -78,11 +79,11 @@
                         Icon='@Icons.Material.Filled.PushPin' Size='Size.Small'/>
                 </MudTooltip>
                 <MudTableSortLabel SortLabel='SortControlNumber' T='VoucherModel'
-                InitialDirection='SortDirection.None'>
+                InitialDirection='SortDirection.Descending'>
                   Control No.
                 </MudTableSortLabel>
                 <MudTableSortLabel SortLabel='SortDate' T='VoucherModel'
-                InitialDirection='SortDirection.Descending'>
+                InitialDirection='SortDirection.None'>
                   Date
                 </MudTableSortLabel>
               </div>
@@ -145,19 +146,19 @@
                   <MudMenuItem>
                     <MudPaper class='pa-2 bgc-e7f2fb min-width200px'>
                       <MudText Class='font10 font-bold'>Prepared By:</MudText>
-                      <SignatoriesComponent employeeId='@context.PreparedById' />
+                      <SignatoriesComponent employeeId='@context.PreparedById' avatarSize='Size.Medium' />
                     </MudPaper>
                   </MudMenuItem>
                   <MudMenuItem>
                     <MudPaper class='pa-2 bgc-e7f2fb min-width200px'>
                       <MudText Class='font10 font-bold'>Verified By:</MudText>
-                      <SignatoriesComponent employeeId='@context.VerifiedById' />
+                      <SignatoriesComponent employeeId='@context.VerifiedById' avatarSize='Size.Medium' />
                     </MudPaper>
                   </MudMenuItem>
                   <MudMenuItem>
                     <MudPaper class='pa-2 bgc-e7f2fb min-width200px'>
                       <MudText Class='font10 font-bold'>Approved By:</MudText>
-                      <SignatoriesComponent employeeId='@context.ApprovedById' />
+                      <SignatoriesComponent employeeId='@context.ApprovedById' avatarSize='Size.Medium' />
                     </MudPaper>
                   </MudMenuItem>
                 </MudMenu>
@@ -210,7 +211,13 @@
             </MudTd>
             <MudTd Class='@(isPinnedAmt ? "col-sticky-action text-center":"text-center")' DataLabel='Action'>
               <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
-              TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
+              TransformOrigin='Origin.TopRight' Dense Size='Size.Small'>
+                <MudMenuItem OnClick='(() => PreviewVoucher(context))'>
+                    <div class='d-flex align-center gap-2'>
+                        <MudIcon Icon='@Icons.Material.Filled.Preview' Size='Size.Small' Color='Color.Dark'/>
+                        <MudText Typo='Typo.body2'>View</MudText>
+                    </div>
+                </MudMenuItem>
                 @if((!ViewMenu(context) && AccessLevelAddmin())
                 || (!ViewMenu(context)) && AccessLevelRequestors())
                 {
@@ -220,7 +227,6 @@
                       <MudText Typo='Typo.body2'>Edit</MudText>
                     </a>
                   </MudMenuItem>
-
                   if(AccessLevelAddmin())
                   {
                     <MudMenuItem OnClick='(()=> ApprovedVoucher(context))'>
@@ -240,7 +246,7 @@
                 }
                 else if(AccountingStatus(Enums.ActionMode.Approve).Id == context.AccountingStatusId && AccessLevelAddmin())
                 {
-                  if(!context.IsFiled && string.IsNullOrWhiteSpace(context.CheckNumber))
+                  if(!context.IsFiled)
                   {
                    <MudMenuItem OnClick='(()=> VoidVoucher(context))'>
                       <div class='d-flex align-center gap-2 '>
@@ -279,36 +285,29 @@
           </NoRecordsContent>
           <ChildRowContent>
             <MudTr>
-              <td colspan="9">
-                 <div class='transition-05s-ease overflow-hidden' style='@(context.ShowReport ? "max-height:500px" : "max-height:0px")'>
-                    <div class='d-flex align-center'>
-                        <MudSpacer />
-                        <MudButton Class='btn-ios-d font12' OnClick='(() => context.ShowReport = ShowReport(context.ShowReport, context))' EndIcon="@Icons.Rounded.Close" 
-                            Size='Size.Small' Variant='Variant.Text'>
-                            Close Report
-                      </MudButton>
-                    </div>
-                    <div class='d-flex align-stretch justify-center default-report-container'>
-                      @if(context.ShowReport)
-                      {
-                        @if (string.IsNullOrWhiteSpace(PDFContent))
+              <td colspan='9'>
+                <div class='rpt-container-trtd @(context.ShowReport ? "max-height4kpx":"max-height0px")'>
+                  <div class='rpt-container-listview'>
+                    <MudCard Class='rpt-container-listview__document-cont px-2' Elevation='1'>
+                      <div class='rpt-container-listview__iframe-cont'>
+                        @if(context.ShowReport)
                         {
-                          <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
-                              <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-                          </MudOverlay>
+                          @if(string.IsNullOrWhiteSpace(pdfContent))
+                          {
+                             <MudProgressCircular Color="Color.Primary" Indeterminate Size='Size.Large' />
+                          }
+                          else
+                          {
+                              <iframe class='rpt-container-listview__iframe-scaled' src='@pdfContent' />
+                          }
+                          <ReportControls
+                            IsCloseOnly='true'
+                            ConfirmStr='Close Report' 
+                            BackEventClick='(() => context.ShowReport = !context.ShowReport)'/>
                         }
-                        else if(context.ShowReport)
-                        {
-                          <iframe src='@PDFContent' />
-                        }
-                      }
-                    </div>
-                 </div>
-                <div class='transition-05s-ease overflow-hidden' style='@(context.isShowChecks && !context.ShowReport ? "max-height:500px" : "max-height:0px")'>
-                  @if (!string.IsNullOrWhiteSpace(context.CheckNumber))
-                  {
-                    <CheckListComponent stringChecks=@context.CheckNumber />
-                  }
+                      </div>
+                    </MudCard>
+                  </div>
                 </div>
               </td>
             </MudTr>
@@ -326,7 +325,7 @@
   [Parameter] public string controlNumber {get;set;} = string.Empty;
   private bool dataFetched, openSideFilter, isPinnedCtrlNo = true, isPinnedAmt = true;
   private int totalItems;
-  private string PDFContent = string.Empty, searchTerm = string.Empty;
+  private string pdfContent = string.Empty, searchTerm = string.Empty;
   private AccountingStatusModel selectedStatus = new();
   private IEnumerable<VoucherModel>? pageData;
   private MudTable<VoucherModel> tableVariable = new MudTable<VoucherModel>();
@@ -338,6 +337,7 @@
     GlobalClass.pageTitle = "voucher list";
     if (GlobalClass.currentUserAccount == null || GlobalClassList.accountingStatusList == null)
       await Task.Delay(1);
+    GlobalClassList.listOfChecks = await checkService.LoadCheck(filterParameter, GlobalClass.token);
     VoucherHubConnection();
 
     VoucherEntryPage.currActionMode = Enums.ActionMode.Create;
@@ -395,7 +395,19 @@
     //Testing
     GlobalClassList.Vouchers = data.ToList();
     pageData = GlobalClassList.Vouchers.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
-    
+    //show void if all checks are cancelled
+    GlobalClassList.Vouchers.ForEach( v => {
+        var checkLists = v.CheckNumber.Split(',').Distinct();
+        var newCheckLists = new List<CheckModel>();
+        newCheckLists.Clear();
+        foreach(var check in checkLists)
+        {
+            newCheckLists.Add(GlobalClassList.listOfChecks.Where(x=>x.ControlNumber.Contains(check.ToString())).FirstOrDefault()?? new());
+        }
+        v.isChecksCancelled =  newCheckLists.All ( c => 
+            AccountingStatusEnumCategory(c.AccountingStatusId) == Enums.AccountingStatusEnumCategory.CC
+        );
+    });
     await Task.Delay(3);
     totalItems = GlobalClassList.Vouchers.Count();
 
@@ -434,6 +446,7 @@
         parameters.Add("dialogTitle", dialogTitle + " " + contentText);
         parameters.Add("contentText", contentText);
         parameters.Add("controlNumber", controlNumber);
+        parameters.Add("isVoid", actionMode == Enums.ActionMode.Void ? true : false);
         var options = new DialogOptions()
         {
             CloseButton = false,
@@ -463,7 +476,7 @@
     if(await PromptMessage(Enums.ActionMode.Void, voucher.ControlNumber))
     {
       voucher.AccountingStatusId = AccountingStatus(Enums.ActionMode.Void).Id;
-      voucher.Activity = "Update voucher status to generated (void)";
+      voucher.Activity = "Activity: Update voucher status to generated (void); Remarks: "+GlobalVariable.PromptRemarks;
       voucher.UserId = GlobalClass.currentUserAccount.EmployeeId;
       voucher.IsActive = true;
 
@@ -472,7 +485,7 @@
       voucher.StatusEnumCategoryId = AccountingStatus(Enums.ActionMode.Void).StatusEnumCategoryId;
             
       var updatedStatus = await voucherService.UpdateVoucherStatus(voucher, GlobalClass.token);
-      Extensions.ShowAlert("Voucher has been voided", Variant.Filled, snackbarService, Severity.Success);
+      Extensions.ShowAlert("Voucher successfully voided.", Variant.Filled, snackbarService, Severity.Success);
       if(GlobalVariable.AMSHubConnection != null)
         await GlobalVariable.AMSHubConnection.InvokeAsync("SaveVoucher", updatedStatus);
     }
@@ -503,24 +516,28 @@
   }
   private async Task CancelVoucher(VoucherModel voucher)
   {
-    if(await PromptMessage(Enums.ActionMode.Cancel, voucher.ControlNumber))
+    if(!voucher.IsFiled)
     {
-      voucher.AccountingStatusId = AccountingStatus(Enums.ActionMode.Cancel).Id;
-      voucher.Activity = "Update voucher status to cancelled";
-      voucher.UserId = GlobalClass.currentUserAccount.EmployeeId;
-      voucher.IsActive = true;
+      if(await PromptMessage(Enums.ActionMode.Cancel, voucher.ControlNumber))
+      {
+        voucher.AccountingStatusId = AccountingStatus(Enums.ActionMode.Cancel).Id;
+        voucher.Activity = "Update voucher status to cancelled";
+        voucher.UserId = GlobalClass.currentUserAccount.EmployeeId;
+        voucher.IsActive = true;
 
-      //Audit Trail
-      voucher.StatusName = AccountingStatus(Enums.ActionMode.Cancel).StatusName;
-      voucher.StatusEnumCategoryId = AccountingStatus(Enums.ActionMode.Cancel).StatusEnumCategoryId;
+        //Audit Trail
+        voucher.StatusName = AccountingStatus(Enums.ActionMode.Cancel).StatusName;
+        voucher.StatusEnumCategoryId = AccountingStatus(Enums.ActionMode.Cancel).StatusEnumCategoryId;
 
-      var updatedStatus = await voucherService.UpdateVoucherStatus(voucher, GlobalClass.token);
-      Extensions.ShowAlert("Voucher was cancelled", Variant.Filled, snackbarService, Severity.Success);
-      if(GlobalVariable.AMSHubConnection != null)
-        await GlobalVariable.AMSHubConnection.InvokeAsync("SaveVoucher", updatedStatus);
-    }
-    else
-      Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackbarService, Severity.Normal);
+        var updatedStatus = await voucherService.UpdateVoucherStatus(voucher, GlobalClass.token);
+        Extensions.ShowAlert("Voucher was cancelled", Variant.Filled, snackbarService, Severity.Success);
+        if(GlobalVariable.AMSHubConnection != null)
+          await GlobalVariable.AMSHubConnection.InvokeAsync("SaveVoucher", updatedStatus);
+      }
+      else
+        Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackbarService, Severity.Normal);
+    } else 
+      Extensions.ShowAlert("You are not allowed to cancel the voucher that was filed.", Variant.Filled, snackbarService, Severity.Error);
   }
   private bool ViewMenu(VoucherModel voucher)
   {
@@ -530,7 +547,6 @@
   }
   private bool ShowReport(bool isShow, VoucherModel voucher)
   {
-    Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(voucher,Newtonsoft.Json.Formatting.Indented));
     Task t = Task.WhenAll(LoadVoucherReport(voucher));
     if(t.Status == TaskStatus.RanToCompletion)
       return isShow = !isShow;
@@ -538,7 +554,7 @@
   }
   private async Task LoadVoucherReport(VoucherModel voucher)
   {
-    PDFContent = await voucherService.GenerateReport(voucher);
+    pdfContent = await voucherService.GenerateReport(voucher);
     StateHasChanged();
   }
   private void VoucherHubConnection()
@@ -644,5 +660,18 @@
             .Where( acctg => id == acctg.StatusEnumCategoryId)
             .Select( acctg => acctg.Id)
             .FirstOrDefault();
+    }
+    private Enums.AccountingStatusEnumCategory AccountingStatusEnumCategory(long acctgId)
+    {
+        return GlobalClassList.accountingStatusList.Where( acctg => acctgId == acctg.Id).Select( acctg => acctg.StatusEnumCategoryId).FirstOrDefault();
+    }
+
+    private async Task PreviewVoucher(VoucherModel model)
+    {
+      var parameters = new DialogParameters();
+      parameters.Add("DialogTitle","Voucher");
+      parameters.Add("VoucherModel", model);
+      var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.Medium, FullWidth = false, NoHeader = false, DisableBackdropClick = false };
+      var resultDialog = await dialogService.Show<Shared.Dialogs.PreviewInformationDialogs.PreviewVoucherDialog>("", parameters, options).Result;
     }
 }

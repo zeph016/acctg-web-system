@@ -1,4 +1,6 @@
 @use "../flexgridmods/flexgridmods.styles.css";
+@use "../animations/animation.styles.css";
+@use "../colors/colors.styles.css";
 
 .customdialog,
 .customdialog-table-only {
@@ -41,8 +43,21 @@
     padding: 8px !important;
   }
 }
-
-
+.main-dialog-content {
+  @extend .transition-05s-ease, .bgc-F3F5F7, .fade-in;
+  animation: fadein 1s 1;
+  border: solid thin lightgray;
+  border-radius: 5px;
+  box-shadow: var(--mud-elevation-1);
+  min-height: 0px;
+  padding: 6px 12px;
+  overflow: hidden;
+}
+.globalrfp-dialog-content {
+  @extend .transition-1s-ease, .bgc-F3F5F7;
+  padding-right: 32px;
+  overflow: hidden;
+}
 .pcview-dialog {
   .mud-dialog-title {
     background-color: #542D6F;
@@ -69,10 +84,11 @@
   &__crumb--suffix {
     font-weight: bold;
   }
-  &__grid {  
+  &__grid {
+    @extend .fade-in;
     display: grid;
-    grid-template-columns: 75px 1fr 1fr 1fr;
-    grid-template-rows: 35px 35px minmax(35px,auto) 35px minmax(70px,auto) minmax(70px,auto);
+    grid-template-columns: 50px 1fr 1fr 1fr;
+    grid-template-rows: auto;
     gap: 0px 0px;
     grid-auto-flow: row;
     grid-template-areas:
@@ -82,44 +98,29 @@
       "pcgrid-lblamt pcgrid-amt pcgrid-amt pcgrid-amt"
       "pcgrid-particulars pcgrid-particulars pcgrid-particulars pcgrid-signatories"
       "pcgrid-remarks pcgrid-remarks pcgrid-remarks pcgrid-signatories";
-      max-height: 1024px;
+    max-height: 1024px;
   }
-  
   .pcgrid-lblstatus { grid-area: pcgrid-lblstatus; }
-  
   .pcgrid-lbldate { grid-area: pcgrid-lbldate; }
-  
   .pcgrid-lblpayee { grid-area: pcgrid-lblpayee; }
   .pcgrid-lblamt { grid-area: pcgrid-lblamt; }
-  
   .pcgrid-status { grid-area: pcgrid-status; }
-  
   .pcgrid-date { grid-area: pcgrid-date; }
-  
   .pcgrid-payee { grid-area: pcgrid-payee; }
-  
   .pcgrid-amt { grid-area: pcgrid-amt; }
-  
-  .pcgrid-controls { 
-    grid-area: pcgrid-controls; 
+  .pcgrid-controls { grid-area: pcgrid-controls; }
+  .pcgrid-signatories {  grid-area: pcgrid-signatories; }
+  .pcgrid-particulars { grid-area: pcgrid-particulars; }
+  .pcgrid-remarks { grid-area: pcgrid-remarks; }
+
+  .pcgrid-controls {
     gap: 4px;
     justify-content: end;
   }
-  
-  .pcgrid-signatories { 
-    @extend .dflex-col;
-    border: solid thin lightgray;
-    border-radius: 5px;
-    grid-area: pcgrid-signatories; 
-    gap: 4px;
-    justify-content: center;
-    padding: 8px;
-    margin: 4px 4px 0px 4px;
+
+  .pcgrid-signatories {
+    @extend .dflex-col, .signatories-container;
   }
-  
-  .pcgrid-particulars { grid-area: pcgrid-particulars; }
-  
-  .pcgrid-remarks { grid-area: pcgrid-remarks; }
   
   .pcgrid-lblstatus, .pcgrid-lbldate, .pcgrid-lblpayee,
   .pcgrid-lblamt, .pcgrid-status, .pcgrid-date, .pcgrid-payee,
@@ -133,7 +134,7 @@
 
   .pcgrid-particulars, .pcgrid-remarks {
     border-bottom: dotted thin black;
-    padding: 8px;
+    padding: 5px;
   }
   &__label {
     font-size: 10px;
@@ -148,9 +149,425 @@
   &__txt--content-title {
     @extend .pcview-dialog__txt;
     font-family: "R-Flex Bold";
-    font-size: 14px;
+    font-size: 12px;
+    text-transform: uppercase;
   }
   &__btn-circular {
     border-radius: 24px !important;
   }
+}
+
+.liqview-dialog {
+  .mud-dialog-title {
+    background-color: #542D6F;
+  }
+  &__grid {
+    @extend .fade-in;
+    display: grid; 
+    grid-template-columns: 60px 1fr 1fr 1fr; 
+    grid-template-rows: auto; 
+    gap: 0px 0px; 
+    grid-template-areas: 
+      "liqgrid-lblstatus liqgrid-status liqgrid-status liqgrid-controls"
+      "liqgrid-lbldate liqgrid-date liqgrid-date liqgrid-date"
+      "liqgrid-lblperiod liqgrid-period liqgrid-period liqgrid-period"
+      "liqgrid-lblamt liqgrid-totalamt liqgrid-totalamt liqgrid-totalamt"
+      "liqgrid-lblremarks liqgrid-remarks liqgrid-remarks liqgrid-remarks"
+      "liqgrid-details liqgrid-details liqgrid-details liqgrid-signatories"; 
+
+    .liqgrid-lblstatus { grid-area: liqgrid-lblstatus; }
+    .liqgrid-lbldate { grid-area: liqgrid-lbldate; }
+    .liqgrid-lblperiod { grid-area: liqgrid-lblperiod; }
+    .liqgrid-lblamt { grid-area: liqgrid-lblamt; }
+    .liqgrid-lblremarks { grid-area: liqgrid-lblremarks; }
+    .liqgrid-status { grid-area: liqgrid-status; }
+    .liqgrid-controls { grid-area: liqgrid-controls; }
+    .liqgrid-date { grid-area: liqgrid-date; }
+    .liqgrid-period { grid-area: liqgrid-period; }
+    .liqgrid-totalamt { grid-area: liqgrid-totalamt; }
+    .liqgrid-remarks { grid-area: liqgrid-remarks; }
+    .liqgrid-details { grid-area: liqgrid-details; }
+    .liqgrid-signatories { grid-area: liqgrid-signatories; }
+
+    .liqgrid-lblstatus, .liqgrid-lbldate, .liqgrid-lblperiod,
+    .liqgrid-lblremarks, .liqgrid-status, .liqgrid-controls,
+    .liqgrid-date, .liqgrid-date, .liqgrid-lblamt, .liqgrid-totalamt,
+    .liqgrid-period, .liqgrid-controls {
+      @extend .dflex-row;
+    }
+    .liqgrid-signatories {
+      @extend .signatories-container;
+    }
+
+    .liqgrid-status, .liqgrid-date, .liqgrid-date, 
+    .liqgrid-period, .liqgrid-period, .liqgrid-totalamt,
+    .liqgrid-remarks {
+      border-bottom: solid thin lightgray
+    }
+
+    .liqgrid-details {
+      @extend .dflex, .flex-full;
+      &__pc-ctrlno--cont {
+        @extend .dflex-col;
+        width: 100%;
+      }
+      &__label-cont {
+        @extend .dflex-row;
+        color: black;
+        gap: 4px;
+        margin: 8px 0px;
+      }
+      &__pc-chips-cont {
+        @extend .dblock-inline, .flex-full;
+        border-bottom: dotted thin black;
+        max-height: 170px;
+        overflow: auto;
+      }
+    }
+  }
+  .liqgrid-signatories { 
+    @extend .dflex-col, .signatories-container;
+  }
+  &__title {
+    @extend .pcview-dialog__title;
+  }
+  &__label {
+    @extend .pcview-dialog__label;
+  }
+  &__txt {
+    @extend .pcview-dialog__txt;
+  }
+  &__txt--content-title {
+    @extend .pcview-dialog__txt--content-title;
+  }
+}
+
+.rfpview-dialog {
+  .mud-dialog-title {
+    background-color: #542D6F;
+  }
+  &__grid {
+    display: grid; 
+    grid-template-columns: 70px 1fr 1fr 80px 1fr 100px; 
+    grid-template-rows: auto; 
+    gap: 0px 0px; 
+    grid-template-areas: 
+      "rfpgrid-lblstatus rfpgrid-status rfpgrid-status rfpgrid-status rfpgrid-controls rfpgrid-controls"
+      "rfpgrid-lbldatereq rfpgrid-datreq rfpgrid-datreq rfpgrid-lbldateneed rfpgrid-dateneed rfpgrid-dateneed"
+      "rfpgrid-lbldateperiod rfpgrid-dateperiod rfpgrid-dateperiod rfpgrid-lblbillreq rfpgrid-billreq rfpgrid-billreq"
+      "rfpgrid-lblpayee rfpgrid-payee rfpgrid-payee rfpgrid-payee rfpgrid-payee rfpgrid-payee"
+      "rfpgrid-details rfpgrid-details rfpgrid-details rfpgrid-details rfpgrid-signatories rfpgrid-signatories"
+      "rfpgrid-details rfpgrid-details rfpgrid-details rfpgrid-details rfpgrid-signatories rfpgrid-signatories"; 
+    max-width: 650px;
+    
+    .rfpgrid-lblstatus { grid-area: rfpgrid-lblstatus; }
+    .rfpgrid-lbldatereq { grid-area: rfpgrid-lbldatereq; }
+    .rfpgrid-lbldateneed { grid-area: rfpgrid-lbldateneed; }
+    .rfpgrid-lbldateperiod { grid-area: rfpgrid-lbldateperiod; }
+    .rfpgrid-lblbillreq { grid-area: rfpgrid-lblbillreq; }
+    .rfpgrid-lblpayee { grid-area: rfpgrid-lblpayee; }
+    .rfpgrid-status { grid-area: rfpgrid-status; }
+    .rfpgrid-datreq { grid-area: rfpgrid-datreq; }
+    .rfpgrid-controls { grid-area: rfpgrid-controls; }
+    .rfpgrid-dateneed { grid-area: rfpgrid-dateneed; }
+    .rfpgrid-payee { grid-area: rfpgrid-payee; }
+    .rfpgrid-details { grid-area: rfpgrid-details; }
+    .rfpgrid-signatories { grid-area: rfpgrid-signatories; }
+    .rfpgrid-dateperiod { grid-area: rfpgrid-dateperiod; }
+    .rfpgrid-billreq { grid-area: rfpgrid-billreq; }
+
+    .rfpgrid-lblstatus, .rfpgrid-lbldatereq, .rfpgrid-lbldateneed, .rfpgrid-lbldateperiod,
+    .rfpgrid-lblpayee, .rfpgrid-lblbillreq, .rfpgrid-controls {
+      @extend .dflex-row;
+    }
+
+    .rfpgrid-status, .rfpgrid-datreq, .rfpgrid-dateneed, .rfpgrid-dateperiod,
+    .rfpgrid-billreq, .rfpgrid-payee {
+      border-bottom: solid thin lightgray;
+    }
+    .rfpgrid-details {
+      @extend .dflex-col;
+      border: solid thin lightgray;
+      border-radius: 5px;
+      margin: 4px 4px 0px 4px;
+      &__grid {
+        display: grid; 
+        grid-template-columns: 1fr 1fr 1fr 1fr; 
+        grid-template-rows: 25px 1fr 1fr 30px; 
+        gap: 0px 0px; 
+        grid-template-areas: 
+          "rfpdg-proj rfpdg-div rfpdg-exp rfpdg-amt"
+          "rfpdg-body rfpdg-body rfpdg-body rfpdg-body"
+          "rfpdg-body rfpdg-body rfpdg-body rfpdg-body"
+          "rfpdg-footer rfpdg-footer rfpdg-footer rfpdg-footer";
+        
+        .rfpdg-proj { grid-area: rfpdg-proj; }
+        .rfpdg-div { grid-area: rfpdg-div; }
+        .rfpdg-exp { grid-area: rfpdg-exp; }
+        .rfpdg-amt { grid-area: rfpdg-amt; }
+        .rfpdg-body { grid-area: rfpdg-body; }
+        .rfpdg-footer { grid-area: rfpdg-footer; }
+
+        .rfpdg-body {
+          &__items-cont {
+            height: 310px;
+            overflow: auto;
+            padding: 4px;
+          }
+          &__item-row {
+            @extend .dflex-row;
+            text-align: center;
+            justify-content: center;
+          }
+        }
+        .rfpdg-proj, .rfpdg-div, .rfpdg-exp, .rfpdg-amt {
+          @extend .dflex-row;
+          justify-content: center;
+          border-bottom: solid thin lightgray;
+          text-align: center;
+        }
+
+        .rfpdg-footer { 
+          @extend .dflex-row;
+          border-top: solid thin lightgray;
+         }
+      }
+      &__item-tbltxt {
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    .rfpgrid-signatories {
+      @extend .dflex-col, .signatories-container
+    }
+
+  }
+  &__title {
+    @extend .pcview-dialog__title;
+  }
+  &__label {
+    @extend .pcview-dialog__label;
+  }
+  &__txt {
+    @extend .pcview-dialog__txt;
+  }
+  &__txt--content-title {
+    @extend .pcview-dialog__txt--content-title;
+  }
+  &__total-amount--cont {
+    @extend .dflex-row;
+    border-top: solid thin lightgrey;
+  }
+}
+
+.vouchview-dialog {
+  .mud-dialog-title {
+    background-color: #542D6F;
+  }
+  &__grid {
+    display: grid; 
+    grid-template-columns: 75px 1fr 1fr 50px 100px 1fr; 
+    grid-template-rows: minmax(33px, auto); 
+    gap: 0px 0px; 
+    grid-template-areas: 
+      "vvgrid-lblstatus vvgrid-status vvgrid-status vvgrid-status vvgrid-controls vvgrid-controls"
+      "vvgrid-lbldate vvgrid-date vvgrid-date vvgrid-lblperiod vvgrid-period vvgrid-period"
+      "vvgrid-lblrfp vvgrid-rfp vvgrid-rfp vvgrid-rfp vvgrid-rfp vvgrid-rfp"
+      "vvgrid-lbldesc vvgrid-desc vvgrid-desc vvgrid-desc vvgrid-desc vvgrid-desc"
+      "vvgrid-lblrem vvgrid-rem vvgrid-rem vvgrid-rem vvgrid-rem vvgrid-rem"
+      "vvgrid-details vvgrid-details vvgrid-details vvgrid-details vvgrid-signatories vvgrid-signatories"; 
+      
+    .vvgrid-lblstatus { grid-area: vvgrid-lblstatus; }
+    .vvgrid-lbldate { grid-area: vvgrid-lbldate; }
+    .vvgrid-lblrfp { grid-area: vvgrid-lblrfp; }
+    .vvgrid-lbldesc { grid-area: vvgrid-lbldesc; }
+    .vvgrid-lblrem { grid-area: vvgrid-lblrem; }
+    .vvgrid-lblperiod { grid-area: vvgrid-lblperiod; }
+    .vvgrid-status { grid-area: vvgrid-status; }
+    .vvgrid-date { grid-area: vvgrid-date; }
+    .vvgrid-controls { grid-area: vvgrid-controls; }
+    .vvgrid-period { grid-area: vvgrid-period; }
+    .vvgrid-rfp { grid-area: vvgrid-rfp; }
+    .vvgrid-desc { grid-area: vvgrid-desc; }
+    .vvgrid-rem { grid-area: vvgrid-rem; }
+    .vvgrid-details { grid-area: vvgrid-details; }
+    .vvgrid-signatories { grid-area: vvgrid-signatories; }
+
+    width: 700px;
+  
+    .vvgrid-lblstatus, .vvgrid-lbldate, .vvgrid-lblrfp, .vvgrid-lbldesc,
+    .vvgrid-lblperiod, .vvgrid-lblrem, .vvgrid-controls, .vvgrid-status,
+    .vvgrid-date, .vvgrid-period, .vvgrid-desc, .vvgrid-rfp, .vvgrid-rem {
+      @extend .dflex-row;
+    }
+    .vvgrid-status, .vvgrid-date, .vvgrid-period, .vvgrid-rfp, .vvgrid-desc,
+    .vvgrid-rem {
+      border-bottom: solid thin lightgray;
+    }
+
+    .vvgrid-signatories {
+      @extend .dflex-col, .signatories-container;
+    }
+
+    .vvgrid-details {
+      &__grid {
+        border: solid thin lightgray;
+        border-radius: 5px;
+        display: grid; 
+        grid-template-columns: 1fr 1fr 1fr 1fr; 
+        grid-template-rows: 25px 1fr 1fr 30px; 
+        gap: 0px; 
+        grid-template-areas: 
+          "vvdet-header vvdet-header vvdet-header vvdet-header"
+          "vvdet-body vvdet-body vvdet-body vvdet-body"
+          "vvdet-body vvdet-body vvdet-body vvdet-body"
+          "vvdet-footer vvdet-footer vvdet-footer vvdet-footer"; 
+        height: 300px;
+        margin: 4px 0px 0px 0px;
+
+        .vvdet-header { grid-area: vvdet-header; }
+        .vvdet-body { grid-area: vvdet-body; }
+        .vvdet-footer { grid-area: vvdet-footer; }
+
+        .vvdet-header {
+          border-bottom: solid thin lightgray;
+        }
+        .vvdet-header {
+          &__item-row {
+            @extend .dflex-row;
+            align-items: baseline;
+            text-align: center;
+            justify-content: center;
+          }
+        }
+        .vvdet-body {
+          overflow: auto;
+          padding: 0px 8px;
+          &__item-row, &__item-row--right, &__item-row--center {
+            @extend .dflex-row;
+            align-items: center;
+          }
+          &__item-row--right { justify-content: right; }
+          &__item-row--center { justify-content: center; }
+        }
+        .vvdet-footer {
+          @extend .dflex-row;
+          align-items: center;
+          border-top: solid thin lightgray;
+        }
+      }
+      &__item-tbltxt {
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+  &__label {
+    @extend .pcview-dialog__label;
+  }
+  &__title {
+    @extend .pcview-dialog__title;
+  }
+  &__txt {
+    @extend .pcview-dialog__txt;
+  }
+  &__txt--content-title {
+    @extend .pcview-dialog__txt--content-title;
+  }
+ 
+}
+
+.vroutedialog {
+  border: solid thin lightgray;
+  padding: 4px 8px;
+  max-height: 320px;
+  &__grid {
+    display: grid;
+    grid-template-columns: 40px 1fr 1fr 120px;
+    grid-template-rows: auto;
+    gap: 8px;
+    grid-auto-flow: row;
+    grid-template-areas:
+      "vroutedialog-lbldate vroutedialog-lbldate vroutedialog-date vroutedialog-controlnumbers"
+      "vroutedialog-location vroutedialog-location vroutedialog-location vroutedialog-controlnumbers"
+      "vroutedialog-reason vroutedialog-reason vroutedialog-reason vroutedialog-controlnumbers"
+      "vroutedialog-remarks vroutedialog-remarks vroutedialog-remarks vroutedialog-controlnumbers";
+    width: 500px;
+    padding: 4px 8px;
+
+    .vroutedialog-lbldate { grid-area: vroutedialog-lbldate; }
+    .vroutedialog-date { grid-area: vroutedialog-date; }
+    .vroutedialog-location { grid-area: vroutedialog-location; }
+    .vroutedialog-reason { grid-area: vroutedialog-reason; }
+    .vroutedialog-remarks { grid-area: vroutedialog-remarks; }
+    .vroutedialog-controlnumbers { grid-area: vroutedialog-controlnumbers; }
+
+    .vroutedialog-lbldate, .vroutedialog-lbldate {
+      @extend .dflex-row;
+    }
+    .vroutedialog-date {
+      border-bottom: solid thin lightgray;
+    }
+    .vroutedialog-controlnumbers {
+      border: solid thin lightgray;
+      border-radius: 5px;
+      &__grid {
+        display: grid; 
+        grid-template-columns: 1fr 1fr 1fr; 
+        grid-template-rows: 25px auto 25px; 
+        gap: 0px 0px; 
+        grid-template-areas: 
+          "vroutediasub-title vroutediasub-title vroutediasub-title"
+          "vroutediasub-content vroutediasub-content vroutediasub-content"
+          "vroutediasub-footer vroutediasub-footer vroutediasub-footer"; 
+        height: 100%;
+        
+        .vroutediasub-title { grid-area: vroutediasub-title; }
+        .vroutediasub-content { grid-area: vroutediasub-content; }
+        .vroutediasub-footer { grid-area: vroutediasub-footer; }
+
+        .vroutediasub-title, .vroutediasub-footer {
+          @extend .dflex-row;
+          background-color: lightyellow;
+          padding: 2px 4px;
+          font-weight: bold;
+          justify-content: center;
+        }
+        .vroutediasub-content { 
+          max-height: 250px;
+          overflow: auto;
+          padding: 4px;
+          text-align: center;
+        }
+        .vroutediasub-title { 
+          border-radius: 5px 5px 0px 0px;
+          border-bottom: solid thin lightgray; 
+        }
+        .vroutediasub-footer { 
+          border-radius: 0px 0px 5px 5px;
+          border-top: solid thin lightgray; 
+        }
+      }
+    }
+  }
+  &__lbl {
+    @extend .pcview-dialog__label;
+  }
+  &__txt {
+    @extend .pcview-dialog__txt;
+  }
+}
+
+.signatories-container {
+  border: solid thin lightgray;
+  border-radius: 5px;
+  gap: 4px;
+  justify-content: center;
+  padding: 0px 8px 8px 8px;
+  margin: 4px 4px 0px 4px;
 }

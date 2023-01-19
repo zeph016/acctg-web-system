@@ -39,8 +39,7 @@
                 </MudMenu>
             </ToolBarContent>
             <ColGroup>
-                <col style="width:20px" />
-                <col style="width:20px" />
+                <col style="width:1%" />
                 <col />
                 <col />
                 <col />
@@ -48,28 +47,63 @@
                 <col style="width:20px" />
             </ColGroup>
             <HeaderContent>
-                <MudTh Class='customheader-6'>Control No.</MudTh>
-                <MudTh Class='customheader-6'>Date</MudTh>
-                <MudTh Class='customheader-6'>Project</MudTh>
-                <MudTh Class='customheader-6'>Contractor</MudTh>
-                <MudTh Class='customheader-6'>Description</MudTh>
-                <MudTh Class='customheader-6'>Remarks</MudTh>
-                <MudTh Class='customheader-6 text-right'>Amount</MudTh>
+                <MudTh Class='customheader-6'>
+                    <div class='d-flex align-center justify-space-around gap-2'>
+                        <MudTableSortLabel SortLabel='SortControlNumber' T='VoucherDetailModel' 
+                            InitialDirection="SortDirection.Descending">
+                            Control No.
+                        </MudTableSortLabel>
+                        <MudTableSortLabel SortLabel='SortDate' T='VoucherDetailModel'
+                            InitialDirection='SortDirection.None'>
+                            Date
+                        </MudTableSortLabel>
+                    </div>
+                </MudTh>
+                <MudTh Class='customheader-6'>
+                    <MudTableSortLabel SortLabel='SortProjectName' T='VoucherDetailModel'
+                        InitialDirection='SortDirection.None'>
+                        Project
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh Class='customheader-6'>
+                    <MudTableSortLabel SortLabel='SortContractor' T='VoucherDetailModel'
+                        InitialDirection='SortDirection.None'>
+                        Contractor
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh Class='customheader-6'>
+                    <MudTableSortLabel SortLabel='SortDescription' T='VoucherDetailModel'
+                        InitialDirection='SortDirection.None'>
+                        Description
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh Class='customheader-6'>
+                    <MudTableSortLabel SortLabel='SortRemarks' T='VoucherDetailModel'
+                        InitialDirection='SortDirection.None'>
+                        Remarks
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh Class='customheader-6 text-right'>
+                    <MudTableSortLabel SortLabel='SortAmount' T='VoucherDetailModel'
+                        InitialDirection='SortDirection.None'>
+                        Amount
+                    </MudTableSortLabel>
+                </MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd Class='text-center' DataLabel="Division Name">
-                    <MudTooltip Text='@($"See {context.ControlNumber}")' Arrow Placement='Placement.Top'>
-                        <MudButton Class='btn-tbl-link' StartIcon='@Icons.Material.Filled.Link'
-                            Href='@FindReference(context.ControlNumber)' Target='_blank'
-                            Variant='Variant.Outlined' Color='Color.Error' Size='Size.Small' DisableElevation>
-                                @context.ControlNumber
-                        </MudButton>
-                    </MudTooltip>
-                </MudTd>
-                <MudTd Class='text-center' DataLabel="Short Name">
-                    <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Text' Icon='@Icons.Material.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
-                        @context.VoucherDate.ToShortDateString()
-                    </MudChip>
+                    <div class='d-flex align-center'>
+                        <MudTooltip Text='@($"See {context.ControlNumber}")' Arrow Placement='Placement.Top'>
+                            <MudButton Class='btn-tbl-link' StartIcon='@Icons.Material.Filled.Link'
+                                Href='@FindReference(context.ControlNumber)' Target='_blank'
+                                Variant='Variant.Outlined' Color='Color.Error' Size='Size.Small' DisableElevation>
+                                    @context.ControlNumber
+                            </MudButton>
+                        </MudTooltip>
+                        <MudChip Class='chip-radius-5 font-bold font10' Variant='Variant.Text' Icon='@Icons.Material.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small'>
+                            @context.VoucherDate.ToShortDateString()
+                        </MudChip>
+                    </div>
                 </MudTd>
                 <MudTd DataLabel="Project Name">
                     <div class='dynamic-div-1'>
@@ -243,6 +277,30 @@
         filterParameter.BankId = "1";
         filterParameter.ExpenseId = 1;
         IEnumerable<VoucherDetailModel> data = await voucherService.GetProjectSubledgers(filterParameter,GlobalClass.token);
+        switch(tableState.SortLabel)
+        {
+            case "SortControlNumber":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.ControlNumber);
+                break;
+            case "SortDate":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.VoucherDate);
+                break;
+            case "SortProjectName":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.ProjectName);
+                break;
+            case "SortContractor":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.SubLedgerName);
+                break;
+            case "SortDescription":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.Description);
+                break;
+            case "SortRemarks":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.Remarks);
+                break;
+            case "SortAmount":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.Amount);
+                break;
+        }
         ListOfSubLedgers = data.ToList();
         pageData = data.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
         var total = data.Count();

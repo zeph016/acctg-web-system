@@ -1,0 +1,57 @@
+<MudAutocomplete Class='h-w-sow' T='SubContractorProjectModel' Variant="Variant.Outlined" Margin='Margin.Dense'
+        Value='ScopeOfWork' 
+        ValueChanged='( (SubContractorProjectModel sop)=> OnChanged(sop) )'
+        SearchFunc="@( (String search) => LoadSubConProjectsSOW(search,ListOfSubcontractorProject) )"
+        ToStringFunc='@(result => result == null? null : IsLabor ? result.SubContractorName : result.ScopeOfWork)'
+        ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info" AdornmentIcon='null' IconSize='0'>
+<ItemTemplate Context="sow">                            
+    <MudText>
+        <MudTooltip Class='wspace-breakword'>
+            @* Drop down *@
+            @if(IsLabor)
+            {
+                <small>@(sow.SubContractorName+" | "+@sow.ScopeOfWork)</small>
+            } else {
+                <small>@sow.ScopeOfWork</small>
+            }
+        </MudTooltip>
+    </MudText>
+</ItemTemplate>
+<ItemSelectedTemplate Context="sow">                
+    <MudText>
+        @if(IsLabor)
+        {
+            <small>@(sow.SubContractorName+" | "+@sow.ScopeOfWork)</small>
+        } else {
+            <small>@sow.ScopeOfWork</small>
+        }
+    </MudText>
+</ItemSelectedTemplate>
+</MudAutocomplete>
+
+@code
+{
+    [Parameter] public EventCallback<SubContractorProjectModel> OnSOWValueChanged { get; set; }
+    [Parameter] public SubContractorProjectModel ScopeOfWork { get; set; } = new();
+    [Parameter] public List<SubContractorProjectModel> ListOfSubcontractorProject { get; set; } = new();
+    [Parameter] public bool IsLabor { get; set; }
+    private void OnChanged(SubContractorProjectModel sop)
+    {
+        OnSOWValueChanged.InvokeAsync(sop); 
+    }
+    private async Task<IEnumerable<SubContractorProjectModel>> LoadSubConProjectsSOW(string searchSOW, List<SubContractorProjectModel> sowContext)
+    {
+        return await Task.Run(()=> sowContext.Where( x => 
+        x.SubContractorName.Contains(searchSOW, StringComparison.InvariantCultureIgnoreCase) ||
+        x.ScopeOfWork.Contains(searchSOW, StringComparison.InvariantCultureIgnoreCase)));
+    }
+}
+<style>
+    .h-w-sow
+    {
+        height: 20px;
+        width:120px;
+        min-height: 10px !important;
+        max-width: 120px !important;
+    }
+</style>

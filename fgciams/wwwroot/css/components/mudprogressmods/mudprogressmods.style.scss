@@ -1,4 +1,14 @@
+@use "../flexgridmods/flexgridmods.styles.css";
+
 .progsize-21 {
   height: 21px !important;
   width: 21px !important;
+}
+
+.circular-progress-cont {
+  @extend .dflex-col;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+  min-width: 500px;
 }

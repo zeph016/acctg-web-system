@@ -1,24 +1,38 @@
-
-
- <MudButton Class='btn-ios-d font12' OnClick='(()=> CloseDialog())' Variant='Variant.Filled' 
-    DisableElevation Size='Size.Small'
-    Color='@(itemCount > 0 ? Color.Success:Color.Default)'>
+<div class='d-flex align-center gap-2'>
     @if(itemCount > 0)
     {
-        <small>Add</small>
-    } 
-    else
-    {
-        <small>Close</small>
+        <MudButton Class='btn-ios-d font12' OnClick='(()=> ClearSelection())' Variant='Variant.Text' 
+            DisableElevation Size='Size.Small'
+            Color='Color.Error'>
+                <small>Clear Selection (@itemCount)</small>
+        </MudButton>
     }
-</MudButton>
+    @if(!Processing)
+    {
+        <MudButton Class='btn-ios-d font12' OnClick='(()=> CloseDialog())' Variant='Variant.Filled' 
+            DisableElevation Size='Size.Small'
+            Color='@(itemCount> 0 ? Color.Success:Color.Default)'>
+                <small>Return</small>
+        </MudButton>
+    } 
+    else 
+    {
+        <MudButton Class='width100px font12' Variant='Variant.Filled' Color='Color.Success' Size='Size.Small' Disabled=Processing DisableElevation>
+             <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+            <MudText Class='font11 ms-2'>Loading...</MudText>
+        </MudButton>
+    }
+</div>
 
 @code {
     [Parameter] public EventCallback CloseDialogClick { get; set; }
+    [Parameter] public EventCallback ClearSelectionClick { get; set; }
     [Parameter] public long itemCount { get; set; }
-
-    protected async Task CloseDialog()
+    [Parameter] public bool Processing { get; set; }
+    protected async Task CloseDialog() => await CloseDialogClick.InvokeAsync();
+    
+    protected async Task ClearSelection()
     {
-        await CloseDialogClick.InvokeAsync();
+        await ClearSelectionClick.InvokeAsync();
     }
 }

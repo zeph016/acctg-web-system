@@ -114,7 +114,10 @@
     {
         ResetValidation();
         if(String.IsNullOrEmpty(GlobalClass.modeOfPayment.ModeName))
+        {
             notValidModeName = true;
+            return false;
+        }
         if(notValidModeName) {
             GlobalVariable.errorPromptText = " incomplete field/s."; return false; }
         if(GlobalClassList.modeOfPaymentList.Any(x=>x.ModeName == GlobalClass.modeOfPayment.ModeName && x.Id != GlobalClass.modeOfPayment.Id)) {

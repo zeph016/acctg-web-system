@@ -1,0 +1,41 @@
+<div class='tblpager'>
+    <div class="tblpager__grid">
+        <div class="tblpager-lblsel">
+            <p class='tblpager__lbl'>Selected:</p>
+        </div>
+        <div class="tblpager-sel">
+            @if(LookUpType == Enums.LookUpType.PettyCash)
+            {
+                <TablePagerSelectedValues SelectedForLiquidation='SelectedForLiquidation' LookUpType='LookUpType' />
+            }
+            @if(LookUpType == Enums.LookUpType.Liquidation || LookUpType == Enums.LookUpType.POBilling 
+                || LookUpType == Enums.LookUpType.PO)
+            {
+                <TablePagerSelectedValues SelectedForRFP='SelectedForRFP' LookUpType='LookUpType'/>
+            }
+            @if(LookUpType == Enums.LookUpType.RFPVoucher)
+            {
+                <TablePagerSelectedValues SelectedRFP='SelectedRFP' LookUpType='LookUpType'/>
+            }
+            @if(LookUpType == Enums.LookUpType.Voucher)
+            {
+                <TablePagerSelectedValues SelectedCheckVoucher='SelectedCheckVoucher' LookUpType='LookUpType' />
+            }
+        </div>
+        <div class="tblpager-lblamt">
+            <p class='tblpager__lbl'>Total Amount:</p>
+        </div>
+        <div class="tblpager-totalamt">
+            <TablePagerAmountsGRFP totalAmounts='TotalAmounts'/>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public decimal TotalAmounts { get; set; } = 0;
+    [Parameter] public Enums.LookUpType LookUpType { get; set; }
+    [Parameter] public List<LiquidationDetailModel> SelectedForLiquidation { get; set; } = new List<LiquidationDetailModel>();
+    [Parameter] public List<RequestForPaymentDetailModel> SelectedForRFP { get; set; } =  new List<RequestForPaymentDetailModel>();
+    [Parameter] public List<VoucherRFPModel> SelectedRFP { get; set; } = new List<VoucherRFPModel>();    
+    [Parameter] public List<CheckVoucherModel> SelectedCheckVoucher { get; set; } = new List<CheckVoucherModel>();
+}

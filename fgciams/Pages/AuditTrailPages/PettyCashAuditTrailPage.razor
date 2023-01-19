@@ -3,216 +3,95 @@
 @inject NavigationManager NavigationManager
 @inject IPettyCashService PettyCashService
 @inject IGlobalService GlobalService
+@inject IJSRuntime JSRuntime
 
 <div class='page-cont'>
-    <MudContainer Class='overflow-hidden pa-2' Fixed='false' MaxWidth='MaxWidth.Large'>
-        @if (!dataFetched)
-        {
-            <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
-                <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='calc(100vh - 135px)' Animation='Animation.Wave' />
-            </MudPaper>
-        }
-        else
-        {
-            <MudContainer Class='atrail-pc' Fixed='false' MaxWidth='MaxWidth.Large'>
-                <div class="atrail-pc__container">
-                    <div class="audit-trail-info">
-                        <MudPaper>
-                            1
-                        </MudPaper>
-                    </div>
-                    <div class="audit-trail-signatories">
-                        <MudPaper>
-                            2
-                        </MudPaper>
-                    </div>
-                    <div class="audit-trail-table">
-                        <MudPaper>
-                            3
-                        </MudPaper>
-                    </div>
-                </div>
-            </MudContainer>
-            <div>
-                <MudGrid Spacing='1'>
-                    <MudItem xs=9>
-                        <MudPaper Class='overflow-hidden' Height='calc(100vh - 105px)'>
-                            <div class='d-flex align-center pa-2 gap-2 bgc-F4F5FB'>
-                                <MudIcon Icon="@Icons.Material.Filled.Timeline" Size='Size.Small' />
-                                <MudText Class='wspace-nowrap font-bold txt-uppercase' Typo="Typo.body2">Audit Trail</MudText>
-                                <hr class='horizline2'>
+    <div class='bgc-white'>
+        <MudContainer Class='overflow-hidden pa-2' Fixed='false' MaxWidth='MaxWidth.ExtraLarge'>
+            @if (!dataFetched)
+            {
+                <SkeletonPageList />
+            }
+            else
+            {
+                <MudContainer Fixed='false' MaxWidth='MaxWidth.Large'>
+                    <MudPaper Elevation='0'>
+                        <div class="audit-trail-grid">
+                            <div id='atrail-contentid-pc' class="audit-trail-content">
+                                <AuditLogTimeline IsPettyCash='true' PettyCashAuditTrail='@GlobalClassList.PettyCashAuditTrail'
+                                    ModuleName='pettyCash'/>
                             </div>
-                            <MudDivider />
-                            <div class='rounded-br rounded-bl overflow-auto pa-2 mx-2' style='height:calc(100vh - 150px)'>
-                                <AuditTrailTimeLine auditMode=@Enums.AuditTrailMode.PettyCashTrail pCashAuditTrails=@GlobalClassList.currrentAuditTrail />
+                            <div class="audit-trail-sidebar">
+                                <MudPaper>
+                                    <AuditLogInfo IsPettyCash='true' PettyCash='@currPettyCash' DataFetched='@dataFetched'
+                                        ReturnEventClick='BackToPettyCashList'/>
+                                </MudPaper>
+                                @if(scrollBarExists)
+                                {
+                                    <div class='atrail-scrollbtn-cont'>
+                                        <MudButton Class='@(!isToBottom ? "btn-ios-d font12":"btn-ios-d font12 mudbtn-rotate-180")' OnClick='(() => ScrollJS(isToBottom = !isToBottom, "atrail-contentid-pc"))'
+                                            StartIcon='@Icons.Material.Filled.ArrowDownward' Size='Size.Small' Variant='Variant.Filled' Color='Color.Secondary'
+                                            Style='@(!isToBottom ? "max-width: 150px;":"")' Disabled='!scrollBarExists'>
+                                            @ScrollButtonStr
+                                        </MudButton>
+                                    </div>
+                                }
                             </div>
-                        </MudPaper>
-                    </MudItem>
-                    <MudItem Class='d-flex flex-column gap-2' xs=3>
-                        <MudPaper Class='overflow-hidden'>
-                            <div class='d-flex align-center pa-2 gap-2 bgc-F4F5FB'>
-                                <MudIcon Icon="@Icons.Material.Filled.CommentBank" Size="Size.Small" />
-                                <MudText Class='wspace-nowrap font-bold txt-uppercase' Typo="Typo.body2">Petty Cash Details</MudText>
-                                <hr class='horizline2'>
-                            </div>
-                            <MudDivider />
-                            <MudGrid Class='mt-2' Spacing='1'>
-                                <MudItem Class='px-4' xs=6>
-                                    <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>Control Number:</MudText>
-                                    <MudText Class='txt-uppercase wspace-nowrap font-bold font14 pa-1' Color='Color.Error'>@GlobalClass.pettyCash.ControlNumber</MudText>
-                                </MudItem>
-                                <MudItem Class='px-4 gap-2' xs=6>
-                                    <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>Requested Date:</MudText>
-                                    <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Icon='@Icons.Material.Filled.CalendarMonth' Color='Color.Default' Size='Size.Small'>
-                                        @GlobalClass.pettyCash.RequestDate.GetValueOrDefault().ToShortDateString()
-                                    </MudChip>
-                                </MudItem>
-                                <MudItem xs=12>
-                                    <MudDivider />
-                                    <div class='px-2'>
-                                        <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>Payee:</MudText>
-                                        <div class='d-flex align-center pa-1 gap-2'>
-                                            <MudIcon Icon='@Icons.Material.Filled.Person' Size='Size.Small' />
-                                            <MudText Class='txt-uppercase font12'> @GlobalClass.pettyCash.PayeeName</MudText>
-                                        </div>
-                                    </div>
-                                </MudItem>
-                                <MudItem xs=12>
-                                    <MudDivider />
-                                    <div class='d-flex align-center px-2'>
-                                        <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>Amount:</MudText>
-                                        <MudSpacer />
-                                        <MudChip Class='rounded' Color='Color.Default' Size='Size.Small'>
-                                        @if (@GlobalClass.pettyCash.Amount > 0 )
-                                        {
-                                        
-                                            <MudText Class='font-bold color-green font12'>
-                                                @(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + @GlobalClass.pettyCash.Amount.ToString("N2"))
-                                            </MudText>
-                                        
-                                        }
-                                        else
-                                        {
-                                            <MudText Class='pl-2 txt-uppercase wspace-nowrap font-bold font12 gap-2' Color='Color.Error'> 
-                                                @(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + @GlobalClass.pettyCash.Amount.ToString("N2"))
-                                            </MudText>
-                                        }
-                                        </MudChip>
-                                    </div>
-                                </MudItem>
-                                <MudItem xs=12>
-                                    <MudDivider />
-                                    <div class='px-2'>
-                                        <MudText Class='ml-1 txt-uppercase wspace-nowrap font10 font-bold'>Particulars:</MudText>
-                                        <MudText Class='txt-uppercase wspace-nowrap font12'>@GlobalClass.pettyCash.Particular</MudText>
-                                    </div>
-                                    <MudDivider />
-                                </MudItem>
-                                <MudItem xs=12>
-                                    <div class='px-2'>
-                                        <MudText Class='ml-1 txt-uppercase wspace-nowrap font10 font-bold'>Remarks:</MudText>
-                                        @if(string.IsNullOrWhiteSpace(GlobalClass.pettyCash.Remarks))
-                                        {
-                                            <MudText Class='wspace-nowrap font12'>None</MudText>
-                                        }
-                                        else
-                                        {
-                                            <MudText Class='wspace-nowrap font12'> @GlobalClass.pettyCash.Remarks</MudText>
-                                        }
-                                    </div>
-                                </MudItem>
-                                <MudItem Class='d-flex flex-column' xs=12>
-                                    <MudDivider />
-                                    <div class='d-flex align-center pa-2 gap-2 bgc-F4F5FB'>
-                                        <MudIcon Class='ml-2' Icon="@Icons.Material.Filled.Badge" Size="Size.Small" />
-                                        <MudText Class='txt-uppercase wspace-nowrap font-bold' Typo='Typo.body2'>Signatories</MudText>
-                                        <hr class='horizline2'>
-                                    </div>
-                                    <MudDivider />
-                                    <div class='d-flex flex-column pa-2 gap-2'>
-                                        <div class="d-flex align-center gap-2">
-                                            <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(requestorImg)}")' />
-                                            <MudDivider />
-                                            <div class="gap-2">
-                                                <MudText Class='wspace-nowrap' Typo="Typo.subtitle2">@GlobalClass.pettyCash.RequestedByName</MudText>
-                                                <MudText Typo="Typo.caption">Requested by</MudText>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex align-center gap-2">
-                                            <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(receiverImg)}")' />
-                                            <MudDivider />
-                                            <div class="gap-2">
-                                                <MudText Class='wspace-nowrap' Typo="Typo.subtitle2">@GlobalClass.pettyCash.ReceivedByName</MudText>
-                                                <MudText Typo="Typo.caption">Received by</MudText>
-                                            </div>
-                                        </div>
-                                        <div class='d-flex align-center gap-2'>
-                                            <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(approverImg)}")' />
-                                            <MudDivider />
-                                            <div class="gap-2">
-                                                <MudText Class='wspace-nowrap' Typo="Typo.subtitle2">@GlobalClass.pettyCash.ApprovedByName</MudText>
-                                                <MudText Typo="Typo.caption">Approved by</MudText>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </MudItem>
-                            </MudGrid>
-                        </MudPaper>
-                        <div class='d-flex align-center justify-end pa-2'>
-                            <MudButton Class='btn-ios-d pa-1 font12' OnClick="(() => BackToPettyCash())" Size="Size.Small" Variant='Variant.Filled' Color='Color.Error' DisableElevation>
-                                Return
-                            </MudButton>
                         </div>
-                    </MudItem>
-                </MudGrid>
-            </div>
-       }
-    </MudContainer>
+                    </MudPaper>
+                </MudContainer>
+        }
+        </MudContainer>
+    </div>
 </div>
 
 @code{
-    private bool dataFetched {get;set;}
-    private byte[] payeeImg = new byte[]{}, requestorImg = new byte[]{}, approverImg = new byte[]{}, receiverImg = new byte[]{};
+    private bool dataFetched, isToBottom, scrollBarExists;
     private PettyCashAuditTrail currentTrail = new PettyCashAuditTrail();
     private PettyCashModel currPettyCash = new();
+    private string ScrollButtonStr = "To Bottom";
     protected override async Task OnInitializedAsync()
     {
         GlobalClass.pageTitle = "PETTY CASH AUDIT TRAIL";
-        GlobalClass.pettyCash = await PettyCashService.GetPettyCash(63, GlobalClass.token);
-        if(GlobalClass.pettyCash != null)
+        if(GlobalClass.pettyCash.Id == 0)
+            BackToPettyCashList();
+        else
         {
-            try{
-                GlobalClassList.currrentAuditTrail = await PettyCashService.GetPettyCashAuditTrail(GlobalClass.pettyCash.Id,GlobalClass.token);
-                currPettyCash = GlobalClass.pettyCash;
-                payeeImg = await GetEmployeeDetails(GlobalClass.pettyCash.PayeeId);
-                requestorImg = await GetEmployeeDetails(GlobalClass.pettyCash.RequestedById);
-                approverImg = await GetEmployeeDetails(GlobalClass.pettyCash.ApprovedById);
-                receiverImg = await GetEmployeeDetails(GlobalClass.pettyCash.ReceivedById);
-                currentTrail = GlobalClassList.currrentAuditTrail.Last();
+            Task t = Task.WhenAll(LoadAuditTrail());
+            await t;
+            if (t.Status == TaskStatus.RanToCompletion)
                 CompletedFetch();
-            }catch(NullReferenceException ee){
-                //Do nothing
-                throw ee;
-            }
         }
-        else{
-             NavigationManager.NavigateTo($"/petty-cash/list");
-        }
-    }
-    private async Task<byte[]> GetEmployeeDetails(long employeeId)
-    {
-        var employeeDetail = await GlobalService.GetEmployeeById(employeeId, GlobalClass.token);
-        return employeeDetail.Picture;
+        if(GlobalClass.pettyCash.Id != 0)
+            scrollBarExists = await JSRuntime.InvokeAsync<bool>("CheckScrollbar", "atrail-contentid-pc");
     }
   
-    private void BackToPettyCash()
-    {
-        NavigationManager.NavigateTo("/petty-cash/list");
-    }
+    private void BackToPettyCashList() => NavigationManager.NavigateTo("/petty-cash/list"); 
     private void CompletedFetch()
     {
         dataFetched = true;
         StateHasChanged();
+    }
+    
+    private async Task ScrollJS(bool boolValue, string elementId)
+    {
+        if(boolValue)
+        {
+            await JSRuntime.InvokeVoidAsync("ScrollToBottom", elementId);
+            ScrollButtonStr = "To Top";
+        }
+        else if(!boolValue)
+        {
+            await JSRuntime.InvokeVoidAsync("ScrollToTop", elementId);
+            ScrollButtonStr = "To Bottom";
+        }
+    }
+
+    private async Task LoadAuditTrail()
+    {
+        GlobalClassList.PettyCashAuditTrail = await PettyCashService.GetPettyCashAuditTrail(GlobalClass.pettyCash.Id,GlobalClass.token);
+        currPettyCash = GlobalClass.pettyCash;
+        currentTrail = GlobalClassList.PettyCashAuditTrail.Last();
     }
 }
 

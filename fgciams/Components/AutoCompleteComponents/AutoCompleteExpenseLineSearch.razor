@@ -1,0 +1,76 @@
+@inject IExpenseLineService expenseLineService
+
+    <MudAutocomplete Class='h-w-expense' T='ExpenseLineModel' Variant="Variant.Outlined" Margin='Margin.Dense'
+            Value='ExpenseLine' 
+            ValueChanged='( (ExpenseLineModel expenseLine) => OnChanged(expenseLine) )'
+            SearchFunc="@( (string item) => Extensions.LoadExpense(item, expenseLineService) )"
+            ToStringFunc="@(result => result == null? null : result.ExpenseName)"
+            ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info" AdornmentIcon='null' IconSize='0'>
+    <ItemTemplate Context="selExp">                            
+        <MudText>
+            <MudTooltip Class='wspace-breakword'>
+                @* Drop down *@
+            <small>@selExp.ExpenseName</small>
+            </MudTooltip>
+        </MudText>
+    </ItemTemplate>
+    <ItemSelectedTemplate Context="selExp">                
+        <MudText>
+        <small>@selExp.ExpenseName</small>
+        <div style="display: none;">
+        @* @( ExpenseLine.ExpenseName = selExp.ExpenseName;
+            StateHasChanged();
+        ) *@
+        </div>
+        </MudText>
+    </ItemSelectedTemplate>
+    </MudAutocomplete>
+@code 
+{
+    [Parameter] public EventCallback<ExpenseLineModel> OnExpenseLineValueChanged { get; set; }
+    [Parameter] public ExpenseLineModel ExpenseLine { get; set; } = new();
+
+    private void OnChanged(ExpenseLineModel exp)
+    {
+        OnExpenseLineValueChanged.InvokeAsync(exp); 
+    }
+}
+<style>
+    .h-w-expense
+    {
+        height: 20px;
+        width:120px !important;
+        min-height: 10px !important;
+        max-width: 500px !important;
+    }
+    @*Applies all in div autocomplete *@
+    .autocomplete *
+    {
+        font-size: 11px !important;
+    }
+    .autocomplete
+    {
+        margin-top: -14px;
+        padding: 10px;
+    }
+    .mud-popover
+    {
+        max-width: 500px !important;
+        width: auto !important;
+    }
+    .mud-input-adornment
+    {
+        display: none;
+    }
+    @* For liqudation *@
+    .autocomplete.liquidation .h-w-expense
+    {
+        width:120px !important;
+        max-width: 500px !important;
+    }
+    .autocomplete.liquidation .h-w-project
+    {
+        width:250px !important;
+        max-width: 500px !important;
+    }
+</style>

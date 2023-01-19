@@ -8,5 +8,6 @@ namespace fgciams.service.DebitServices
         Task<List<DebitModel>> GetDebits(FilterParameter param, string token);
         Task<DebitModel> SaveDebit(DebitModel debit, string token);
         Task<DebitModel> UpdateDebit(DebitModel debit, string token);
+        Task<List<DebitAuditTrailModel>> DebitAuditTrail(long ID, string token);
     }
 }

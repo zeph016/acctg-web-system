@@ -1,0 +1,55 @@
+@inject IJSRuntime JSRuntime
+@inject ISnackbar SnackbarService
+
+@if(!DataFetched)
+{
+
+}
+else
+{
+    @if(IsPettyCash)
+    {
+        <PettyCashAuditComponent PettyCash='PettyCash' ReturnEventClick='Return'/>
+    }
+    @if(IsLiquidation)
+    {
+        <LiquidationAuditComponent Liquidation='Liquidation' ReturnEventClick='Return' />
+    }
+    @if(IsRFP)
+    {
+        <RFPAuditComponent RequestForPayment='RequestForPayment' ReturnEventClick='Return' />
+    }
+}
+
+
+@code {
+    [Parameter] public bool IsPettyCash { get; set; }
+    [Parameter] public bool IsLiquidation { get; set; }
+    [Parameter] public bool IsRFP { get; set; }
+    [Parameter] public EventCallback ReturnEventClick { get; set; }
+    [Parameter] public PettyCashModel PettyCash { get; set; } = new();
+    [Parameter] public LiquidationModel Liquidation { get; set; } = new();
+    [Parameter] public RequestForPaymentModel RequestForPayment { get; set; } = new();
+    [Parameter] public bool DataFetched { get; set; }
+
+    private bool isExpanded = true;
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        
+    }
+    private async Task CopyTextToClipboard(string stringToCopy)
+    {
+        await Extensions.CopyTextToClipboard(stringToCopy, SnackbarService, JSRuntime);
+    }
+
+    protected async Task Return()
+    {
+        await ReturnEventClick.InvokeAsync();
+    }
+}

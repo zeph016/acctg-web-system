@@ -23,7 +23,7 @@
                                 <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
                             </MudText>
                             <BlazoredTypeahead 
-                                SearchMethod=Extensions.SearchBank 
+                                SearchMethod='( (string s)=> Extensions.SearchBank(s, false) )'
                                 ValueChanged='((BankModel b) => OnBankSelected(b))'
                                 ValueExpression='(() => bank)'
                                 Value='bank'

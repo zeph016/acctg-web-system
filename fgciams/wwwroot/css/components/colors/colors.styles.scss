@@ -49,9 +49,11 @@
 .bgc-FBFBFB {
   background-color: #fbfbfb !important;
 }
-
 .bgc-crimson {
   background-color: crimson !important;
+}
+.bgc-F3F5F7{
+  background-color: #F3F5F7;
 }
 //behind tables
 .bgc-4d43521a {
@@ -124,4 +126,8 @@
   .mud-button-icon-end {
     color: var(--mud-palette-tertiary) !important;
   }
+}
+
+.opacity30 {
+  opacity: 30%;
 }

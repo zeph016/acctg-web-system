@@ -51,14 +51,36 @@
   border-bottom: solid thin lightgray;
 }
 
+.vou-entry-detail {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr 100px;
+  gap: 0px 0px;
+  grid-template-areas: "vouentrydetail-body vouentrydetail-body vouentrydetail-body vouentrydetail-body" "vouentrydetail-body vouentrydetail-body vouentrydetail-body vouentrydetail-body" "vouentrydetail-body vouentrydetail-body vouentrydetail-body vouentrydetail-body" "vouentrydetail-footer vouentrydetail-footer vouentrydetail-footer vouentrydetail-footer";
+  height: 100%;
+}
+.vou-entry-detail .vouentrydetail-body {
+  grid-area: vouentrydetail-body;
+}
+.vou-entry-detail .vouentrydetail-footer {
+  grid-area: vouentrydetail-footer;
+}
+.vou-entry-detail .vouentrydetail-body {
+  overflow: hidden;
+}
+.vou-entry-detail .vouentrydetail-footer {
+  border-top: solid thin lightgrey;
+  overflow: auto;
+}
+
 .vou-entry-amtinfo-grid {
-  border-top: solid thin lightgray;
   display: grid;
   grid-template-columns: 30px 120px 1fr 1fr 1fr 120px 1fr 120px;
   grid-template-rows: 1fr 1fr 1fr 1fr;
   gap: 0px 0px;
   grid-auto-flow: row;
   grid-template-areas: "amtinfo-cont1 amtinfo-cont2 amtinfo-cont2 amtinfo-cont2 amtinfo-cont3 amtinfo-cont4 amtinfo-cont5 amtinfo-cont6" "amtinfo-cont1 amtinfo-cont2 amtinfo-cont2 amtinfo-cont2 amtinfo-cont3 amtinfo-cont4 amtinfo-cont5 amtinfo-cont6" "amtinfo-tags amtinfo-tags amtinfo-tags amtinfo-tags amtinfo-cont3 amtinfo-cont4 amtinfo-cont5 amtinfo-cont6" "amtinfo-tags amtinfo-tags amtinfo-tags amtinfo-tags amtinfo-cont3 amtinfo-cont4 amtinfo-cont5 amtinfo-cont6";
+  height: 100%;
 }
 .vou-entry-amtinfo-grid small {
   font-size: 10px;

@@ -25,10 +25,6 @@
             <MudItem xs='xsLeft'>
                 <MudGrid Spacing='1'>
                     <MudItem xs='4'>
-                        <MudTextField Class='tfield-color-blred' @bind-Value='GlobalClass.collection.ReferenceNo' Label='Control No.' Text='@(GlobalClass.collection.Id != 0 ? GlobalClass.collection.ControlNumber:"Auto")' Variant='Variant.Outlined'
-                            Margin='Margin.Dense' ReadOnly />
-                    </MudItem>
-                    <MudItem xs='4'>
                          <MudDatePicker @bind-Date='GlobalClass.collection.TransactionDate' Label='Transaction Date' IconSize='Size.Small' Variant='Variant.Outlined' DisableToolbar
                             HelperText='Required*' Margin='Margin.Dense' For='@(()=>GlobalClass.collection.TransactionDate)'/>
                     </MudItem>
@@ -41,6 +37,10 @@
                                 <MudSelectItem Value="@collectionCategory">@Extensions.GetEnumDescription(collectionCategory)</MudSelectItem>
                             }
                         </MudSelect>
+                    </MudItem>
+                    <MudItem xs='4'>
+                        <MudTextField Class='tfield-color-blred' @bind-Value='GlobalClass.collection.ControlNumber' Label='Control No.' Text='@(GlobalClass.collection.Id != 0 ? GlobalClass.collection.ControlNumber:"Auto")' Variant='Variant.Outlined'
+                            Margin='Margin.Dense' ReadOnly/>
                     </MudItem>
                     <MudItem xs='12'>
                         <MudText Class='lblhelper-type'>Customer</MudText>
@@ -61,7 +61,11 @@
                                 </div>
                             </SelectedTemplate>
                             <ResultTemplate>
-                                @customer.ProjectName
+                                <div class='d-flex flex-column'>
+                                    <small class='font-bold'>@customer.ProjectName</small>
+                                    <small>@customer.Location</small>
+                                    <small>@Extensions.ProjectReference(customer)</small>
+                                </div>
                             </ResultTemplate>
                         </BlazoredTypeahead>
                     </MudItem>
@@ -86,7 +90,11 @@
                                         </div>
                                     </SelectedTemplate>
                                         <ResultTemplate>
-                                            @proj.ProjectName | @proj.Location
+                                            <div class='d-flex flex-column'>
+                                                <small class='font-bold'>@proj.ProjectName</small>
+                                                <small>@proj.Location</small>
+                                                <small>@Extensions.ProjectReference(proj)</small>
+                                            </div>
                                         </ResultTemplate>
                                 </BlazoredTypeahead>
                                 <div class="validation-font12">
@@ -99,7 +107,7 @@
                                     ValueChanged='((ExpenseLineModel exp) => OnRowSelectedExpenseLine(exp))'
                                     ValueExpression='(()=>expenseLine)'
                                     Value='expenseLine'
-                                    Debounce='500' MaximumSuggestions='5' Placeholder='Expense line' DisableClear>
+                                    Debounce='500' MaximumSuggestions='10' Placeholder='Expense line' DisableClear>
                                     <SelectedTemplate>
                                         <div class='overflow-hidden wspace-nowrap'>
                                             @if (!String.IsNullOrEmpty(rowExpenseLine.ExpenseName)) {
@@ -120,9 +128,9 @@
                         </MudGrid>
                     </MudItem>
                     <MudItem xs='4'>
-                        <MudTextField @bind-Value='GlobalClass.collection.ReferenceNo' Label='Reference No.' Placeholder='-' Variant='Variant.Outlined'
-                            HelperText='Required*' Margin='Margin.Dense' For='@(()=>GlobalClass.collection.ReferenceNo)'>
-                        </MudTextField> 
+                        <MudNumericField @bind-Value='GlobalClass.collection.ReferenceNo' Label='Reference No.' Placeholder='-' Variant='Variant.Outlined'
+                            HelperText='Required*' Margin='Margin.Dense' For='@(()=>GlobalClass.collection.ReferenceNo)' HideSpinButtons>
+                        </MudNumericField> 
                     </MudItem>
                     <MudItem xs='4'>
                         <MudTextField @bind-Value='GlobalClass.collection.OfficialReceipt' Label='Official Receipt' Adornment="Adornment.Start" AdornmentText="OR -" Placeholder='-' HelperText='Required*' 
@@ -144,16 +152,16 @@
                             <MudTextField T='string' Text="NA" Label='Check Date' Adornment='Adornment.End' AdornmentIcon='@Icons.Material.Filled.DateRange'
                             Variant='Variant.Outlined' Margin='Margin.Dense' ReadOnly=@isReadOnlyCheckNumber/>
                         } else {
-                        <MudDatePicker @bind-Date='GlobalClass.collection.CheckDate' Label='Check Date' IconSize='Size.Small' Variant='Variant.Outlined' DisableToolbar
-                            HelperText='Required*' Margin='Margin.Dense' />
+                            <MudDatePicker @bind-Date='GlobalClass.collection.CheckDate' Label='Check Date' IconSize='Size.Small' Variant='Variant.Outlined' DisableToolbar
+                                HelperText='Required*' Margin='Margin.Dense' />
                         }
                     </MudItem>
                     <MudItem xs='4'>
                         @if(GlobalClass.collection.PaymentTypeId == Enums.CollectionPaymentType.Cash || GlobalClass.collection.PaymentTypeId == Enums.CollectionPaymentType.DirectDeposit)
                         {
                             <MudTextField @bind-Value='GlobalClass.collection.CheckNumber' Text="NA" Label='Check Number'
-                            Variant='Variant.Outlined' Margin='Margin.Dense' ReadOnly=@isReadOnlyCheckNumber/>
-                        } else {
+                            Variant='Variant.Outlined' Margin='Margin.Dense' ReadOnly=@isReadOnlyCheckNumber HideSpinButtons/>
+                        } else {    
                             <MudTextField @bind-Value='GlobalClass.collection.CheckNumber' Label='Check Number' Placeholder='-' HelperText='Required*' 
                             Variant='Variant.Outlined' Margin='Margin.Dense' ReadOnly=@isReadOnlyCheckNumber For='@(()=>GlobalClass.collection.CheckNumber)'/>
                         }
@@ -182,7 +190,7 @@
                             HideSpinButtons Variant='Variant.Outlined' For='@(()=>GlobalClass.collection.Description)'/>
                     </MudItem>
                     <MudItem xs='12'>
-                        <MudTextField @bind-Value='GlobalClass.collection.Remarks' Lines='2' Label='Remarks' Placeholder='' HelperText='Optional' 
+                        <MudTextField @bind-Value='GlobalClass.collection.Remarks' Lines='2' Label='Remarks' Placeholder='None' HelperText='Optional' 
                             HideSpinButtons Variant='Variant.Outlined' />
                     </MudItem>
                 </MudGrid>
@@ -239,6 +247,7 @@
             checkNumber = GlobalClass.collection.CheckNumber;
             CollectionPaymentTypeState(GlobalClass.collection.PaymentTypeId);
         }
+        CheckActionMode();
     }
     private async Task Submit()
     {
@@ -248,6 +257,7 @@
         parameters.Add("contentText", contentText);
         parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("actionMode", currentAction);
+        parameters.Add("controlNumber", GlobalClass.collection.ControlNumber == string.Empty ? "":GlobalClass.collection.ControlNumber);
         var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
         if (!resultDialog.Canceled) 
@@ -261,18 +271,21 @@
             if(GlobalClass.collection.Id == 0)
             {
                 GlobalClass.collection.Activity = "Add Collection";
+                //CL-Generated
+                GlobalClass.collection.StatusId  = GlobalClassList.accountingStatusList.Where( acctg => acctg.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.CLG).Select( acctg => acctg.Id).FirstOrDefault();
                 GlobalClass.collection = await collectionService.SaveCollection(GlobalClass.collection,GlobalClass.token);
                 xsLeft = 7;
                 xsRight= 5;
                 contentWidth = "auto";
                 currentAction = Enums.ActionMode.Update;
+                Extensions.ShowAlert("Collection successfully saved.",Variant.Filled,snackbarService,Severity.Success);
             } else {
                 GlobalClass.collection.Activity = "Update Collection";
                 GlobalClass.collection = await collectionService.UpdateCollection(GlobalClass.collection,GlobalClass.token);
+                Extensions.ShowAlert("Collection successfully updated.",Variant.Filled,snackbarService,Severity.Success);
             }
             GlobalClass.collection.CollectionExpenses = (await collectionService.GetCollection(GlobalClass.collection.Id,GlobalClass.token)).CollectionExpenses;
             GlobalClass.collection.TotalGrossAmount = GlobalClass.collection.NetAmount + GlobalClass.collection.CollectionExpenses.Sum( coll => coll.Amount);
-            Extensions.ShowAlert("Collection has been saved.",Variant.Filled,snackbarService,Severity.Success);
             GlobalClass.collection.IsCollection = true;
             if(GlobalVariable.AMSHubConnection != null)
                 await GlobalVariable.AMSHubConnection.InvokeAsync("SaveCollection",GlobalClass.collection);      
@@ -332,7 +345,7 @@
     }
     private void OnInvalidInput()
     {
-        Extensions.ShowAlert("Please fill the requried field.", Variant.Filled, snackbarService,Severity.Error);
+        Extensions.ShowAlert("Please complete the required fields.", Variant.Filled, snackbarService,Severity.Error);
     }
     private void BankPaymentTypeOnClick(Enums.CollectionPaymentType type)
     {
@@ -364,7 +377,7 @@
     }
     private void DefualtProperties()
     {
-        GlobalClass.collection.Remarks = (string.IsNullOrWhiteSpace(GlobalClass.collection.Remarks) ? "None" : GlobalClass.collection.Remarks);
+        GlobalClass.collection.Remarks = (string.IsNullOrWhiteSpace(GlobalClass.collection.Remarks) ? "" : GlobalClass.collection.Remarks);
         GlobalClass.collection.IsCollection = true;
         GlobalClass.collection.CollectionType = Enums.CollectionType.Collection;
         GlobalClass.collection.CollectionTypeId = Enums.CollectionType.Collection;

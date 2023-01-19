@@ -41,6 +41,13 @@ namespace fgciams.domain.clsSubConGeneralInformation
         public string CompanyName { get; set; }
         public Int64 PositionId { get; set; }
         public string PositionName { get; set; }
+        public string WorkSpecialty { get; set; }
+        public Enums.LaborType LaborTypeId { get; set; }
+        public Enums.FinancialCapabilityCategory FinancialCapabilityCategoryId { get; set; }
+        public string ContactNumber { get; set; }
+        public int ManPowerNo { get; set; }
+        public string Address { get; set; }
+        public string BankAccountNo { get; set; }
         public string EmployeeName
         {
             get

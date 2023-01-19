@@ -17,7 +17,7 @@
     }
     else
     {
-      <MudContainer Class='checkwriterpage pt-2 gap-2' Fixed='false' MaxWidth='MaxWidth.Large'>
+        <MudContainer Class='checkwriterpage pt-2 gap-2' Fixed='false' MaxWidth='MaxWidth.Large'>
             <MudPaper Class='flex-1' Elevation='1' Height='fit-content'>
                 <MudCardContent Class='checkwriterpage__grid pa-2'>
                         <div class='chkw-header d-flex align-center pa-2 gap-2 bgc-F4F5FB rounded-tr rounded-tl'>
@@ -55,7 +55,11 @@
                                     }
                                 </SelectedTemplate>
                                 <ResultTemplate>
-                                    @selpayee.ProjectName | @selpayee.Location
+                                    <div class='d-flex flex-column'>
+                                        <small class='font-bold'>@selpayee.ProjectName</small>
+                                        <small>@selpayee.Location</small>
+                                        <small>@Extensions.ProjectReference(selpayee)</small>
+                                    </div>
                                 </ResultTemplate>
                             </BlazoredTypeahead>
                         </div>
@@ -85,7 +89,7 @@
                                 Bank:
                                 <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
                             </MudText>
-                            <BlazoredTypeahead SearchMethod=Extensions.SearchBank ValueChanged="((BankModel bank)=>SelectedBank(bank))" ValueExpression='(()=>bank)' Value="bank"
+                            <BlazoredTypeahead SearchMethod='( (string s)=> Extensions.SearchBank(s, false) )' ValueChanged="((BankModel bank)=>SelectedBank(bank))" ValueExpression='(()=>bank)' Value="bank"
                                 Context='selbank' Debounce="500" placeholder='BANK & ACCOUNT NO.'>
                                 <SelectedTemplate>
                                     @if (selbank.Id != 0) {
@@ -107,7 +111,7 @@
                                 <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
                             </MudText>
                             <MudTextField Class='txtfield-overflow-ellipsis font14-txtfield txt-top-0 txtfield-center' Mask='@(new PatternMask("00000 00000"))' @bind-Value="@GlobalClass.checkModel.CheckNo"
-                                Variant='Variant.Text' Margin='Margin.Dense' DisableClear Error="@checkNoValid" />
+                                Variant='Variant.Text' Margin='Margin.Dense' DisableClear Error="@checkNoValid" ReadOnly />
                         </div>
                         <div class='chkw-blankcont d-flex justify-center align-center gap-2'>
                             <MudText Class='wspace-nowrap txt-uppercase font-bold font10'>Control No:</MudText>
@@ -252,7 +256,8 @@
                 MapDefaults();
                // currentActionMode = Enums.ActionMode.Create;
             } else {
-                RemapCheck();
+                await RemapCheck();
+                Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(GlobalClass.checkModel, Newtonsoft.Json.Formatting.Indented));
             }
         }
         dataFetched =true;
@@ -301,6 +306,14 @@
         var resultDialog = await dialogService.Show<Shared.Dialogs.GlobalRFPLiquidationLookUp.GlobalRFPLiquidationLookUp>(dialogTitle, parameters, options).Result;
         if (!resultDialog.Canceled)
         {
+            if(GlobalClass.checkModel.CheckVouchers.Count == 1)
+            {
+                var _payee = new Project();
+                _payee.ProjectId = (GlobalClass.checkModel.CheckVouchers.GetRange(0,1).FirstOrDefault()?? new()).PayeeId;
+                _payee.ProjectName = (GlobalClass.checkModel.CheckVouchers.GetRange(0,1).FirstOrDefault()?? new()).PayeeName;
+                _payee.ProjectCategoryId = (GlobalClass.checkModel.CheckVouchers.GetRange(0,1).FirstOrDefault()?? new()).PayeeCategoryId;
+                payee = _payee;
+            }
             StateHasChanged();
         }
     }
@@ -339,6 +352,8 @@
         voucherModel.IsActive = false;
         if(GlobalClass.checkModel.Id != 0)
             GlobalClass.checkModel.RemovedCheckVouchers.Add(voucherModel);
+        if(GlobalClass.checkModel.CheckVouchers.Count == 0)
+            payee = new();
         StateHasChanged();
     }
     private string GetVoucherControlNumber(CheckVoucherModel voucherID)
@@ -357,7 +372,7 @@
         GlobalClass.checkModel.PreparedByName = GlobalClass.currentUserAccount.EmployeeName;
         checkDate = GlobalVariable.ServerTime;
     }
-    private void RemapCheck()
+    private async Task RemapCheck()
     {
         GlobalClass.checkModel.AmountInWords = Common.AmountToWords.DecimalToWords(GlobalClass.checkModel.Amount);
         GlobalClass.checkModel.PreparedByName = GlobalClass.currentUserAccount.EmployeeName;
@@ -367,9 +382,11 @@
         checkDateIssued = GlobalClass.checkModel.IssuedDate;
 
         ///FirstOrDefault null ref check - please don't delete. Dhan - for reference.
-        var filteredPayee = payeeList.Where(x=>x.ProjectId == GlobalClass.checkModel.PayeeId).FirstOrDefault();
+        @* var filteredPayee = payeeList.Where(x=>x.ProjectId == GlobalClass.checkModel.PayeeId).FirstOrDefault();
         if (filteredPayee != null)
-            payee = filteredPayee;
+            payee = filteredPayee; *@
+        //Fixes
+        payee = (await LoadProject(GlobalClass.checkModel.PayeeName)).FirstOrDefault()?? new();
     }
     private void MapProperties(Enums.AccountingStatusEnumCategory status)
     {   

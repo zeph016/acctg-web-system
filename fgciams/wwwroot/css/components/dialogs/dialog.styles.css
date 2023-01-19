@@ -6,12 +6,18 @@
 
 .dflex-row, .pcview-dialog__crumb, .pcview-dialog .pcgrid-lblstatus, .pcview-dialog .pcgrid-lbldate, .pcview-dialog .pcgrid-lblpayee,
 .pcview-dialog .pcgrid-lblamt, .pcview-dialog .pcgrid-status, .pcview-dialog .pcgrid-date, .pcview-dialog .pcgrid-payee,
-.pcview-dialog .pcgrid-amt, .pcview-dialog .pcgrid-controls {
+.pcview-dialog .pcgrid-amt, .pcview-dialog .pcgrid-controls, .liqview-dialog__grid .liqgrid-lblstatus, .liqview-dialog__grid .liqgrid-lbldate, .liqview-dialog__grid .liqgrid-lblperiod,
+.liqview-dialog__grid .liqgrid-lblremarks, .liqview-dialog__grid .liqgrid-status, .liqview-dialog__grid .liqgrid-controls,
+.liqview-dialog__grid .liqgrid-date, .liqview-dialog__grid .liqgrid-lblamt, .liqview-dialog__grid .liqgrid-totalamt,
+.liqview-dialog__grid .liqgrid-period, .liqview-dialog__grid .liqgrid-details__label-cont, .rfpview-dialog__grid .rfpgrid-lblstatus, .rfpview-dialog__grid .rfpgrid-lbldatereq, .rfpview-dialog__grid .rfpgrid-lbldateneed, .rfpview-dialog__grid .rfpgrid-lbldateperiod,
+.rfpview-dialog__grid .rfpgrid-lblpayee, .rfpview-dialog__grid .rfpgrid-lblbillreq, .rfpview-dialog__grid .rfpgrid-controls, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-body__item-row, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-proj, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-div, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-exp, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-amt, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-footer, .rfpview-dialog__total-amount--cont, .vouchview-dialog__grid .vvgrid-lblstatus, .vouchview-dialog__grid .vvgrid-lbldate, .vouchview-dialog__grid .vvgrid-lblrfp, .vouchview-dialog__grid .vvgrid-lbldesc,
+.vouchview-dialog__grid .vvgrid-lblperiod, .vouchview-dialog__grid .vvgrid-lblrem, .vouchview-dialog__grid .vvgrid-controls, .vouchview-dialog__grid .vvgrid-status,
+.vouchview-dialog__grid .vvgrid-date, .vouchview-dialog__grid .vvgrid-period, .vouchview-dialog__grid .vvgrid-desc, .vouchview-dialog__grid .vvgrid-rfp, .vouchview-dialog__grid .vvgrid-rem, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-header__item-row, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-body__item-row, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-body__item-row--right, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-body__item-row--center, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-footer, .vroutedialog__grid .vroutedialog-lbldate, .vroutedialog__grid .vroutedialog-controlnumbers__grid .vroutediasub-title, .vroutedialog__grid .vroutedialog-controlnumbers__grid .vroutediasub-footer {
   align-items: center;
   display: flex;
 }
 
-.dflex-col, .pcview-dialog .pcgrid-signatories {
+.dflex-col, .pcview-dialog .pcgrid-signatories, .liqview-dialog__grid .liqgrid-details__pc-ctrlno--cont, .liqview-dialog .liqgrid-signatories, .rfpview-dialog__grid .rfpgrid-details, .rfpview-dialog__grid .rfpgrid-signatories, .vouchview-dialog__grid .vvgrid-signatories {
   flex-direction: column;
   display: flex;
 }
@@ -23,9 +29,395 @@
   padding: 8px;
 }
 
-.flex-full {
+.flex-full, .liqview-dialog__grid .liqgrid-details, .liqview-dialog__grid .liqgrid-details__pc-chips-cont {
   flex: 1 1 0%;
+}
+
+.dflex, .liqview-dialog__grid .liqgrid-details {
+  display: flex;
+}
+
+.dblock {
+  display: block;
+}
+
+.dblock-inline, .liqview-dialog__grid .liqgrid-details__pc-chips-cont {
+  display: inline-block;
 } /*# sourceMappingURL=flexgridmods.styles.css.map */
+.visibility-animation-hide {
+  display: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s linear 0.2s, opacity 0.2s linear;
+}
+
+.visibility-animation-show {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  transition-delay: 0s;
+}
+
+.transition-2s-ease {
+  transition: all 2s;
+  transition-timing-function: ease;
+}
+
+.transition-1-5s-ease {
+  transition: all 1.5s;
+  transition-timing-function: ease;
+}
+
+.transition-1s-ease, .globalrfp-dialog-content {
+  transition: all 1s;
+  transition-timing-function: ease;
+}
+
+.transition-05s-ease, .main-dialog-content {
+  transition: all 0.5s;
+  transition-timing-function: ease;
+}
+
+.transition-025s-ease {
+  transition: all 0.25s;
+  transition-timing-function: ease;
+}
+
+.menu-grow-anim {
+  transition: all 0.15s ease-in-out !important;
+}
+
+.menu-grow-anim:hover {
+  transform: scale(1.025) !important;
+}
+
+.row-popup-anim-2px tr {
+  transition: all 0.2s ease-in-out;
+}
+
+.row-popup-anim-2px tr:hover {
+  transform: translateY(-2px);
+}
+
+.fade-in, .main-dialog-content, .pcview-dialog__grid, .liqview-dialog__grid {
+  -webkit-animation: fadein 1s;
+  animation: fadein 1s;
+  visibility: visible;
+}
+
+.fade-out {
+  -webkit-animation: fadeout 1s;
+  animation: fadeout 1s;
+  visibility: hidden;
+}
+
+@-webkit-keyframes fadein {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes fadein {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@-webkit-keyframes fadeout {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes fadeout {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.icon-rotate180 .mud-button-icon-end {
+  transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
+}
+
+.mudbtn-rotate-180 .mud-icon-root {
+  transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
+}
+
+.mudbtnico-rotate {
+  -webkit-animation: mudbtnico-rotate 0.5s linear infinite;
+  animation: mudbtnico-rotate 0.5s linear infinite;
+}
+
+@-webkit-keyframes mudbtnico-rotate {
+  0% {
+    transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+  }
+}
+@keyframes mudbtnico-rotate {
+  0% {
+    transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+  }
+}
+.mudbtnico-rotate-90 .mud-icon-root {
+  transform: rotate(0deg);
+  transition: all 0.5s ease;
+  -webkit-transition: all 0.5s ease; /** Chrome & Safari **/
+  -moz-transition: all 0.5s ease; /** Firefox **/
+  -o-transition: all 0.5s ease; /** Opera **/
+}
+
+.mudbtnico-rotate-90:hover .mud-button-root {
+  color: #2196f3 !important;
+}
+
+.mudbtnico-rotate-90:hover .mud-icon-root {
+  transform: rotate(90deg);
+  transition: all 0.5s ease;
+  -webkit-transition: all 0.5s ease; /** Chrome & Safari **/
+  -moz-transition: all 0.5s ease; /** Firefox **/
+  -o-transition: all 0.5s ease; /** Opera **/
+}
+
+.sticky-div {
+  z-index: 1;
+  position: -webkit-sticky;
+  position: sticky;
+  left: 0;
+  background-color: white;
+}
+
+@-webkit-keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale3d(0.3, 0.3, 0.3);
+  }
+  30% {
+    transform: scale3d(1.1, 1.1, 1.1);
+  }
+  60% {
+    opacity: 1;
+    transform: scale3d(1.03, 1.03, 1.03);
+  }
+  80% {
+    transform: scale3d(0.97, 0.97, 0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale3d(1, 1, 1);
+  }
+}
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale3d(0.3, 0.3, 0.3);
+  }
+  30% {
+    transform: scale3d(1.1, 1.1, 1.1);
+  }
+  60% {
+    opacity: 1;
+    transform: scale3d(1.03, 1.03, 1.03);
+  }
+  80% {
+    transform: scale3d(0.97, 0.97, 0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale3d(1, 1, 1);
+  }
+} /*# sourceMappingURL=animation.styles.css.map */
+.bgc-white {
+  background-color: #ffffff !important;
+}
+
+.bgc-fafafa {
+  background-color: #fafafa;
+}
+
+.bgc-f6f6f6 {
+  background-color: #f6f6f6;
+}
+
+.bgc-f2f2f2 {
+  background-color: #f2f2f2 !important;
+}
+
+.bgc-beige {
+  background-color: #f5f5dc;
+}
+
+.bgc-542d6f {
+  background-color: #542d6f;
+}
+
+.bgc-gray {
+  background-color: gray !important;
+}
+
+.bgc-8080805c {
+  background-color: rgba(128, 128, 128, 0.3607843137) !important;
+}
+
+.bgc-F8F9FE {
+  background-color: #f8f9fe;
+}
+
+.bgc-F4F5FB {
+  background-color: #f4f5fb;
+}
+
+.bgc-inherit {
+  background-color: inherit !important;
+}
+
+.bgc-F5F5DC73 {
+  background-color: rgba(245, 245, 220, 0.4509803922) !important;
+}
+
+.bgc-b2a7b82e {
+  background-color: rgba(178, 167, 184, 0.1803921569);
+}
+
+.bgc-gainsb {
+  background-color: gainsboro !important;
+}
+
+.bgc-e7f2fb {
+  background-color: #e7f2fb !important;
+}
+
+.bgc-transparent {
+  background-color: transparent !important;
+}
+
+.bgc-FBFBFB {
+  background-color: #fbfbfb !important;
+}
+
+.bgc-crimson {
+  background-color: crimson !important;
+}
+
+.bgc-F3F5F7, .main-dialog-content, .globalrfp-dialog-content {
+  background-color: #F3F5F7;
+}
+
+.bgc-4d43521a {
+  background-color: rgba(77, 67, 82, 0.1019607843);
+}
+
+.color-white {
+  color: #ffffff;
+}
+
+.color-green {
+  color: #008000;
+}
+
+.color-red {
+  color: red;
+}
+
+.color-beige {
+  color: #f5f5dc;
+}
+
+.color-7d7d7d {
+  color: #7d7d7d;
+}
+
+.color-sec {
+  color: var(--mud-palette-text-secondary) !important;
+}
+
+.color-gray {
+  color: gray;
+}
+
+.mudtoolbar-bg-8080805c .mud-toolbar {
+  background-color: rgba(128, 128, 128, 0.3607843137);
+}
+
+.mudtoolbar-bg-F4F5FB .mud-toolbar {
+  background-color: #f4f5fb;
+}
+
+.tfield-color-red .mud-input {
+  color: red;
+  font-weight: bold;
+}
+
+.tfield-color-green .mud-input {
+  color: green;
+  font-weight: bold;
+}
+
+.tfield-color-blred .mud-input {
+  color: var(--mud-palette-error) !important;
+  font-weight: bold;
+}
+
+.chkwriter-bgc-grad {
+  background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.0784313725), rgba(83, 94, 155, 0.1098039216));
+}
+
+.border-c-l {
+  border-color: lightgrey;
+}
+
+.mudiconend-color-tertiary .mud-button-icon-end {
+  color: var(--mud-palette-tertiary) !important;
+}
+
+.opacity30 {
+  opacity: 30%;
+} /*# sourceMappingURL=colors.styles.css.map */
 .customdialog .mud-dialog-title,
 .customdialog-table-only .mud-dialog-title {
   background-color: #542d6f !important;
@@ -62,10 +454,26 @@
   padding: 8px !important;
 }
 
+.main-dialog-content {
+  -webkit-animation: fadein 1s 1;
+          animation: fadein 1s 1;
+  border: solid thin lightgray;
+  border-radius: 5px;
+  box-shadow: var(--mud-elevation-1);
+  min-height: 0px;
+  padding: 6px 12px;
+  overflow: hidden;
+}
+
+.globalrfp-dialog-content {
+  padding-right: 32px;
+  overflow: hidden;
+}
+
 .pcview-dialog .mud-dialog-title {
   background-color: #542D6F;
 }
-.pcview-dialog__title {
+.pcview-dialog__title, .vouchview-dialog__title, .rfpview-dialog__title, .liqview-dialog__title {
   color: white;
   font-size: 1.25rem;
   font-family: "Theramin";
@@ -87,8 +495,8 @@
 }
 .pcview-dialog__grid {
   display: grid;
-  grid-template-columns: 75px 1fr 1fr 1fr;
-  grid-template-rows: 35px 35px minmax(35px, auto) 35px minmax(70px, auto) minmax(70px, auto);
+  grid-template-columns: 50px 1fr 1fr 1fr;
+  grid-template-rows: auto;
   gap: 0px 0px;
   grid-auto-flow: row;
   grid-template-areas: "pcgrid-lblstatus pcgrid-status pcgrid-status pcgrid-controls" "pcgrid-lbldate pcgrid-date pcgrid-date pcgrid-date" "pcgrid-lblpayee pcgrid-payee pcgrid-payee pcgrid-payee" "pcgrid-lblamt pcgrid-amt pcgrid-amt pcgrid-amt" "pcgrid-particulars pcgrid-particulars pcgrid-particulars pcgrid-signatories" "pcgrid-remarks pcgrid-remarks pcgrid-remarks pcgrid-signatories";
@@ -120,17 +528,9 @@
 }
 .pcview-dialog .pcgrid-controls {
   grid-area: pcgrid-controls;
-  gap: 4px;
-  justify-content: end;
 }
 .pcview-dialog .pcgrid-signatories {
-  border: solid thin lightgray;
-  border-radius: 5px;
   grid-area: pcgrid-signatories;
-  gap: 4px;
-  justify-content: center;
-  padding: 8px;
-  margin: 4px 4px 0px 4px;
 }
 .pcview-dialog .pcgrid-particulars {
   grid-area: pcgrid-particulars;
@@ -138,28 +538,414 @@
 .pcview-dialog .pcgrid-remarks {
   grid-area: pcgrid-remarks;
 }
+.pcview-dialog .pcgrid-controls {
+  gap: 4px;
+  justify-content: end;
+}
 .pcview-dialog .pcgrid-status, .pcview-dialog .pcgrid-date, .pcview-dialog .pcgrid-payee,
 .pcview-dialog .pcgrid-amt {
   border-bottom: solid thin lightgray;
 }
 .pcview-dialog .pcgrid-particulars, .pcview-dialog .pcgrid-remarks {
   border-bottom: dotted thin black;
-  padding: 8px;
+  padding: 5px;
 }
-.pcview-dialog__label {
+.pcview-dialog__label, .vroutedialog__lbl, .vouchview-dialog__label, .rfpview-dialog__label, .liqview-dialog__label {
   font-size: 10px;
   color: #9F9F9F;
   text-transform: uppercase;
 }
-.pcview-dialog__txt, .pcview-dialog__txt--content-title {
+.pcview-dialog__txt, .vroutedialog__txt, .vouchview-dialog__txt, .rfpview-dialog__txt, .liqview-dialog__txt, .pcview-dialog__txt--content-title, .vouchview-dialog__txt--content-title, .rfpview-dialog__txt--content-title, .liqview-dialog__txt--content-title {
   font-size: 12px;
   margin: 4px;
   padding: 0px 12px;
 }
-.pcview-dialog__txt--content-title {
+.pcview-dialog__txt--content-title, .vouchview-dialog__txt--content-title, .rfpview-dialog__txt--content-title, .liqview-dialog__txt--content-title {
   font-family: "R-Flex Bold";
-  font-size: 14px;
+  font-size: 12px;
+  text-transform: uppercase;
 }
 .pcview-dialog__btn-circular {
   border-radius: 24px !important;
+}
+
+.liqview-dialog .mud-dialog-title {
+  background-color: #542D6F;
+}
+.liqview-dialog__grid {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr 1fr;
+  grid-template-rows: auto;
+  gap: 0px 0px;
+  grid-template-areas: "liqgrid-lblstatus liqgrid-status liqgrid-status liqgrid-controls" "liqgrid-lbldate liqgrid-date liqgrid-date liqgrid-date" "liqgrid-lblperiod liqgrid-period liqgrid-period liqgrid-period" "liqgrid-lblamt liqgrid-totalamt liqgrid-totalamt liqgrid-totalamt" "liqgrid-lblremarks liqgrid-remarks liqgrid-remarks liqgrid-remarks" "liqgrid-details liqgrid-details liqgrid-details liqgrid-signatories";
+}
+.liqview-dialog__grid .liqgrid-lblstatus {
+  grid-area: liqgrid-lblstatus;
+}
+.liqview-dialog__grid .liqgrid-lbldate {
+  grid-area: liqgrid-lbldate;
+}
+.liqview-dialog__grid .liqgrid-lblperiod {
+  grid-area: liqgrid-lblperiod;
+}
+.liqview-dialog__grid .liqgrid-lblamt {
+  grid-area: liqgrid-lblamt;
+}
+.liqview-dialog__grid .liqgrid-lblremarks {
+  grid-area: liqgrid-lblremarks;
+}
+.liqview-dialog__grid .liqgrid-status {
+  grid-area: liqgrid-status;
+}
+.liqview-dialog__grid .liqgrid-controls {
+  grid-area: liqgrid-controls;
+}
+.liqview-dialog__grid .liqgrid-date {
+  grid-area: liqgrid-date;
+}
+.liqview-dialog__grid .liqgrid-period {
+  grid-area: liqgrid-period;
+}
+.liqview-dialog__grid .liqgrid-totalamt {
+  grid-area: liqgrid-totalamt;
+}
+.liqview-dialog__grid .liqgrid-remarks {
+  grid-area: liqgrid-remarks;
+}
+.liqview-dialog__grid .liqgrid-details {
+  grid-area: liqgrid-details;
+}
+.liqview-dialog__grid .liqgrid-signatories {
+  grid-area: liqgrid-signatories;
+}
+.liqview-dialog__grid .liqgrid-status, .liqview-dialog__grid .liqgrid-date, .liqview-dialog__grid .liqgrid-date,
+.liqview-dialog__grid .liqgrid-period, .liqview-dialog__grid .liqgrid-period, .liqview-dialog__grid .liqgrid-totalamt,
+.liqview-dialog__grid .liqgrid-remarks {
+  border-bottom: solid thin lightgray;
+}
+.liqview-dialog__grid .liqgrid-details__pc-ctrlno--cont {
+  width: 100%;
+}
+.liqview-dialog__grid .liqgrid-details__label-cont {
+  color: black;
+  gap: 4px;
+  margin: 8px 0px;
+}
+.liqview-dialog__grid .liqgrid-details__pc-chips-cont {
+  border-bottom: dotted thin black;
+  max-height: 170px;
+  overflow: auto;
+}
+.rfpview-dialog .mud-dialog-title {
+  background-color: #542D6F;
+}
+.rfpview-dialog__grid {
+  display: grid;
+  grid-template-columns: 70px 1fr 1fr 80px 1fr 100px;
+  grid-template-rows: auto;
+  gap: 0px 0px;
+  grid-template-areas: "rfpgrid-lblstatus rfpgrid-status rfpgrid-status rfpgrid-status rfpgrid-controls rfpgrid-controls" "rfpgrid-lbldatereq rfpgrid-datreq rfpgrid-datreq rfpgrid-lbldateneed rfpgrid-dateneed rfpgrid-dateneed" "rfpgrid-lbldateperiod rfpgrid-dateperiod rfpgrid-dateperiod rfpgrid-lblbillreq rfpgrid-billreq rfpgrid-billreq" "rfpgrid-lblpayee rfpgrid-payee rfpgrid-payee rfpgrid-payee rfpgrid-payee rfpgrid-payee" "rfpgrid-details rfpgrid-details rfpgrid-details rfpgrid-details rfpgrid-signatories rfpgrid-signatories" "rfpgrid-details rfpgrid-details rfpgrid-details rfpgrid-details rfpgrid-signatories rfpgrid-signatories";
+  max-width: 650px;
+}
+.rfpview-dialog__grid .rfpgrid-lblstatus {
+  grid-area: rfpgrid-lblstatus;
+}
+.rfpview-dialog__grid .rfpgrid-lbldatereq {
+  grid-area: rfpgrid-lbldatereq;
+}
+.rfpview-dialog__grid .rfpgrid-lbldateneed {
+  grid-area: rfpgrid-lbldateneed;
+}
+.rfpview-dialog__grid .rfpgrid-lbldateperiod {
+  grid-area: rfpgrid-lbldateperiod;
+}
+.rfpview-dialog__grid .rfpgrid-lblbillreq {
+  grid-area: rfpgrid-lblbillreq;
+}
+.rfpview-dialog__grid .rfpgrid-lblpayee {
+  grid-area: rfpgrid-lblpayee;
+}
+.rfpview-dialog__grid .rfpgrid-status {
+  grid-area: rfpgrid-status;
+}
+.rfpview-dialog__grid .rfpgrid-datreq {
+  grid-area: rfpgrid-datreq;
+}
+.rfpview-dialog__grid .rfpgrid-controls {
+  grid-area: rfpgrid-controls;
+}
+.rfpview-dialog__grid .rfpgrid-dateneed {
+  grid-area: rfpgrid-dateneed;
+}
+.rfpview-dialog__grid .rfpgrid-payee {
+  grid-area: rfpgrid-payee;
+}
+.rfpview-dialog__grid .rfpgrid-details {
+  grid-area: rfpgrid-details;
+}
+.rfpview-dialog__grid .rfpgrid-signatories {
+  grid-area: rfpgrid-signatories;
+}
+.rfpview-dialog__grid .rfpgrid-dateperiod {
+  grid-area: rfpgrid-dateperiod;
+}
+.rfpview-dialog__grid .rfpgrid-billreq {
+  grid-area: rfpgrid-billreq;
+}
+.rfpview-dialog__grid .rfpgrid-status, .rfpview-dialog__grid .rfpgrid-datreq, .rfpview-dialog__grid .rfpgrid-dateneed, .rfpview-dialog__grid .rfpgrid-dateperiod,
+.rfpview-dialog__grid .rfpgrid-billreq, .rfpview-dialog__grid .rfpgrid-payee {
+  border-bottom: solid thin lightgray;
+}
+.rfpview-dialog__grid .rfpgrid-details {
+  border: solid thin lightgray;
+  border-radius: 5px;
+  margin: 4px 4px 0px 4px;
+}
+.rfpview-dialog__grid .rfpgrid-details__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 25px 1fr 1fr 30px;
+  gap: 0px 0px;
+  grid-template-areas: "rfpdg-proj rfpdg-div rfpdg-exp rfpdg-amt" "rfpdg-body rfpdg-body rfpdg-body rfpdg-body" "rfpdg-body rfpdg-body rfpdg-body rfpdg-body" "rfpdg-footer rfpdg-footer rfpdg-footer rfpdg-footer";
+}
+.rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-proj {
+  grid-area: rfpdg-proj;
+}
+.rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-div {
+  grid-area: rfpdg-div;
+}
+.rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-exp {
+  grid-area: rfpdg-exp;
+}
+.rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-amt {
+  grid-area: rfpdg-amt;
+}
+.rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-body {
+  grid-area: rfpdg-body;
+}
+.rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-footer {
+  grid-area: rfpdg-footer;
+}
+.rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-body__items-cont {
+  height: 310px;
+  overflow: auto;
+  padding: 4px;
+}
+.rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-body__item-row {
+  text-align: center;
+  justify-content: center;
+}
+.rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-proj, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-div, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-exp, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-amt {
+  justify-content: center;
+  border-bottom: solid thin lightgray;
+  text-align: center;
+}
+.rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-footer {
+  border-top: solid thin lightgray;
+}
+.rfpview-dialog__grid .rfpgrid-details__item-tbltxt {
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rfpview-dialog__total-amount--cont {
+  border-top: solid thin lightgrey;
+}
+
+.vouchview-dialog .mud-dialog-title {
+  background-color: #542D6F;
+}
+.vouchview-dialog__grid {
+  display: grid;
+  grid-template-columns: 75px 1fr 1fr 50px 100px 1fr;
+  grid-template-rows: minmax(33px, auto);
+  gap: 0px 0px;
+  grid-template-areas: "vvgrid-lblstatus vvgrid-status vvgrid-status vvgrid-status vvgrid-controls vvgrid-controls" "vvgrid-lbldate vvgrid-date vvgrid-date vvgrid-lblperiod vvgrid-period vvgrid-period" "vvgrid-lblrfp vvgrid-rfp vvgrid-rfp vvgrid-rfp vvgrid-rfp vvgrid-rfp" "vvgrid-lbldesc vvgrid-desc vvgrid-desc vvgrid-desc vvgrid-desc vvgrid-desc" "vvgrid-lblrem vvgrid-rem vvgrid-rem vvgrid-rem vvgrid-rem vvgrid-rem" "vvgrid-details vvgrid-details vvgrid-details vvgrid-details vvgrid-signatories vvgrid-signatories";
+  width: 700px;
+}
+.vouchview-dialog__grid .vvgrid-lblstatus {
+  grid-area: vvgrid-lblstatus;
+}
+.vouchview-dialog__grid .vvgrid-lbldate {
+  grid-area: vvgrid-lbldate;
+}
+.vouchview-dialog__grid .vvgrid-lblrfp {
+  grid-area: vvgrid-lblrfp;
+}
+.vouchview-dialog__grid .vvgrid-lbldesc {
+  grid-area: vvgrid-lbldesc;
+}
+.vouchview-dialog__grid .vvgrid-lblrem {
+  grid-area: vvgrid-lblrem;
+}
+.vouchview-dialog__grid .vvgrid-lblperiod {
+  grid-area: vvgrid-lblperiod;
+}
+.vouchview-dialog__grid .vvgrid-status {
+  grid-area: vvgrid-status;
+}
+.vouchview-dialog__grid .vvgrid-date {
+  grid-area: vvgrid-date;
+}
+.vouchview-dialog__grid .vvgrid-controls {
+  grid-area: vvgrid-controls;
+}
+.vouchview-dialog__grid .vvgrid-period {
+  grid-area: vvgrid-period;
+}
+.vouchview-dialog__grid .vvgrid-rfp {
+  grid-area: vvgrid-rfp;
+}
+.vouchview-dialog__grid .vvgrid-desc {
+  grid-area: vvgrid-desc;
+}
+.vouchview-dialog__grid .vvgrid-rem {
+  grid-area: vvgrid-rem;
+}
+.vouchview-dialog__grid .vvgrid-details {
+  grid-area: vvgrid-details;
+}
+.vouchview-dialog__grid .vvgrid-signatories {
+  grid-area: vvgrid-signatories;
+}
+.vouchview-dialog__grid .vvgrid-status, .vouchview-dialog__grid .vvgrid-date, .vouchview-dialog__grid .vvgrid-period, .vouchview-dialog__grid .vvgrid-rfp, .vouchview-dialog__grid .vvgrid-desc,
+.vouchview-dialog__grid .vvgrid-rem {
+  border-bottom: solid thin lightgray;
+}
+.vouchview-dialog__grid .vvgrid-details__grid {
+  border: solid thin lightgray;
+  border-radius: 5px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 25px 1fr 1fr 30px;
+  gap: 0px;
+  grid-template-areas: "vvdet-header vvdet-header vvdet-header vvdet-header" "vvdet-body vvdet-body vvdet-body vvdet-body" "vvdet-body vvdet-body vvdet-body vvdet-body" "vvdet-footer vvdet-footer vvdet-footer vvdet-footer";
+  height: 300px;
+  margin: 4px 0px 0px 0px;
+}
+.vouchview-dialog__grid .vvgrid-details__grid .vvdet-header {
+  grid-area: vvdet-header;
+}
+.vouchview-dialog__grid .vvgrid-details__grid .vvdet-body {
+  grid-area: vvdet-body;
+}
+.vouchview-dialog__grid .vvgrid-details__grid .vvdet-footer {
+  grid-area: vvdet-footer;
+}
+.vouchview-dialog__grid .vvgrid-details__grid .vvdet-header {
+  border-bottom: solid thin lightgray;
+}
+.vouchview-dialog__grid .vvgrid-details__grid .vvdet-header__item-row {
+  align-items: baseline;
+  text-align: center;
+  justify-content: center;
+}
+.vouchview-dialog__grid .vvgrid-details__grid .vvdet-body {
+  overflow: auto;
+  padding: 0px 8px;
+}
+.vouchview-dialog__grid .vvgrid-details__grid .vvdet-body__item-row, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-body__item-row--right, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-body__item-row--center {
+  align-items: center;
+}
+.vouchview-dialog__grid .vvgrid-details__grid .vvdet-body__item-row--right {
+  justify-content: right;
+}
+.vouchview-dialog__grid .vvgrid-details__grid .vvdet-body__item-row--center {
+  justify-content: center;
+}
+.vouchview-dialog__grid .vvgrid-details__grid .vvdet-footer {
+  align-items: center;
+  border-top: solid thin lightgray;
+}
+.vouchview-dialog__grid .vvgrid-details__item-tbltxt {
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vroutedialog {
+  border: solid thin lightgray;
+  padding: 4px 8px;
+  max-height: 320px;
+}
+.vroutedialog__grid {
+  display: grid;
+  grid-template-columns: 40px 1fr 1fr 120px;
+  grid-template-rows: auto;
+  gap: 8px;
+  grid-auto-flow: row;
+  grid-template-areas: "vroutedialog-lbldate vroutedialog-lbldate vroutedialog-date vroutedialog-controlnumbers" "vroutedialog-location vroutedialog-location vroutedialog-location vroutedialog-controlnumbers" "vroutedialog-reason vroutedialog-reason vroutedialog-reason vroutedialog-controlnumbers" "vroutedialog-remarks vroutedialog-remarks vroutedialog-remarks vroutedialog-controlnumbers";
+  width: 500px;
+  padding: 4px 8px;
+}
+.vroutedialog__grid .vroutedialog-lbldate {
+  grid-area: vroutedialog-lbldate;
+}
+.vroutedialog__grid .vroutedialog-date {
+  grid-area: vroutedialog-date;
+}
+.vroutedialog__grid .vroutedialog-location {
+  grid-area: vroutedialog-location;
+}
+.vroutedialog__grid .vroutedialog-reason {
+  grid-area: vroutedialog-reason;
+}
+.vroutedialog__grid .vroutedialog-remarks {
+  grid-area: vroutedialog-remarks;
+}
+.vroutedialog__grid .vroutedialog-controlnumbers {
+  grid-area: vroutedialog-controlnumbers;
+}
+.vroutedialog__grid .vroutedialog-date {
+  border-bottom: solid thin lightgray;
+}
+.vroutedialog__grid .vroutedialog-controlnumbers {
+  border: solid thin lightgray;
+  border-radius: 5px;
+}
+.vroutedialog__grid .vroutedialog-controlnumbers__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 25px auto 25px;
+  gap: 0px 0px;
+  grid-template-areas: "vroutediasub-title vroutediasub-title vroutediasub-title" "vroutediasub-content vroutediasub-content vroutediasub-content" "vroutediasub-footer vroutediasub-footer vroutediasub-footer";
+  height: 100%;
+}
+.vroutedialog__grid .vroutedialog-controlnumbers__grid .vroutediasub-title {
+  grid-area: vroutediasub-title;
+}
+.vroutedialog__grid .vroutedialog-controlnumbers__grid .vroutediasub-content {
+  grid-area: vroutediasub-content;
+}
+.vroutedialog__grid .vroutedialog-controlnumbers__grid .vroutediasub-footer {
+  grid-area: vroutediasub-footer;
+}
+.vroutedialog__grid .vroutedialog-controlnumbers__grid .vroutediasub-title, .vroutedialog__grid .vroutedialog-controlnumbers__grid .vroutediasub-footer {
+  background-color: lightyellow;
+  padding: 2px 4px;
+  font-weight: bold;
+  justify-content: center;
+}
+.vroutedialog__grid .vroutedialog-controlnumbers__grid .vroutediasub-content {
+  max-height: 250px;
+  overflow: auto;
+  padding: 4px;
+  text-align: center;
+}
+.vroutedialog__grid .vroutedialog-controlnumbers__grid .vroutediasub-title {
+  border-radius: 5px 5px 0px 0px;
+  border-bottom: solid thin lightgray;
+}
+.vroutedialog__grid .vroutedialog-controlnumbers__grid .vroutediasub-footer {
+  border-radius: 0px 0px 5px 5px;
+  border-top: solid thin lightgray;
+}
+.signatories-container, .pcview-dialog .pcgrid-signatories, .liqview-dialog__grid .liqgrid-signatories, .liqview-dialog .liqgrid-signatories, .rfpview-dialog__grid .rfpgrid-signatories, .vouchview-dialog__grid .vvgrid-signatories {
+  border: solid thin lightgray;
+  border-radius: 5px;
+  gap: 4px;
+  justify-content: center;
+  padding: 0px 8px 8px 8px;
+  margin: 4px 4px 0px 4px;
 }/*# sourceMappingURL=dialog.styles.css.map */

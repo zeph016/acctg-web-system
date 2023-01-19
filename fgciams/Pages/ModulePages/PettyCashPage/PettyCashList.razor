@@ -226,7 +226,7 @@
                                 }
                                 if(context.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCA)
                                 {
-                                <MudMenuItem OnClick='(() => Prompt(Enums.ActionMode.Create,context))'>
+                                <MudMenuItem OnClick='(() => Prompt(Enums.ActionMode.Void,context))'>
                                         <a class='d-flex align-center gap-2 '>
                                             <MudIcon Icon='@Icons.Material.Filled.CancelPresentation' Size='Size.Small' />
                                             <MudText Typo='Typo.body2'>Generated (Void)</MudText>
@@ -264,24 +264,23 @@
                 <ChildRowContent>
                     <MudTr>
                         <td colspan="8">
-                            <div class='transition-05s-ease overflow-hidden' style='@(context.ShowReport ? "max-height:4000px" : "max-height:0px")'>
+                            <div class='rpt-container-trtd @(context.ShowReport ? "max-height4kpx":"max-height0px")'>
                                 <div class='rpt-container-listview'>
                                     <MudCard Class='rpt-container-listview__document-cont px-2' Elevation='1'>
                                         <div class='rpt-container-listview__iframe-cont'>
                                             @if(context.ShowReport)
                                             {
-                                                @if (string.IsNullOrWhiteSpace(PDFContent))
+                                                @if (string.IsNullOrWhiteSpace(pdfContent))
                                                 {
                                                     <MudProgressCircular Color="Color.Primary" Indeterminate Size='Size.Large' />
                                                 }
                                                 else
                                                 {
-                                                    <iframe class='rpt-container-listview__iframe-scaled' src='@PDFContent' />
+                                                    <iframe class='rpt-container-listview__iframe-scaled' src='@pdfContent' />
                                                 }
-                                                <ReportControls 
-                                                    controlPosition='rptctrls-side-bottom-list'
-                                                    isCloseOnly='true'
-                                                    confirmStr='Close Report' 
+                                                <ReportControls
+                                                    IsCloseOnly='true'
+                                                    ConfirmStr='Close Report' 
                                                     BackEventClick='(() => context.ShowReport = !context.ShowReport)'/>
                                             }
                                         </div>
@@ -303,7 +302,7 @@
 {
     private bool dataFetched, openSideFilter, isLoading, isPinnedCtrlNo = true, isPinnedAmt = true;
     private string searchTerm = string.Empty;
-    private string PDFContent = default!;
+    private string pdfContent = default!;
     public static Enums.ActionMode currActionMode { get; set; }
     private IEnumerable<PettyCashModel>? pageData;
     private MudTable<PettyCashModel> tableVariable = new();
@@ -364,7 +363,7 @@
     }
     private async Task LoadPettyCash(PettyCashModel pettyCashModel)
     {
-        PDFContent = await PettyCashService.GetPettyCashReport(pettyCashModel);
+        pdfContent = await PettyCashService.GetPettyCashReport(pettyCashModel);
         StateHasChanged();
     }
     private void CreatePettyCash(){
@@ -378,9 +377,9 @@
         currActionMode = Enums.ActionMode.Update;
         navigationManager.NavigateTo($"/petty-cash");
     }
-    private async void ViewAuditTrail(PettyCashModel pettyCashModel)
+    private void ViewAuditTrail(PettyCashModel pettyCashModel)
     {
-        GlobalClass.pettyCash = await Task.Run(()=> pettyCashModel);
+        GlobalClass.pettyCash = pettyCashModel;
         navigationManager.NavigateTo($"/petty-cash/audit-trail");
     }
     private async Task Prompt(Enums.ActionMode actionMode, PettyCashModel model)
@@ -393,6 +392,7 @@
         parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("actionMode", actionMode);
         parameters.Add("controlNumber", model.ControlNumber);
+        parameters.Add("isVoid", actionMode == Enums.ActionMode.Void ? true : false);
         var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
         if (!resultDialog.Canceled) 
@@ -414,19 +414,20 @@
             acctgStatus = GlobalClassList.accountingStatusList.Where(x => x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCR).FirstOrDefault();
         else if (actionMode == Enums.ActionMode.Create)
             acctgStatus = GlobalClassList.accountingStatusList.Where(x => x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCG).FirstOrDefault();
+        else if (actionMode == Enums.ActionMode.Void)//Void uses status of acctg PCG
+            acctgStatus = GlobalClassList.accountingStatusList.Where(x => x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCG).FirstOrDefault();
 
         //Audit Trail
         GlobalClass.pettyCash.PettyCashId = GlobalClass.pettyCash.Id;
-        GlobalClass.pettyCash.Activity = "Update Petty Cash";
+        GlobalClass.pettyCash.Activity = actionMode == Enums.ActionMode.Void ? "Activity: Update Petty Cash; Remarks: "+GlobalVariable.PromptRemarks : actionMode+" Petty Cash";
         GlobalClass.pettyCash.UserId = GlobalClass.currentUserAccount.EmployeeId;
 
         if (acctgStatus != null) {
             GlobalClass.pettyCash.StatusName = acctgStatus.StatusName;
             GlobalClass.pettyCash.StatusId = (Int64)acctgStatus.Id;
-            GlobalClass.pettyCash.Activity = actionMode+" Petty Cash";
             GlobalClass.pettyCash.StatusEnumCategoryId = acctgStatus.StatusEnumCategoryId;
         }
-
+    
         Task t = Task.WhenAll(UpdatePettyCash());
         await t;
         if (t.Status == TaskStatus.RanToCompletion)
@@ -566,7 +567,6 @@
     {
         var parameters = new DialogParameters();
         parameters.Add("dialogTitle", "Petty Cash");
-        parameters.Add("subModuleName", "List");
         parameters.Add("pettyCash", model);
         var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.Small, FullWidth = true, NoHeader = false, DisableBackdropClick = false };
         var resultDialog = await dialogService.Show<Shared.Dialogs.PreviewInformationDialogs.PreviewPettyCashDialog>("", parameters, options).Result;

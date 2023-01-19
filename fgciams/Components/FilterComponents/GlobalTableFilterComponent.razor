@@ -14,7 +14,8 @@
     <div class='filter-content @(contentVisible ? "fade-in":"fade-out")'>
         <MudGrid Spacing='1'>
             <!-- No searching for supplier in PO-->
-            @if(lookUpType != Enums.LookUpType.POBilling && lookUpType != Enums.LookUpType.PO && lookUpType != Enums.LookUpType.Voucher)
+            @if(lookUpType != Enums.LookUpType.POBilling && lookUpType != Enums.LookUpType.PO && lookUpType != Enums.LookUpType.Voucher
+            && lookUpType != Enums.LookUpType.Liquidation)
             {
                  <MudItem Class='d-flex align-center justify-center' xs=2>
                     <MudCheckBox CheckedChanged='( (bool b)=> 
@@ -25,7 +26,7 @@
                 </MudItem>
                 <MudItem Class='pr-3' xs=10>
                     <div class='blzrtheadfilter-lbl-req'>
-                        <small>@(lookUpType == Enums.LookUpType.PO ? "Supplier":"Payee")</small>
+                        <small>@(lookUpType is Enums.LookUpType.PO or Enums.LookUpType.POBilling? "Supplier":"Payee")</small>
                     </div>
                     <div class='blzrthead-disabled-minheight15'>
                         <BlazoredTypeahead SearchMethod=LoadProject EnableDropDown DisableClear
@@ -35,8 +36,9 @@
                             </SelectedTemplate>
                             <ResultTemplate>
                                 <div class='d-flex flex-column'>
-                                    <small>@context.ProjectName</small>
+                                    <small class='font-bold'>@context.ProjectName</small>
                                     <small>@context.Location</small>
+                                    <small>@Extensions.ProjectReference(context)</small>
                                 </div>
                             </ResultTemplate>
                         </BlazoredTypeahead>
@@ -92,8 +94,9 @@
                             </SelectedTemplate>
                             <ResultTemplate>
                                 <div class='d-flex flex-column'>
-                                    <small>@context.ProjectName</small>
+                                    <small class='font-bold'>@context.ProjectName</small>
                                     <small>@context.Location</small>
+                                    <small>@Extensions.ProjectReference(context)</small>
                                 </div>
                             </ResultTemplate>
                         </BlazoredTypeahead>

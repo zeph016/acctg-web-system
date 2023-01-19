@@ -150,7 +150,7 @@
                 if (currentAction == Enums.ActionMode.Create)
                 {
                     if (accountLine == 0) {
-                        GlobalClass.accountLineGroup = await accountLineService.UpdateAccountLineGroup(GlobalClass.accountLineGroup, GlobalClass.token);
+                        GlobalClass.accountLineGroup = await accountLineService.AddAccountLineGroup(GlobalClass.accountLineGroup, GlobalClass.token);
                         GlobalClassList.accountLineGroups.Add(GlobalClass.accountLineGroup);
                     }
                     else if (accountLine == 1) {

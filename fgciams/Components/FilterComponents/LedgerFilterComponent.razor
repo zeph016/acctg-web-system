@@ -36,8 +36,9 @@
                             </SelectedTemplate>
                             <ResultTemplate>
                                 <div class='d-flex flex-column'>
-                                    <small>@project.ProjectName</small>
+                                    <small class='font-bold'>@project.ProjectName</small>
                                     <small>@project.Location</small>
+                                    <small>@Extensions.ProjectReference(project)</small>
                                 </div>
                             </ResultTemplate>
                         </BlazoredTypeahead>
@@ -59,7 +60,7 @@
                     </div>
                     <div class='blzrthead-disabled-minheight15'>
                         <BlazoredTypeahead Disabled='!filterParameter.IsBank'
-                            SearchMethod=Extensions.SearchBank Context='bank'
+                            SearchMethod='( (string s)=> Extensions.SearchBank(s, false) )' Context='bank'
                             ValueChanged="((BankModel b)=> OnBankSelected(b))" 
                             Value="bank" 
                             ValueExpression="(()=>bank)"

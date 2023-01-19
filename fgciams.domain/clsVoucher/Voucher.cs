@@ -57,6 +57,7 @@ namespace fgciams.domain.clsVoucher
         public List<VoucherRFPModel> RemovedVoucherRFP { get; set; }
         public decimal CheckTotalAmount { get; set; }
         public decimal currentCheckAmount { get; set; }
+        public bool isChecksCancelled { get; set; }
         public decimal CheckBalance
         {
             get

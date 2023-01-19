@@ -140,10 +140,11 @@
                                 <small class='blzsmallpayproj-170px ml-2 pt-1'>@currentProject.ProjectName</small>
                             </SelectedTemplate>
                             <ResultTemplate>
-                                 <div class='d-flex flex-column'>
-                                    <small>@proj.ProjectName</small>
+                                <div class='d-flex flex-column'>
+                                    <small class='font-bold'>@proj.ProjectName</small>
                                     <small>@proj.Location</small>
-                                 </div>
+                                    <small>@Extensions.ProjectReference(proj)</small>
+                                </div>
                             </ResultTemplate>
                         </BlazoredTypeahead>
                     }
@@ -162,8 +163,9 @@
                             </SelectedTemplate>
                             <ResultTemplate>
                                 <div class='d-flex flex-column'>
-                                    <small>@proj.ProjectName</small>
-                                    <small>@proj.Location</small>
+                                    <small class='font-bold'>@project.ProjectName</small>
+                                    <small>@project.Location</small>
+                                    <small>@Extensions.ProjectReference(project)</small>
                                 </div>
                             </ResultTemplate>
                         </BlazoredTypeahead>
@@ -426,7 +428,8 @@
             }
             @if(!moduleName.Contains("collection-list", StringComparison.InvariantCultureIgnoreCase)
             && !moduleName.Contains("or-list", StringComparison.InvariantCultureIgnoreCase)
-            && !moduleName.Contains("debit-list", StringComparison.InvariantCultureIgnoreCase))
+            && !moduleName.Contains("debit-list", StringComparison.InvariantCultureIgnoreCase)
+            && !moduleName.Contains("voucherroute-list", StringComparison.InvariantCultureIgnoreCase))
             {
                 <MudItem class='d-flex align-center justify-center' xs=2>
                     <small><MudCheckBox CheckedChanged='( (bool b)=> 
@@ -509,6 +512,13 @@
             else if (moduleName.Contains("liquidation-list", StringComparison.InvariantCultureIgnoreCase))
             {
                 acctgStatusList = GlobalClassList.accountingStatusList.Where(x=>x.StatusName.Contains("L-", StringComparison.InvariantCultureIgnoreCase)).ToList();
+            }
+            else if (moduleName.Contains("voucher-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                acctgStatusList = GlobalClassList.accountingStatusList.Where(x=>x.StatusName.Contains("V-", StringComparison.InvariantCultureIgnoreCase)).ToList();
+            }else if (moduleName.Contains("check-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                acctgStatusList = GlobalClassList.accountingStatusList.Where(x=>x.StatusName.StartsWith("C-")).ToList();
             }
             else
             {

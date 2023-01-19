@@ -50,7 +50,7 @@ namespace fgciams.Common
     public static class GlobalClass
     {
         public static string token { get; set; } = string.Empty;
-        public static string pageTitle { get; set; } = default!;
+        public static string pageTitle { get; set; } = string.Empty;
         public static bool isUserAuth { get; set; }
         public static string selectedIcon {get;set;} = string.Empty;
         public static object selectedIconType {get;set;} = string.Empty;
@@ -78,7 +78,6 @@ namespace fgciams.Common
         public static AccountTypeModel accountTypeModel {get; set;} = default!;
         public static AccountLineGroupModel accountLineGroup {get; set;} = default!;
         public static AccountLineTypeModel accountLineType {get; set;} = default!;
-        public static LiquidationModel liquidationAudit {get; set;} = default!;
         public static CheckModel checkModel {get;set;} = new();
         public static CheckVoucherModel checkVoucher {get;set;} = new();
         public static VoucherRouteBatchModel voucherRouteBatch {get; set; } = default!;
@@ -120,9 +119,9 @@ namespace fgciams.Common
         public static List<PettyCashModel> liquidationPettyCash {get; set;} = default!;
         public static List<PettyCashModel> listOfPettyCash {get; set;} = default!;
         public static List<PettyCashModel> notLiquidatedPettyCashList {get; set;} = default!;
-        public static List<PettyCashAuditTrail> currrentAuditTrail {get; set;} = default!;
+        public static List<PettyCashAuditTrail> PettyCashAuditTrail {get; set;} = default!;
         public static List<ExpenseLineModel> expenseLineList {get; set;} = default!;
-        public static List<RequestForPaymentAuditTrailModel> rfpAuditTrailList {get; set;} = default!;
+        public static List<RequestForPaymentAuditTrailModel> RFPAuditTrail {get; set;} = default!;
         public static List<LiquidationModel> LiquidationNotInRFP {get;set;} = default!;
         public static List<AccountingPOBillingModel> POBillingList {get; set;} = default!;
         public static List<VoucherModel> Vouchers {get; set;} = new();
@@ -148,8 +147,8 @@ namespace fgciams.Common
         public static List<Project> projectList  {get;set;} = default!;
         public static List<Project> subConProjectList  {get;set;} = default!;
         public static List<CollectionModel> collectionList {get;set;} = new();
+        public static List<CollectionModel> selectedCollections {get;set;} = new();
         public static List<CollectionExpenseModel> collectionExpenses {get;set;} = new();
-        public static HashSet<CollectionModel> selectedCollections {get;set;} = new();
         public static List<BankDepositModel> bankDepositList {get;set;} = new();
         public static List<CollectionModel> projectLedgerList {get;set;} = new();
         public static List<CheckLedgerModel> checkLegderList {get;set;} = new();
@@ -167,5 +166,7 @@ namespace fgciams.Common
         public static string errorPromptText {get;set;} = string.Empty;
         public static int[] pageSize = new int[] { 15, 30, 45, 60, 75, 90, 100 };
         public static DateTime ServerTime { get; set; } = default!;
+        public static string PromptRemarks { get; set; } = string.Empty;
+
     }
 }

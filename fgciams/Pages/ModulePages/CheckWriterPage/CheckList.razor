@@ -60,6 +60,7 @@
                     <col />
                     <col />
                     <col style='width:1%;' />
+                    <col style='width:1%;' />
                     <col style='width:115px' />
                     <col style="width:50px" />
                 </ColGroup>
@@ -88,7 +89,9 @@
                     </MudTh>
                     <MudTh Class='customheader-6'>Payee</MudTh>
                     <MudTh Class='customheader-6'>Bank</MudTh>
+                    <MudTh Class='customheader-6 text-center'>Category</MudTh>
                     <MudTh Class='customheader-6 text-center'>Status</MudTh>
+                    <MudTh Class='customheader-6 text-center'>Date</MudTh>
                     <MudTh Class='@(isPinnedAmt ? "th-sticky-amt customheader-6 text-right":"customheader-6 text-right")'>
                         <MudTooltip Text='Pin amount column' Arrow Placement='Placement.Top'>
                             <MudIconButton Class='ico-15x15' OnClick='(() => isPinnedAmt = !isPinnedAmt)' Color='@(isPinnedAmt ? Color.Info:Color.Dark)' 
@@ -131,17 +134,27 @@
                             <small>@context.BankName</small>
                         </div>
                     </MudTd>
-                    <MudTd Class='@(isPinnedAmt ? "br-none":"")' DataLabel='Status'>
+                    <MudTd DataLabel='Check Category'>
+                        @if(GlobalClassList.accountingStatusList != null)
+                        {
+                            <MudChip Class='mudchip-tbl' Size='Size.Small' Color='Color.Info' Variant='Variant.Outlined'>
+                                @context.CheckCategory
+                            </MudChip>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel='Status Name'>
+                        @if(GlobalClassList.accountingStatusList != null)
+                        {
+                            <MudChip Class='mudchip-tbl' Size='Size.Small' Style='@Extensions.BorderColor(context.AccountingStatusId)' Variant='Variant.Outlined'>
+                                @AccountingStatusName(context.AccountingStatusId)
+                            </MudChip>
+                        }
+                    </MudTd>
+                    <MudTd Class='@(isPinnedAmt ? "br-none":"")' DataLabel='Status Date'>
                         <div class='d-flex align-center'>
                             @if(GlobalClassList.accountingStatusList != null)
                             {
-                                <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Color='Color.Info' Variant='Variant.Outlined'>
-                                    @context.CheckCategory
-                                </MudChip>
-                                <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@Extensions.BorderColor(context.AccountingStatusId)' Variant='Variant.Outlined'>
-                                    @AccountingStatusName(context.AccountingStatusId)
-                                </MudChip>
-                                <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Icon='@Icons.Material.Filled.CalendarMonth' Variant='Variant.Outlined' Color='Color.Dark' Size='Size.Small'>
+                                <MudChip Class='mudchip-tbl' Icon='@Icons.Material.Filled.CalendarMonth' Variant='Variant.Outlined' Color='Color.Dark' Size='Size.Small'>
                                     @(context.StatusDate?.ToShortDateString())
                                 </MudChip>
                             }
@@ -183,22 +196,22 @@
                                     @if(context.AccountingStatusId != AccountingStatusId(Enums.AccountingStatusEnumCategory.CCLRD)  && 
                                     context.AccountingStatusId != AccountingStatusId(Enums.AccountingStatusEnumCategory.CR))
                                     {
-                                    <MudMenuItem OnClick="(()=>UpdateStatus(context,Enums.AccountingStatusEnumCategory.CCLRD,Enums.ActionMode.Clear))">
-                                        <div class='d-flex align-center gap-2 '>
-                                            <MudIcon Icon='@Icons.Material.Filled.ClearAll' Size='Size.Small' Color='Color.Dark' />
-                                            <MudText Typo='Typo.body2' Color='Color.Dark'>Clear Check</MudText>
-                                        </div>
-                                    </MudMenuItem>
+                                        <MudMenuItem OnClick="(() => UpdateStatus(context,Enums.AccountingStatusEnumCategory.CR,Enums.ActionMode.Release))">
+                                            <div class='d-flex align-center gap-2 '>
+                                                <MudIcon Icon='fa-solid fa-check-double' Size='Size.Small' Color='Color.Dark'/>
+                                                <MudText Typo='Typo.body2' Color='Color.Dark'>Release</MudText>
+                                            </div>
+                                        </MudMenuItem>
                                     }
                                     @if(context.AccountingStatusId != AccountingStatusId(Enums.AccountingStatusEnumCategory.CR) && 
                                     context.AccountingStatusId == AccountingStatusId(Enums.AccountingStatusEnumCategory.CCLRD))
                                     {
-                                    <MudMenuItem OnClick="(() => UpdateStatus(context,Enums.AccountingStatusEnumCategory.CR,Enums.ActionMode.Release))">
-                                        <div class='d-flex align-center gap-2 '>
-                                            <MudIcon Icon='fa-solid fa-check-double' Size='Size.Small' Color='Color.Dark'/>
-                                            <MudText Typo='Typo.body2' Color='Color.Dark'>Release</MudText>
-                                        </div>
-                                    </MudMenuItem>
+                                        <MudMenuItem OnClick="(()=>UpdateStatus(context,Enums.AccountingStatusEnumCategory.CCLRD,Enums.ActionMode.Clear))">
+                                            <div class='d-flex align-center gap-2 '>
+                                                <MudIcon Icon='@Icons.Material.Filled.ClearAll' Size='Size.Small' Color='Color.Dark' />
+                                                <MudText Typo='Typo.body2' Color='Color.Dark'>Clear Check</MudText>
+                                            </div>
+                                        </MudMenuItem>
                                     }
                                     @if(context.AccountingStatusId != AccountingStatusId(Enums.AccountingStatusEnumCategory.CR))
                                     {

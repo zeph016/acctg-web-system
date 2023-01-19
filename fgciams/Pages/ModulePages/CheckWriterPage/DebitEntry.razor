@@ -44,7 +44,7 @@
                             Bank:
                             <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
                         </MudText>
-                        <BlazoredTypeahead SearchMethod=Extensions.SearchBank ValueChanged="((BankModel bank)=>SelectedBank(bank))" ValueExpression='(()=>bank)' Value="bank"
+                        <BlazoredTypeahead SearchMethod='( (string s)=> Extensions.SearchBank(s, false) )' ValueChanged="((BankModel bank)=>SelectedBank(bank))" ValueExpression='(()=>bank)' Value="bank"
                             Context='selbank' Debounce="500" placeholder='BANK & ACCOUNT NO.'>
                             <SelectedTemplate>
                                 <MudText Class='font12'>@selbank.ShortcutName</MudText>

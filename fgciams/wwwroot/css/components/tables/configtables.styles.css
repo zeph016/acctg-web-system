@@ -1,3 +1,42 @@
+.dflex-row-align-center {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+}
+
+.dflex-row, .tblpager__grid .tblpager-lblsel, .tblpager__grid .tblpager-sel, .tblpager__grid .tblpager-lblamt,
+.tblpager__grid .tblpager-totalamt {
+  align-items: center;
+  display: flex;
+}
+
+.dflex-col {
+  flex-direction: column;
+  display: flex;
+}
+
+.dflex-ac {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+}
+
+.flex-full {
+  flex: 1 1 0%;
+}
+
+.dflex {
+  display: flex;
+}
+
+.dblock {
+  display: block;
+}
+
+.dblock-inline {
+  display: inline-block;
+} /*# sourceMappingURL=flexgridmods.styles.css.map */
 .configtables .mud-table-container {
   height: calc(100vh - 190px);
   min-width: 75vh;
@@ -254,4 +293,61 @@ tr td.unselectable-row {
   background-color: #ddd;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+.tblpager__grid {
+  border: solid thin lightgray;
+  border-right-style: none;
+  display: grid;
+  grid-template-columns: 60px 1fr 90px 180px;
+  grid-template-rows: 30px;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas: "tblpager-lblsel tblpager-sel tblpager-lblamt tblpager-totalamt";
+}
+.tblpager__grid .tblpager-lblsel {
+  grid-area: tblpager-lblsel;
+}
+.tblpager__grid .tblpager-sel {
+  grid-area: tblpager-sel;
+}
+.tblpager__grid .tblpager-lblamt {
+  grid-area: tblpager-lblamt;
+}
+.tblpager__grid .tblpager-totalamt {
+  grid-area: tblpager-totalamt;
+}
+.tblpager__grid .tblpager-sel {
+  overflow: auto;
+}
+.tblpager__grid .tblpager-totalamt {
+  justify-content: end;
+}
+.tblpager__grid .tblpager-lblsel, .tblpager__grid .tblpager-sel, .tblpager__grid .tblpager-lblamt,
+.tblpager__grid .tblpager-lblamt {
+  border-right: solid thin lightgray;
+}
+.tblpager__grid .tblpager-sel, .tblpager__grid .tblpager-totalamt {
+  padding: 0px 4px;
+}
+.tblpager__lbl, .tblpager__txt {
+  padding: 0px 4px;
+  white-space: nowrap;
+}
+.tblpager__lbl {
+  font-size: 10px;
+  color: #9F9F9F;
+  text-transform: uppercase;
+}
+.tblpager__txt {
+  font-size: 12px;
+}
+
+.colamt-container {
+  font-weight: bold;
+  white-space: nowrap;
+  min-width: 100px;
+}
+.colamt-container p {
+  font-size: 12px;
 }/*# sourceMappingURL=configtables.styles.css.map */

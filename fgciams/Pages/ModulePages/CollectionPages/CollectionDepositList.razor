@@ -248,7 +248,7 @@
     }
     private async Task GetBankDepositDetails(BankDepositModel bankDeposit, Enums.ActionMode action)
     {
-        GlobalClassList.selectedCollections = (await bankDepositService.GetBankDepositCollections(bankDeposit.Id,GlobalClass.token)).ToHashSet();
+        GlobalClassList.selectedCollections = await bankDepositService.GetBankDepositCollections(bankDeposit.Id,GlobalClass.token);
         if(action == Enums.ActionMode.Cancel)
             await Prompt(action, bankDeposit);
     }

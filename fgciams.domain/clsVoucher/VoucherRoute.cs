@@ -17,5 +17,6 @@ namespace fgciams.domain.clsVoucher
         public string  VoucherControlNumber { get; set; } = string.Empty;
         public DateTime VoucherDate { get; set; }
         public List<VoucherModel> VoucherList { get; set; } = new();
+        public string StatusName {get ; set;} = string.Empty;
     }
 }

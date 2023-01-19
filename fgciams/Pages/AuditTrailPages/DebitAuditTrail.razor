@@ -3,6 +3,7 @@
 @inject NavigationManager NavigationManager
 @inject ICheckService CheckService
 @inject IGlobalService GlobalService
+@inject IDebitService DebitService
 
 <div class='page-cont'>
     <MudContainer Class='overflow-hidden pa-2' Fixed='false' MaxWidth='MaxWidth.Large'>
@@ -114,7 +115,8 @@
         if(GlobalClass.debit != null)
         {
             try{
-                GlobalClass.pageTitle = "CHECK AUDIT TRAIL";
+                GlobalClass.pageTitle = "DEBIT AUDIT TRAIL";
+                currentTrail = await DebitService.DebitAuditTrail(GlobalClass.debit.Id,GlobalClass.token);
                 //currentTrail = GlobalClassList.debitList;
                 CompletedFetch();
             }catch(NullReferenceException ee){

@@ -1,0 +1,105 @@
+@page "/liquidation/audit"
+@page "/liquidation/audit/{liquidationId:long}"
+
+@inject ILiquidationService auditLiquidationService
+@inject NavigationManager NavigationManager
+@inject IGlobalService globalService
+@inject IJSRuntime JSRuntime
+
+<div class='page-cont'>
+    <div class='bgc-white'>
+        <MudContainer Class="overflow-hidden pa-2" Fixed='false' MaxWidth='MaxWidth.ExtraLarge'>
+            @if(!dataFetched)
+            {
+                <SkeletonPageList />
+            }
+            else
+            {
+                <MudContainer Fixed='false' MaxWidth='MaxWidth.Large'>
+                    <MudPaper Elevation='0'>
+                          <div class="audit-trail-grid">
+                            <div id='atrail-contentid-liq' class="audit-trail-content">
+                                <AuditLogTimeline IsLiquidation='true' LiquidationAuditTrail='@currentAuditTrailList'
+                                    ModuleName='liquidation' />
+                            </div>
+                            <div class="audit-trail-sidebar">
+                                <MudPaper>
+                                    <AuditLogInfo IsLiquidation='true' Liquidation='@currLiquidation' DataFetched='@dataFetched'
+                                        ReturnEventClick='BackToLiqList'/>
+                                </MudPaper>
+                                @if(scrollBarExists)
+                                {
+                                    <div class='atrail-scrollbtn-cont'>
+                                        <MudButton Class='@(!isToBottom ? "btn-ios-d font12":"btn-ios-d font12 mudbtn-rotate-180")' OnClick='(() => ScrollJS(isToBottom = !isToBottom, "atrail-contentid-liq"))'
+                                            StartIcon='@Icons.Material.Filled.ArrowDownward' Size='Size.Small' Variant='Variant.Filled' Color='Color.Secondary'
+                                            Style='@(!isToBottom ? "max-width: 150px;":"")' Disabled='!scrollBarExists'>
+                                            @ScrollButtonStr
+                                        </MudButton>
+                                    </div>
+                                }
+                            </div>
+                          </div>
+                    </MudPaper>
+                </MudContainer>
+            }
+        </MudContainer>
+    </div>
+</div>
+
+@code{
+    [Parameter] public Int64 liquidationId {get; set;}
+    private bool dataFetched, isToBottom, scrollBarExists;
+    private List<LiquidationAuditTrailModel> currentAuditTrailList = new List<LiquidationAuditTrailModel>();
+    private LiquidationAuditTrailModel currentAuditTrail = new LiquidationAuditTrailModel();
+    private LiquidationModel currLiquidation = new();
+    private DateRange dateRange = new DateRange(DateTime.Now, DateTime.Now);
+    private DateTime? LiquidationDate ;
+    private string ScrollButtonStr = "To Bottom";
+
+    protected override async Task OnInitializedAsync()
+    {
+        GlobalClass.pageTitle = "LIQUIDATION AUDIT TRAIL";
+        if(GlobalClass.liquidation == null || GlobalClass.liquidation.Id == 0)
+            BackToLiqList();
+        else
+        {
+            Task t = Task.WhenAll(LoadAuditTrail());
+            await t;
+            if (t.Status == TaskStatus.RanToCompletion)
+                CompletedFetch();
+        }
+        if(GlobalClass.liquidation == null || GlobalClass.liquidation.Id != 0)
+            scrollBarExists = await JSRuntime.InvokeAsync<bool>("CheckScrollbar", "atrail-contentid-liq");
+    }
+
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+
+     private async Task ScrollJS(bool boolValue, string elementId)
+    {
+        if(boolValue)
+        {
+            await JSRuntime.InvokeVoidAsync("ScrollToBottom", elementId);
+            ScrollButtonStr = "To Top";
+        }
+        else if(!boolValue)
+        {
+            await JSRuntime.InvokeVoidAsync("ScrollToTop", elementId);
+            ScrollButtonStr = "To Bottom";
+        }
+    }
+    private async Task LoadAuditTrail()
+    {
+        LiquidationDate = GlobalClass.liquidation.LiquidationDate;
+        dateRange = new DateRange(GlobalClass.liquidation.PeriodFrom, GlobalClass.liquidation.PeriodTo);
+        currentAuditTrailList = await auditLiquidationService.LiquidationAuditTrail(GlobalClass.liquidation.Id, GlobalClass.token);
+        currentAuditTrail = currentAuditTrailList.Last();
+        currLiquidation = GlobalClass.liquidation;
+    }
+
+    private void BackToLiqList() => NavigationManager.NavigateTo("/liquidation/list");
+    
+}

@@ -9,21 +9,21 @@
     <div class='rpt-container'>
         <MudCard Class='rpt-container__document-cont' Elevation='1'>
             <div class='rpt-container__iframe-cont'>
-                @if (string.IsNullOrWhiteSpace(PDFContent))
+                @if (string.IsNullOrWhiteSpace(pdfReport))
                 {
                     <MudProgressCircular Color="Color.Primary" Indeterminate />
                 }
                 else
                 {
-                    <iframe src='@PDFContent' />
+                    <iframe src='@pdfReport' />
                 }
             </div>
         </MudCard>
         <ReportControls 
-            controlPosition='rptctrls-side-bottom'
-            confirmStr='SAVE VOUCHER'
-            isSaved='isSaved' 
-            processing='_processing'
+            ControlPosition='rptctrls-side-bottom'
+            ConfirmStr='SAVE PETTY CASH'
+            IsSaved='isSaved' 
+            Processing='_processing'
             BackEventClick='Back'
             PromptEventClick='Prompt' />
     </div>
@@ -31,16 +31,16 @@
 
 @code
 {
-    private string PDFContent = string.Empty;
+    private string pdfReport = string.Empty;
     private PettyCashModel returnedModel {get;set;} = new();
     private bool isSaved, _processing;
     protected override async Task OnInitializedAsync()
     {
         GlobalClass.pageTitle = "Petty Cash Report";
-        if(GlobalClass.pettyCash.Id == 0 || GlobalClass.pettyCash == null)
+        if(GlobalClass.pettyCash == null)
             ToList();
         else
-            PDFContent = await pettyCashService.GetPettyCashReport(GlobalClass.pettyCash);
+            pdfReport = await pettyCashService.GetPettyCashReport(GlobalClass.pettyCash);
         StateHasChanged();
     }
     protected override async Task OnParametersSetAsync()

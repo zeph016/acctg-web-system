@@ -1,0 +1,196 @@
+@inject ISnackbar SnackbarService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager navigationManager
+
+<MudDialog Class='vouchview-dialog'>
+    <TitleContent>
+        <div class='d-flex align-center'>
+            <p class='vouchview-dialog__title'>@DialogTitle</p>
+            <MudSpacer />
+            <MudChip Class='txt-uppercase font-bold' OnClick='(() => CopyTextToClipboard(VoucherModel.ControlNumber))' Label Variant='Variant.Filled'>
+                <small class='color-white'>@VoucherModel.ControlNumber</small>
+            </MudChip>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div class='main-dialog-content @(!dataFetched ? "max-height200px":"max-height4kpx")'>
+            @if(!dataFetched)
+            {
+                <div class='circular-progress-cont'>
+                    <MudProgressCircular Indeterminate Size='Size.Medium' Color='Color.Primary' />
+                </div>
+            }
+            else
+            {
+                <div class="vouchview-dialog__grid">
+                    <div class="vvgrid-lblstatus"><p class='vouchview-dialog__label'>Status:</p></div>
+                    <div class="vvgrid-lbldate"><p class='vouchview-dialog__label'>Date:</p></div>
+                    <div class="vvgrid-lblperiod"><p class='vouchview-dialog__label'>Period:</p></div>
+                    <div class="vvgrid-lblrfp"><p class='vouchview-dialog__label'>RFP:</p></div>
+                    <div class="vvgrid-lbldesc"><p class='vouchview-dialog__label'>Description:</p></div>
+                    <div class="vvgrid-lblrem"><p class='vouchview-dialog__label'>Remarks:</p></div>
+                    <div class="vvgrid-status">
+                        <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@Extensions.BorderColor(VoucherModel.AccountingStatusId)' Variant='Variant.Outlined'
+                            Label>
+                            @VoucherModel.StatusName.ToUpper()
+                        </MudChip>
+                    </div>
+                    <div class="vvgrid-date">
+                        <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Variant='Variant.Outlined' 
+                            Icon='@Icons.Material.Filled.CalendarMonth'>
+                            @Convert.ToDateTime(VoucherModel.VoucherDate).ToShortDateString()
+                        </MudChip>
+                    </div>
+                    <div class="vvgrid-controls">
+                        <MudSpacer />
+                        <MudTooltip Text='@(!VoucherModel.StatusName.Contains("Generated", StringComparison.InvariantCultureIgnoreCase) ? "Cannot modify Voucher, Check Status":"Modify Voucher")' Arrow Placement='Placement.Top'>
+                            <MudIconButton Class='pcview-dialog__btn-circular' OnClick='(() => EditVoucher(VoucherModel))' Icon="@Icons.Material.Filled.Edit" aria-label="Edit" Size='Size.Small' 
+                                Variant='Variant.Filled' Color='Color.Tertiary' Disabled='@(!VoucherModel.StatusName.Contains("Generated", StringComparison.InvariantCultureIgnoreCase) ? true:false)'/>
+                        </MudTooltip>
+                    </div>
+                    <div class="vvgrid-period">
+                        <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Variant='Variant.Outlined' 
+                            Icon='@Icons.Material.Filled.CalendarMonth'>
+                            @Convert.ToDateTime(VoucherModel.PeriodFrom).ToShortDateString() - @Convert.ToDateTime(VoucherModel.PeriodTo).ToShortDateString()
+                        </MudChip>
+                    </div>
+                    <div class="vvgrid-rfp">
+                        @foreach (var item in VoucherModel.VoucherRFP)
+                        {
+                            <MudChip Size='Size.Small' Label Color='Color.Error' Variant='Variant.Outlined'>@item.RFPControlNumber</MudChip>
+                        }
+                    </div>
+                    <div class="vvgrid-desc">
+                        <p class='vouchview-dialog__txt'>
+                            @(!string.IsNullOrWhiteSpace(VoucherModel.Description) ? VoucherModel.Description : "No description")
+                    </p>
+                    </div>
+                    <div class="vvgrid-rem">
+                        <p class='vouchview-dialog__txt'>
+                            @(!string.IsNullOrWhiteSpace(VoucherModel.Remarks) ? VoucherModel.Remarks : "No remarks")
+                        </p>
+                    </div>
+                    <div class="vvgrid-details">
+                        <div class="vvgrid-details__grid">
+                            <div class="vvdet-header">
+                                <MudGrid Class='pa-1' Spacing='1'>
+                                    <MudItem Class='vvdet-header__item-row' xs='3'>
+                                        <p class='vouchview-dialog__label'>Expense</p>
+                                    </MudItem>
+                                    <MudItem Class='vvdet-header__item-row' xs='3'>
+                                        <p class='vouchview-dialog__label'>Charge</p>
+                                    </MudItem>
+                                    <MudItem Class='vvdet-header__item-row' xs='3'>
+                                        <p class='vouchview-dialog__label'>Division</p>
+                                    </MudItem>
+                                    <MudItem Class='vvdet-header__item-row' xs='3'>
+                                        <p class='vouchview-dialog__label'>Amount</p>
+                                    </MudItem>
+                                </MudGrid>
+                            </div>
+                            <div class="vvdet-body">
+                                <MudGrid Class='pa-1' Spacing='1'>
+                                    @foreach (var item in VoucherModel.VoucherDetails)
+                                    {
+                                       <MudItem Class='vvdet-body__item-row' xs='3'>
+                                            <p class='vvgrid-details__item-tbltxt'>@item.ExpenseName</p>
+                                       </MudItem>
+                                        <MudItem Class='vvdet-body__item-row' xs='3'>
+                                            <p class='vvgrid-details__item-tbltxt'>@item.ProjectName</p>
+                                        </MudItem>
+                                       <MudItem Class='vvdet-body__item-row--center' xs='3'>
+                                            <MudChip Label Size='Size.Small' Variant='Variant.Outlined' Color='Color.Dark'>
+                                                <p class='vvgrid-details__item-tbltxt'>@Extensions.DivisionShorcutName(item.DivisionId)</p>
+                                            </MudChip>
+                                        </MudItem>
+                                        <MudItem Class='vvdet-body__item-row--right' xs='3'>
+                                            <p class='@(item.Amount > 0 ? "color-green":"color-red") vvgrid-details__item-tbltxt font-bold'>
+                                                 @(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + @item.Amount.ToString("N2"))
+                                            </p>
+                                        </MudItem>
+                                    }
+                                  
+                                </MudGrid>
+                            </div>
+                            <div class="vvdet-footer">
+                                <MudSpacer />
+                                <p class='vouchview-dialog__label'>Total Amount:</p>
+                                <MudChip OnClick='(() => CopyTextToClipboard(totalAmount.ToString("N2")))' Class='cursor-pointer' Variant='Variant.Text' 
+                                    Size='Size.Small' Color='@(totalAmount > 0 ? Color.Success:Color.Error)' Label>
+                                    <p class='rfpview-dialog__txt font-bold @(totalAmount > 0 ? "color-green":"color-red")'>
+                                        @(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + @totalAmount.ToString("N2"))
+                                    </p>
+                                </MudChip>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="vvgrid-signatories">
+                        <p class='vouchview-dialog__txt--content-title'>Signatories:</p>
+                        <MudPaper Class='pa-2 bgc-e7f2fb min-width200px'>
+                            <MudText Class='font10 font-bold'>Requested By:</MudText>
+                            <SignatoriesComponent employeeId='@VoucherModel.PreparedById' avatarSize='Size.Medium' />
+                        </MudPaper>
+                        <MudPaper Class='pa-2 bgc-e7f2fb min-width200px'>
+                            <MudText Class='font10 font-bold'>Requested By:</MudText>
+                            <SignatoriesComponent employeeId='@VoucherModel.VerifiedById' avatarSize='Size.Medium' />
+                        </MudPaper>
+                        <MudPaper Class='pa-2 bgc-e7f2fb min-width200px'>
+                            <MudText Class='font10 font-bold'>Requested By:</MudText>
+                            <SignatoriesComponent employeeId='@VoucherModel.ApprovedById' avatarSize='Size.Medium' />
+                        </MudPaper>
+                    </div>
+                </div>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Class='btn-ios-d font12' Color="Color.Primary" OnClick="Close" Variant='Variant.Filled'
+            DisableElevation Size='Size.Small'>Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private bool dataFetched;
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = new();
+    [Parameter] public VoucherModel VoucherModel { get; set; } = new();
+    [Parameter] public string DialogTitle { get; set; } = string.Empty;
+    private decimal totalAmount { get; set; }
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(1000);
+        SumAmounts();
+        CompletedFetch();
+    }
+
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+
+    private void Close() => MudDialog.Close(DialogResult.Ok(true));
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task CopyTextToClipboard(string stringToCopy)
+    {
+        await Extensions.CopyTextToClipboard(stringToCopy, SnackbarService, JSRuntime);
+    }
+
+    
+    private void EditVoucher(VoucherModel model)
+    {
+        GlobalClass.voucher = model;
+        PettyCashEntry.currActionMode = Enums.ActionMode.Update;
+        navigationManager.NavigateTo($"/voucher");
+    }
+
+    private void SumAmounts()
+    {
+        totalAmount = VoucherModel.VoucherDetails.Sum(x=>x.Amount);
+    }
+}

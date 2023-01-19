@@ -1,0 +1,82 @@
+@inject IGlobalService GlobalService
+
+<div class="autocomplete">
+    <input class='form-control filter' @bind='selectedProjectName' @oninput='SearchOnInput'/>
+    @if (projectList is not null)
+    {
+        <ul class='options'>
+            @if(projectList.Any())
+            {
+                @foreach(var item in projectList)
+                {
+                    <li class='option' @onclick='(_ => SelectProject(item.ProjectId.ToString()))'>
+                        <span class='option-text'>@item.ProjectName</span>
+                    </li>
+                }
+            }
+            else
+            {
+                <li class='disabled option'>No results</li>
+            }
+        </ul>
+    }
+</div>
+
+@* <ProjectSearchComponent OnSelectedValue='((args) => 
+{ context.projectModel = args; 
+    context.ChargedId = args.ProjectId;
+    context.ChargedName = args.ProjectName;
+    context.ChargedCategoryId = args.ProjectCategoryId; })' /> *@
+
+@code {
+    [Parameter] public EventCallback<Project> OnSelectedValue { get; set; }
+    private Project? selectedProject;
+    private List<Project>? projectList;
+    private string? selectedProjectId;
+    private string? selectedProjectName;
+    private string? keyWords;
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+    }
+
+    private async Task<IEnumerable<Project>> LoadCharging(string chargingName)
+    {
+      var filterParameter = new FilterParameter()
+      {
+        IsProject = true,
+        ProjectName = chargingName,
+        IsId = false
+      };
+      var charging = await GlobalService.LoadChargeProjectLine(filterParameter, GlobalClass.token);
+      return charging;
+    }
+
+    private async Task SearchOnInput(ChangeEventArgs e)
+    {
+        keyWords = e.Value?.ToString();
+        if(keyWords?.Length > 2)
+        {
+            var result = await LoadCharging(keyWords.ToString());
+            if(result != null)
+                projectList = result.ToList();
+            else
+                projectList = null;
+        }
+        else
+        {
+            projectList = null;
+            selectedProjectId = selectedProjectName = null;
+        }
+    }
+
+    private async Task SelectProject(string id)
+    {
+        selectedProjectId = id;
+        selectedProjectName = projectList!.First(p => p.ProjectId.Equals(Convert.ToInt64(selectedProjectId))).ProjectName;
+        selectedProject =  projectList!.First(p => p.ProjectId.Equals(Convert.ToInt64(selectedProjectId)));
+        projectList = null;
+        await OnSelectedValue.InvokeAsync(selectedProject);
+    }
+}
+

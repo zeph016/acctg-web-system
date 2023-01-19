@@ -1,28 +1,29 @@
 
-<div class='rptctrls-container @controlPosition'>
+<div class='rptctrls-container @ControlPosition'>
     <div Class='rptctrls-container__controls'>
-        @if(!isCloseOnly)
+        <MudSpacer />
+        @if(!IsCloseOnly)
         {
-            <MudButton Class='btn-ios-d font12' OnClick="Back"  Color='Color.Error' Variant='Variant.Filled' DisableElevation Size='Size.Small'>@(isSaved ? "RETURN" : "CANCEL")</MudButton>
-            @if (processing) {
-                <MudButton Class='btn-ios-d font12' OnClick="Prompt" Variant='Variant.Filled' DisableElevation Disabled='processing' Color='Color.Success' Size='Size.Small'>
+            <MudButton Class='btn-ios-d font12' OnClick="Back"  Color='Color.Error' Variant='Variant.Filled' DisableElevation Size='Size.Small'>@(IsSaved ? "RETURN" : "CANCEL")</MudButton>
+            @if (Processing) {
+                <MudButton Class='btn-ios-d font12' OnClick="Prompt" Variant='Variant.Filled' DisableElevation Disabled='Processing' Color='Color.Success' Size='Size.Small'>
                     <MudText Class='font12 pr-2'>SAVING VOUCHER</MudText>
                     <MudProgressCircular Class="progsize-21" Size="Size.Small" Indeterminate />
                 </MudButton>
             } else {
                 <MudButton Class='btn-ios-d font12' OnClick="Prompt" Variant='Variant.Filled' DisableElevation 
-                    Disabled='isSaved' Color='Color.Success' Size='Size.Small' FullWidth 
-                    EndIcon='@(!processing ? Icons.Material.Filled.Save:"")'>
-                    @confirmStr
+                    Disabled='IsSaved' Color='Color.Success' Size='Size.Small' 
+                    EndIcon='@(!Processing ? Icons.Material.Filled.Save:"")'>
+                    @ConfirmStr
                 </MudButton>
             }
         }
         else
         {
             <MudButton Class='btn-ios-d font12' OnClick="Back" Variant='Variant.Filled' DisableElevation 
-                    Color='Color.Error' Size='Size.Small' FullWidth 
+                    Color='Color.Error' Size='Size.Small' 
                     EndIcon='@Icons.Material.Filled.Close'>
-                    @confirmStr
+                    @ConfirmStr
             </MudButton>
         }
     </div>
@@ -31,12 +32,13 @@
 @code {
     [Parameter] public EventCallback BackEventClick { get; set; }
     [Parameter] public EventCallback PromptEventClick { get; set; }
-    [Parameter] public string confirmStr { get; set; } = string.Empty;
-    [Parameter] public string cancelStr { get; set; } = string.Empty;
-    [Parameter] public bool processing { get; set; }
-    [Parameter] public bool isSaved { get; set; }
-    [Parameter] public bool isCloseOnly { get; set; }
-    [Parameter] public string controlPosition { get; set; } = string.Empty;
+    [Parameter] public string ConfirmStr { get; set; } = string.Empty;
+    [Parameter] public string CancelStr { get; set; } = string.Empty;
+    [Parameter] public string PositionValue { get; set; } = string.Empty;
+    [Parameter] public bool Processing { get; set; }
+    [Parameter] public bool IsSaved { get; set; }
+    [Parameter] public bool IsCloseOnly { get; set; }
+    [Parameter] public string ControlPosition { get; set; } = string.Empty;
     public override async Task SetParametersAsync(ParameterView parameters)
     {
         await base.SetParametersAsync(parameters);

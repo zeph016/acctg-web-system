@@ -1,0 +1,45 @@
+<MudAutocomplete Class='h-w-division' T='DivisionModel' Variant="Variant.Outlined" Margin='Margin.Dense'
+        Value='Division' 
+        ValueChanged='( (DivisionModel division)=> OnChanged(division) )'
+        SearchFunc="@LoadDivision"
+        ToStringFunc="@(result => result == null? null : result.shortcutName)"
+        ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info" AdornmentIcon='null' IconSize='0'>
+<ItemTemplate Context="selDiv">                            
+    <MudText>
+        <MudTooltip Class='wspace-breakword'>
+            @* Drop down *@
+            <small>@selDiv.divisionName | @selDiv.divisionName</small>
+        </MudTooltip>
+    </MudText>
+</ItemTemplate>
+<ItemSelectedTemplate Context="selDiv">                
+    <MudText>
+        <small>@selDiv.divisionName | @selDiv.shortcutName</small>
+    </MudText>
+</ItemSelectedTemplate>
+</MudAutocomplete>
+
+@code
+{
+    [Parameter] public EventCallback<DivisionModel> OnDivisionValueChanged { get; set; }
+    [Parameter] public DivisionModel Division { get; set; } = new();
+    private void OnChanged(DivisionModel division)
+    {
+        OnDivisionValueChanged.InvokeAsync(division); 
+    }
+    private async Task<IEnumerable<DivisionModel>> LoadDivision(string searchText)
+    {
+      var division = GlobalClassList.divisionList;
+      return await Task.FromResult(division.Where(x=>x.divisionName.Contains(searchText, StringComparison.InvariantCultureIgnoreCase)
+      || x.shortcutName.Contains(searchText, StringComparison.InvariantCultureIgnoreCase)).ToList());
+    }
+}
+<style>
+    .h-w-division
+    {
+        height: 20px;
+        width:100px;
+        min-height: 10px !important;
+        max-width: 100px !important;
+    }
+</style>

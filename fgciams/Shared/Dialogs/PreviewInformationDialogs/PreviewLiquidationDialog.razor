@@ -1,0 +1,165 @@
+@inject ISnackbar SnackbarService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager navigationManager
+@inject ILiquidationService LiquidationService
+
+<MudDialog class='liqview-dialog'>
+    <TitleContent>
+        <div class='d-flex align-center'>
+            <p Class='liqview-dialog__title' Typo='Typo.h6'>@DialogTitle</p>
+            <MudSpacer />
+            <MudChip Class='txt-uppercase font-bold' OnClick='(() => CopyTextToClipboard(Liquidation.ControlNumber))' Label Variant='Variant.Filled'>
+                <small class='color-white'>@Liquidation.ControlNumber</small>
+            </MudChip>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div class='main-dialog-content @(!dataFetched ? "max-height200px":"max-height4kpx")'>
+            @if (!dataFetched)
+            {
+                <div class='circular-progress-cont'>
+                    <MudProgressCircular Indeterminate Size='Size.Medium' Color='Color.Primary' />
+                </div>
+            }
+            else
+            {
+                <div class="liqview-dialog__grid">
+                    <div class="liqgrid-lblstatus">
+                        <p class='liqview-dialog__label'>Status:</p>
+                    </div>
+                    <div class="liqgrid-lbldate">
+                        <p class='liqview-dialog__label'>Date:</p>
+                    </div>
+                    <div class="liqgrid-lblperiod">
+                        <p class='liqview-dialog__label'>Period:</p>
+                    </div>
+                    <div class='liqgrid-lblamt'>
+                        <p class='liqview-dialog__label'>Total Amount:</p>
+                    </div>
+                    <div class="liqgrid-lblremarks">
+                        <p class='liqview-dialog__label'>Remarks:</p>
+                    </div>
+                    <div class="liqgrid-status">
+                        <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@Extensions.BorderColor(Liquidation.StatusId)' Variant='Variant.Outlined'>
+                            @Liquidation.StatusName.ToUpper()
+                        </MudChip>
+                    </div>
+                    <div class="liqgrid-controls">
+                        <MudSpacer />
+                        <MudTooltip Text='@(!Liquidation.StatusName.Contains("Generated", StringComparison.InvariantCultureIgnoreCase) ? "Cannot modify Liquidation, Check Status":"Modify Liquidation")' Arrow Placement='Placement.Top'>
+                            <MudIconButton Class='pcview-dialog__btn-circular' OnClick='(() => EditLiquidation(Liquidation))' Icon="@Icons.Material.Filled.Edit" aria-label="Edit" Size='Size.Small' 
+                                Variant='Variant.Filled' Color='Color.Tertiary' Disabled='@(!Liquidation.StatusName.Contains("Generated", StringComparison.InvariantCultureIgnoreCase) ? true:false)'/>
+                        </MudTooltip>
+                    </div>
+                    <div class="liqgrid-date">
+                        <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Variant='Variant.Outlined' 
+                            Icon='@Icons.Material.Filled.CalendarMonth'>
+                            @Convert.ToDateTime(Liquidation.LiquidationDate).ToShortDateString()
+                        </MudChip>
+                    </div>
+                    <div class="liqgrid-period">
+                        <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Variant='Variant.Outlined' 
+                            Icon='@Icons.Material.Filled.CalendarMonth'>
+                            @Convert.ToDateTime(Liquidation.PeriodFrom).ToShortDateString() - @Convert.ToDateTime(Liquidation.PeriodTo).ToShortDateString()
+                        </MudChip>
+                    </div>
+                    <div class='liqgrid-totalamt'>
+                        <MudChip OnClick='(() => CopyTextToClipboard(Liquidation.TotalAmount.ToString("N2")))' Class='cursor-pointer' Variant='Variant.Text' 
+                            Size='Size.Small' Color='@(Liquidation.TotalAmount > 0 ? Color.Success:Color.Error)' Label>
+                            <p class='pcview-dialog__txt font-bold @(Liquidation.TotalAmount > 0 ? "color-green":"color-red")'>
+                                @(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + @Liquidation.TotalAmount.ToString("N2"))
+                            </p>
+                        </MudChip>
+                    </div>
+                    <div class="liqgrid-remarks">
+                        <p class='liqview-dialog__txt'>@(!string.IsNullOrWhiteSpace(Liquidation.Remarks) ? Liquidation.Remarks:"No Remarks")</p>
+                    </div>
+                    <div class="liqgrid-details">
+                        <div class='liqgrid-details__pc-ctrlno--cont'>
+                            <div class='liqgrid-details__label-cont'>
+                                <p class='liqview-dialog__label'>
+                                    Petty Cash Control @(liquidationDetails.Count() > 1 ? "Numbers":"Number"):
+                                </p>
+                                <p class='liqview-dialog__label'>@liquidationDetails.Count()</p>
+                            </div>
+                            <div class='liqgrid-details__pc-chips-cont'>
+                                @foreach (var item in liquidationDetails)
+                                {
+                                    <MudChip Class='mudchip-tbl' OnClick='(() => CopyTextToClipboard(item.ControlNumber))' Variant='Variant.Outlined' Color='Color.Error' Size='Size.Small'>
+                                        @item.ControlNumber
+                                    </MudChip>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="liqgrid-signatories">
+                        <p class='liqview-dialog__txt--content-title'>Signatories:</p>
+                        <MudPaper Class='pa-2 bgc-e7f2fb min-width200px'>
+                            <MudText Class='font10 font-bold'>Prepared By:</MudText>
+                            <SignatoriesComponent employeeId='@Liquidation.PreparedById' avatarSize='Size.Medium' />
+                        </MudPaper>
+                        <MudPaper Class='pa-2 bgc-e7f2fb min-width200px'>
+                            <MudText Class='font10 font-bold'>Prepared By:</MudText>
+                            <SignatoriesComponent employeeId='@Liquidation.ApprovedById' avatarSize='Size.Medium' />
+                        </MudPaper>
+                    </div>
+                </div>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Class='btn-ios-d font12' Color="Color.Primary" OnClick="Close" Variant='Variant.Filled'
+            DisableElevation Size='Size.Small'>Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private bool dataFetched;
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = new();
+    [Parameter] public LiquidationModel Liquidation { get; set; } = new();
+    [Parameter] public string DialogTitle { get; set; } = string.Empty;
+    public static Enums.ActionMode CurrentActionMode { get; set; }
+    private List<LiquidationDetailModel> liquidationDetails = new();
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(1000);
+        Task t = Task.WhenAll(GetLiquidationDetails());
+        await t;
+        if (t.Status == TaskStatus.RanToCompletion)
+            CompletedFetch();
+    }
+
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+
+    private void Close() => MudDialog.Close(DialogResult.Ok(true));
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task CopyTextToClipboard(string stringToCopy)
+    {
+        await Extensions.CopyTextToClipboard(stringToCopy, SnackbarService, JSRuntime);
+    }
+
+    private async Task GetLiquidationDetails()
+    {
+        var result = await LiquidationService.LiquidationDetails(Liquidation.Id, GlobalClass.token);
+        if (result != null)
+            liquidationDetails = result;
+    }
+
+    private void EditLiquidation(LiquidationModel liquidationModel)
+    {
+        GlobalClass.liquidation = liquidationModel;
+        LiquidationEntry.currActionMode = Enums.ActionMode.Update;
+        navigationManager.NavigateTo($"/liquidation");
+    }
+}

@@ -24,6 +24,16 @@
               HelperText='Required*' Margin='Margin.Dense' />
           </MudItem>
           <MudItem xs='12'>
+            <MudSelect @bind-Value="GlobalClass.projectChargingLine.PayeeCategoryId"  Label='Payee Category' Variant='Variant.Outlined'
+                Text="@GlobalClass.projectChargingLine.PayeeCategoryName" Placeholder="Payee Category" Margin='Margin.Dense'
+                AnchorOrigin="Origin.BottomCenter" HelperText='' >
+                @foreach (PayeeCategoryModel cat in GlobalClassList.payeeCategoryList)
+                {
+                    <MudSelectItem Value="@cat.Id">@cat.CategoryName</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+          <MudItem xs='12'>
             <MudTextField @bind-Value='@GlobalClass.projectChargingLine.Remarks' Variant='Variant.Filled' Lines='3' Label='Remarks' 
               Margin='Margin.Dense' />
           </MudItem>

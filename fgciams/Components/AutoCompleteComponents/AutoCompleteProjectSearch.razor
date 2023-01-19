@@ -1,0 +1,61 @@
+@inject IGlobalService globalService
+
+<MudAutocomplete Class='h-w-project' T='Project' Variant="Variant.Outlined" Margin='Margin.Dense'
+        Value='ProjectModel' 
+        ValueChanged='( (Project project)=> OnChanged(project) )'
+        SearchFunc="@LoadCharging"
+        ToStringFunc='@(result => result == null? null : result.ProjectName )'
+        ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info" AdornmentIcon='null' IconSize='0'>
+    <ItemTemplate Context="selChargeTo">                            
+        <MudText>
+            <MudTooltip Class='wspace-breakword'>
+                @* Drop down *@
+                <div class='d-flex flex-column'>
+                    <small class='font-bold'>@selChargeTo.ProjectName</small>
+                    <small>@selChargeTo.Location</small>
+                    <small>@Extensions.ProjectReference(selChargeTo)</small>
+                </div>
+                
+            </MudTooltip>
+        </MudText>
+    </ItemTemplate>
+    <ItemSelectedTemplate Context="selChargeTo">                
+        <MudText>
+            <div class='d-flex flex-column'>
+                <small class='font-bold'>@selChargeTo.ProjectName</small>
+                <small>@selChargeTo.Location</small>
+                <small>@Extensions.ProjectReference(selChargeTo)</small>
+            </div>
+        </MudText>
+    </ItemSelectedTemplate>
+</MudAutocomplete>
+
+@code
+{
+    [Parameter] public EventCallback<Project> OnProjectValueChanged { get; set; }
+    [Parameter] public Project ProjectModel { get; set; } = new();
+    private void OnChanged(Project project)
+    {
+        OnProjectValueChanged.InvokeAsync(project); 
+    }
+    private async Task<IEnumerable<Project>> LoadCharging(string chargingName)
+    {
+      var filterParameter = new FilterParameter()
+      {
+        IsProject = true,
+        ProjectName = chargingName,
+        IsId = false
+      };
+      var charging = await globalService.LoadChargeProjectLine(filterParameter, GlobalClass.token);
+      return charging;
+    }
+}
+<style>
+    .h-w-project
+    {
+        height: 20px;
+        width:200px;
+        min-height: 10px !important;
+        max-width: 500px !important;
+    }
+</style>

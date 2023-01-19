@@ -160,8 +160,8 @@
             notValidStatus = true;
         if(String.IsNullOrEmpty(GlobalClass.acctgStatus.StatusIcon))
             notValidStatusIcon = true;  
-        if(notValidStatus || notValidStatusIcon) {
-            GlobalVariable.errorPromptText = " incomplete field/s."; return false; }
+        @* if(notValidStatus || notValidStatusIcon) {
+            GlobalVariable.errorPromptText = " incomplete field/s."; return false; } //Not needed as we remove icons in new update *@
         if(GlobalClassList.accountingStatusList.Any(x=>x.StatusName == GlobalClass.acctgStatus.StatusName && x.Id != GlobalClass.acctgStatus.Id)) {
             GlobalVariable.errorPromptText = " duplicate entry found for Accounting Status."; return false; }
         if(GlobalClassList.accountingStatusList.Any(x=>x.StatusEnumCategoryId == GlobalClass.acctgStatus.StatusEnumCategoryId && x.Id != GlobalClass.acctgStatus.Id)) {

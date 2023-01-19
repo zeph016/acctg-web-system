@@ -1,3 +1,5 @@
+@use "../flexgridmods/flexgridmods.styles.css";
+
 .configtables {
   .mud-table-container {
     height: calc(100vh - 190px);
@@ -268,4 +270,61 @@ tr td.unselectable-row
   background-color: #ddd;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+.tblpager {
+  &__grid {  
+    border: solid thin lightgray;
+    border-right-style: none;
+    display: grid;
+    grid-template-columns: 60px 1fr 90px 180px;
+    grid-template-rows: 30px;
+    gap: 0px 0px;
+    grid-auto-flow: row;
+    grid-template-areas:
+      "tblpager-lblsel tblpager-sel tblpager-lblamt tblpager-totalamt";
+    .tblpager-lblsel { grid-area: tblpager-lblsel; }
+    .tblpager-sel { grid-area: tblpager-sel; }
+    .tblpager-lblamt { grid-area: tblpager-lblamt; }
+    .tblpager-totalamt { grid-area: tblpager-totalamt; }
+
+    .tblpager-lblsel, .tblpager-sel, .tblpager-lblamt,
+    .tblpager-totalamt {
+      @extend .dflex-row;
+    }
+    .tblpager-sel {
+      overflow: auto;
+    }
+    .tblpager-totalamt {
+      justify-content: end;
+    }
+    .tblpager-lblsel,.tblpager-sel, .tblpager-lblamt, 
+    .tblpager-lblamt {
+      border-right: solid thin lightgray;
+    }
+    .tblpager-sel, .tblpager-totalamt {
+      padding: 0px 4px;
+    }
+  }
+  &__lbl, &__txt {
+    padding: 0px 4px;
+    white-space: nowrap;
+  }
+  &__lbl {
+    font-size: 10px;
+    color: #9F9F9F;
+    text-transform: uppercase;
+  }
+  &__txt {
+    font-size: 12px;
+  }
+}
+
+.colamt-container {
+  font-weight: bold;
+  white-space: nowrap;
+  min-width: 100px;
+  p {
+    font-size: 12px;
+  }
 }

@@ -40,9 +40,9 @@ else
 {
     <div class='d-flex align-center gap-2 '>
         @if (employeeDetails.Picture.Count() == 0) {
-            <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
+            <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='@avatarSize' />
         } else {
-            <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(employeeDetails.Picture)}")' Size='Size.Medium' />
+            <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(employeeDetails.Picture)}")' Size='@avatarSize' />
         }
         <div class='d-flex flex-column'>
             <MudText Class='font12'>@employeeDetails.EmployeeName</MudText>
@@ -56,6 +56,7 @@ else
     
     [Parameter] public bool isSingleLine { get; set; }
     [Parameter] public long employeeId { get; set; }
+    [Parameter] public MudBlazor.Size avatarSize { get; set; }
     private bool dataFetched;
     private UserAccount employeeDetails = new UserAccount();
 

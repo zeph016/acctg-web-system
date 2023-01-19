@@ -26,8 +26,8 @@
         else
         {
             <MudTable Class='table-style-1 ' @ref='tableVariable' ServerData='new Func<TableState, Task<TableData<CollectionModel>>>(LoadCollectionList)' Hover Loading='isLoading'
-                Breakpoint="Breakpoint.Xs" SelectedItems="GlobalClassList.selectedCollections" SelectedItemsChanged='((HashSet<CollectionModel> model) => SelectItems(model))'
-                RowsPerPage='15' Elevation='1' Height='calc(100vh - 215px)'  FixedHeader FixedFooter CustomFooter Bordered Dense MultiSelection>
+                Breakpoint="Breakpoint.Xs"
+                RowsPerPage='15' Elevation='1' Height='calc(100vh - 215px)'  FixedHeader FixedFooter CustomFooter Bordered Dense>
                 <ToolBarContent>
                     <MudText Typo='Typo.caption'>
                         @GlobalClassList.collectionList.Count()
@@ -62,6 +62,7 @@
                     </MudMenu>
                 </ToolBarContent>
                 <ColGroup>
+                    <col style='width: 1%;' />
                     <col style='width:35px'/>
                     <col style="width:1%" />
                     <col style="width:1%" />
@@ -76,6 +77,9 @@
                     <col style="width:50px" />
                 </ColGroup>
                 <HeaderContent>
+                    <MudTh>
+                        <MudCheckBox T='bool' CheckedChanged='( (bool b) => SelectAll(b))' Checked='checkAll' Class='chip-radius-5 font-bold font10' Size='Size.Medium' UnCheckedColor='Color.Dark' Color='Color.Info' Dense/>
+                    </MudTh>
                     <MudTh Class='@(isPinnedCtrlNo ? "th-sticky-left customheader-6":"customheader-6")'>
                         <div class='d-flex align-center justify-space-around'>
                             <MudTooltip Text='Pin control number column' Arrow Placement='Placement.Top'>
@@ -99,12 +103,28 @@
                         </MudTableSortLabel>
                     </MudTh>
                     <MudTh Class='customheader-6 text-center'>OR</MudTh>
-                    <MudTh Class='customheader-6'>Charging</MudTh>
+                    <MudTh Class='customheader-6'>
+                        <MudTableSortLabel SortLabel='SortCharging' T='CollectionModel'
+                                InitialDirection='SortDirection.None'>
+                                Charging
+                        </MudTableSortLabel>
+                    </MudTh>
                     <MudTh Class='customheader-6'>Description</MudTh>
-                    <MudTh Class='customheader-6 text-center'>Expense</MudTh>
+                    <MudTh Class='customheader-6 text-center'>
+                        <MudTableSortLabel SortLabel='SortExpense' T='CollectionModel'
+                                InitialDirection='SortDirection.None'>
+                                Expense
+                        </MudTableSortLabel>
+                    </MudTh>
                     <MudTh Class='customheader-6'>Category</MudTh>
-                    <MudTh Class='customheader-6'>DEP</MudTh>
+                    <MudTh Class='customheader-6'>
+                        <MudTableSortLabel SortLabel='SortDeposit' T='CollectionModel'
+                                InitialDirection='SortDirection.None'>
+                                DEP
+                        </MudTableSortLabel>
+                    </MudTh>
                     <MudTh Class='customheader-6 text-center'>Misc</MudTh>
+                    <MudTh Class='customheader-6 text-center'>Status</MudTh>
                     <MudTh Class='@(isPinnedAmt ? "th-sticky-amt customheader-6 text-right":"customheader-6 text-right")'>
                         <MudTooltip Text='Pin amount column' Arrow Placement='Placement.Top'>
                             <MudIconButton Class='ico-15x15' OnClick='(() => isPinnedAmt = !isPinnedAmt)' Color='@(isPinnedAmt ? Color.Info:Color.Dark)' 
@@ -118,6 +138,9 @@
                     <MudTh Class='@(isPinnedAmt ? "th-sticky-action customheader-6":"customheader-6")'>Actions</MudTh>
                 </HeaderContent>
                 <RowTemplate>
+                    <MudTd>
+                        <MudCheckBox T='bool' CheckedChanged='( (bool b)=> RowSelected(b,context) )' Checked='context.IsSelected' Class='chip-radius-5 font-bold font10' Size='Size.Medium' UnCheckedColor='Color.Dark' Color='Color.Info' Dense/>
+                    </MudTd>
                     <MudTd Class='@(isPinnedCtrlNo ? "col-sticky-left":"")' DataLabel='Control No.'>
                         <div class='d-flex align-center'>
                             <MudChip Class='mudchip-tbl' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, snackbarService, JSRuntime))' Variant='Variant.Outlined'
@@ -168,6 +191,13 @@
                             Icon="@Icons.Material.Filled.ExpandMore" Color="@Color.Tertiary" Title="Expand " ToggledChanged="(()=> GetCollectionExpenses(context))"
                             ToggledIcon="@Icons.Material.Filled.ExpandLess" ToggledColor="@Color.Info" ToggledTitle="Collapse"/>
                     </MudTd>
+                    <MudTd Class='text-center pa-2' DataLabel="Status">
+                        <div class='d-flex align-center justify-center'>
+                            <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@Extensions.BorderColor(context.StatusId)' Variant='Variant.Outlined'>
+                                @(AcctgStatus(context.StatusId).StatusName == string.Empty ? "N/A" : AcctgStatus(context.StatusId).StatusName)
+                            </MudChip>
+                        </div>
+                    </MudTd>
                     <MudTd Class='@(isPinnedAmt ? "col-sticky-amt":"")' DataLabel='Amount'>
                         <div class='tooltipw100'>
                             <MudTooltip Class='flex-1' Text='@(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + context.NetAmount.ToString("N2"))' 
@@ -187,18 +217,40 @@
                     <MudTd Class='@(isPinnedAmt ? "col-sticky-action text-center":"text-center")' DataLabel='Action'>
                         <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
                             TransformOrigin='Origin.TopRight' Dense Size='Size.Small'>
+                            @if(AcctgStatus(context.StatusId).StatusEnumCategoryId != Enums.AccountingStatusEnumCategory.CLA
+                            && AcctgStatus(context.StatusId).StatusEnumCategoryId != Enums.AccountingStatusEnumCategory.CLC && !context.isDeposit)
+                            {
                             <MudMenuItem OnClick='(() => OpenCollectionDialog(context,Enums.ActionMode.Update))'>
                                 <div class='d-flex align-center gap-2 '>
                                     <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' Color='Color.Dark' />
                                     <MudText Typo='Typo.body2' Color='Color.Dark'>Edit</MudText>
                                 </div>
                             </MudMenuItem>
+                            <MudMenuItem OnClick='(() => Prompt(context,Enums.ActionMode.Approve))'>
+                                <div class='d-flex align-center gap-2 '>
+                                    <MudIcon Icon='@Icons.Material.Filled.CheckCircle' Size='Size.Small' Color='Color.Dark' />
+                                    <MudText Typo='Typo.body2' Color='Color.Dark'>Approve</MudText>
+                                </div>
+                            </MudMenuItem>
+                            }
+                            @if(AcctgStatus(context.StatusId).StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.CLA && !context.isDeposit)
+                            {
+                            <MudMenuItem OnClick='(() => Prompt(context,Enums.ActionMode.Void))'>
+                                <div class='d-flex align-center gap-2 '>
+                                    <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' Color='Color.Dark' />
+                                    <MudText Typo='Typo.body2' Color='Color.Dark'>Generate (Void)</MudText>
+                                </div>
+                            </MudMenuItem>
+                            }
+                            @if(!context.isDeposit && AcctgStatus(context.StatusId).StatusEnumCategoryId != Enums.AccountingStatusEnumCategory.CLA)
+                            {
                             <MudMenuItem OnClick="(() => CancelDeposit(context))">
                                     <div class='d-flex align-center gap-2 menu-grow-anim'>
                                         <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small' Color='Color.Dark' />
                                         <MudText Typo='Typo.body2' Color='Color.Dark'>Cancel</MudText>
                                     </div>
                             </MudMenuItem>
+                            }
                             <MudMenuItem OnClick='(() => SingleDeposit(context))'>
                                 <div class='d-flex align-center gap-2 '>
                                     <MudIcon Icon='@Icons.Material.Filled.AccountBalance' Size='Size.Small' Color='Color.Dark'/>
@@ -279,10 +331,11 @@
     private DateRange dateRange = new DateRange(DateTime.Now, DateTime.Now);
     private DateRange depositDateRange = new DateRange(DateTime.Now, DateTime.Now);
     private decimal cashHands = 0.00m;
+    private bool checkAll { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
-        GlobalClass.pageTitle = "Collections";
+        GlobalClass.pageTitle = "Collections list";
         Task t = Task.WhenAll(LocationCollections(), CashOnHands());
         await t;
         if (t.Status == TaskStatus.RanToCompletion)
@@ -319,18 +372,39 @@
         string contentText = " this collection";
         string dialogTitle = actionMode.ToString();
         parameters.Add("contentText", contentText);
-        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("dialogTitle", dialogTitle+" Collection");
         parameters.Add("actionMode", actionMode);
+        parameters.Add("controlNumber", collection.ControlNumber);
+        parameters.Add("isVoid", actionMode == Enums.ActionMode.Void ? true: false);
         var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
         if (!resultDialog.Canceled) 
         {   
             collection.UserId = GlobalClass.currentUserAccount.EmployeeId;
-            collection.Activity = "Cancel Collection";
-            collection.IsVoid = true;
+            collection.Activity = actionMode == Enums.ActionMode.Void ? "Activity: Update status to generated (voided); Remarks: "+GlobalVariable.PromptRemarks :actionMode+ " Collection";
+            collection.IsVoid = actionMode == Enums.ActionMode.Cancel ? true : false;
             var collectionUpdate = await collectionService.UpdateCollection(collection,GlobalClass.token);
-            Extensions.ShowAlert("Collection successfully cancelled.",Variant.Filled,snackbarService,Severity.Success);
+
+            //Updating status
+            if(actionMode == Enums.ActionMode.Approve)
+            {               
+                collection.StatusId = GlobalClassList.accountingStatusList.Where( acctg => acctg.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.CLA).Select( acctg => acctg.Id).FirstOrDefault();
+                Extensions.ShowAlert("Collection successfully approved.",Variant.Filled,snackbarService,Severity.Success);
+            }
+            else if (actionMode == Enums.ActionMode.Cancel)
+            {
+                collection.StatusId = GlobalClassList.accountingStatusList.Where( acctg => acctg.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.CLC).Select( acctg => acctg.Id).FirstOrDefault();
+                Extensions.ShowAlert("Collection successfully cancelled.",Variant.Filled,snackbarService,Severity.Success);
+            } 
+            else
+            {
+                collection.StatusId = GlobalClassList.accountingStatusList.Where( acctg => acctg.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.CLG).Select( acctg => acctg.Id).FirstOrDefault();
+                Extensions.ShowAlert("Collection successfully voided.",Variant.Filled,snackbarService,Severity.Success);
+            }
+            await collectionService.UpdateCollectionStatus(collection, GlobalClass.token);
+            
         }
+        await tableVariable.ReloadServerData();
     }
     private async Task OpenCollectionDialog(CollectionModel collection, Enums.ActionMode actionMode)
     {
@@ -367,8 +441,24 @@
             case "SortNetAmount":
                 data = data.OrderByDirection(tableState.SortDirection, x=>x.NetAmount);
                 break;
+            case "SortCharging":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.ChargeName);
+                break;
+            case "SortDeposit":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.isDeposit);
+                break;
+            case "SortExpense":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.ExpenseName);
+                break;
         }
         GlobalClassList.collectionList = data.ToList();
+        GlobalClassList.selectedCollections.ForEach(cSelected => {
+            GlobalClassList.collectionList.ForEach( c =>
+            {
+                if(cSelected.ControlNumber == c.ControlNumber)
+                    c.IsSelected = true;
+            });
+        });
         pageData = data.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
         totalItems = data.Count();
         isLoading = !isLoading;
@@ -452,18 +542,22 @@
     }
     private async Task SingleDeposit(CollectionModel collection)
     {
-        GlobalClassList.selectedCollections.Clear();
-        GlobalClassList.selectedCollections.Add(collection);
-        GlobalClass.collection = collection;
-        await DepositDialog();
+        if(AcctgStatus(collection.StatusId).StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.CLG)
+            Extensions.ShowAlert("You need to approve the collection before depositing.",Variant.Filled,snackbarService,Severity.Error);
+        else
+        {
+            GlobalClassList.selectedCollections.Clear();
+            GlobalClassList.selectedCollections.Add(collection);
+            GlobalClass.collection = collection;
+            await DepositDialog();
+        }
     }
     private async Task DepositDialog()
     {
         var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.Medium, FullWidth = true, NoHeader = false, DisableBackdropClick = false };
         var resultDialog = await dialogService.Show<Shared.Dialogs.BankDepositDialogs.BankDepositDialog>("", options).Result;
         if (resultDialog.Canceled)
-            GlobalClassList.selectedCollections.Clear();
-        await ReloadTable();
+            Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
     }
     private bool isAnyDeposited()
     {
@@ -474,15 +568,6 @@
         collection.showSubDetails = !collection.showSubDetails;
         collection.CollectionExpenses = (await collectionService.GetCollection(collection.Id,GlobalClass.token)).CollectionExpenses;
     }
-
-    private void SelectItems(HashSet<CollectionModel> model)
-    {
-        foreach (var item in GlobalClassList.selectedCollections)
-        {
-            if (item.isDeposit)
-                GlobalClassList.selectedCollections.Remove(item);
-        }
-    }
     private async Task CancelDeposit(CollectionModel collection)
     {
         if(!collection.isDeposit)
@@ -491,7 +576,7 @@
         } else {
             Extensions.ShowAlert("You can't cancel the collection that has already been deposited.", Variant.Filled, snackbarService, Severity.Error);
         }
-        await tableVariable.ReloadServerData();
+        //await tableVariable.ReloadServerData();
     }
     private void SignalR()
     {
@@ -512,5 +597,52 @@
             throw;
         }
     }
-
+    private void SelectAll(bool select)
+    {
+        if(select)
+        {
+           // GlobalClassList.collectionList.ForEach( v => v.IsSelected = true);
+            GlobalClassList.collectionList.ForEach( v =>  
+            { 
+                if(!v.isDeposit && AcctgStatus(v.StatusId).StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.CLA)
+                {
+                    v.IsSelected = true;
+                    GlobalClassList.selectedCollections.Add(v);
+                }
+            });
+        }
+        else 
+        {
+            GlobalClassList.collectionList.ForEach( v => v.IsSelected = false);
+            GlobalClassList.selectedCollections.Clear();
+        }
+        checkAll = select;
+    }
+    private void RowSelected(bool select, CollectionModel collection)
+    {
+        if(select)
+        {
+           
+            if(AcctgStatus(collection.StatusId).StatusEnumCategoryId != Enums.AccountingStatusEnumCategory.CLA || collection.isDeposit)
+                collection.IsSelected = !select;
+            else
+            {
+                collection.IsSelected = select;
+                GlobalClassList.selectedCollections.Add(collection);
+            }
+        }
+        else
+        {
+            GlobalClassList.selectedCollections.RemoveAll(c => c.ControlNumber == collection.ControlNumber);
+            collection.IsSelected = !collection.IsSelected;
+            if(checkAll)
+                checkAll = !checkAll;
+        }
+        
+        StateHasChanged();
+    }
+    private AccountingStatusModel AcctgStatus(long statusId)
+    {
+        return GlobalClassList.accountingStatusList.Where( acctg => acctg.Id == statusId).FirstOrDefault()?? new();
+    }
 }

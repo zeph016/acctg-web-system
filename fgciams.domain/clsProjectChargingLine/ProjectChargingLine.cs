@@ -19,5 +19,7 @@ namespace fgciams.domain.clsProjectChargingLine
         public bool IsActive { get; set; }
         public string ProjectName { get; set; }
         public string Remarks { get; set; }
+        public Int64 PayeeCategoryId { get; set; }
+        public string PayeeCategoryName { get; set; }
     }
 }

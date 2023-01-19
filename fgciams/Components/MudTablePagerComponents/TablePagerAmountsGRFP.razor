@@ -1,17 +1,6 @@
-<div class='d-flex align-center justify-end border-thin-topbot'>
-    <MudText Class='px-2 font-bold' Typo='Typo.overline'>
-        Total amount selected:
-    </MudText>
-    <div class='d-flex align-center justify-end border-thin-left min-width15 px-2 bgc-white'>
-        <MudText Class='pl-1 font-bold color-green' Typo='Typo.overline'>
-            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
-        </MudText>
-        <MudSpacer />
-        <MudText Class='pl-1 font-bold color-green' Typo='Typo.overline'>
-            @totalAmounts.ToString("N2")
-        </MudText>
-    </div>
-</div>
+<p class='tblpager__txt font-bold @(totalAmounts > 0 ? "color-green":"color-red")'>
+    @(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + @totalAmounts.ToString("N2"))
+</p>
 
 @code {
     [Parameter] public decimal totalAmounts { get; set; } = 0;

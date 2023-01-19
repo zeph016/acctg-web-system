@@ -59,7 +59,11 @@
                             </div>
                         </SelectedTemplate>
                         <ResultTemplate>
-                            @customer.ProjectName
+                            <div class='d-flex flex-column'>
+                                <small class='font-bold'>@customer.ProjectName</small>
+                                <small>@customer.Location</small>
+                                <small>@Extensions.ProjectReference(customer)</small>
+                            </div>
                         </ResultTemplate>
                     </BlazoredTypeahead>
                 </MudItem>
@@ -82,7 +86,11 @@
                             </div>
                         </SelectedTemplate>
                             <ResultTemplate>
-                                @proj.ProjectName | @proj.Location
+                                <div class='d-flex flex-column'>
+                                    <small class='font-bold'>@proj.ProjectName</small>
+                                    <small>@proj.Location</small>
+                                    <small>@Extensions.ProjectReference(proj)</small>
+                                </div>
                             </ResultTemplate>
                     </BlazoredTypeahead>
                     <div class="validation-font12">
@@ -180,6 +188,7 @@
         parameters.Add("contentText", contentText);
         parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("actionMode", GlobalClass.collection.Id == 0? Enums.ActionMode.Create : Enums.ActionMode.Update);
+        parameters.Add("controlNumber", GlobalClass.collection.ControlNumber == string.Empty? "" : GlobalClass.collection.ControlNumber);
         var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
         if (!resultDialog.Canceled) 

@@ -1,0 +1,75 @@
+@inject ISnackbar SnackbarService
+@inject IJSRuntime JSRuntime
+
+<div class="atrail-info fade-in">
+    <div class="atrail-info__grid">
+        <div class="atinfo-lbl-ctrlno">
+            <p class='atrail-info__label'>Control No.:</p>
+        </div>
+        <div class="atinfo-txt-ctrlno">
+            <MudChip OnClick='(() => CopyTextToClipboard(Liquidation.ControlNumber))' Class='font-bold' Label Size='Size.Small' Color='Color.Error' Variant='Variant.Outlined'>
+                @Liquidation.ControlNumber
+            </MudChip>
+        </div>
+        <div class="atinfo-lbl-date">
+            <p class='atrail-info__label'>Date:</p>
+        </div>
+        <div class="atinfo-txt-date">
+            <MudChip Class='font-bold' Label Size='Size.Small' Variant='Variant.Filled' Icon='@Icons.Material.Filled.CalendarMonth'>
+                @Convert.ToDateTime(Liquidation.LiquidationDate).ToShortDateString()
+            </MudChip>
+        </div>
+        <div class="atinfo-lbl-payee" style="display:none"></div>
+        <div class="atinfo-txt-payee" style="display:none"></div>
+        <div class="atinfo-lbl-amt">
+            <p class='atrail-info__label'>Amount:</p>
+        </div>
+        <div class="atinfo-txt-amt">
+            <MudChip OnClick='(() => CopyTextToClipboard(Liquidation.TotalAmount.ToString("N2")))' Variant='Variant.Text'
+                Label Size='Size.Small' Color='@(Liquidation.TotalAmount > 0 ? Color.Success:Color.Error)'>
+                <p class='font-bold @(Liquidation.TotalAmount > 0 ? "color-green":"color-red")'>
+                    @(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + @Liquidation.TotalAmount.ToString("N2"))
+                </p>
+            </MudChip>
+        </div>
+        <div class="atinfo-part-cont" hidden></div>
+        <div class="atinfo-rem-cont">
+            <p class='atrail-info__label'>Remarks:</p>
+            <div class='atrail-info__text-area'>
+                <p class='atrail-info__txt'>@(string.IsNullOrWhiteSpace(Liquidation.Remarks) ? "No Remarks":Liquidation.Remarks)</p>
+            </div>
+        </div>
+        <div class="atinfo-signatories">
+            <MudPaper Class='signatory-card-1'>
+                <MudText Class='font10 font-bold'>Prepared By:</MudText>
+                <SignatoriesComponent employeeId='@Liquidation.PreparedById' avatarSize='Size.Medium' />
+            </MudPaper>
+            <MudPaper Class='signatory-card-1'>
+                <MudText Class='font10 font-bold'>Approved By:</MudText>
+                <SignatoriesComponent employeeId='@Liquidation.ApprovedById'  avatarSize='Size.Medium' />
+            </MudPaper>
+        </div>
+        <div class="atinfo-footer">
+            <MudSpacer />
+            <MudTooltip Text='Return to List' Arrow Placement='Placement.Bottom'>
+                <MudButton Class='atrail-info__btn btn-ios-d font12' OnClick='Return' aria-label="Return" Size='Size.Small' 
+                    Variant='Variant.Filled' Color='Color.Error' DisableElevation>
+                    Return    
+                </MudButton>
+            </MudTooltip>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public LiquidationModel Liquidation { get; set; } = new();
+    [Parameter] public EventCallback ReturnEventClick { get; set; }
+    private async Task CopyTextToClipboard(string stringToCopy)
+    {
+        await Extensions.CopyTextToClipboard(stringToCopy, SnackbarService, JSRuntime);
+    }
+    protected async Task Return()
+    {
+        await ReturnEventClick.InvokeAsync();
+    }
+}

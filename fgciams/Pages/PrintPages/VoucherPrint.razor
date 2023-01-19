@@ -6,38 +6,27 @@
 @inject NavigationManager navigationManager
 
 <div class='page-cont d-flex'>
-    <div class='d-flex flex-1 pa-2'>
-      <MudCard Class='d-flex flex-column flex-1 pa-0' Elevation='1'>
-        <MudCardContent Class='d-flex align-stretch justify-center rounded pa-2 default-report-viewscreen bgc-f2f2f2'>
-          @if (string.IsNullOrWhiteSpace(pdfReport))
-          {
-            <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-            </MudOverlay>
-          }
-          else
-          {
-            <iframe src="@pdfReport"></iframe>
-          }
-        </MudCardContent>
-        <MudCardActions Class='d-flex align-center pa-0 gap-2'>
-          <div class='flex-1 border-thin-right bgc-f2f2f2 height100'></div>
-          <div class='d-flex align-center pa-2 gap-2'>
-            <MudButton Class='btn-ios-d font12' OnClick='(()=> Back())' Variant='Variant.Text' Size='Size.Small' DisableElevation>@(isSaved ? "RETURN" : "CANCEL")</MudButton>
-            @if (_processing) {
-              <MudButton Class='width100px font12' OnClick='(()=> SaveVoucher())' Variant='Variant.Filled' Color='Color.Success' Size='Size.Small' Disabled=_processing DisableElevation>
-                <MudProgressCircular Class="progsize-21" Size="Size.Small" Indeterminate="true"/>
-                <MudText Class='font12 pl-2'>SAVING</MudText>
-              </MudButton>
-            } else {
-              <MudButton Class='width100px font12' OnClick='(()=> SaveVoucher())' Variant='Variant.Filled' Color='Color.Success' Size='Size.Small' Disabled=isSaved DisableElevation>
-                  <MudText Class='font12'>SAVE</MudText>
-              </MudButton>
-            }
-          </div>
-        </MudCardActions>
-      </MudCard>
-    </div>
+  <div class='rpt-container'>
+    <MudCard Class='rpt-container__document-cont' Elevation='1'>
+      <div class='rpt-container__iframe-cont'>
+        @if(string.IsNullOrWhiteSpace(pdfReport))
+        {
+           <MudProgressCircular Color="Color.Primary" Indeterminate />
+        }
+        else
+        {
+            <iframe src='@pdfReport' />
+        }
+      </div>
+    </MudCard>
+    <ReportControls 
+      ControlPosition='rptctrls-side-bottom'
+      ConfirmStr='SAVE VOUCHER'
+      IsSaved='isSaved' 
+      Processing='_processing'
+      BackEventClick='Back'
+      PromptEventClick='Prompt' />
+  </div>
 </div>
 
 @code{
@@ -55,7 +44,7 @@
     pdfReport = await voucherService.GenerateReport(GlobalClass.forPrintingOrSaveVoucher);
     pdfReport += "#toolbar=0";
   }
-  private async Task SaveVoucher()
+  private async Task Prompt()
   {
     _processing = true;
     var parameters = new DialogParameters();

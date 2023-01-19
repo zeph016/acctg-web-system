@@ -30,33 +30,69 @@
         <MudItem Class='d-flex align-start flex-column' xs='gridXs'>
           <MudPaper Class='flex-1 pa-2' Elevation='elevationValue'>
             <MudGrid Spacing='1'>
-              <MudItem xs='12'>
+              <MudItem xs='4'>
                 <MudTextField @bind-Value='@GlobalClass.subConGeneralInformation.FirstName' Label='First Name' Error=@reqFname ErrorText='First name is required' 
                   HelperText='Required*' Margin='Margin.Dense' />
               </MudItem>
-              <MudItem xs='12'>
+              <MudItem xs='4'>
                 <MudTextField @bind-Value='@GlobalClass.subConGeneralInformation.MiddleName' Label='Middle Name' Error=@reqMname ErrorText='Middle name is required'
                   HelperText='Optional' Margin='Margin.Dense' />
               </MudItem>
-              <MudItem xs='10'>
+              <MudItem xs='4'>
                 <MudTextField @bind-Value='@GlobalClass.subConGeneralInformation.LastName' Label='Last Name' Error=@reqLname ErrorText='Last name is required'
                   HelperText='Required*' Margin='Margin.Dense' />
               </MudItem>
-              <MudItem xs='2'>
-                <MudNumericField Class='txtfield-center' @bind-Value='@GlobalClass.subConGeneralInformation.Age' Label='Age' Error=@reqAge ErrorText='Age is required' HideSpinButtons
-                  HelperText='Required*' Margin='Margin.Dense' />
-              </MudItem>
-              <MudItem xs='10'>
+              <MudItem xs='3'>
                 <MudTextField @bind-Value='@GlobalClass.subConGeneralInformation.NameExtention' Label='Name Ext.'
                   HelperText='Optional' Margin='Margin.Dense' />
               </MudItem>
-              <MudItem xs='2'>
+              <MudItem xs='3'>
+                <MudNumericField Class='txtfield-center' @bind-Value='@GlobalClass.subConGeneralInformation.Age' Label='Age' Error=@reqAge ErrorText='Age is required' HideSpinButtons
+                  HelperText='Required*' Margin='Margin.Dense' />
+              </MudItem>
+              <MudItem xs='3'>
                 <MudSelect @bind-Value='@GlobalClass.subConGeneralInformation.Gender' Label="Gender" Margin='Margin.Dense' HelperText='Required*'>
                   @foreach (Enums.Gender gender in Enum.GetValues(typeof(Enums.Gender)))
                   {
                     <MudSelectItem Value="gender">@Extensions.GetEnumDescription(gender)</MudSelectItem>
                   }
                 </MudSelect>
+              </MudItem>
+              <MudItem xs='3'>
+                <MudNumericField Class='txtfield-center' @bind-Value='@GlobalClass.subConGeneralInformation.ManPowerNo' Label='Man Power No.' Error=@reqAge ErrorText='Age is required' HideSpinButtons
+                  HelperText='Optional*' Margin='Margin.Dense' />
+              </MudItem>
+              <MudItem xs='8'>
+                <MudTextField @bind-Value='@GlobalClass.subConGeneralInformation.Address' Label='Address' Error=@reqLname ErrorText='Last name is required'
+                  HelperText='Required*' Margin='Margin.Dense' />
+              </MudItem>
+              <MudItem xs='4'>
+                <MudTextField @bind-Value='@GlobalClass.subConGeneralInformation.ContactNumber' Label='Contact No.'
+                  HelperText='Optional' Margin='Margin.Dense' />
+              </MudItem>
+              <MudItem xs='4'>
+                <MudTextField @bind-Value='@GlobalClass.subConGeneralInformation.BankAccountNo' Label='Bank Account No.'
+                  HelperText='Optional' Margin='Margin.Dense' />
+              </MudItem>
+              <MudItem xs='4'>
+                  <MudSelect @bind-Value="GlobalClass.subConGeneralInformation.LaborTypeId"  Label='Labor Type' Variant='Variant.Outlined'
+                      Text="@Extensions.GetEnumDescription(GlobalClass.subConGeneralInformation.LaborTypeId)" Placeholder="Labor Type" Margin='Margin.Dense'
+                      AnchorOrigin="Origin.BottomCenter" HelperText='' >
+                      @foreach (Enums.LaborType laborType in Enum.GetValues(typeof(Enums.LaborType)))
+                      {
+                          <MudSelectItem Value="@laborType">@Extensions.GetEnumDescription(laborType)</MudSelectItem>
+                      }
+                  </MudSelect>
+              </MudItem>
+              <MudItem xs='4'>
+                  <MudSelect @bind-Value="GlobalClass.subConGeneralInformation.FinancialCapabilityCategoryId"  Label='Financial Category' Variant='Variant.Outlined'
+                      Text="@Extensions.GetEnumDescription(GlobalClass.subConGeneralInformation.FinancialCapabilityCategoryId)" Placeholder="Financial Category" Margin='Margin.Dense'
+                      AnchorOrigin="Origin.BottomCenter" HelperText='' >
+                      @foreach (Enums.FinancialCapabilityCategory financialCat in Enum.GetValues(typeof(Enums.FinancialCapabilityCategory)))
+                      {
+                          <MudSelectItem Value="@financialCat">@Extensions.GetEnumDescription(financialCat)</MudSelectItem>
+                      }
+                  </MudSelect>
               </MudItem>
               <MudItem xs='6'>
                 <MudText Class='font12 color-sec'>Position</MudText>
@@ -124,7 +160,11 @@
                         }
                     </SelectedTemplate>
                     <ResultTemplate>
-                        @project.ProjectName
+                        <div class='d-flex flex-column'>
+                          <small class='font-bold'>@project.ProjectName</small>
+                          <small>@project.Location</small>
+                          <small>@Extensions.ProjectReference(project)</small>
+                      </div>
                     </ResultTemplate>
                   </BlazoredTypeahead>
                 </MudItem>
@@ -333,11 +373,6 @@
       reqFname = true;
       valid = false;
     } else reqFname = false;
-    
-    if(string.IsNullOrEmpty(GlobalClass.subConGeneralInformation.MiddleName)) {
-      reqMname = true;
-      valid = false;
-    } else reqMname = false;
 
     if(string.IsNullOrEmpty(GlobalClass.subConGeneralInformation.LastName)) {
       reqLname = true;

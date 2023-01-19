@@ -21,6 +21,13 @@ namespace fgciams.domain.clsVoucherRouteBatch
       public Int64 VoucherRouteBatchId { get; set; }
       public bool IsFiled {get; set;}
       public decimal TotalAmount {get; set; }
+      public string checkNumber { get; set; }
+
+      //send to report
+      public string checkNo {
+        get { return checkNumber.Trim().Equals("")? "N/A": checkNumber; }
+        set {}
+      }
 
       //Added
       public bool ShowDesc { get; set; }

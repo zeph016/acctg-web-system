@@ -13,5 +13,6 @@ namespace fgciams.service.CollectionServices
         Task<decimal> GetCashOnHands(string token);
         Task<List<CollectionAuditTrailModel>> GetAuditTrail(long Id, string token);
         Task<List<BankDepositAuditTrailModel>> GetBankDepositTrail(long Id, string token);
+        Task<CollectionModel> UpdateCollectionStatus(CollectionModel collection,string token);
     }
 }

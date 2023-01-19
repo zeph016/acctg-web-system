@@ -64,12 +64,12 @@
             if (CheckWriter.currentActionMode == Enums.ActionMode.Create)
             {
                 returnedModel =  await checkService.AddCheck(GlobalClass.checkModel,GlobalClass.token);
-                Extensions.ShowAlert("Check has been CREATED",Variant.Filled,snackBarService,Severity.Success);
+                Extensions.ShowAlert("Check has been created",Variant.Filled,snackBarService,Severity.Success);
             }
             else if (CheckWriter.currentActionMode == Enums.ActionMode.Update)
             {
                 returnedModel = await checkService.UpdateCheck(GlobalClass.checkModel,GlobalClass.token);
-                Extensions.ShowAlert("Check has been UPDATED",Variant.Filled,snackBarService,Severity.Error);
+                Extensions.ShowAlert("Check has been updated",Variant.Filled,snackBarService,Severity.Info);
             }
             if(GlobalVariable.AMSHubConnection != null)
                 await GlobalVariable.AMSHubConnection.InvokeAsync("SaveCheck",returnedModel);

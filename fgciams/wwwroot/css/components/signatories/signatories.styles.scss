@@ -1,0 +1,8 @@
+@use "../animations/animation.styles.css";
+
+.signatory-card-1 {
+    padding: 8px;
+    background-color: #e7f2fb !important;
+    min-width: 200px;
+    animation: fadein 1s 1;
+}

@@ -61,15 +61,18 @@
               <ColGroup>
                   <col/>
                   <col/>
+                  <col/>
                   <col style='width:20px' />
               </ColGroup>
             <HeaderContent>
                 <MudTh Class='customheader-1'>Project</MudTh>
+                <MudTh Class='customheader-1'>Category</MudTh>
                 <MudTh Class='customheader-1'>Remarks</MudTh>
                 <MudTh Class="customheader-1 text-center pa-2">Action</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Bank">@context.ProjectName</MudTd>
+                <MudTd DataLabel="Bank">@PayeeCategroy(context.PayeeCategoryId)</MudTd>
                 <MudTd DataLabel="ShortcutName">@context.Remarks</MudTd>
                 <MudTd class="text-center pa-2">
                   <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft'
@@ -174,6 +177,10 @@
           Console.WriteLine(ex.Message);
           throw;
       }
+  }
+  private string PayeeCategroy(long catId)
+  {
+    return GlobalClassList.payeeCategoryList.Where( cat => cat.Id == catId).Select( cat => cat.CategoryName).FirstOrDefault()?? string.Empty;
   }
 }
 

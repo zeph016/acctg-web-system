@@ -27,7 +27,7 @@ namespace fgciams.domain.clsVoucher
         public Enums.ProjectCategory ProjectCategoryId { get; set; }
         public string ProjectName { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public string ControlNumber { get; set; }
+        public string ControlNumber { get; set; } = string.Empty;
         public DateTime VoucherDate { get; set; }
         private decimal _Amount;
         public decimal Amount { 

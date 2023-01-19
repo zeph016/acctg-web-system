@@ -100,6 +100,12 @@ namespace fgciams.domain.clsEnums
             CCLRD = 16,
             [Description("Check Cancelled")]
             CC = 17,
+            [Description("Collection Generated")]
+            CLG = 18,
+            [Description("Collection Approved")]
+            CLA = 19,
+            [Description("Collection Cancelled")]
+            CLC = 20
         }
         public enum RFPDetailTypeId
         {
@@ -274,5 +280,26 @@ namespace fgciams.domain.clsEnums
             [Description("Others")]
             Others = 4
         }
+        public enum LaborType
+        {
+            [Description("None")]
+            None = 0,
+            [Description("Labor Only")]
+            LaborOnly = 1,
+            [Description("Labor & Materials")]
+            LaborMaterials = 2
+        }
+        public enum FinancialCapabilityCategory
+        {
+            [Description("None")]
+            None = 0,
+            [Description("A")]
+            A = 1,
+            [Description("B")]
+            B = 2,
+            [Description("C")]
+            C = 3
+        }
+
     }
 }

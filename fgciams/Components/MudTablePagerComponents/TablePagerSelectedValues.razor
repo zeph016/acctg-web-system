@@ -1,0 +1,48 @@
+@if(SelectedForLiquidation.Count() > 0)
+{
+    @foreach (var item in SelectedForLiquidation)
+    {
+        <p class='tblpager__txt'>@item.ControlNumber @(SelectedForLiquidation.Count() > 0 ? ",":"")</p>
+    }
+}
+@if(SelectedForRFP.Count() > 0)
+{
+    @foreach (var item in SelectedForRFP)
+    {
+        @if(LookUpType == Enums.LookUpType.Liquidation)
+        {
+            <p class='tblpager__txt'>@item.LiquidationControlNumber @(SelectedForRFP.Count() > 0 ? ",":"")</p>
+        }
+        @if(LookUpType == Enums.LookUpType.POBilling)
+        {
+            <p class='tblpager__txt'>@item.POBControlNumber @(SelectedForRFP.Count() > 0 ? ",":"")</p>
+        }
+        @if(LookUpType == Enums.LookUpType.PO)
+        {
+            <p class='tblpager__txt'>@item.PONumber @(SelectedForRFP.Count() > 0 ? ",":"")</p>
+        }
+    }
+}
+@if(SelectedRFP.Count() > 0)
+{
+    @foreach (var item in SelectedRFP)
+    {
+        <p class='tblpager__txt'>@item.RFPControlNumber @(SelectedRFP.Count() > 0 ? ",":"")</p>
+    }
+   
+}
+@if(SelectedCheckVoucher.Count() > 0)
+{
+    @foreach (var item in SelectedCheckVoucher)
+    {
+        <p class='tblpager__txt'>@item.VoucherCtrlNo @(SelectedCheckVoucher.Count() > 0 ? ",":"")</p>
+    }
+}
+@code {
+    [Parameter] public string SelectedValueString { get; set; } = string.Empty;
+    [Parameter] public Enums.LookUpType LookUpType { get; set; }
+    [Parameter] public List<LiquidationDetailModel> SelectedForLiquidation { get; set; } =  new List<LiquidationDetailModel>();
+    [Parameter] public List<RequestForPaymentDetailModel> SelectedForRFP { get; set; } =  new List<RequestForPaymentDetailModel>();
+    [Parameter] public List<VoucherRFPModel> SelectedRFP { get; set; } = new List<VoucherRFPModel>();
+    [Parameter] public List<CheckVoucherModel> SelectedCheckVoucher { get; set; } = new List<CheckVoucherModel>();
+}

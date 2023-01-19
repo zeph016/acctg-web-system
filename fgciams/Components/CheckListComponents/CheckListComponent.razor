@@ -208,7 +208,7 @@
         newCheckLists.Clear();
         foreach(var check in checkLists)
         {
-            newCheckLists.Add(GlobalClassList.listOfChecks.Where(x=>x.ControlNumber.Contains(check.ToString())).First());
+            newCheckLists.Add(GlobalClassList.listOfChecks.Where(x=>x.ControlNumber.Contains(check.ToString())).FirstOrDefault()?? new());
         }
         GlobalClassList.listOfChecks = newCheckLists;
         pageData = GlobalClassList.listOfChecks.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
@@ -219,7 +219,6 @@
             Items = pageData
         };
     }  
-
     void IDisposable.Dispose()
     {
         AppState.OnChange -= StateHasChanged;

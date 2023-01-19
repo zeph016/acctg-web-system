@@ -2,7 +2,7 @@
 
 @page "/dashboard"
 
-<div class='page-cont'>
+<div class='page-cont d-flex'>
     <AuthorizeView>
         <Authorized>
             <MudContainer Class='dashboardpage' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
@@ -12,7 +12,10 @@
                 }
                 else
                 {
-                    <div class="dboard-container transition-05s-ease fade-in">
+                    <MudPaper Height='100%'>
+                        <div class='page-cont-L'></div>
+                    </MudPaper>
+                    @* <div class="dboard-container transition-05s-ease fade-in">
                         <div class="dboard-settings d-flex align-center px-2 gap-2">
                             <MudIcon Icon='fa-solid fa-sliders' Size='Size.Small' />
                             <MudSpacer />
@@ -130,7 +133,7 @@
                                 </MudCardContent>
                             </MudPaper>
                         </div>
-                    </div>
+                    </div> *@
                 }
             </MudContainer>
         </Authorized>

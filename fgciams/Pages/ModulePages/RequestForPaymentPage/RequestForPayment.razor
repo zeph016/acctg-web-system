@@ -57,6 +57,7 @@
                                     <div class='d-flex flex-column'>
                                         <small class='font-bold'>@context.ProjectName</small>
                                         <small>@context.Location</small>
+                                        <small>@Extensions.ProjectReference(context)</small>
                                     </div>
                                 </ResultTemplate>
                             </BlazoredTypeahead>
@@ -167,18 +168,18 @@
                                         <MudSpacer />
                                         @if(GlobalClass.requestForPayment?.RFPDetailTypeId != Enums.RFPDetailTypeId.None)
                                         {
-                                            <MudTooltip Text='Add Reversal' style="">
+                                            <MudTooltip Text='Add Reversal' Arrow Placement='Placement.Bottom'>
                                                 <MudButton Class='wspace-nowrap' OnClick='AddReversal' StartIcon="@Icons.Material.Filled.AddCircleOutline" aria-label="add" Color='Color.Error' Variant='Variant.Text' Size='Size.Small'>
                                                     <small>Reversal</small>
                                                 </MudButton>
                                             </MudTooltip>
                                         }
-                                        <MudTooltip Text='Add details'>
+                                        <MudTooltip Text='Add details' Arrow Placement='Placement.Bottom'>
                                             <MudButton Class='wspace-nowrap' OnClick='AddNew' StartIcon="@Icons.Material.Filled.AddCircle" aria-label="add" Color='Color.Info' Variant='Variant.Text' Size='Size.Small'>
                                                 <small>Details</small>
                                             </MudButton>
                                         </MudTooltip>
-                                        <MudTooltip Text='Reset Details'>
+                                        <MudTooltip Text='Reset Details' Arrow Placement='Placement.Bottom'>
                                             <MudButton OnClick='RefreshTable' StartIcon="@Icons.Material.Filled.Refresh" aria-label="add" Color='Color.Warning' Variant='Variant.Text' Size='Size.Small'>
                                                 <small>Reset</small>
                                             </MudButton>
@@ -200,21 +201,33 @@
                                         <col />
                                         <col />
                                         <col />
+                                        @if(!selectedRequestType.TypeName.Contains("None",  StringComparison.InvariantCultureIgnoreCase))
+                                        {
+                                            <col />
+                                        }
                                         <col style='width:150px' />
                                     </ColGroup>
                                     <HeaderContent>
                                         <MudTh></MudTh>
                                         <MudTh Class='customheader-6'>Description</MudTh>
-                                        <MudTh Class='customheader-6'>Project/Names</MudTh>
+                                        <MudTh Class='customheader-6'>
+                                            <div class='d-flex align-center'>
+                                                Project/Names <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                                            </div>
+                                        </MudTh>
                                         <MudTh Class='customheader-6'>Division</MudTh>
-                                        <MudTh Class='customheader-6'>Expense</MudTh>
+                                        <MudTh Class='customheader-6'>
+                                              <div class='d-flex align-center'>
+                                                Expense <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                                            </div>
+                                        </MudTh>
                                         @if (GlobalClass.requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.Liquidation)
                                         {
                                             <MudTd Class='customheader-6'>Liq. Control No.</MudTd>
                                         }
                                         @if (GlobalClass.requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.POBilling)
                                         {
-                                            <MudTd Class='customheader-6'>PO-B Control No.</MudTd>
+                                            <MudTd Class='customheader-6'>PO-B ControlNo.</MudTd>
                                         }
                                         @if (GlobalClass.requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.PO)
                                         {
@@ -236,85 +249,42 @@
                                             <MudTextField Class='txtfield-font12-no-margin' @bind-Value='@context.Particulars' Margin='Margin.Dense' />
                                         </MudTd>
                                         <MudTd Class='pa-2' DataLabel='Charged To'>
-                                            <div class='blzrtypahead-unset-width15p'>
-                                                <BlazoredTypeahead SearchMethod='LoadCharging' Context='selChargeTo' Value="context.projectModel"
-                                                    ValueExpression='(() => context.projectModel)' 
-                                                    ValueChanged='((Project project) => 
-                                                    { 
-                                                        context.projectModel = project; 
-                                                        context.ChargedId = context.projectModel.ProjectId;
-                                                        context.ChargedName = context.projectModel.ProjectName; 
-                                                        context.ChargedCategoryId = context.projectModel.ProjectCategoryId;
-                                                    })'
-                                                    Debounce='500' MaximumSuggestions='5' aria-placeholder="Charge to" DisableClear>
-                                                    <SelectedTemplate>
-                                                        @if (context.ChargedId != 0 || !string.IsNullOrWhiteSpace(context.ChargedName)) {
-                                                            <MudTooltip Arrow Placement='Placement.Top'>
-                                                                <MudText Class='max-width250px' Typo='Typo.body2'>@selChargeTo.ProjectName</MudText>
-                                                            </MudTooltip>
-                                                        } else {
-                                                            <MudText Class='font12'> - </MudText>
-                                                        }
-                                                    </SelectedTemplate>
-                                                    <ResultTemplate>
-                                                        <MudText Class='wspace-breakword'>
-                                                            @selChargeTo.ProjectName
-                                                        </MudText>
-                                                    </ResultTemplate>
-                                                </BlazoredTypeahead>
+                                            <div class="autocomplete">
+                                            <AutoCompleteProjectSearch 
+                                                ProjectModel='context.projectModel'
+                                                OnProjectValueChanged='( (Project project)=>
+                                                {
+                                                    context.projectModel = project;
+                                                    context.ChargedId = project.ProjectId;
+                                                    context.ChargedName = project.ProjectName; 
+                                                    context.ChargedCategoryId = project.ProjectCategoryId;
+                                                })'/>
                                             </div>
                                         </MudTd>
                                         <MudTd Class='pa-2' DataLabel='Division'>
-                                            <div class='blzrtypahead-unset-width15p'>
-                                                <BlazoredTypeahead SearchMethod='LoadDivision' Context='selDiv' Value="context.divisionModel"
-                                                    ValueExpression='(() => context.divisionModel)' 
-                                                    ValueChanged='((DivisionModel division) => 
+                                            <div class='autocomplete'>
+                                                <AutoCompleteDivisionSearch
+                                                    Division='context.divisionModel'
+                                                    OnDivisionValueChanged='((DivisionModel division) => 
                                                     { 
-                                                        context.divisionModel = division; 
-                                                        context.DivisionId = context.divisionModel.Id;
-                                                        context.DivisionName = context.divisionModel.divisionName; 
-                                                        context.DivisionShortcutName = context.divisionModel.shortcutName;
-                                                    })'
-                                                    Debounce='500' MaximumSuggestions='5' aria-placeholder="Charge to" DisableClear>
-                                                    <SelectedTemplate>
-                                                        @if (context.DivisionId != 0) {
-                                                            <MudTooltip Text="@context.DivisionShortcutName" Placement='Placement.Top'>
-                                                                <MudText Class='font12'>@context.DivisionName | @context.DivisionShortcutName</MudText>
-                                                            </MudTooltip>
-                                                        } else {
-                                                            <MudText Class='font12'> - </MudText>
-                                                        }
-                                                    </SelectedTemplate>
-                                                    <ResultTemplate>
-                                                        @selDiv.divisionName | @selDiv.shortcutName
-                                                    </ResultTemplate>
-                                                </BlazoredTypeahead>
+                                                        context.divisionModel = division;
+                                                        context.DivisionId = division.Id;
+                                                        context.DivisionName = division.divisionName; 
+                                                        context.DivisionShortcutName = division.shortcutName;
+                                                    })'/>
                                             </div>
                                         </MudTd>
                                         <MudTd Class='pa-2'DataLabel='Expense'>
-                                            <div class='blzrtypahead-unset-width15p'>
-                                                <BlazoredTypeahead SearchMethod='LoadExpense' Context='selExp' Value="context.expenseLineModel"
-                                                    ValueExpression='(() => context.expenseLineModel)' 
-                                                    ValueChanged='((ExpenseLineModel expense) => 
+                                            <div class='autocomplete'>
+                                                <AutoCompleteExpenseLineSearch
+                                                    ExpenseLine='context.expenseLineModel'
+                                                    OnExpenseLineValueChanged='((ExpenseLineModel expense) => 
                                                     { 
-                                                        context.expenseLineModel = expense; 
-                                                        context.ExpenseLineId = context.expenseLineModel.Id;
-                                                        context.ExpenseLineName = context.expenseLineModel.ExpenseName; 
-                                                    })'
-                                                    Debounce='500' MaximumSuggestions='5' aria-placeholder="Charge to" DisableClear>
-                                                    <SelectedTemplate>
-                                                        @if (context.ExpenseLineId != 0) {
-                                                            <MudTooltip Text="@context.ExpenseLineName" Placement='Placement.Top'>
-                                                                <MudText Class='font12'>@context.ExpenseLineName</MudText>
-                                                            </MudTooltip>
-                                                        } else {
-                                                            <MudText Class='font12'> - </MudText>
-                                                        }
-                                                    </SelectedTemplate>
-                                                    <ResultTemplate>
-                                                        @selExp.ExpenseName
-                                                    </ResultTemplate>
-                                                </BlazoredTypeahead>
+                                                        context.expenseLineModel = expense;
+                                                        context.ExpenseLineId = expense.Id;
+                                                        context.ExpenseLineName = expense.ExpenseName; 
+                                                    })'/>
+                                            
                                             </div>
                                         </MudTd>
                                         @if (GlobalClass.requestForPayment.RFPDetailTypeId == Enums.RFPDetailTypeId.Liquidation)
@@ -353,7 +323,8 @@
                                                     @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
                                                 </MudText>
                                                 <MudSpacer />
-                                                <MudNumericField OnBlur='TotalAmount' Class='txtfield-overflow-ellipsis txt-top-0 txtfield-right font12-txtfield txt-bold' Style='@(context.Amount > 0 ? "color:green" : "color:red")'
+                                                <MudNumericField Class='txtfield-overflow-ellipsis txt-top-0 txtfield-right font12-txtfield txt-bold min-width100px' Style='@(context.Amount > 0 ? "color:green" : "color:red")'  
+                                                    OnBlur='TotalAmount' 
                                                     @bind-Value='context.Amount' Margin='Margin.Dense' Format='N2' HideSpinButtons Variant='Variant.Text' />
                                             </div>
                                         </MudTd>
@@ -405,43 +376,14 @@
                                     </div>
                                     <MudDivider />
                                     <div class='d-flex flex-column overflow-auto'>
-                                        @if (GlobalClass.requestForPayment == null || GlobalClass.requestForPayment.Id == 0)
-                                        {
-                                            switch (GlobalClass.forPrintingOrSaveRFP)
+                                        <MudRadioGroup Class='d-flex flex-column px-2' @bind-SelectedOption='selectedPaymentMode'>
+                                            @foreach (var item in GlobalClassList.modeOfPaymentList)
                                             {
-                                                case null:
-                                                    <MudRadioGroup Class='d-flex flex-column px-2' @bind-SelectedOption='selectedPaymentMode'>
-                                                        @foreach (var item in GlobalClassList.modeOfPaymentList)
-                                                        {
-                                                            <MudRadio Option='@item' Dense Size='Size.Small' Color='Color.Dark'>
-                                                                <MudText Class='font10 font-bold txt-uppercase'>@item.ModeName</MudText>
-                                                            </MudRadio>
-                                                        }
-                                                    </MudRadioGroup>
-                                                    break;
-                                                default:
-                                                    <MudRadioGroup Class='d-flex flex-column px-2' @bind-SelectedOption='selectedPaymentMode.Id'>
-                                                        @foreach (var item in GlobalClassList.modeOfPaymentList)
-                                                        {
-                                                            <MudRadio Option='@item.Id' Dense Size='Size.Small' Color='Color.Dark'>
-                                                                <MudText Class='font10 font-bold txt-uppercase'>@item.ModeName</MudText>
-                                                            </MudRadio>
-                                                        }
-                                                    </MudRadioGroup>
-                                                    break;
+                                                <MudRadio Option='@item' Dense Size='Size.Small' Color='Color.Dark'>
+                                                    <MudText Class='font10 font-bold txt-uppercase'>@item.ModeName</MudText>
+                                                </MudRadio>
                                             }
-                                        }
-                                        else
-                                        {
-                                            <MudRadioGroup Class='d-flex flex-column' @bind-SelectedOption='selectedPaymentMode.Id'>
-                                                @foreach (var item in GlobalClassList.modeOfPaymentList)
-                                                {
-                                                    <MudRadio Option='@item.Id' Dense Size='Size.Small' Color='Color.Dark'>
-                                                        <MudText Class='font10 font-bold txt-uppercase'>@item.ModeName</MudText>
-                                                    </MudRadio>
-                                                }
-                                            </MudRadioGroup>
-                                        }
+                                        </MudRadioGroup>        
                                     </div>
                                 </MudPaper>
                                 <MudPaper Class='rounded-0 flex-1' Elevation='0'>
@@ -452,29 +394,29 @@
                                     <MudGrid Class='px-2' Spacing='1'>
                                         <MudItem xs='6'>
                                             <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>Bank:</MudText>
-                                            <BlazoredTypeahead SearchMethod=Extensions.SearchBank
+                                            <BlazoredTypeahead SearchMethod='( (string s)=> Extensions.SearchBank(s, true) )'
                                                 @bind-Value='bank' Debounce="500" placeholder='BANK'>
                                                 <SelectedTemplate>
-                                                    @context.ShortcutName
+                                                    @context.BankName
                                                 </SelectedTemplate>
                                                 <ResultTemplate>
-                                                    @context.ShortcutName
+                                                    @context.BankName
                                                 </ResultTemplate>
                                             </BlazoredTypeahead>
                                         </MudItem>
                                         <MudItem xs='6'>
-                                            <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>Account No. :</MudText>
+                                            <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>Others Bank/Account No. :</MudText>
                                             <MudTextField Class='txt-top-0 pt-2' @bind-Value='GlobalClass.requestForPayment.BankAccountNo' Margin='Margin.Dense'/>
                                         </MudItem>
                                         <MudItem xs='12'>
                                             <MudText Class='requestpayment__lblinput2'>remarks:</MudText>
-                                            <MudTextField Class='txt-top-0' T='string' Margin='Margin.Dense'/>
+                                            <MudTextField @bind-Value='GlobalClass.requestForPayment.Remarks' Class='txt-top-0' T='string' Margin='Margin.Dense'/>
                                         </MudItem>
                                     </MudGrid>
                                 </MudPaper>
                             </div>
                             <div class="body-sidebar">
-                                <div class="d-flex flex-column transition-05s-ease width300px height100" style='@(isSideBarExpanded ? "max-width:300px" : "max-width:57px")'>
+                                <div class="d-flex flex-column transition-05s-ease width260px height100" style='@(isSideBarExpanded ? "max-width:260px" : "max-width:57px")'>
                                     <MudCardHeader Class='d-flex align-center justify-center pa-2 border-thin-bottom bgc-F4F5FB height2-05rem cursor-pointer'
                                         @onclick='(() => isBillReqExpanded = !isBillReqExpanded)'>
                                         <div class='d-flex align-center transition-05s-ease overflow-hidden @(isSideBarExpanded ? "fade-in flex-1" : "fade-out")' style='@(isSideBarExpanded ? "max-width:500px" : "max-width:0px")'>
@@ -507,7 +449,7 @@
                                                     $"data:image/png;base64, {Convert.ToBase64String(@preparedBy.Picture)}":"images/fglogo/fgci1-gs.png")' Size='Size.Medium' />
                                                 <div class='blzrthead-disabled-minheight15 blzrth-result-height-rfp-sig flex-1'>
                                                     <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear placeholder='Prepared by'
-                                                        @bind-Value='preparedBy' Debounce='500' MaximumSuggestions='10' Context='prepby'>
+                                                        @bind-Value='preparedBy' Debounce='500' MaximumSuggestions='10' Context='prepby' Disabled>
                                                         <SelectedTemplate>
                                                             <small class='blzsmallmain-205px'>@preparedBy.EmployeeName</small>
                                                         </SelectedTemplate>
@@ -616,17 +558,11 @@
                                         </div>
                                         <MudIconButton OnClick='(() => isStatusExpanded = !isStatusExpanded)' Icon='@Icons.Material.Filled.FactCheck' Size='Size.Small' />
                                     </MudCardHeader>
-                                    <div class='d-flex align-start justify-center overflow-hidden @(isStatusExpanded ? "fade-in" : "fade-out")' style='@(isStatusExpanded && isSideBarExpanded ? "max-height:500px" : "max-height:0px")'>
-                                        @if (GlobalClass.requestForPayment.Id != 0) {
-                                        <MudChip Class='chip-radius-5 font-bold font12' Size='Size.Medium' Variant='Variant.Outlined' Color='Color.Info'>
+                                    <div class='d-flex align-start justify-center overflow-hidden @(isStatusExpanded ? "fade-in" : "fade-out")' style='@(isStatusExpanded && isSideBarExpanded ? "max-height:500px" : "max-height:0px")'>                 
+                                        <MudChip Class='chip-radius-5 font-bold font12' Size='Size.Medium' Variant='Variant.Outlined' 
+                                            Style='@(Extensions.BorderColor(GlobalClass.requestForPayment.AccountingStatusId))'>
                                             @GlobalClass.requestForPayment.AccountingStaus
                                         </MudChip>
-                                        } else {
-                                            <MudChip Class='chip-radius-5 font-bold font12' Size='Size.Medium' Variant='Variant.Outlined' Color='Color.Error'
-                                                Style='@(Extensions.BorderColor(GlobalClass.requestForPayment.AccountingStatusId))'>
-                                                TO BE GENERATED
-                                            </MudChip>
-                                        }
                                     </div>
                                     <MudDivider/>
                                     <MudSpacer />
@@ -634,7 +570,7 @@
                                         <MudSpacer />
                                         <div class='d-flex align-center gap-2'>
                                             <MudButton Class='btn-ios-d font12' OnClick='(()=> navigationManager.NavigateTo($"/request-payment/list"))' aria-label="Cancel" Variant='Variant.Text' Size='Size.Medium' DisableElevation>Cancel</MudButton>
-                                            <MudButton Class='btn-ios-d font12' OnClick='AddRequest' aria-label="add" Color='Color.Primary' Variant='Variant.Filled' Size='Size.Medium' DisableElevation Disabled='_processing'>
+                                            <MudButton Class='btn-ios-d font12' OnClick='AddRequest' aria-label="add" Color='@(currActionMode == Enums.ActionMode.Update ? Color.Info : Color.Primary)' Variant='Variant.Filled' Size='Size.Medium' DisableElevation Disabled='_processing'>
                                                 @if (_processing)
                                                 {
                                                     <MudProgressCircular Class="progsize-21" Size="Size.Medium" Indeterminate="true"/>
@@ -687,7 +623,7 @@
     private DateTime? dateReq = DateTime.Now, dateNeed = DateTime.Now;
     private byte[] preparedByImg = new byte[] { }, requestorImg = new byte[] { }, recommendByImg = new byte[] { }, approvedByImg = new byte[] { };
     private Enums.RFPDetailTypeId rfpTypes {get;set;}
-    private Enums.ActionMode currActionMode { get; set; }
+    public static Enums.ActionMode currActionMode { get; set; }
     private DateRange rfpPeriod = new DateRange(DateTime.Now, DateTime.Now);
     private MudDatePicker datePickerReq = new MudDatePicker();
     private MudDatePicker datePickerNeed = new MudDatePicker();
@@ -722,6 +658,9 @@
                 var temp = 1;
                 var none = new RequestForPaymentDetailModel();
                 none.rfpType = Enums.RFPDetailTypeId.None;
+                none.expenseLineModel = Extensions.DefaultExpenseNone();
+                none.ExpenseLineName = Extensions.DefaultExpenseNone().ExpenseName;
+                none.ExpenseLineId = Extensions.DefaultExpenseNone().Id;
                 GlobalClassList.requestForPayments.Add(none);
                 rowEditChargeTo = new();
                 selectedDivision = new();
@@ -742,6 +681,9 @@
                 var temp = 1;
                 var rfpDetail = new RequestForPaymentDetailModel();
                 rfpDetail.rfpType = Enums.RFPDetailTypeId.Labor;
+                rfpDetail.expenseLineModel = Extensions.DefaultExpenseNone();
+                rfpDetail.ExpenseLineName = Extensions.DefaultExpenseNone().ExpenseName;
+                rfpDetail.ExpenseLineId = Extensions.DefaultExpenseNone().Id;
                 GlobalClassList.requestForPayments.Add(rfpDetail);
                 foreach (var item in GlobalClassList.requestForPayments)
                 {
@@ -759,6 +701,9 @@
     {
     var rfpDetail = new RequestForPaymentDetailModel();
     rfpDetail.rfpType = Enums.RFPDetailTypeId.Reversal;
+    rfpDetail.expenseLineModel = Extensions.DefaultExpenseNone();
+    rfpDetail.ExpenseLineName = Extensions.DefaultExpenseNone().ExpenseName;
+    rfpDetail.ExpenseLineId = Extensions.DefaultExpenseNone().Id;
     GlobalClassList.requestForPayments.Add(rfpDetail);
     }
 
@@ -854,11 +799,13 @@
         if (GlobalClass.requestForPayment == null
         || GlobalClass.requestForPayment.Id == 0)
         {
+            currActionMode = Enums.ActionMode.Create;
             selectedPaymentMode = GlobalClassList.modeOfPaymentList.Where( x=> x.ModeName.Equals("None")).FirstOrDefault()?? new();//Defualt MOP 
+            selectedRequestType = GlobalClassList.requestTypes.Where( x=> x.TypeName == "None").FirstOrDefault()?? new();
+            rfpTypes = Enums.RFPDetailTypeId.None;
             switch (Extensions.CheckUrlType(navigationManager.Uri))
             {
                 case true:
-                    currActionMode = Enums.ActionMode.Create;
                     requestedBy = new();
                     recommendBy = new();
                     approvedBy = new();
@@ -867,18 +814,20 @@
                     requestorImg = new byte[] { };
                     recommendByImg = new byte[] { };
                     approvedByImg = new byte[] { };
-
                     dateNeed = DateTime.Now;
                     dateReq = DateTime.Now;
                     disableRequestCategory = false;
                     preparedBy = GlobalClass.currentUserAccount;
                     _employeeName = GlobalClass.currentUserAccount.EmployeeName;
                     preparedByImg = GlobalClass.currentUserAccount.Picture;
-
-                    selectedRequestType = GlobalClassList.requestTypes.Where( x=> x.TypeName == "None").FirstOrDefault()?? new();
                     GlobalClass.requestForPayment = new RequestForPaymentModel();
                     GlobalClassList.requestForPayments = new List<RequestForPaymentDetailModel>();
-
+                    var result = GlobalClassList.accountingStatusList.Where(x=>x.StatusName.Equals("rfp-generated", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                    if (result != null)
+                    {
+                        GlobalClass.requestForPayment.AccountingStatusId = result.Id;   
+                        GlobalClass.requestForPayment.AccountingStaus = result.StatusName;   
+                    }
                     rfpPeriod = new DateRange(DateTime.Now,DateTime.Now);
                     break;
 
@@ -888,7 +837,6 @@
                         navigationManager.NavigateTo("/request-payment/list");
                     else
                         RemappedProperties();
-
                     break;
             }
         }
@@ -916,7 +864,9 @@
 
     async void RemappedProperties()
     {
-        currActionMode = Enums.ActionMode.Update;
+        @* currActionMode = Enums.ActionMode.Update; *@
+        selectedRequestType = GlobalClassList.requestTypes.Where( r => r.Id == GlobalClass.requestForPayment.RequestTypeId).FirstOrDefault()?? new();
+        rfpTypes = (Enums.RFPDetailTypeId) GlobalClass.forPrintingOrSaveRFP.RFPDetailTypeId;
         preparedBy.EmployeeId = GlobalClass.forPrintingOrSaveRFP.PreparedById;
         _employeeName = GlobalClass.forPrintingOrSaveRFP.PreparedByName;
         requestedBy.EmployeeId = GlobalClass.forPrintingOrSaveRFP.RequestedById;
@@ -937,7 +887,7 @@
         dateNeed = GlobalClass.forPrintingOrSaveRFP.DateNeeded;
         dateReq = GlobalClass.forPrintingOrSaveRFP.RequestDate;
         rfpPeriod = new DateRange(GlobalClass.forPrintingOrSaveRFP.PeriodDateFrom, GlobalClass.forPrintingOrSaveRFP.PeriodDateTo);
-        selectedPaymentMode = await modeOfPaymentService.GetModeOfPaymentSingleValue(GlobalClass.forPrintingOrSaveRFP.ModeOfPaymentId, GlobalClass.token);
+        selectedPaymentMode = GlobalClassList.modeOfPaymentList.Where( mode => mode.Id ==GlobalClass.requestForPayment.ModeOfPaymentId).FirstOrDefault()?? new();
         bank = GlobalClassList.banks.Where( b => GlobalClass.requestForPayment.BankId == b.Id).FirstOrDefault()?? new(); 
 
         requestedBy = await globalService.GetEmployeeById(GlobalClass.forPrintingOrSaveRFP.RequestedById, GlobalClass.token);
@@ -958,6 +908,7 @@
         await t;
         if (t.Status == TaskStatus.RanToCompletion)
             StateHasChanged();
+        TotalAmount();
     }
 
     private async Task RepopulateTableForMapping()
@@ -970,7 +921,14 @@
             var filterParameter = new FilterParameter() { IsProject = true, ProjectName = item.ChargedName, IsId = false };
             rfpPDM = item;
             var project = await globalService.LoadChargeProjectLine(filterParameter, GlobalClass.token);
+            //Mapping of details
             rfpPDM.projectModel = project.FirstOrDefault() ?? new();
+            item.divisionModel.Id = item.DivisionId;
+            item.divisionModel.divisionName = item.DivisionName;
+            item.divisionModel.shortcutName = item.DivisionShortcutName;
+            item.expenseLineModel.Id = item.ExpenseLineId;
+            item.expenseLineModel.ExpenseName = item.ExpenseLineName; 
+
             GlobalClassList.requestForPayments.Add(rfpPDM);
         }
     }
@@ -1051,11 +1009,9 @@
     }
     async Task GetByIdDisplayProperties()
     {
-        if (GlobalClass.forPrintingOrSaveRFP == null)
-            GlobalClass.requestForPayment.RFPBillingDocuments = await billingDocumentService.GetBillingDocument(GlobalClass.requestForPayment.Id, GlobalClass.token);
-        bank = await bankService.GetBank(GlobalClass.requestForPayment.BankId, GlobalClass.token);
-        selectedPaymentMode = await modeOfPaymentService.GetModeOfPaymentSingleValue(GlobalClass.requestForPayment.ModeOfPaymentId, GlobalClass.token);
+        selectedPaymentMode = GlobalClassList.modeOfPaymentList.Where( mode => mode.Id ==GlobalClass.requestForPayment.ModeOfPaymentId).FirstOrDefault()?? new();
         selectedRequestType = await requestTypeService.GetRequestType(GlobalClass.requestForPayment.RequestTypeId, GlobalClass.token);
+        rfpTypes = (Enums.RFPDetailTypeId) GlobalClass.requestForPayment.RFPDetailTypeId;
         requestedBy = await globalService.GetEmployeeById(GlobalClass.requestForPayment.RequestedById, GlobalClass.token);
         recommendBy = await globalService.GetEmployeeById(GlobalClass.requestForPayment.RecommendedById, GlobalClass.token);
         approvedBy = await globalService.GetEmployeeById(GlobalClass.requestForPayment.ApprovedById, GlobalClass.token);
@@ -1081,7 +1037,8 @@
         GlobalClass.requestForPayment.PayeeCategoryId = payee.ProjectCategoryId;
         GlobalClass.requestForPayment.RequestDate = dateReq;
         GlobalClass.requestForPayment.DateNeeded = dateNeed;
-        GlobalClass.requestForPayment.Remarks = "";
+        //Fix remarks not set when saving
+        //GlobalClass.requestForPayment.Remarks = "";
 
         GlobalClass.requestForPayment.AccountingStatusId = GlobalClassList.accountingStatusList
         .Where(x => x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.RFPG)
@@ -1101,6 +1058,8 @@
         GlobalClass.requestForPayment.RequestedById = requestedBy.EmployeeId;
         GlobalClass.requestForPayment.RequestedByName = requestedBy.EmployeeName;
         GlobalClass.requestForPayment.RequestForPaymentDetails = GlobalClassList.requestForPayments;
+        if(bank == null)
+            bank = new();
         GlobalClass.requestForPayment.BankId = bank.Id;
 
         GlobalClass.requestForPayment.Activity = GlobalClass.requestForPayment.Id == 0
@@ -1118,6 +1077,7 @@
 
         GlobalClass.requestForPayment.PeriodDateFrom = rfpPeriod?.Start;
         GlobalClass.requestForPayment.PeriodDateTo = rfpPeriod?.End;
+        Console.WriteLine(selectedRequestType.Id);
 
         return GlobalClass.requestForPayment;
     }
@@ -1295,9 +1255,9 @@
             return validated;
         }
         if(GlobalClassList.requestForPayments.Any(x => 
-            x.projectModel.ProjectId == 0 || 
-            x.divisionModel.Id == 0 || 
-            x.expenseLineModel.Id == 0 ||
+            x.ChargedId == 0 || 
+            x.DivisionId == 0 || 
+            x.ExpenseLineId == 0 ||
             String.IsNullOrEmpty(x.Particulars)))
             validated = false;
         return validated;
@@ -1451,38 +1411,13 @@
     private void SelectedRFPCat(Enums.RFPDetailTypeId selRFPType)
     {
         rfpTypes = selRFPType;
-        GlobalClassList.requestForPayments = new();
-        payee = new();
         GlobalClass.requestForPayment.RFPDetailTypeId = selRFPType;
     } 
 
     private void SelectedReqType(RequestTypeModel selReqType)
     {
         selectedRequestType = selReqType;
-    }
-
-    private async Task<IEnumerable<Project>> LoadCharging(string chargingName)
-    {
-      var filterParameter = new FilterParameter()
-      {
-        IsProject = true,
-        ProjectName = chargingName,
-        IsId = false
-      };
-      var charging = await globalService.LoadChargeProjectLine(filterParameter, GlobalClass.token);
-      return charging;
-    }
-    private async Task<IEnumerable<DivisionModel>> LoadDivision(string searchText)
-    {
-      var division = GlobalClassList.divisionList;
-      return await Task.FromResult(division.Where(x=>x.divisionName.Contains(searchText, StringComparison.InvariantCultureIgnoreCase)
-      || x.shortcutName.Contains(searchText, StringComparison.InvariantCultureIgnoreCase)).ToList());
-    }
-
-    private async Task<IEnumerable<ExpenseLineModel>> LoadExpense(string expenseLine)
-    {
-      var charging = await expenseLineService.LoadExpenseLine(GlobalClass.token);
-      return charging.Where(x=>x.ExpenseName.Contains(expenseLine, StringComparison.OrdinalIgnoreCase)).ToList();
+        GlobalClass.requestForPayment.RequestTypeId = selReqType.Id;
     }
     private void SetParameterSearch()
     {

@@ -62,5 +62,20 @@ namespace fgciams.service.DebitServices
                 throw;
             }
         }
+        public async Task<List<DebitAuditTrailModel>> DebitAuditTrail(long ID, string token)
+        {
+            var auditTrail = new List<DebitAuditTrailModel>();
+            try{
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",token);
+                HttpResponseMessage responseMessage = await _client.GetAsync("/debit/audit-trail/"+ID);
+                if(responseMessage.IsSuccessStatusCode){
+                    auditTrail = await responseMessage.Content.ReadAsAsync<List<DebitAuditTrailModel>>();
+                }
+                return auditTrail;
+            }catch(Exception ee){
+                Console.WriteLine(ee.Message);
+                throw ee;
+            }
+        }
     }
 }

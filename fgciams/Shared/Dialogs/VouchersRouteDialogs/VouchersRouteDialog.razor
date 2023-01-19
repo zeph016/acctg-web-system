@@ -12,25 +12,34 @@
         </div>
     </TitleContent>
     <DialogContent>
-        <div class='d-flex align-start gap-2'>
-            <MudPaper Class='d-flex justify-center pa-2' Elevation='1'>
-                <MudGrid Spacing='1'>
-                    <MudItem Class='d-flex align-center justify-start' xs="6">
-                        <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
-                            Date
-                            <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
-                        </MudText>
-                        <MudDatePicker Class='txt-top-0 font14-txtfield txtfield-right mt-1' @bind-Date='GlobalClass.voucherRoute.RouteDate' IconSize='Size.Small' 
-                            Margin='Margin.Dense' DisableToolbar DisableUnderline />
-                    </MudItem>
-                    <MudItem xs=6></MudItem>
-                    <MudItem xs="12">
-                        <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
-                            Location
-                            <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
-                        </MudText>
+        <MudPaper Square Elevation='0'>
+            <div class="vroutedialog">
+                <div class='vroutedialog__grid'>
+                    <div class="vroutedialog-lbldate">
+                        <MudSpacer />
+                        <p class='vroutedialog__lbl'>Date:</p>
+                    </div>
+                    <div class="vroutedialog-date">
+                        <MudDatePicker Class='txt-top-0 font12-txtfield txtfield-right mt-1' @bind-Date='GlobalClass.voucherRoute.RouteDate' IconSize='Size.Small'  @ref='@datePicker'
+                            Margin='Margin.Dense' DisableToolbar DisableUnderline >
+                            <PickerActions>
+                                <MudButton Class='btn-ios-d font12' OnClick='DateRangeToday' Size='Size.Small' DisableElevation>
+                                    Today
+                                </MudButton>
+                                <MudSpacer />
+                                <MudButton Class='btn-ios-d font12' OnClick='CancelDateRangePicker' Size='Size.Small' DisableElevation>
+                                    Cancel
+                                </MudButton>
+                                <MudButton Class='btn-ios-d font12' OnClick='SubmitDateRangePicker' Size='Size.Small' DisableElevation Color='Color.Primary' Variant='Variant.Filled'>
+                                    Submit
+                                </MudButton>
+                            </PickerActions>
+                        </MudDatePicker>
+                    </div>
+                    <div class="vroutedialog-location">
+                        <p class='vroutedialog__lbl'>Location:</p>
                         <BlazoredTypeahead SearchMethod='LoadRoutes' DisableClear placeholder='Route to'
-                        @bind-Value='locationRoute' Debounce='500' MaximumSuggestions='5'>
+                            @bind-Value='locationRoute' Debounce='500' MaximumSuggestions='5'>
                             <SelectedTemplate>
                                 @if (locationRoute.ProjectId != 0) {
                                     <MudText Class='font12'>@context.ProjectName | @context.Location</MudText>
@@ -41,43 +50,48 @@
                                 }
                             </SelectedTemplate>
                             <ResultTemplate>
-                                @context.ProjectName | @context.Location    
+                                <div class='d-flex flex-column'>
+                                    <small class='font-bold'>@context.ProjectName</small>
+                                    <small>@context.Location</small>
+                                    <small>@Extensions.ProjectReference(context)</small>
+                                </div> 
                             </ResultTemplate>
                         </BlazoredTypeahead>
-                    </MudItem>
-                    <MudItem xs="12">
-                        <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
-                            Reason
-                        </MudText>
+                    </div>
+                    <div class="vroutedialog-reason">
+                        <p class='vroutedialog__lbl'>Reason:</p>
                         <MudTextField @bind-Value="@GlobalClass.voucherRoute.Reason"  Variant="Variant.Outlined" Margin="Margin.Dense"
-                            Lines='2' />
-                    </MudItem>
-                    <MudItem xs="12">
-                        <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
-                            Remarks
-                        </MudText>
+                            Lines='3' />
+                    </div>
+                    <div class="vroutedialog-remarks">
+                        <p class='vroutedialog__lbl'>Remarks:</p>
                         <MudTextField @bind-Value="@GlobalClass.voucherRoute.Remarks"  Variant="Variant.Outlined" Margin="Margin.Dense"
-                            Lines='2' />
-                    </MudItem>
-                </MudGrid>
-            </MudPaper>
-            <MudPaper Class='d-flex flex-column pa-2 overflow-auto' Elevation='1' MinWidth='250px' MaxWidth='300px' Height='281px'>
-                <small>
-                    Vouchers: <strong>(@GlobalClassList.selectedVoucherToRoute.Count())</strong>
-                </small>
-                <div class='d-flex flex-column mt-1'>
-                    @if(GlobalClassList.selectedVoucherToRoute.Count != 0)
-                    {
-                        foreach(var vouchers in GlobalClassList.selectedVoucherToRoute)
-                        {
-                            <MudChip Size='Size.Small' Color='Color.Tertiary' Label Variant='Variant.Outlined'>
-                                @vouchers.ControlNumber
-                            </MudChip>
-                        }
-                    }
+                            Lines='3' />
+                    </div>
+                    <div class="vroutedialog-controlnumbers">
+                        <div class='vroutedialog-controlnumbers__grid'>
+                            <div class="vroutediasub-title">
+                                <p class='vroutedialog__lbl'>Vouchers</p>
+                            </div>
+                            <div class="vroutediasub-content">
+                                @if(GlobalClassList.selectedVoucherToRoute.Count != 0)
+                                {
+                                    foreach(var vouchers in GlobalClassList.selectedVoucherToRoute)
+                                    {
+                                        <MudChip Size='Size.Small' Color='Color.Error' Label Variant='Variant.Outlined'>
+                                            <small class='font-bold'>@vouchers.ControlNumber</small>
+                                        </MudChip>
+                                    }
+                                }
+                            </div>
+                            <div class="vroutediasub-footer">
+                                <strong class='vroutedialog__lbl'>Selected: @GlobalClassList.selectedVoucherToRoute.Count()</strong>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </MudPaper>
-        </div>
+            </div>
+        </MudPaper>
     </DialogContent>
     <DialogActions>
         <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text' Size='Size.Small' DisableElevation>Cancel</MudButton>
@@ -93,10 +107,9 @@
     private List<Project> locationRoutesList = new();
     private Project locationRoute = new();
     private bool notValidLocation;
-    private void Cancel()
-    {
-        MudDialog.Close(DialogResult.Ok(3));
-    }
+
+    private MudDatePicker datePicker = new MudDatePicker();
+    private void Cancel() => MudDialog.Close(DialogResult.Ok(3));
     private async Task Validate()
     {
         if(IsValidated())
@@ -169,4 +182,13 @@
             GlobalClassList.selectedVoucherToRoute.Clear();
         }   
     }
+
+    private void DateRangeToday()
+    {
+        GlobalClass.voucherRoute.RouteDate = DateTime.Now;
+        SubmitDateRangePicker();
+    }
+
+    private void CancelDateRangePicker() => datePicker.Close(false);
+    private void SubmitDateRangePicker() =>  datePicker.Close(true);
 }

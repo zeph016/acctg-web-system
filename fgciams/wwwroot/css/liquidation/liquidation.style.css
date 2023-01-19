@@ -1,9 +1,275 @@
+.dflex-row-align-center {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+}
+
+.dflex-row, .liquidationpage .liq-details__grid .liqdet-tbar, .liquidationpage .liq-details__grid .liqdet-tbar__control-cont {
+  align-items: center;
+  display: flex;
+}
+
+.dflex-col {
+  flex-direction: column;
+  display: flex;
+}
+
+.dflex-ac {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+}
+
+.flex-full {
+  flex: 1 1 0%;
+}
+
+.dflex {
+  display: flex;
+}
+
+.dblock {
+  display: block;
+}
+
+.dblock-inline {
+  display: inline-block;
+} /*# sourceMappingURL=flexgridmods.styles.css.map */
+.visibility-animation-hide {
+  display: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s linear 0.2s, opacity 0.2s linear;
+}
+
+.visibility-animation-show {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  transition-delay: 0s;
+}
+
+.transition-2s-ease {
+  transition: all 2s;
+  transition-timing-function: ease;
+}
+
+.transition-1-5s-ease {
+  transition: all 1.5s;
+  transition-timing-function: ease;
+}
+
+.transition-1s-ease {
+  transition: all 1s;
+  transition-timing-function: ease;
+}
+
+.transition-05s-ease, .liquidationpage .liq-details__grid, .liquidationpage .liq-details__grid .liqdet-sidebar {
+  transition: all 0.5s;
+  transition-timing-function: ease;
+}
+
+.transition-025s-ease {
+  transition: all 0.25s;
+  transition-timing-function: ease;
+}
+
+.menu-grow-anim {
+  transition: all 0.15s ease-in-out !important;
+}
+
+.menu-grow-anim:hover {
+  transform: scale(1.025) !important;
+}
+
+.row-popup-anim-2px tr {
+  transition: all 0.2s ease-in-out;
+}
+
+.row-popup-anim-2px tr:hover {
+  transform: translateY(-2px);
+}
+
+.fade-in, .liquidationpage .liq-details__grid {
+  -webkit-animation: fadein 1s;
+  animation: fadein 1s;
+  visibility: visible;
+}
+
+.fade-out {
+  -webkit-animation: fadeout 1s;
+  animation: fadeout 1s;
+  visibility: hidden;
+}
+
+@-webkit-keyframes fadein {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes fadein {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@-webkit-keyframes fadeout {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes fadeout {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.icon-rotate180 .mud-button-icon-end {
+  transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
+}
+
+.mudbtn-rotate-180 .mud-icon-root {
+  transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
+}
+
+.mudbtnico-rotate {
+  -webkit-animation: mudbtnico-rotate 0.5s linear infinite;
+  animation: mudbtnico-rotate 0.5s linear infinite;
+}
+
+@-webkit-keyframes mudbtnico-rotate {
+  0% {
+    transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+  }
+}
+@keyframes mudbtnico-rotate {
+  0% {
+    transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+  }
+}
+.mudbtnico-rotate-90 .mud-icon-root {
+  transform: rotate(0deg);
+  transition: all 0.5s ease;
+  -webkit-transition: all 0.5s ease; /** Chrome & Safari **/
+  -moz-transition: all 0.5s ease; /** Firefox **/
+  -o-transition: all 0.5s ease; /** Opera **/
+}
+
+.mudbtnico-rotate-90:hover .mud-button-root {
+  color: #2196f3 !important;
+}
+
+.mudbtnico-rotate-90:hover .mud-icon-root {
+  transform: rotate(90deg);
+  transition: all 0.5s ease;
+  -webkit-transition: all 0.5s ease; /** Chrome & Safari **/
+  -moz-transition: all 0.5s ease; /** Firefox **/
+  -o-transition: all 0.5s ease; /** Opera **/
+}
+
+.sticky-div {
+  z-index: 1;
+  position: -webkit-sticky;
+  position: sticky;
+  left: 0;
+  background-color: white;
+}
+
+@-webkit-keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale3d(0.3, 0.3, 0.3);
+  }
+  30% {
+    transform: scale3d(1.1, 1.1, 1.1);
+  }
+  60% {
+    opacity: 1;
+    transform: scale3d(1.03, 1.03, 1.03);
+  }
+  80% {
+    transform: scale3d(0.97, 0.97, 0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale3d(1, 1, 1);
+  }
+}
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale3d(0.3, 0.3, 0.3);
+  }
+  30% {
+    transform: scale3d(1.1, 1.1, 1.1);
+  }
+  60% {
+    opacity: 1;
+    transform: scale3d(1.03, 1.03, 1.03);
+  }
+  80% {
+    transform: scale3d(0.97, 0.97, 0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale3d(1, 1, 1);
+  }
+} /*# sourceMappingURL=animation.styles.css.map */
 .liquidationpage__grid {
   display: grid;
   grid-template-columns: 1fr 1fr minmax(50px, 300px) minmax(50px, 200px) minmax(50px, 170px);
   grid-template-rows: 40px 40px 40px calc(100vh - 240px);
   gap: 0px 0px;
-  grid-template-areas: "liq-header liq-header liq-header liq-header liq-header" "liq-period liq-period liq-blank liq-date liq-controlno" "liq-remarks liq-remarks liq-remarks liq-remarks liq-remarks" "liq-details liq-details liq-details liq-details liq-details";
+  grid-template-areas: "liq-header liq-header liq-header liq-header liq-header" "liq-blank liq-blank liq-period liq-date liq-controlno" "liq-remarks liq-remarks liq-remarks liq-remarks liq-remarks" "liq-details liq-details liq-details liq-details liq-details";
 }
 .liquidationpage .dflex-alcenter, .liquidationpage .liq-controlno, .liquidationpage .liq-date__date-cont, .liquidationpage .liq-period__daterange-cont {
   display: flex;
@@ -36,24 +302,26 @@
   border-top: solid thin lightgray;
 }
 .liquidationpage .liq-header,
-.liquidationpage .liq-blank,
-.liquidationpage .liq-date,
+.liquidationpage .liq-period,
 .liquidationpage .liq-remarks,
 .liquidationpage .liq-details {
   border-right: solid thin lightgray;
   border-left: solid thin lightgray;
 }
-.liquidationpage .liq-controlno {
+.liquidationpage .liq-controlno, .liquidationpage .liq-date {
   border-right: solid thin lightgray;
 }
 .liquidationpage .liq-header,
 .liquidationpage .liq-details {
   border-bottom: solid thin lightgray;
 }
+.liquidationpage .liq-blank {
+  border-left: solid thin lightgray;
+}
 .liquidationpage .liq-period__daterange-cont {
   gap: 8px;
   padding: 8px;
-  width: 300px;
+  max-width: 300px;
 }
 .liquidationpage .liq-date__date-cont {
   padding: 8px;
@@ -62,5 +330,93 @@
 .liquidationpage .liq-controlno {
   justify-content: space-between;
   padding: 8px;
+  overflow: hidden;
+}
+.liquidationpage .liq-details__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  grid-template-rows: 30px 1fr 1fr 1fr;
+  gap: 0px 0px;
+  grid-template-areas: "liqdet-tbar liqdet-tbar liqdet-tbar liqdet-sidebar" "liqdet-body liqdet-body liqdet-body liqdet-sidebar" "liqdet-body liqdet-body liqdet-body liqdet-sidebar" "liqdet-body liqdet-body liqdet-body liqdet-sidebar";
+  width: 100%;
+}
+.liquidationpage .liq-details__grid .liqdet-tbar {
+  grid-area: liqdet-tbar;
+}
+.liquidationpage .liq-details__grid .liqdet-body {
+  grid-area: liqdet-body;
+}
+.liquidationpage .liq-details__grid .liqdet-sidebar {
+  grid-area: liqdet-sidebar;
+}
+.liquidationpage .liq-details__grid .liqdet-tbar {
+  align-items: center;
+  background-color: #F4F5FB;
+  border-bottom: solid thin lightgray;
+  padding: 0px 4px;
+}
+.liquidationpage .liq-details__grid .liqdet-tbar__control-cont {
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+.liquidationpage .liq-details__grid .liqdet-body {
+  overflow: auto;
+}
+.liquidationpage .liq-details__grid .liqdet-sidebar {
+  border-left: solid thin lightgray;
+}
+.liquidationpage .liq-details__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.liquidationpage .liq-details__table th {
+  border-bottom: solid thin lightgray;
+}
+.liquidationpage .liq-details__table td {
+  border-bottom: solid thin lightgray;
+  border-right: solid thin lightgray;
+}
+.liquidationpage .liq-details__table table {
+  border: solid thin lightgray;
+}
+.liquidationpage .liq-details__table th {
+  font-family: "R-Flex Regular";
+  font-size: 12px;
+  font-weight: unset;
+  text-transform: uppercase;
+}
+.liquidationpage .liq-details__table th:nth-child(1) {
+  width: 25%;
+}
+.liquidationpage .liq-details__table th:nth-child(2) {
+  width: 40%;
+}
+.liquidationpage .liq-details__table th:nth-child(3) {
+  width: 25%;
+}
+.liquidationpage .liq-details__table th:nth-child(4) {
+  width: 10%;
+}
+.liquidationpage .liq-details__table th:nth-child(5) {
+  width: 18px;
+}
+.liquidationpage .liq-details__table td:nth-child(5) {
+  border-right-style: none;
+}
+.liquidationpage .liq-details__td-stock td:nth-child(1) {
+  max-width: 100px;
+}
+.liquidationpage .liq-details__td-stock td:nth-child(1) p {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.liquidationpage .liq-details__td-edit td:nth-child(1) {
+  max-width: unset;
+}
+.liquidationpage .liq-details__td-edit td:nth-child(1) p {
+  white-space: nowrap;
+  text-overflow: ellipsis;
   overflow: hidden;
 }/*# sourceMappingURL=liquidation.style.css.map */

@@ -58,6 +58,7 @@ namespace fgciams.domain.clsCollection
         public decimal RunningBalance {get;set;}
         public DateTime? CheckDate {get;set;} = DateTime.Now;
         public bool IsShowCollectionsExpenses { get; set;}
+        public Int64 StatusId { get; set; }
         public decimal TotalGrossAmount
         {
             get
@@ -72,5 +73,6 @@ namespace fgciams.domain.clsCollection
 
         //Extra do not pass to service
         public bool showSubDetails { get; set; }
+        public bool IsSelected { get; set; }
     }
 }

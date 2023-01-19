@@ -1,4 +1,49 @@
+.dflex-row-align-center {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+}
+
+.dflex-row {
+  align-items: center;
+  display: flex;
+}
+
+.dflex-col, .circular-progress-cont {
+  flex-direction: column;
+  display: flex;
+}
+
+.dflex-ac {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+}
+
+.flex-full {
+  flex: 1 1 0%;
+}
+
+.dflex {
+  display: flex;
+}
+
+.dblock {
+  display: block;
+}
+
+.dblock-inline {
+  display: inline-block;
+} /*# sourceMappingURL=flexgridmods.styles.css.map */
 .progsize-21 {
   height: 21px !important;
   width: 21px !important;
+}
+
+.circular-progress-cont {
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+  min-width: 500px;
 }/*# sourceMappingURL=mudprogressmods.style.css.map */

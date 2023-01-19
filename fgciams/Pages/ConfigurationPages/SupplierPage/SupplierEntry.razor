@@ -130,7 +130,7 @@
                                     </MudItem>
                                     <MudItem xs='6'>
                                         <div style="padding-top:2px">
-                                            <BlazoredTypeahead SearchMethod='Extensions.SearchBank' Context='bankcontext' DisableClear EnableDropDown placeholder='Bank' 
+                                            <BlazoredTypeahead SearchMethod='( (string s)=> Extensions.SearchBank(s, true) )' Context='bankcontext' DisableClear EnableDropDown placeholder='Bank' 
                                                 @bind-Value='bank' Debounce='500' MaximumSuggestions='10'>
                                                 <SelectedTemplate>
                                                     @bankcontext.BankName
@@ -191,7 +191,7 @@
                             <DataAnnotationsValidator />
                                 <MudGrid Spacing='1'>
                                     <MudItem Class='d-flex align-center px-2 color-7d7d7d' xs=12>
-                                            <MudText Class='ff-theramin txt-uppercase' Typo='Typo.h6'>Contacts - @(GlobalClass.supplier.SupplierContacts.Count())</MudText>
+                                            <MudText Class='ff-theramin txt-uppercase' Typo='Typo.h6'>Contacts  - @(GlobalClass.supplier.SupplierContacts.Count())</MudText>
                                             <MudSpacer />
                                             <MudIcon Icon='@Icons.Material.Filled.ContactPhone' Size='Size.Medium' />
                                     </MudItem>

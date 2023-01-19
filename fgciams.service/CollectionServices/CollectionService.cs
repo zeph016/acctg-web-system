@@ -78,5 +78,15 @@ namespace fgciams.service.CollectionServices
                 auditTrails = await responseMessage.Content.ReadAsAsync<List<BankDepositAuditTrailModel>>();
             return auditTrails;
         }
+
+        public async Task<CollectionModel> UpdateCollectionStatus(CollectionModel collection, string token)
+        {
+            var coll = new CollectionModel();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            HttpResponseMessage responseMessage = await client.PutAsJsonAsync("/collection/update-status",collection);
+            if (responseMessage.IsSuccessStatusCode)
+                coll = await responseMessage.Content.ReadAsAsync<CollectionModel>();
+            return coll;
+        }
     }
 }

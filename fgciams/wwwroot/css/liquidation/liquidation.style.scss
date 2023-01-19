@@ -1,3 +1,6 @@
+@use "../components/flexgridmods/flexgridmods.styles.css";
+@use "../components/animations/animation.styles.css";
+
 .liquidationpage {
   &__grid {
     display: grid;
@@ -9,7 +12,7 @@
     gap: 0px 0px;
     grid-template-areas:
       "liq-header liq-header liq-header liq-header liq-header"
-      "liq-period liq-period liq-blank liq-date liq-controlno"
+      "liq-blank liq-blank liq-period liq-date liq-controlno"
       "liq-remarks liq-remarks liq-remarks liq-remarks liq-remarks"
       "liq-details liq-details liq-details liq-details liq-details";
   }
@@ -46,15 +49,14 @@
   }
 
   .liq-header,
-  .liq-blank,
-  .liq-date,
+  .liq-period,
   .liq-remarks,
   .liq-details {
     border-right: solid thin lightgray;
     border-left: solid thin lightgray;
   }
 
-  .liq-controlno {
+  .liq-controlno, .liq-date {
     border-right: solid thin lightgray;
   }
 
@@ -63,12 +65,16 @@
     border-bottom: solid thin lightgray;
   }
 
+  .liq-blank {
+    border-left: solid thin lightgray;
+  }
+
   .liq-period {
     &__daterange-cont {
       @extend .dflex-alcenter;
       gap: 8px;
       padding: 8px;
-      width: 300px;
+      max-width: 300px;
     }
   }
 
@@ -85,5 +91,92 @@
     justify-content: space-between;
     padding: 8px;
     overflow: hidden;
+  }
+  .liq-details {
+    &__grid {
+      @extend .transition-05s-ease, .fade-in;
+      display: grid; 
+      grid-template-columns: 1fr 1fr 1fr auto; 
+      grid-template-rows: 30px 1fr 1fr 1fr; 
+      gap: 0px 0px; 
+      grid-template-areas: 
+        "liqdet-tbar liqdet-tbar liqdet-tbar liqdet-sidebar"
+        "liqdet-body liqdet-body liqdet-body liqdet-sidebar"
+        "liqdet-body liqdet-body liqdet-body liqdet-sidebar"
+        "liqdet-body liqdet-body liqdet-body liqdet-sidebar"; 
+      .liqdet-tbar { grid-area: liqdet-tbar; }
+      .liqdet-body { grid-area: liqdet-body; }
+      .liqdet-sidebar { grid-area: liqdet-sidebar; }
+
+      width: 100%;
+
+      .liqdet-tbar {
+        @extend .dflex-row;
+        align-items: center;
+        background-color: #F4F5FB;
+        border-bottom: solid thin lightgray;
+        padding: 0px 4px;
+        &__control-cont {
+          @extend .dflex-row;
+          align-items: center;
+          gap: 4px;
+          width: 100%;
+        }
+      }
+      .liqdet-body { overflow: auto; }
+      .liqdet-sidebar {
+        @extend .transition-05s-ease;
+        border-left: solid thin lightgray;
+      }
+    }
+    &__table {
+      width: 100%;
+      border-collapse: collapse;
+      th {
+        border-bottom: solid thin lightgray;
+      }
+      td {
+        border-bottom: solid thin lightgray;
+        border-right: solid thin lightgray;
+      }
+      table {
+        border: solid thin lightgray;
+      }
+      th {
+        font-family: "R-Flex Regular";
+        font-size: 12px;
+        font-weight: unset;
+        text-transform: uppercase;
+      }
+      th:nth-child(1) {width: 25% ;}
+      th:nth-child(2) {width: 40% ;}
+      th:nth-child(3) {width: 25% ;}
+      th:nth-child(4) {width: 10% ;}
+      th:nth-child(5) {width: 18px ;}
+
+      td:nth-child(5) {
+        border-right-style: none;
+      }
+    }
+    &__td-stock {
+      td:nth-child(1) { 
+        max-width: 100px; 
+        p {
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          overflow: hidden;
+        }
+      }
+    }
+    &__td-edit {
+      td:nth-child(1) { 
+        max-width: unset; 
+        p {
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          overflow: hidden;
+        }
+      }
+    }
   }
 }

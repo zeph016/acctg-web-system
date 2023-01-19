@@ -34,6 +34,8 @@
 @import url("./components/transformmods/transform.styles.css");
 @import url("./components/flexgridmods/flexgridmods.styles.css");
 @import url("./components/filtercomponents/filtercomponents.styles.css");
+@import url("./components/signatories/signatories.styles.css");
+@import url("./components/autocompletebox/autocompletebox.css");
 @import url("./pettycash/pettycash-entry.styles.css");
 @import url("./voucher/voucher-entry.styles.css");
 @import url("./requestpayment/requestpayment.css");
@@ -59,6 +61,21 @@
   visibility: visible;
   opacity: 1;
   transition-delay: 0s;
+}
+
+.transition-2s-ease {
+  transition: all 2s;
+  transition-timing-function: ease;
+}
+
+.transition-1-5s-ease {
+  transition: all 1.5s;
+  transition-timing-function: ease;
+}
+
+.transition-1s-ease {
+  transition: all 1s;
+  transition-timing-function: ease;
 }
 
 .transition-05s-ease {
@@ -87,7 +104,7 @@
   transform: translateY(-2px);
 }
 
-.fade-in, .page-cont {
+.fade-in, .page-cont, .page-cont-L {
   -webkit-animation: fadein 1s;
   animation: fadein 1s;
   visibility: visible;
@@ -132,6 +149,11 @@
   }
 }
 .icon-rotate180 .mud-button-icon-end {
+  transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
+}
+
+.mudbtn-rotate-180 .mud-icon-root {
   transform: rotate(180deg);
   -webkit-transform: rotate(180deg);
 }
@@ -213,6 +235,47 @@
   position: sticky;
   left: 0;
   background-color: white;
+}
+
+@-webkit-keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale3d(0.3, 0.3, 0.3);
+  }
+  30% {
+    transform: scale3d(1.1, 1.1, 1.1);
+  }
+  60% {
+    opacity: 1;
+    transform: scale3d(1.03, 1.03, 1.03);
+  }
+  80% {
+    transform: scale3d(0.97, 0.97, 0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale3d(1, 1, 1);
+  }
+}
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale3d(0.3, 0.3, 0.3);
+  }
+  30% {
+    transform: scale3d(1.1, 1.1, 1.1);
+  }
+  60% {
+    opacity: 1;
+    transform: scale3d(1.03, 1.03, 1.03);
+  }
+  80% {
+    transform: scale3d(0.97, 0.97, 0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale3d(1, 1, 1);
+  }
 } /*# sourceMappingURL=animation.styles.css.map */
 @font-face {
   font-family: "Theramin";
@@ -407,4 +470,19 @@ a,
   background-position: right bottom;
   background-size: contain;
   height: 100%;
+}
+
+.page-cont-L {
+  background: #ffffff;
+  background-image: url(../images/fgbgimg.png);
+  background-image: url(../images/fgbgimg.png), linear-gradient(rgba(80, 69, 85, 0), #ffffff);
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: auto;
+  height: 100%;
+}
+
+.td-amount-container {
+  display: flex;
+  align-items: center;
 }/*# sourceMappingURL=app.css.map */

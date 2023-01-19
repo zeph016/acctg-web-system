@@ -15,7 +15,11 @@
               @context.ProjectName | @context.Location
               </SelectedTemplate>
               <ResultTemplate>
-              @context.ProjectName | @context.Location
+              <div class='d-flex flex-column'>
+                    <small class='font-bold'>@context.ProjectName</small>
+                    <small>@context.Location</small>
+                    <small>@Extensions.ProjectReference(context)</small>
+                </div>
             </ResultTemplate>
             </BlazoredTypeahead> 
         </div>

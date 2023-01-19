@@ -150,7 +150,7 @@
                                   @if(string.IsNullOrWhiteSpace(context.TaxCode)){ 
                                     <p>N/A</p> }
                                  else {
-                                    @context.TaxCode
+                                    @(context.TaxRate)<p>%</p>
                                  }
                                </MudChip>
                             </div>

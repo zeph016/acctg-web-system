@@ -25,6 +25,18 @@
 
 .flex-full {
   flex: 1 1 0%;
+}
+
+.dflex {
+  display: flex;
+}
+
+.dblock {
+  display: block;
+}
+
+.dblock-inline {
+  display: inline-block;
 } /*# sourceMappingURL=flexgridmods.styles.css.map */
 .checkwriterpage__grid {
   display: grid;

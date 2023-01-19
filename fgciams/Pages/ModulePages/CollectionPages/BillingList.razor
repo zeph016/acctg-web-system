@@ -350,6 +350,7 @@
         parameters.Add("contentText", contentText);
         parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("actionMode", actionMode);
+        parameters.Add("controlNumber", collection.ControlNumber);
         var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
         if (!resultDialog.Canceled) 
