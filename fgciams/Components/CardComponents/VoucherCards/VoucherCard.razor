@@ -1,0 +1,12 @@
+@inherits VoucherCardBase
+
+<div class='voucher-card voucher-card-sl'>
+    <MudChip Label Size='Size.Small' Variant='Variant.Filled' Color='Color.Error'
+        OnClick='(() => CopyTextToClipboard(CheckVoucher.VoucherNumber))'>
+        <p class='voucher-card__vnumber voucher-txt-size'>@CheckVoucher.VoucherNumber</p>
+    </MudChip>
+    <p class='voucher-card__amt voucher-txt-size @(CheckVoucher.Amount > 0 ? "color-green":"color-red")' 
+        @onclick='(() => CopyTextToClipboard("₱" + Math.Round(CheckVoucher.Amount,2).ToString("N2")))'>
+        ₱@Math.Round(CheckVoucher.Amount,2).ToString("N2")
+    </p>
+</div>

@@ -7,7 +7,7 @@
             <MudButton Class='btn-ios-d font12' OnClick="Back"  Color='Color.Error' Variant='Variant.Filled' DisableElevation Size='Size.Small'>@(IsSaved ? "RETURN" : "CANCEL")</MudButton>
             @if (Processing) {
                 <MudButton Class='btn-ios-d font12' OnClick="Prompt" Variant='Variant.Filled' DisableElevation Disabled='Processing' Color='Color.Success' Size='Size.Small'>
-                    <MudText Class='font12 pr-2'>SAVING VOUCHER</MudText>
+                    <MudText Class='font12 pr-2'>SAVING</MudText>
                     <MudProgressCircular Class="progsize-21" Size="Size.Small" Indeterminate />
                 </MudButton>
             } else {
@@ -20,11 +20,25 @@
         }
         else
         {
-            <MudButton Class='btn-ios-d font12' OnClick="Back" Variant='Variant.Filled' DisableElevation 
-                    Color='Color.Error' Size='Size.Small' 
-                    EndIcon='@Icons.Material.Filled.Close'>
-                    @ConfirmStr
-            </MudButton>
+            <div class="d-flex flex-row justify-content-between gap-2">
+                @if(AllowExportEXCEL)
+                {
+                    <MudButton Class='btn-ios-d font12' OnClick="ExportToEXCEL" Variant='Variant.Filled' DisableElevation 
+                            Color='Color.Success' Size='Size.Small' 
+                            EndIcon='@Icons.Material.Filled.ImportExport'>
+                            @if(Exporting)
+                            {
+                                <MudProgressCircular Size='Size.Small' Margin='Margin.Dense' Indeterminate/>
+                            }
+                            <span>Export to EXCEL</span>
+                    </MudButton>
+                }
+                <MudButton Class='btn-ios-d font12' OnClick="Back" Variant='Variant.Filled' DisableElevation 
+                        Color='Color.Error' Size='Size.Small' 
+                        EndIcon='@Icons.Material.Filled.Close'>
+                        @ConfirmStr
+                </MudButton>
+            </div>
         }
     </div>
 </div>
@@ -32,6 +46,7 @@
 @code {
     [Parameter] public EventCallback BackEventClick { get; set; }
     [Parameter] public EventCallback PromptEventClick { get; set; }
+    [Parameter] public EventCallback ExportToEXCEL { get; set; }
     [Parameter] public string ConfirmStr { get; set; } = string.Empty;
     [Parameter] public string CancelStr { get; set; } = string.Empty;
     [Parameter] public string PositionValue { get; set; } = string.Empty;
@@ -39,6 +54,8 @@
     [Parameter] public bool IsSaved { get; set; }
     [Parameter] public bool IsCloseOnly { get; set; }
     [Parameter] public string ControlPosition { get; set; } = string.Empty;
+    [Parameter] public bool AllowExportEXCEL { get; set; } = false;
+    [Parameter] public bool Exporting { get; set; } = false;
     public override async Task SetParametersAsync(ParameterView parameters)
     {
         await base.SetParametersAsync(parameters);

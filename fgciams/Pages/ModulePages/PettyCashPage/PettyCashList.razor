@@ -1,42 +1,40 @@
 @page "/petty-cash/list"
+@page "/petty-cash/list/{notificationCNo}"
 
 @inject IPettyCashService pettyCashService
 @inject IDialogService dialogService
 @inject NavigationManager navigationManager
 @inject IPettyCashService PettyCashService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject IConfiguration configuration
-@inject ISnackbar snackbarService
 @inject IJSRuntime JSRuntime
+@inject IAccessLevelService accessLevelService
 @attribute [Authorize]
 
 
 <div class='page-cont'>
     <div class='drawer-right-min'>
-        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
-            <FilterComponent OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
-                FilterClick='FilterTable' ResetTableClick='ReloadTable'
-                contentVisible='openSideFilter' moduleName="pettycash-list"/>
+        <MudDrawer Class='pa-1' Open='false' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <MudTooltip Text='Filter' Arrow Placement='Placement.Left'>
+                <MudIconButton OnClick='(() => openFilter = !openFilter)' Icon='@Icons.Material.Filled.FilterList' arial-label='Close Filter' Size='Size.Small' />
+            </MudTooltip>
         </MudDrawer>
     </div>
 
     <MudContainer Class='py-2 pl-2 pr-10  table-toolbar-custom1' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
         @if(!dataFetched)
         {
-            <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
-                <MudSkeleton SkeletonType='SkeletonType.Text' Height='100px' Animation='Animation.Wave' />
-                <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='71vh' Animation='Animation.Wave' />
-            </MudPaper>
+            <SkeletonPageList />
         }
         else
         {
             <MudTable Class='table-style-1' ServerData='new Func<TableState, Task<TableData<PettyCashModel>>>(LoadPettyCashInServer)' Hover
-                Breakpoint="Breakpoint.Xs" FixedHeader FixedFooter Bordered Dense RowsPerPage='15' Filter='new Func<PettyCashModel,bool>(FilterItems)' @ref='tableVariable'
+                Breakpoint="Breakpoint.Xs" FixedHeader FixedFooter Bordered Dense Filter='new Func<PettyCashModel,bool>(FilterItems)' @ref='tableVariable'
                 Loading='isLoading'>
                 <ToolBarContent>
                     <MudText Typo='Typo.caption'>
-                        @GlobalClassList.pettyCashList.Count() 
-                        @(GlobalClassList.pettyCashList.Count() == 1 ? "item" : "items") 
+                        @GlobalClassList.pettyCashList.Count 
+                        @(GlobalClassList.pettyCashList.Count == 1 ? "item" : "items") 
                         in total
                     </MudText>
                     <MudSpacer />
@@ -44,24 +42,26 @@
                         <MudIconButton Class='@(isLoading ? "mudbtnico-rotate":"")' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='(()=>ReloadTable())' 
                             Color='@(isLoading ? Color.Info : Color.Default)'/>
                     </MudTooltip>
-                    <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' ActivationEvent="MouseEvent.MouseOver"
+                    <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' 
                         TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
-                        @if(GlobalClass.currentUserAccount.AccessLevel != Enums.AccountingAccessLevel.OthersViewer) 
-                        {
-                            <MudMenuItem OnClick="(() => CreatePettyCash())"  >
-                                <div class='d-flex align-center gap-2 '>
-                                    <MudIcon Icon='@Icons.Material.Filled.Add' Size='Size.Small' Color='Color.Dark' />
-                                    <MudText Typo='Typo.body2' Color='Color.Dark'>Create Petty Cash</MudText>
-                                </div>
-                            </MudMenuItem>
-                        }
-                        <MudMenuItem OnClick="(() => openSideFilter = !openSideFilter)"  >
+                        <MudMenuItem OnClick="(() => CreatePettyCash())"  >
+                            <div class='d-flex align-center gap-2 '>
+                                <MudIcon Icon='@Icons.Material.Filled.Add' Size='Size.Small' Color='Color.Dark' />
+                                <MudText Typo='Typo.body2' Color='Color.Dark'>New Petty Cash</MudText>
+                            </div>
+                        </MudMenuItem>
+                        <MudMenuItem OnClick="(() => openFilter = !openFilter)"  >
                             <div class='d-flex align-center gap-2 '>
                                 <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
                                 <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
                             </div>
                         </MudMenuItem>
                     </MudMenu>
+                    @if(openFilter)
+                    {
+                        <PopoverFilterMainComponent IsOpen='openFilter' CloseFilter='(() => openFilter = !openFilter)' IsMainFilter='true' IsModuleList='true'
+                            ModuleName='pettycash-list' ApplyFilter='FilterTable' ResetTableData='ReloadTable'/>
+                    }
                 </ToolBarContent>
                 <ColGroup>
                     <col style='width: 1%' />
@@ -175,86 +175,17 @@
                         </div>
                     </MudTd>
                     <MudTd Class='@(isPinnedAmt ? "col-sticky-action text-center":"text-center")' DataLabel="Action">
-                        <MudMenu Class='mudbtnico-rotate-90' Icon="@Icons.Material.Filled.MoreVert" AnchorOrigin='Origin.BottomLeft' ActivationEvent="MouseEvent.MouseOver"
+                        <MudMenu Class='mudbtnico-rotate-90' Icon="@Icons.Material.Filled.MoreVert" AnchorOrigin='Origin.BottomLeft' 
                             TransformOrigin='Origin.TopRight' Dense Size='Size.Small'>
-                            <MudMenuItem OnClick='(() => PreviewPettyCash(context))'>
-                                <div class='d-flex align-center gap-2'>
-                                    <MudIcon Icon='@Icons.Material.Filled.Preview' Size='Size.Small' Color='Color.Dark'/>
-                                    <MudText Typo='Typo.body2'>View</MudText>
-                                </div>
-                            </MudMenuItem>
-                            @if(context.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCG)
-                            {
-                                <MudMenuItem OnClick='(() => EditPettyCash(context))'>
-                                    <a class='d-flex align-center gap-2 '>
-                                        <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' Color='Color.Dark'/>
-                                        <MudText Typo='Typo.body2'>Edit</MudText>
-                                    </a>
-                                </MudMenuItem>
-                            }
-                            @if(context.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCG || context.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCA ||
-                            context.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCR && GlobalClass.currentUserAccount.AccessLevel != Enums.AccountingAccessLevel.OthersViewer)
-                            {
-                                if(context.StatusEnumCategoryId != Enums.AccountingStatusEnumCategory.PCA && 
-                                context.StatusEnumCategoryId != Enums.AccountingStatusEnumCategory.PCR)
-                                {
-                                    <MudMenuItem OnClick='(() => Prompt(Enums.ActionMode.Approve,context))'>
-                                        <div class='d-flex align-center gap-2 '>
-                                            <MudIcon Icon='@Icons.Material.Filled.CheckCircle' Size='Size.Small' />
-                                            <MudText Typo='Typo.body2'>Approve</MudText>
-                                        </div>
-                                    </MudMenuItem>
-                                }
-                                
-                                @if(context.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCA)
-                                {
-                                    <MudMenuItem OnClick='(() => Prompt(Enums.ActionMode.Receive,context))'>
-                                        <div class='d-flex align-center gap-2 '>
-                                            <MudIcon Icon='@Icons.Material.Filled.GetApp' Size='Size.Small' />
-                                            <MudText Typo='Typo.body2'>Receive</MudText>
-                                        </div>
-                                    </MudMenuItem>
-                                }
-                                if(context.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCR)
-                                {
-                                    <MudMenuItem OnClick='(() => Prompt(Enums.ActionMode.Approve,context))'>
-                                        <div class='d-flex align-center gap-2 '>
-                                            <MudIcon Icon='@Icons.Material.Filled.Outbound' Size='Size.Small' />
-                                            <MudText Typo='Typo.body2'>Approved (Void)</MudText>
-                                        </div>
-                                    </MudMenuItem>
-                                }
-                                if(context.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCA)
-                                {
-                                <MudMenuItem OnClick='(() => Prompt(Enums.ActionMode.Void,context))'>
-                                        <a class='d-flex align-center gap-2 '>
-                                            <MudIcon Icon='@Icons.Material.Filled.CancelPresentation' Size='Size.Small' />
-                                            <MudText Typo='Typo.body2'>Generated (Void)</MudText>
-                                        </a>
-                                    </MudMenuItem>
-                                }
-                            }
-                            <MudMenuItem OnClick='(() => ViewAuditTrail(context))'>
-                                <a class='d-flex align-center gap-2 '>
-                                    <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' />
-                                    <MudText Typo='Typo.body2'>Audit Trail</MudText>
-                                </a>
-                            </MudMenuItem>
-                            @if(context.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCG)
-                            {
-                                <MudMenuItem OnClick='(() => Prompt(Enums.ActionMode.Cancel,context))'>
-                                    <div class='d-flex align-center gap-2 '>
-                                        <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small' />
-                                        <MudText Typo='Typo.body2'>Cancel</MudText>
-                                    </div>
-                                </MudMenuItem>
-                            }
-                            <MudMenuItem OnClick='(() => context.ShowReport = ShowReport(context.ShowReport, context))'>
-                                <div class='d-flex align-center gap-2 '>
-                                    <MudIcon Icon='@Icons.Material.Filled.PictureAsPdf' Size='Size.Small' />
-                                    <MudText Typo='Typo.body2'>@(context.ShowReport ? "Close" : "Show") Report</MudText>
-                                </div>
-                            </MudMenuItem>
+                            <PettyCashMenuComponent
+                                ModuleName='petty cash'
+                                PettyCashModel='context'
+                                PreviewClick='(()=> PreviewPettyCash(context))'
+                                EditPettyCashClick='(()=> EditPettyCash(context))'
+                                StatusClick='((Enums.ActionMode mode)=> Prompt(mode,context) )'
+                                AuditTrailClick='(()=> ViewAuditTrail(context))'
+                                ShowReportClick='(()=> ShowReports(context) )'
+                             />
                         </MudMenu>
                     </MudTd>
                 </RowTemplate>
@@ -291,7 +222,13 @@
                     </MudTr>
                 </ChildRowContent>
                 <PagerContent>
-                    <MudTablePager PageSizeOptions='@GlobalVariable.pageSize' />
+                    <FooterPaginationComponent
+                        FilterParameter='filterParameter'
+                        NextAndPreviousPage='( async (args)=> await NextAndPreviousPage((bool) args.Item1, (bool) args.Item2))'
+                        OnPageSizeChanged='( async (int s)=> await PageSizeChanged(s) )'
+                        TotalRow='TotalRow'
+                    />
+                    @* <MudTablePager PageSizeOptions='@GlobalVariable.pageSize' /> *@
                 </PagerContent>
             </MudTable>
         }
@@ -300,7 +237,8 @@
 
 @code
 {
-    private bool dataFetched, openSideFilter, isLoading, isPinnedCtrlNo = true, isPinnedAmt = true;
+    [Parameter] public string notificationCNo { get; set; } = string.Empty;
+    private bool dataFetched, openFilter, isLoading, isPinnedCtrlNo = true, isPinnedAmt = true;
     private string searchTerm = string.Empty;
     private string pdfContent = default!;
     public static Enums.ActionMode currActionMode { get; set; }
@@ -311,19 +249,26 @@
     private Project project = new();
     private AccountingStatusModel selectedStatus = new();
     private IEnumerable<AccountingStatusModel> hasAccountingStatus {get; set;} = new HashSet<AccountingStatusModel>();
+    private int TotalRow = 0;
     protected override async Task OnInitializedAsync()
     {
         GlobalClass.pageTitle = "PETTY CASH LIST";
-        Task t = Task.WhenAll(LoadPettyCashList());
-        await t;
         while (GlobalClass.currentUserAccount == null || string.IsNullOrEmpty(GlobalClass.token) || GlobalClassList.accountingStatusList == null)
             await Task.Delay(1);
-        if (t.Status == TaskStatus.RanToCompletion)
+        await PettyCashListRowCount();
+        Task t = Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.PettyCashList);
+        await t;
+        if(t.Status == TaskStatus.RanToCompletion)
         {
+            filterParameter = new();
+            GlobalVariable.filterParameter = new();
+            Extensions.ViewRestrictions(filterParameter);
+            filterParameter = GlobalVariable.filterParameter;
+            filterParameter.PageSize = 15;
+            filterParameter.PageNo = 0;
+            //SignalR();
             CompletedFetch();
-            SignalR();
         }
-        //Clear entry
         GlobalClass.pettyCash = new();
         PettyCashEntry.currActionMode = Enums.ActionMode.Create;
     }
@@ -332,18 +277,17 @@
         dataFetched = true;
         Task.Run(StateHasChanged);
     }
-
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if(firstRender)
+        {
+            
+        }
+    }
     private void ShowPettyCash(Int64 pettyCashId)
     {
         navigationManager.NavigateTo($"/petty-cash/{pettyCashId}");
     }
-
-    private async Task LoadPettyCashList()
-    {
-        GlobalClassList.pettyCashList = await pettyCashService.LoadPettyCashList(new FilterParameter(), GlobalClass.token);
-        StateHasChanged();
-    }
-
     private bool FilterItems(PettyCashModel items)
     {
         if (string.IsNullOrEmpty(searchTerm))
@@ -363,13 +307,25 @@
     }
     private async Task LoadPettyCash(PettyCashModel pettyCashModel)
     {
-        pdfContent = await PettyCashService.GetPettyCashReport(pettyCashModel);
-        StateHasChanged();
+        await Task.Run( async ()=> pettyCashModel.pettyCashAuditTrail = await pettyCashService.GetPettyCashAuditTrail(pettyCashModel.Id,GlobalClass.token) )
+        .ContinueWith( async (t) => {
+            if(t.Status == TaskStatus.RanToCompletion)
+            {
+                pdfContent = await PettyCashService.GetPettyCashReport(pettyCashModel);
+                StateHasChanged();
+            }
+        });
     }
     private void CreatePettyCash(){
-        GlobalClass.pettyCash = new();
-        currActionMode = Enums.ActionMode.Create;
-        navigationManager.NavigateTo($"/petty-cash");
+        if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.PettyCashEntry))
+        {
+            GlobalClass.pettyCash = new();
+            currActionMode = Enums.ActionMode.Create;
+            navigationManager.NavigateTo($"/petty-cash");
+        } else {
+            Extensions.ShowAlert("Account has been restricted to create petty cash.", Variant.Filled, SnackbarService, Severity.Error);
+        }
+        
     }
     private async void EditPettyCash(PettyCashModel pettyCashModel)
     {
@@ -400,7 +356,7 @@
             await MapUpdateProps(actionMode, model);
         }
         else
-            Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackbarService, Severity.Normal);
+           Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
     }
 
     private async Task MapUpdateProps(Enums.ActionMode actionMode, PettyCashModel model)
@@ -419,7 +375,7 @@
 
         //Audit Trail
         GlobalClass.pettyCash.PettyCashId = GlobalClass.pettyCash.Id;
-        GlobalClass.pettyCash.Activity = actionMode == Enums.ActionMode.Void ? "Activity: Update Petty Cash; Remarks: "+GlobalVariable.PromptRemarks : actionMode+" Petty Cash";
+        GlobalClass.pettyCash.Activity = actionMode == Enums.ActionMode.Void ? "Activity: Void Petty Cash; Remarks: "+GlobalVariable.PromptRemarks : actionMode+" Petty Cash";
         GlobalClass.pettyCash.UserId = GlobalClass.currentUserAccount.EmployeeId;
 
         if (acctgStatus != null) {
@@ -431,11 +387,32 @@
         Task t = Task.WhenAll(UpdatePettyCash());
         await t;
         if (t.Status == TaskStatus.RanToCompletion)
-            Extensions.ShowAlert("Petty updated successfully", Variant.Filled, snackbarService, Severity.Success);
+        {
+            Extensions.ShowAlert("Petty cash successfully updated.", Variant.Filled, SnackbarService, Severity.Success);
+            await tableVariable.ReloadServerData();
+            //Send Notification
+            if( GlobalVariable.AMSHubConnection != null)
+            {
+                await Task.Run( async ()=> await GlobalVariable.AMSHubConnection.InvokeAsync("SavePettyCash", model)).
+                ContinueWith( async(t) => 
+                {   
+                    if(t.Status == TaskStatus.RanToCompletion) 
+                    {  
+                        NotificationModel notification = new();
+                        notification.SenderId = GlobalClass.currentUserAccount.EmployeeId;
+                        notification.StatusAction = actionMode;
+                        notification.ModuleName = "Petty Cash";
+                        notification.ControlNumber = model.ControlNumber;
+                        notification.PreparedById = model.RequestedById;
+                        notification.DateNotify = DateTime.Now;
+                        await Extensions.SendNotification(notification); 
+                    }
+                });
+            }
+        }
         else
-            Extensions.ShowAlert("Something went wrong, Please contact Administrator", Variant.Filled, snackbarService, Severity.Error);
+            Extensions.ShowAlert("Something went wrong, Please contact the Administrator", Variant.Filled, SnackbarService, Severity.Error);
     }
-
     private async Task UpdatePettyCash()
     {
         await pettyCashService.UpdatePettyCash(GlobalClass.pettyCash,GlobalClass.token);
@@ -446,9 +423,11 @@
         try
         {
             if(GlobalVariable.AMSHubConnection != null)
-                GlobalVariable.AMSHubConnection.On<PettyCashModel>("SavePettyCash",(pettyCashModel) => 
+                GlobalVariable.AMSHubConnection.On<PettyCashModel>("SavePettyCash",async (pettyCashModel) => 
                 {
-                    tableVariable.ReloadServerData();
+                    filterParameter.PageSize = GlobalVariable.PageSize;
+                    filterParameter.PageNo = 0;
+                    await tableVariable.ReloadServerData();
                     StateHasChanged();
                 });
         }catch (Exception ex)
@@ -457,9 +436,15 @@
             throw;
         }
     }
+
     private async Task<TableData<PettyCashModel>> LoadPettyCashInServer(TableState tableState)
     {
         isLoading = true;
+        if(!String.IsNullOrEmpty(notificationCNo))
+        {
+            filterParameter.IsControlNumber = true;
+            filterParameter.ControlNumber = notificationCNo;
+        }
         IEnumerable<PettyCashModel> data = await pettyCashService.LoadPettyCashList(filterParameter, GlobalClass.token);
         switch (tableState.SortLabel)
         {
@@ -485,12 +470,9 @@
                 data = data.OrderByDirection(tableState.SortDirection, x=>x.Amount);
                 break;
         }
-
         GlobalClassList.pettyCashList = data.ToList();
-        pageData = GlobalClassList.pettyCashList.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
+        pageData = GlobalClassList.pettyCashList.Skip(tableState.Page * GlobalVariable.PageSize).Take(GlobalVariable.PageSize).ToArray();
         var total = GlobalClassList.pettyCashList.Count();
-        //Lazy Loader
-        await Task.Delay(1000);
         isLoading = !isLoading;
         return new TableData<PettyCashModel>()
         {
@@ -501,7 +483,8 @@
     private async Task FilterTable()
     {
         filterParameter = GlobalVariable.filterParameter;
-        filterParameter.AccountingAccessLevel = GlobalClass.currentUserAccount.AccessLevel;
+        filterParameter.PageSize = GlobalVariable.PageSize;
+        filterParameter.PageNo = 0;
         await tableVariable.ReloadServerData();
     }
     private async void LookUp(Enums.LookUpType type, string lookFor)
@@ -540,7 +523,14 @@
     }
     private async Task ReloadTable()
     {
+        navigationManager.NavigateTo($"/petty-cash/list");
+        await PettyCashListRowCount();
+        GlobalVariable.filterParameter = new();
         filterParameter = new FilterParameter();
+        Extensions.ViewRestrictions(filterParameter);
+        filterParameter = GlobalVariable.filterParameter;
+        filterParameter.PageSize = GlobalVariable.PageSize;
+        filterParameter.PageNo = 0;
         await tableVariable.ReloadServerData();
     }
     private bool EnableClearButton()
@@ -558,10 +548,7 @@
       return false;
     }
 
-    private async Task CopyTextToClipboard(string ctrlNo)
-    {
-        await Extensions.CopyTextToClipboard(ctrlNo, snackbarService, JSRuntime);
-    }
+    private async Task CopyTextToClipboard(string ctrlNo) => await Extensions.CopyTextToClipboard(ctrlNo, SnackbarService, JSRuntime);
 
     private async Task PreviewPettyCash(PettyCashModel model)
     {
@@ -570,9 +557,44 @@
         parameters.Add("pettyCash", model);
         var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.Small, FullWidth = true, NoHeader = false, DisableBackdropClick = false };
         var resultDialog = await dialogService.Show<Shared.Dialogs.PreviewInformationDialogs.PreviewPettyCashDialog>("", parameters, options).Result;
-        if (!resultDialog.Canceled) 
+    }
+    private async Task NextAndPreviousPage(bool next, bool skipNext)
+    {
+      if(skipNext)
+      {
+        if(next)
         {
-        
+          if(GlobalVariable.LastPage != 0)
+            filterParameter.PageNo = GlobalVariable.LastPage;
+          else
+            filterParameter.PageNo++;
         }
+        else 
+          filterParameter.PageNo = 0;
+      } else {
+        if(next)
+          filterParameter.PageNo++;
+        else 
+          filterParameter.PageNo--;
+      }
+      await tableVariable.ReloadServerData();
+    }
+    private async Task PettyCashListRowCount()
+    {
+      int count = TotalRow = await pettyCashService.PettyCashListRowCount(new FilterParameter(){ isActive = true, PageSize = 2000000 , PageNo =0 },GlobalClass.token);
+      if(count % GlobalVariable.PageSize == 0)
+        GlobalVariable.LastPage = (Convert.ToInt32(Math.Floor(Convert.ToDecimal(count) / Convert.ToDecimal(GlobalVariable.PageSize)))) - 1;
+      else
+        GlobalVariable.LastPage = Convert.ToInt32(Math.Floor(Convert.ToDecimal(count) / Convert.ToDecimal(GlobalVariable.PageSize)));
+    }
+    private async Task PageSizeChanged(int s)
+    {
+      filterParameter.PageSize = GlobalVariable.PageSize = s; 
+      await tableVariable.ReloadServerData();
+      await PettyCashListRowCount();
+    }
+    private void ShowReports(PettyCashModel model)
+    {
+        model.ShowReport = ShowReport(model.ShowReport, model);
     }
 }

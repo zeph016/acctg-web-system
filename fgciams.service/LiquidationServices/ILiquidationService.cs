@@ -23,5 +23,7 @@ namespace fgciams.service.LiquidationServices
         Task<List<LiquidationModel>> LiquidationNotRFP(string token);
         Task<List<LiquidationAuditTrailModel>> LiquidationAuditTrail(Int64 liquidationId, string token);
         Task<string> PrintSaveLiquidation(LiquidationModel liquidation);
+        Task<int> LiquidationListRowCount(FilterParameter param, string token);
+        Task<byte[]> LiquidationReportGetExcel(LiquidationModel model, string token);
     }
 }

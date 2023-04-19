@@ -1,172 +1,190 @@
 @page "/bank-deposit/list"
 
 @inject IGlobalService globalService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject IJSRuntime JSRuntime
 @inject IDialogService dialogService
 @inject IBankDepositService bankService
 @inject NavigationManager navigationManager
 @inject IBankDepositService bankDepositService
+@inject IAccessLevelService accessLevelService
 
 <div class='page-cont'>
     <div class='drawer-right-min'>
-        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
-            <BankDepositOnlyFIlter OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
-                FilterClick='FilterTable' ResetTableClick='ReloadTable'
-                contentVisible='openSideFilter' moduleName="collectiondeposit-list"/>
+        <MudDrawer Class='pa-1' Open='false' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <MudTooltip Text='Filter' Arrow Placement='Placement.Left'>
+                <MudIconButton OnClick='(() => openFilter = !openFilter)' Icon='@Icons.Material.Filled.FilterList' arial-label='Close Filter' Size='Size.Small' />
+            </MudTooltip>
         </MudDrawer>
     </div>
     <MudContainer Class='py-2 pl-2 pr-10  table-toolbar-custom1' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
-        <MudTable Class='table-style-1' @ref='tableVariable' ServerData='new Func<TableState, Task<TableData<BankDepositModel>>>(LoadBankDeposits)' Loading='isLoading'
-            Breakpoint="Breakpoint.Xs" RowsPerPage='15' Elevation='1' Height='calc(100vh - 185px)' FixedHeader FixedFooter CustomFooter Bordered Dense Hover>
-            <ToolBarContent>
-                <MudText Typo='Typo.caption'>
-                    @GlobalClassList.bankDepositList.Count()
-                    @(GlobalClassList.bankDepositList.Count() == 1 ? "item" : "items") 
-                    in total
-                </MudText>
-                <MudSpacer/>
-                <MudTooltip Text="Refresh Table">
-                    <MudIconButton OnClick='ReloadTable' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" ></MudIconButton>
-                </MudTooltip>
-                 <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' ActivationEvent="MouseEvent.MouseOver"
-                    TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
-                    <MudMenuItem OnClick="(() => openSideFilter = !openSideFilter)"  >
-                        <div class='d-flex align-center gap-2 '>
-                            <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
-                            <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
-                        </div>
-                    </MudMenuItem>
-                </MudMenu>
-            </ToolBarContent>
-            <ColGroup>
-                <col style="width:20px" />
-                <col />
-                <col />
-                <col />
-                <col style="width:20px"/>
-                <col style="width:110px" />
-                <col style="width:50px"/>
-            </ColGroup>
-            <HeaderContent>
-                <MudTh Class='@(isPinnedCtrlNo ? "th-sticky-left customheader-6":"customheader-6")'>
-                    <div class='d-flex align-center justify-space-around gap-2'>
-                        <MudTooltip Text='Pin control number column' Arrow Placement='Placement.Top'>
-                            <MudIconButton Class='ico-15x15' OnClick='(() => isPinnedCtrlNo = !isPinnedCtrlNo)' Color='@(isPinnedCtrlNo ? Color.Info:Color.Dark)' 
-                                Icon='@Icons.Material.Filled.PushPin' Size='Size.Small'/>
-                        </MudTooltip>
-                        @* <MudTableSortLabel SortLabel='SortCtrlNo' T='BankDepositModel'
-                            InitialDirection='SortDirection.None'>
-                            Control No.
-                        </MudTableSortLabel> *@
-                        <MudTableSortLabel SortLabel='SortDate' T='BankDepositModel'
-                            InitialDirection='SortDirection.None'>
-                            Deposit Date
-                        </MudTableSortLabel>
-                    </div>
-                </MudTh>
-                <MudTh Class='customheader-6'>Bank</MudTh>
-                <MudTh Class='customheader-6 text-center'>Description</MudTh>
-                <MudTh Class='customheader-6 text-center'>Remarks</MudTh>
-                <MudTh Class='customheader-6 text-center'>Category</MudTh>
-                <MudTh Class='@(isPinnedAmt ? "th-sticky-action bl-thin customheader-6":"customheader-6")'>
-                    <MudTooltip Text='Pin amount column' Arrow Placement='Placement.Top'>
-                        <MudIconButton Class='ico-15x15' OnClick='(() => isPinnedAmt = !isPinnedAmt)' Color='@(isPinnedAmt ? Color.Info:Color.Dark)' 
-                            Icon='@Icons.Material.Filled.PushPin' Size='Size.Small'/>
+        @if(!dataFetched)
+        {
+            <SkeletonPageList />
+        }
+        else
+        {
+            <MudTable Class='table-style-1' @ref='tableVariable' ServerData='new Func<TableState, Task<TableData<BankDepositModel>>>(LoadBankDeposits)' Loading='isLoading'
+                Breakpoint="Breakpoint.Xs" RowsPerPage='15' Elevation='1' Height='calc(100vh - 185px)' FixedHeader FixedFooter CustomFooter Bordered Dense Hover>
+                <ToolBarContent>
+                    <MudText Typo='Typo.caption'>
+                        @GlobalClassList.bankDepositList.Count()
+                        @(GlobalClassList.bankDepositList.Count() == 1 ? "item" : "items") 
+                        in total
+                    </MudText>
+                    <MudSpacer/>
+                    <MudTooltip Text="Refresh Table">
+                        <MudIconButton OnClick='ReloadTable' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" ></MudIconButton>
                     </MudTooltip>
-                    <MudTableSortLabel Class='text-right' SortLabel='SortAmount' T='CollectionModel'
-                        InitialDirection='SortDirection.None'>
-                            Amount
-                    </MudTableSortLabel>
-                </MudTh>
-                <MudTh Class='@(isPinnedAmt ? "th-sticky-action customheader-6":"customheader-6")'>Action</MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd  Class='@(isPinnedCtrlNo ? "col-sticky-left":"")' DataLabel='Collection Id'>
-                    <div class='d-flex align-center justify-center gap-2'>
-                        <MudChip Class='chip-radius-5 font-bold font10' Text='@Convert.ToDateTime(context.DepositDate).ToShortDateString()' Icon='@Icons.Material.Filled.CalendarMonth'  
-                            Variant='Variant.Outlined' Size='Size.Small' Color='Color.Default' />
-                    </div>
-                </MudTd>
-                <MudTd DataLabel='Bank Name'>
-                    <div class='dynamic-div-1'>
-                        <small>@Extensions.BankShortCutName(context.BankId)</small>
-                    </div>
-                </MudTd>
-                <MudTd DataLabel='Description'>
-                    <div class='dynamic-div-1'>
-                        <small>@context.Description</small>
-                    </div>
-                </MudTd>
-                <MudTd DataLabel='Remarks'>
-                    <div class='dynamic-div-1'>
-                        <small>@context.Remarks</small>
-                    </div>
-                </MudTd>
-                <MudTd Class='@(isPinnedAmt ? "br-none":"")' DataLabel='Category'>
-                    <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Variant='Variant.Outlined'
-                        Color='Color.Info' Size='Size.Small'>
-                        @context.DepositCategoryId
-                    </MudChip>
-                </MudTd>
-                <MudTd Class='@(isPinnedAmt ? "col-sticky-amt":"")' DataLabel='Amount'>
-                    <div class='tooltipw100'>
-                        <MudTooltip Class='flex-1' Text='@(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + context.Amount.ToString("N2"))' 
-                            Arrow Placement='Placement.Top' Color='Color.Success'>
-                            <div class='amount-container'>
-                                <small class='@(context.Amount > 0 ? "font-bold color-green":"font-bold color-red")'>
-                                    @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
-                                </small>
-                                <MudSpacer />
-                                <small class='@(context.Amount > 0 ? "txt-green":"txt-red")'>
-                                    @context.Amount.ToString("N2")
-                                </small>
-                            </div>
-                        </MudTooltip>
-                    </div>
-                </MudTd>
-                <MudTd Class='@(isPinnedAmt ? "col-sticky-action text-center":"text-center")' DataLabel='Action'>
-                    <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
-                        TransformOrigin='Origin.TopRight' Dense Size='Size.Small'>
-                        <MudMenuItem OnClick="(() => GetBankDepositDetails(context, Enums.ActionMode.Cancel))">
-                            <div class='d-flex align-center gap-2'>
-                                <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small' Color='Color.Dark' />
-                                <MudText Typo='Typo.body2' Color='Color.Dark'>Cancel</MudText>
-                            </div>
-                        </MudMenuItem>
-                        <MudMenuItem OnClick="(() => ShowCollections(context) )">
-                            <div class='d-flex align-center gap-2'>
-                                <MudIcon Icon='@Icons.Material.Filled.ViewList' Size='Size.Small' Color='Color.Dark' />
-                                <MudText Typo='Typo.body2' Color='Color.Dark'>View Collections</MudText>
+                    <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' 
+                        TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
+                        <MudMenuItem OnClick="(() => openFilter = !openFilter)"  >
+                            <div class='d-flex align-center gap-2 '>
+                                <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
+                                <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
                             </div>
                         </MudMenuItem>
                     </MudMenu>
-                </MudTd>
-            </RowTemplate>
-            <ChildRowContent>
-                <MudTr>
-                    <td colspan="7">
-                        <div class='transition-05s-ease overflow-hidden' style='@(context.IsShowCollections ? "max-height:500px" : "max-height:0px")'>
-                            <div class='d-flex align-center justify-center pa-2 bgc-f2f2f2 '>
-                                 <CollectionListDepositComponent Height='200px' OnClose='( () => ShowCollections(context) )' HideCloseButton='context.IsShowCollections'/>
-                            </div>
+                    @if(openFilter)
+                    {
+                        <PopoverFilterMainComponent IsOpen='openFilter' CloseFilter='(() => openFilter = !openFilter)' IsMainFilter='true' IsModuleList='true'
+                            ModuleName='collectiondeposit-list' ApplyFilter='FilterTable' ResetTableData='ReloadTable'/>
+                    }
+                </ToolBarContent>
+                <ColGroup>
+                    <col style="width:20px" />
+                    <col />
+                    <col />
+                    <col />
+                    <col style="width:20px"/>
+                    <col style="width:110px" />
+                    <col style="width:50px"/>
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh Class='@(isPinnedCtrlNo ? "th-sticky-left customheader-6":"customheader-6")'>
+                        <div class='d-flex align-center justify-space-around gap-2'>
+                            <MudTooltip Text='Pin control number column' Arrow Placement='Placement.Top'>
+                                <MudIconButton Class='ico-15x15' OnClick='(() => isPinnedCtrlNo = !isPinnedCtrlNo)' Color='@(isPinnedCtrlNo ? Color.Info:Color.Dark)' 
+                                    Icon='@Icons.Material.Filled.PushPin' Size='Size.Small'/>
+                            </MudTooltip>
+                            @* <MudTableSortLabel SortLabel='SortCtrlNo' T='BankDepositModel'
+                                InitialDirection='SortDirection.None'>
+                                Control No.
+                            </MudTableSortLabel> *@
+                            <MudTableSortLabel SortLabel='SortDate' T='BankDepositModel'
+                                InitialDirection='SortDirection.None'>
+                                Deposit Date
+                            </MudTableSortLabel>
                         </div>
-                    </td>
-                </MudTr>
-                </ChildRowContent>
-            <NoRecordsContent>
-                <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No records found</MudText>
-            </NoRecordsContent>
-            <PagerContent>
-                <MudTablePager PageSizeOptions="@GlobalVariable.pageSize" />
-            </PagerContent>
-        </MudTable>
+                    </MudTh>
+                    <MudTh Class='customheader-6'>Bank</MudTh>
+                    <MudTh Class='customheader-6 text-center'>Description</MudTh>
+                    <MudTh Class='customheader-6 text-center'>Remarks</MudTh>
+                    <MudTh Class='customheader-6 text-center'>Category</MudTh>
+                    <MudTh Class='@(isPinnedAmt ? "th-sticky-action bl-thin customheader-6":"customheader-6")'>
+                        <MudTooltip Text='Pin amount column' Arrow Placement='Placement.Top'>
+                            <MudIconButton Class='ico-15x15' OnClick='(() => isPinnedAmt = !isPinnedAmt)' Color='@(isPinnedAmt ? Color.Info:Color.Dark)' 
+                                Icon='@Icons.Material.Filled.PushPin' Size='Size.Small'/>
+                        </MudTooltip>
+                        <MudTableSortLabel Class='text-right' SortLabel='SortAmount' T='CollectionModel'
+                            InitialDirection='SortDirection.None'>
+                                Amount
+                        </MudTableSortLabel>
+                    </MudTh>
+                    <MudTh Class='@(isPinnedAmt ? "th-sticky-action customheader-6":"customheader-6")'>Action</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd  Class='@(isPinnedCtrlNo ? "col-sticky-left":"")' DataLabel='Collection Id'>
+                        <div class='d-flex align-center justify-center gap-2'>
+                            <MudChip Class='chip-radius-5 font-bold font10' Text='@Convert.ToDateTime(context.DepositDate).ToShortDateString()' Icon='@Icons.Material.Filled.CalendarMonth'  
+                                Variant='Variant.Outlined' Size='Size.Small' Color='Color.Default' />
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel='Bank Name'>
+                        <div class='dynamic-div-1'>
+                            <small>@Extensions.BankShortCutName(context.BankId)</small>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel='Description'>
+                        <div class='dynamic-div-1'>
+                            <small>@context.Description</small>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel='Remarks'>
+                        <div class='dynamic-div-1'>
+                            <small>@context.Remarks</small>
+                        </div>
+                    </MudTd>
+                    <MudTd Class='@(isPinnedAmt ? "br-none":"")' DataLabel='Category'>
+                        <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Variant='Variant.Outlined'
+                            Color='Color.Info' Size='Size.Small'>
+                            @context.DepositCategoryId
+                        </MudChip>
+                    </MudTd>
+                    <MudTd Class='@(isPinnedAmt ? "col-sticky-amt":"")' DataLabel='Amount'>
+                        <div class='tooltipw100'>
+                            <MudTooltip Class='flex-1' Text='@(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + context.Amount.ToString("N2"))' 
+                                Arrow Placement='Placement.Top' Color='Color.Success'>
+                                <div class='amount-container'>
+                                    <small class='@(context.Amount > 0 ? "font-bold color-green":"font-bold color-red")'>
+                                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                                    </small>
+                                    <MudSpacer />
+                                    <small class='@(context.Amount > 0 ? "txt-green":"txt-red")'>
+                                        @context.Amount.ToString("N2")
+                                    </small>
+                                </div>
+                            </MudTooltip>
+                        </div>
+                    </MudTd>
+                    <MudTd Class='@(isPinnedAmt ? "col-sticky-action text-center":"text-center")' DataLabel='Action'>
+                        <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' 
+                            TransformOrigin='Origin.TopRight' Dense Size='Size.Small'>
+                            <BankDepositMenuComponent
+                                ModuleName='bank deposit'
+                                CancelClick='((Enums.ActionMode mode) => GetBankDepositDetails(context, mode))'
+                                ShowCollectionClick='(() => ShowCollections(context) )'
+                            />
+                            @* <MudMenuItem OnClick="(() => GetBankDepositDetails(context, Enums.ActionMode.Cancel))">
+                                <div class='d-flex align-center gap-2'>
+                                    <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small' Color='Color.Dark' />
+                                    <MudText Typo='Typo.body2' Color='Color.Dark'>Cancel</MudText>
+                                </div>
+                            </MudMenuItem>
+                            <MudMenuItem OnClick="(() => ShowCollections(context) )">
+                                <div class='d-flex align-center gap-2'>
+                                    <MudIcon Icon='@Icons.Material.Filled.ViewList' Size='Size.Small' Color='Color.Dark' />
+                                    <MudText Typo='Typo.body2' Color='Color.Dark'>View Collections</MudText>
+                                </div>
+                            </MudMenuItem> *@
+                        </MudMenu>
+                    </MudTd>
+                </RowTemplate>
+                <ChildRowContent>
+                    <MudTr>
+                        <td colspan="7">
+                            <div class='transition-05s-ease overflow-hidden' style='@(context.IsShowCollections ? "max-height:500px" : "max-height:0px")'>
+                                <div class='d-flex align-center justify-center pa-2 bgc-f2f2f2 '>
+                                    <CollectionListDepositComponent Height='200px' OnClose='( () => ShowCollections(context) )' HideCloseButton='context.IsShowCollections'/>
+                                </div>
+                            </div>
+                        </td>
+                    </MudTr>
+                    </ChildRowContent>
+                <NoRecordsContent>
+                    <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No records found</MudText>
+                </NoRecordsContent>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="@GlobalVariable.pageSize" />
+                </PagerContent>
+            </MudTable>
+        }
     </MudContainer>
 </div>
 
 @code
 {
-    private bool dataFetched, openSideFilter, isLoading = true, toggleSidebar = true, isPinnedCtrlNo = true, isPinnedAmt = true;
+    private bool dataFetched, openFilter, isLoading = true, toggleSidebar = true, isPinnedCtrlNo = true, isPinnedAmt = true;
     private int totalItems;
     private string searchTerm = string.Empty, visibility = "visibility-animation-hide";
     private Project currentProject = new();
@@ -176,9 +194,19 @@
     private MudTable<BankDepositModel> tableVariable = new MudTable<BankDepositModel>();
     private DateRange dateRange = new DateRange(DateTime.Now, DateTime.Now);
     private DateRange depositDateRange = new DateRange(DateTime.Now, DateTime.Now);
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         GlobalClass.pageTitle = "Bank Deposit Listing";
+        Task t = Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.BankDepositList);
+        await t;
+        if (t.Status == TaskStatus.RanToCompletion)
+            CompletedFetch();
+    }
+
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
     }
     private async Task<TableData<BankDepositModel>> LoadBankDeposits(TableState tableState)
     {
@@ -211,14 +239,7 @@
         filterParameter = new();
         await tableVariable.ReloadServerData();
     }
-    private void OpenSideFilter()
-    {
-        openSideFilter = !openSideFilter;
-        if(openSideFilter)
-        visibility = "visibility-animation-show";
-        if(!openSideFilter)
-        visibility = "visibility-animation-hide";
-    }
+
     private void FilterTable()
     {
         filterParameter = GlobalVariable.filterParameter;
@@ -242,10 +263,7 @@
     {
         return String.Format("{0}collection/list/bank-deposit/{1}", navigationManager.BaseUri, collectionControlNumber);
     }
-    private void ViewInCollection(BankDepositModel bankDeposit)
-    {
-        
-    }
+    
     private async Task GetBankDepositDetails(BankDepositModel bankDeposit, Enums.ActionMode action)
     {
         GlobalClassList.selectedCollections = await bankDepositService.GetBankDepositCollections(bankDeposit.Id,GlobalClass.token);
@@ -279,7 +297,7 @@
             model.Activity = "Cancel Deposit (Void)";
             model.IsVoid = true;
             await bankService.UpdateBankDeposit(model, GlobalClass.token);
-            Extensions.ShowAlert("Bank Deposit successfully cancelled.",Variant.Filled,snackbarService,Severity.Success);
+            Extensions.ShowAlert("Bank Deposit cancelled.",Variant.Filled,SnackbarService,Severity.Normal);
         }
         await tableVariable.ReloadServerData();
     }

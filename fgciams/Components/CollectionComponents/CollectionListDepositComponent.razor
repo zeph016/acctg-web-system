@@ -1,4 +1,3 @@
-@inject ISnackbar snackbarService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager navigationManager
 
@@ -89,21 +88,15 @@
     {
         isDataFetch = true;
     }
-    private async Task Close()
-    {
-        await OnClose.InvokeAsync();
-    }
+    private async Task Close() =>  await OnClose.InvokeAsync();
+    
     private string FindReference(CollectionModel collectionModel)
     {
         string url = "";
         if(collectionModel.ControlNumber.StartsWith("CL"))
-        {
             url = String.Format("{0}collection/list/{1}", navigationManager.BaseUri, collectionModel.ControlNumber);
-        }
         else
-        {
             url = String.Format("{0}voucher/list/{1}", navigationManager.BaseUri, collectionModel.ControlNumber);
-        }
         return url;
     }
 }

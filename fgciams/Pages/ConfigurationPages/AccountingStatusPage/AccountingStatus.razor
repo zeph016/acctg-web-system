@@ -3,8 +3,9 @@
 @inject IAccountingStatusService accountingStatusService
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 @inject IDialogService dialogService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject ApplicationState AppState
+@inject IAccessLevelService accessLevelService
 
 <div class='page-cont'>
     <div class='drawer-right'>
@@ -93,7 +94,7 @@
                         <MudText Typo='Typo.body2'>@Extensions.GetEnumDescription(@context.StatusEnumCategoryId)</MudText>
                     </MudTd> *@
                     <MudTd Class='text-center pa-2'>
-                        <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
+                        <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
                         TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
                             <MudMenuItem OnClick='(() => AcctgStatusDialog(context, Enums.ActionMode.Update))'>
                                 <div class='d-flex align-center gap-2 '>
@@ -122,6 +123,7 @@
         GlobalClass.pageTitle = "Configuration - Accounting Status";
         while (GlobalClass.currentUserAccount == null || GlobalClassList.accountingStatusList == null)
             await Task.Delay(1);
+        await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.AccountingStatus);
         await AppState.UpdateMainLayoutComponent(true);
         CompletedFetch();
         SignalR();
@@ -134,6 +136,14 @@
 
     private async Task AcctgStatusDialog(AccountingStatusModel acctgStatus, Enums.ActionMode action)
     {
+        Enums.AISModuleFunctions function = action == Enums.ActionMode.Update? Enums.AISModuleFunctions.Edit : Enums.AISModuleFunctions.Add;
+        if (!Common.Privileges.isPrivilegeFunction(function))
+        {
+            string act = action == Enums.ActionMode.Update ? "edit" : "add";
+            Extensions.ShowAlert(String.Format("Account has been restricted to {0} accounting status.", act), Variant.Filled, SnackbarService, Severity.Error);
+            return;
+        }
+            
         Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(acctgStatus,Newtonsoft.Json.Formatting.Indented));
         var parameters = new DialogParameters();
         GlobalClass.acctgStatus = acctgStatus;
@@ -150,15 +160,15 @@
         if (!resultDialog.Canceled)
         {
             if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Create)
-                Extensions.ShowAlert("Accounting Status successfully added.", Variant.Filled,snackbarService,Severity.Success);
+                Extensions.ShowAlert("Accounting Status successfully saved.", Variant.Filled,SnackbarService,Severity.Success);
             else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Update)
-                Extensions.ShowAlert("Accounting Status successfully updated.", Variant.Filled,snackbarService,Severity.Info);
+                Extensions.ShowAlert("Accounting Status successfully updated.", Variant.Filled,SnackbarService,Severity.Info);
             else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Deactivate)
-                Extensions.ShowAlert("Accounting Status has been deactivated.", Variant.Filled,snackbarService,Severity.Warning);
+                Extensions.ShowAlert("Accounting Status has been deactivated.", Variant.Filled,SnackbarService,Severity.Warning);
             else
                 await LoadAcctgStatusList();
         } else if (resultDialog.Canceled)
-            Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
+            Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
     }
     private bool FilterItems(AccountingStatusModel items)
     {
@@ -195,8 +205,5 @@
             throw;
         }
     }
-    private async Task LoadAcctgStatusList()
-    {
-        GlobalClassList.accountingStatusList = await accountingStatusService.LoadAccountingStatusList(GlobalClass.token);
-    }
+    private async Task LoadAcctgStatusList() => GlobalClassList.accountingStatusList = await accountingStatusService.LoadAccountingStatusList(GlobalClass.token);
 }

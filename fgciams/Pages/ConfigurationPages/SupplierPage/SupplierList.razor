@@ -2,10 +2,11 @@
 
 @inject ISupplierService supplierService
 @inject IDialogService dialogService
-@inject ISnackbar snackBarService
+@inject ISnackbar SnackbarService
 @inject IMuniCityService muniCityService
 @inject NavigationManager navigationManager
 @inject ApplicationState AppState
+@inject IAccessLevelService accessLevelService
 
 <div class='page-cont'>
     <div class='drawer-right'>
@@ -50,7 +51,7 @@
                     <div class='d-flex align-center gap-2 @visibility'>
                         <MudCheckBox Class='pt-1' @bind-Checked="@filterParameter.IsMuniCity" Dense Size='Size.Small' />
                         <BlazoredTypeahead SearchMethod='LoadMuniCity' DisableClears placeholder='City/Prov./Municipality'
-                            @bind-Value='muniCity' Debounce='500' MaximumSuggestions='10' Disabled='!filterParameter.IsMuniCity'>
+                            @bind-Value='muniCity' Debounce="300" MaximumSuggestions='10' Disabled='!filterParameter.IsMuniCity'>
                             <SelectedTemplate>
                                 @if (muniCity.Id != 0) {
                                     <MudText Class='font12'>@context.Name</MudText>
@@ -98,7 +99,7 @@
                     <MudTooltip Text="Refresh Table">
                         <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='(()=>ReloadTable())' ></MudIconButton>
                     </MudTooltip>
-                    <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                    <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
                     TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
                         <MudMenuItem OnClick='(() => SupplierEntry())'>
                             <div class='d-flex align-center gap-2 '>
@@ -163,7 +164,7 @@
                             ToggledIcon="@Icons.Material.Filled.ExpandLess" ToggledColor="Color.Info" Size='Size.Small'></MudToggleIconButton>
                         </MudTd>
                         <MudTd Class='text-center pa-2'>
-                            <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                            <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
                             TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
                                 <MudMenuItem OnClick='(() => SupplierDialog(context))'>
                                     <div class='d-flex align-center gap-2 '>
@@ -277,6 +278,7 @@
         GlobalClass.pageTitle = "Configuration - Supplier";
         Task t = Task.WhenAll(LoadSupplier());
         await t;
+        await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.Supplier);
         if (t.Status == TaskStatus.RanToCompletion)
         {
             await AppState.UpdateMainLayoutComponent(true);
@@ -308,6 +310,11 @@
     private void SupplierDialog(SupplierModel supplier)
     {
         //Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(supplier,Newtonsoft.Json.Formatting.Indented));
+        if (!Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Edit))
+        {
+            Extensions.ShowAlert("Account has been restricted to edit supplier.", Variant.Filled, SnackbarService, Severity.Error);
+            return;
+        }
         GlobalClass.supplier = supplier;
         supplier.IsActive = true;
         navigationManager.NavigateTo($"/supplier/entry");
@@ -341,6 +348,11 @@
     }
     private void SupplierEntry()
     {
+        if (!Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Add))
+        {
+            Extensions.ShowAlert("Account has been restricted to add supplier.", Variant.Filled, SnackbarService, Severity.Error);
+            return;
+        }
         GlobalClass.supplier = new SupplierModel();
         navigationManager.NavigateTo($"/supplier/entry");
     }

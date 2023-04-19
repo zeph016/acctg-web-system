@@ -123,3 +123,19 @@
     max-height: calc(100vh - 200px) !important;
   }
 }
+
+
+.blzrth-cont-signatories {
+  flex: 1 1 0%;
+  small { 
+    white-space: nowrap;
+    max-width: 220px; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  &__txt-required {
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+}

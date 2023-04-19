@@ -1,0 +1,176 @@
+@page "/customer-type"
+
+@inject ICustomerService CustomerService
+@inject IDialogService dialogService
+@inject ISnackbar SnackbarService
+@inject ApplicationState AppState
+@inject IAccessLevelService accessLevelService
+
+<div class='page-cont'>
+    <div class='drawer-right'>
+        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <div class='drawer-right__filtercont'>
+                <div class="icon-area d-flex align-center">
+                    <MudIconButton OnClick='OpenSideFilter' Icon="@Icons.Material.Filled.FilterList" aria-label="Filter" Size='Size.Medium' />
+                </div>
+                <div class="filter-title d-flex align-center">
+                    <p class='title875'>Filter</p>
+                    <MudSpacer />
+                    <MudIconButton OnClick='OpenSideFilter' Icon="@Icons.Material.Filled.Close" aria-label="Close Filter" Size='Size.Medium' />
+                </div>
+                <div class='filter-content d-flex flex-column pl-4 pr-4 gap-1 @visibility'>
+                    <MudTextField Class='txtfield-75' @bind-Value='searchTerm' Placeholder='Customer Type Name'
+                    Adornment='Adornment.Start' AdornmentIcon='@Icons.Material.Filled.Search' IconSize='Size.Small'
+                    Clearable='true' Variant='Variant.Outlined' />
+                    <MudButton Variant='Variant.Filled' Color='Color.Secondary'>Apply Filter</MudButton>
+                </div>
+            </div>
+        </MudDrawer>
+    </div>
+    <MudContainer Class='divisionpage' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+        @if(!dataFetched)
+        {
+            <SkeletonPageList />
+        }
+        else
+        {
+            <MudTable Class='configtables ' Items="@GlobalClassList.customerTypeList" Hover="true" 
+                Breakpoint="Breakpoint.Xs" FixedHeader='true' FixedFooter='true' Bordered='true' Dense='true'
+                RowsPerPage='30' Filter='new Func<CustomerTypeModel,bool>(FilterItems)'>
+                <ToolBarContent>
+                    <MudText Typo='Typo.caption'>
+                        @GlobalClassList.customerTypeList.Count() 
+                        @(GlobalClassList.customerTypeList.Count() == 1 ? "item" : "items") 
+                        in Total
+                    </MudText>
+                    <MudSpacer/>
+                    <MudTooltip Text="Refresh Table">
+                    </MudTooltip>
+                    <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
+                        TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
+                        <MudMenuItem OnClick='(() => TypeDialog(new CustomerTypeModel(), Enums.ActionMode.Create))'>
+                            <div class='d-flex align-center gap-2 '>
+                                <MudIcon Icon='@Icons.Material.Filled.Add' Size='Size.Small' />
+                                <MudText Typo='Typo.body2'>Add</MudText>
+                            </div>
+                        </MudMenuItem>
+                    </MudMenu>
+                </ToolBarContent>
+                <ColGroup>
+                    <col />
+                    <col />
+                    <col style='width: 20px' />
+                    <col style='width: 1%;' />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh Class='customheader-1'>
+                        <MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<CustomerTypeModel, object>(x=>x.CustomerTypeName)">
+                            Type Name
+                        </MudTableSortLabel>
+                    </MudTh>
+                    <MudTh Class='customheader-1'>Sub Type</MudTh>
+                    <MudTh Class='customheader-1 text-center pa-2'>Sub Type Shortcut</MudTh>
+                    <MudTh Class='customheader-1 text-center pa-2'>Action</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                        <MudTd DataLabel="Customer Type">@GetEnumString(context.CustomerTypeName)</MudTd>
+                        <MudTd DataLabel="Sub Type">@context.CustomerSubTypeName</MudTd>
+                        <MudTd DataLabel="Type Shortcut">@context.CustomerSubTypeShortcut</MudTd>
+                        <MudTd Class='text-center pa-2'>
+                            <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
+                            TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
+                                <MudMenuItem OnClick='(() => TypeDialog(context, Enums.ActionMode.Update))'>
+                                    <div class='d-flex align-center gap-2 '>
+                                        <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' />
+                                        <MudText Typo='Typo.body2'>Edit</MudText>
+                                    </div>
+                                </MudMenuItem>
+                            </MudMenu>
+                        </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions='@pageSize' />
+                </PagerContent>
+            </MudTable>
+        }
+    </MudContainer>
+</div>
+
+@code{
+    private bool dataFetched, openSideFilter;
+    private int[] pageSize = new int[] {30, 50, 100, 500, 1000 };
+    private string searchTerm = string.Empty, visibility = "visibility-animation-hide";
+    protected override async Task OnInitializedAsync()
+    {
+        GlobalClass.pageTitle = "Customer Type";
+        while (GlobalClass.currentUserAccount == null || GlobalClassList.customerTypeList == null)
+            await Task.Delay(1);
+        await LoadCustomerTypes();
+        await AppState.UpdateMainLayoutComponent(true);
+        CompletedFetch();
+    }
+
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+    private bool FilterItems(CustomerTypeModel items)
+    {
+        if (string.IsNullOrEmpty(searchTerm))
+            return true;
+        if (items.CustomerTypeName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase))
+            return true;
+        return false;
+    }
+    
+    private void OpenSideFilter()
+    {
+        openSideFilter = !openSideFilter;
+        if(openSideFilter)
+        visibility = "visibility-animation-show";
+        if(!openSideFilter)
+        visibility = "visibility-animation-hide";
+    }
+    private async Task LoadCustomerTypes()
+    {
+        GlobalClassList.customerTypeList = await CustomerService.LaodCustomerTypes(GlobalClass.token);
+        StateHasChanged();
+    }
+    private async Task TypeDialog(CustomerTypeModel type, Enums.ActionMode action)
+    {
+        @* Enums.AISModuleFunctions function = action == Enums.ActionMode.Update? Enums.AISModuleFunctions.Edit : Enums.AISModuleFunctions.Add;
+        if (!Common.Privileges.isPrivilegeFunction(function))
+        {
+           string act = action == Enums.ActionMode.Update ? "edit" : "add";
+           Extensions.ShowAlert(String.Format("Account has been restricted to {0} Division.", act), Variant.Filled, SnackbarService, Severity.Error);
+            return;
+        } *@
+
+        var parameters = new DialogParameters();
+        GlobalClass.customerType = type;
+        string dialogTitle = GlobalClass.customerType.Id != 0 ? "Edit Customer Type" : "Add Customer Type";
+        string buttonText = GlobalClass.customerType.Id != 0 ? "Update" : "Add";
+        Color color = GlobalClass.customerType.Id != 0 ? Color.Info : Color.Success;
+        parameters.Add("color", color);
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", buttonText);
+        parameters.Add("currentAction", action);
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = false };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.CustomerDialog.CustomerTypeDialog>("", parameters, options).Result;
+        if (!resultDialog.Canceled)
+        {
+            if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Create)
+                Extensions.ShowAlert("Customer Type successfully saved.", Variant.Filled,SnackbarService,Severity.Success);
+            else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Update)
+                Extensions.ShowAlert("Customer Type successfully updated.", Variant.Filled,SnackbarService,Severity.Info);
+            else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Deactivate)
+                Extensions.ShowAlert("Customer Type has been deactivated.", Variant.Filled,SnackbarService,Severity.Warning);
+        } else if (resultDialog.Canceled)
+            Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
+    }
+    private String GetEnumString(String number)
+    {
+        return Extensions.GetEnumDescription((Enums.CustomerType) Convert.ToInt32(number));
+    }
+}

@@ -1,6 +1,6 @@
 @inject IDialogService dialogService
 @inject ICollectionService collectionService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 
 <MudPaper Square Elevation='0'>
     @if(isDataFetch)
@@ -82,29 +82,10 @@
             </RowTemplate>
             <RowEditingTemplate>
                 <MudTd>
-                    <MudText Class='lblhelper-type'>Expense</MudText>
-                    <BlazoredTypeahead SearchMethod='LoadExpenseLine' Context='rowExpenseLine'
-                        ValueChanged='((ExpenseLineModel exp) => OnRowSelectedExpenseLine(exp,context))'
-                        Value='context.rowExpenseLine'
-                        ValueExpression='(()=>context.rowExpenseLine)'
-                        Debounce='500' MaximumSuggestions='5' Placeholder='Expense line' DisableClear>
-                        <SelectedTemplate>
-                            <div class='overflow-hidden wspace-nowrap'>
-                                @if (!String.IsNullOrEmpty(rowExpenseLine.ExpenseName)) {
-                                <MudText Class='font12'>@rowExpenseLine.ExpenseName</MudText>
-                                } else {
-                                <MudText Class='font12'> - </MudText>
-                                }
-                            </div>
-                        </SelectedTemplate>
-                        <ResultTemplate>
-                            @rowExpenseLine.ExpenseName
-                        </ResultTemplate>
-                    </BlazoredTypeahead>
-                    @if(context.isExpenseNameEmpty)
-                    {
-                        <MudText Class='font12' Color='Color.Error'>Required*</MudText>
-                    }
+                    <AutoCompleteExpenseLineSearch
+                        ExpenseLine='context.rowExpenseLine'
+                        OnExpenseLineValueChanged='((ExpenseLineModel exp) => OnRowSelectedExpenseLine(exp,context))'
+                        />
                 </MudTd>
                 <MudTd>
                     <MudTextField T='decimal' ValueChanged='( (decimal ammount) => OnAmountValuedChange(ammount,context))' Value='context.Amount' Format="N2" Placeholder='Expense Name'/>
@@ -185,9 +166,9 @@
     private void SaveExpense(object model)
     {
         if(((CollectionExpenseModel)model).isExpenseNameEmpty || ((CollectionExpenseModel)model).isAmountNotValid)
-        {
-            Extensions.ShowAlert("Expense name and amount is required.",Variant.Filled,snackbarService,Severity.Success);
-        }
+            Extensions.ShowAlert("Expense name and amount is required.",Variant.Filled,SnackbarService,Severity.Success);
+        else
+            Extensions.ShowAlert("Expenses successfully saved.",Variant.Filled,SnackbarService,Severity.Success);
     }
     private async Task Prompt(Enums.ActionMode action, CollectionExpenseModel collectionExpense)
     {

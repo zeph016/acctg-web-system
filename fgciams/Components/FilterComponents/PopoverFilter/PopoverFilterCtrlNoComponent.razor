@@ -1,0 +1,61 @@
+
+<div class="popfilter-content blzrthead-disabled-minheight15">
+    <div class='popfilter-content__ctrlno-container'>
+        <MudGrid Spacing='0'>
+            <MudItem xs=12>
+                <MudField Label='Control Number' Margin='Margin.Dense' Disabled='!filterParameter.IsControlNumber' DisableUnderLine>
+                    <MudTextField @bind-Value='filterParameter.ControlNumber' Immediate
+                        Clearable Disabled="@(!filterParameter.IsControlNumber)" Variant='Variant.Outlined' Margin='Margin.Dense'/>
+                </MudField>
+            </MudItem>
+        </MudGrid>
+    </div>
+</div>
+<div class="popfilter-footer">
+    <div class='popfilter-footer__actions'>
+        <MudButton OnClick='ResetTable' Variant='Variant.Text' Size='Size.Small' DisableElevation Color='Color.Error'>
+            Reset
+        </MudButton> 
+        <MudSpacer />
+        <MudButton OnClick='CloseFilter' Variant='Variant.Text' Size='Size.Small' DisableElevation>
+            Cancel
+        </MudButton> 
+        <MudButton Class='bg-material-info' OnClick='MapToGlobalFilter' Variant='Variant.Filled' Color='Color.Secondary' Size='Size.Small' DisableElevation
+            @onkeydown='EnterKey'>
+            Filter CtrlNo.
+        </MudButton>
+    </div>
+</div>
+
+
+@code  {
+    [Parameter] public EventCallback CloseFilterComponent { get; set; }
+    [Parameter] public EventCallback Filter { get; set; }
+    [Parameter] public EventCallback ResetTableList { get; set; }
+    [Parameter] public bool contentVisible { get; set; }
+    [Parameter] public FilterParameter filterParameter { get; set; } = new FilterParameter();
+    [Parameter] public string ModuleName { get; set; } = string.Empty;
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        filterParameter.IsControlNumber = true;
+        await base.SetParametersAsync(parameters);
+    }
+    protected async Task CloseFilter() => await CloseFilterComponent.InvokeAsync();
+    protected async Task MapToGlobalFilter()
+    {
+        GlobalVariable.filterParameter = filterParameter;
+        await Filter.InvokeAsync();
+    }
+     protected async Task ResetTable()
+    {
+        filterParameter = new FilterParameter();
+        await ResetTableList.InvokeAsync();
+    }
+
+    private async Task EnterKey(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumPadEnter")
+            await MapToGlobalFilter();
+    }
+}

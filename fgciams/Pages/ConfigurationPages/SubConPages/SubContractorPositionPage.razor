@@ -2,9 +2,9 @@
 
 @inject ISubContractorPositionService subConPositionService
 @inject IDialogService dialogService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject ApplicationState AppState
-
+@inject IAccessLevelService accessLevelService
 
 <div class="page-cont">
   <div class='drawer-right'>
@@ -47,7 +47,7 @@
           <MudTooltip Text="Refresh Table">
               <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='(()=>{searchTerm = "";})' ></MudIconButton>
           </MudTooltip>          
-          <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' TransformOrigin='Origin.TopRight' ActivationEvent='MouseEvent.MouseOver'
+          <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' TransformOrigin='Origin.TopRight' 
             Dense='true' Size='Size.Small' Label='More'>
             <MudMenuItem OnClick='(() => SubConPositionDialog(new SubContractorPositionModel(), Enums.ActionMode.Create))'>
               <div class='d-flex align-center gap-2'>
@@ -72,7 +72,7 @@
           <MudTd DataLabel="Remarks">@context.Remarks</MudTd>
           <MudTd Class='text-center pa-2'>
             <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' TransformOrigin='Origin.TopRight'
-            Dense='true' Size='Size.Small' ActivationEvent='MouseEvent.MouseOver'>
+            Dense='true' Size='Size.Small' >
               <MudMenuItem OnClick='(() => SubConPositionDialog(context, Enums.ActionMode.Update))'>
                 <div class='d-flex align-center gap-2'>
                   <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' />
@@ -101,6 +101,7 @@
     GlobalClass.pageTitle = "Configuration - SUBCON POSITION";
     while (GlobalClass.currentUserAccount == null || GlobalClassList.subContractorPositions == null)
       await Task.Delay(1);
+    await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.Subcon);
     await AppState.UpdateMainLayoutComponent(true);
     SubConPositionHub();
     CompletedFetch();
@@ -114,6 +115,13 @@
 
   private async Task SubConPositionDialog(SubContractorPositionModel subConPosition, Enums.ActionMode action)
   {
+    Enums.AISModuleFunctions function = action == Enums.ActionMode.Update? Enums.AISModuleFunctions.Edit : Enums.AISModuleFunctions.Add;
+    if (!Common.Privileges.isPrivilegeFunction(function))
+    {
+        string act = action == Enums.ActionMode.Update ? "edit" : "add";
+        Extensions.ShowAlert(String.Format("Account has been restricted to {0} subcon position.", act), Variant.Filled, SnackbarService, Severity.Error);
+        return;
+    }
     var parameters = new DialogParameters();
     GlobalClass.subContractorPosition = subConPosition;
     string dialogTitle = GlobalClass.subContractorPosition.Id != 0 ? "Edit SubCon Position" : "Add SubCon Position";
@@ -129,14 +137,14 @@
     if (!resultDialog.Canceled)
     {
       if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Create)
-        Extensions.ShowAlert("Subcontractor position successfully added.", Variant.Filled,snackbarService,Severity.Success);
+        Extensions.ShowAlert("Subcontractor position successfully saved.", Variant.Filled,SnackbarService,Severity.Success);
       else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Update)
-        Extensions.ShowAlert("Subcontractor position successfully updated.", Variant.Filled,snackbarService,Severity.Info);
+        Extensions.ShowAlert("Subcontractor position successfully updated.", Variant.Filled,SnackbarService,Severity.Info);
        else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Deactivate)
-        Extensions.ShowAlert("Subcontractor position has been deactivated.", Variant.Filled,snackbarService,Severity.Warning);
+        Extensions.ShowAlert("Subcontractor position has been deactivated.", Variant.Filled,SnackbarService,Severity.Warning);
       GlobalClassList.subContractorPositions = GlobalClassList.subContractorPositions.Where(x => x.IsActive == true).ToList();
     } else if (resultDialog.Canceled)
-        Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
+        Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
   }
 
   private bool FilterItems(SubContractorPositionModel items)

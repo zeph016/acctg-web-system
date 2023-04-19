@@ -1,0 +1,63 @@
+
+@if(!dataFetched)
+{
+    <MudSkeleton Animation='Animation.Wave' Width='100%' Height='30px' />
+}
+else
+{
+    <BlazoredTypeahead SearchMethod='LoadDivision' Debounce='300' placeholder='Division'
+        Value="@division" ValueExpression='(() => division)'
+        ValueChanged='(async (DivisionModel model) => {
+            division = model;
+            await SelectedDivision(model);
+        })'>
+        <SelectedTemplate>
+            <small class='wspace-nowrap'>@division.shortcutName</small>
+        </SelectedTemplate>
+        <ResultTemplate>
+            <small class='font-bold'><strong>@context.divisionName</strong> | @context.shortcutName</small>
+        </ResultTemplate>
+    </BlazoredTypeahead>
+}
+
+@code {
+    [Parameter] public EventCallback<DivisionModel> OnSelectedDivisionValue { get; set; }
+    [Parameter] public long DivisionId { get; set; }
+    private bool dataFetched;
+    private DivisionModel division = new();
+    protected override async Task OnInitializedAsync()
+    {
+        while (GlobalClassList.divisionList.Count() == 0)
+            await Task.Delay(1);
+        if(DivisionId != 0)
+            division = LoadDivisionId(DivisionId);
+        CompletedFetch();
+    }
+
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+    private DivisionModel LoadDivisionId(long divisionId)
+    {
+        var result = GlobalClassList.divisionList.Where(x=>x.Id == divisionId).FirstOrDefault();
+        if (result != null)
+            return result;
+        else
+            return new();
+    }
+
+    private async Task<IEnumerable<DivisionModel>> LoadDivision(string searchText)
+    {
+        var division = GlobalClassList.divisionList;
+        return await Task.FromResult(division.Where(x=>x.divisionName.Contains(searchText, StringComparison.InvariantCultureIgnoreCase)
+        || x.shortcutName.Contains(searchText, StringComparison.InvariantCultureIgnoreCase)).ToList());
+    }
+
+    private async Task SelectedDivision(DivisionModel model)
+    {
+        if(model != null)
+            await OnSelectedDivisionValue.InvokeAsync(model);
+    }
+}

@@ -1,0 +1,22 @@
+@inherits ReportComponentBase
+
+<div class='rpt-container-trtd @(ShowReport ? "max-height4kpx":"max-height0px")'>
+      <div class='@(IsList ? "rpt-container-listview":"rpt-container")' style='@(IsFullHeight ? "height:calc(100vh - 95px)":"")'>
+         <MudCard Class='@(IsList ? "rpt-container-listview__document-cont px-2":"pt-container__document-cont")' Elevation='1'>
+            <div class='rpt-container-listview__iframe-cont'>
+                    @if (string.IsNullOrWhiteSpace(ReportContent))
+                    {
+                        <MudProgressCircular Color="Color.Primary" Indeterminate Size='Size.Large' />
+                    }
+                    else
+                    {
+                        <iframe class='@(IsList ? "rpt-container-listview__iframe-scaled":string.Empty)' src='@ReportContent'/>
+                    }
+                    <ReportControls
+                        IsCloseOnly='true'
+                        ConfirmStr='Close Report' 
+                        BackEventClick='CloseReport'/>
+            </div>
+         </MudCard>
+      </div>
+</div>

@@ -65,7 +65,7 @@ namespace fgciams.service.LedgerServices
         public async Task<string> GetAPReport(List<CollectionModel> vDetails)
         {
             var pdfContent = "data:application/pdf;base64,";
-            HttpResponseMessage responseMessage = await client.PostAsJsonAsync(config["ReportServer"] + "/ams-ledger-report/GetAPLedgerReport", vDetails);
+            HttpResponseMessage responseMessage = await client.PostAsJsonAsync(config["ReportServer"] + "ams-ledger-report/GetAPLedgerReport", vDetails);
             if(responseMessage.IsSuccessStatusCode)
                 pdfContent += Convert.ToBase64String(await responseMessage.Content.ReadAsByteArrayAsync());
             return pdfContent;
@@ -73,7 +73,7 @@ namespace fgciams.service.LedgerServices
         public async Task<string> GetARReport(List<CollectionModel> vDetails)
         {
             var pdfContent = "data:application/pdf;base64,";
-            HttpResponseMessage responseMessage = await client.PostAsJsonAsync(config["ReportServer"] + "/ams-ledger-report/GetARLedgerReport", vDetails);
+            HttpResponseMessage responseMessage = await client.PostAsJsonAsync(config["ReportServer"] + "ams-ledger-report/GetARLedgerReport", vDetails);
             if(responseMessage.IsSuccessStatusCode)
                 pdfContent += Convert.ToBase64String(await responseMessage.Content.ReadAsByteArrayAsync());
             return pdfContent;
@@ -81,7 +81,7 @@ namespace fgciams.service.LedgerServices
         public async Task<string> GetProjectLedgerReport(List<CollectionModel> coll)
         {
             var pdfContent = "data:application/pdf;base64,";
-            HttpResponseMessage responseMessage = await client.PostAsJsonAsync(config["ReportServer"] + "/ams-ledger-report/GetProjectLedgerReport", coll);
+            HttpResponseMessage responseMessage = await client.PostAsJsonAsync(config["ReportServer"] + "ams-ledger-report/GetProjectLedgerReport", coll);
             if(responseMessage.IsSuccessStatusCode)
                 pdfContent += Convert.ToBase64String(await responseMessage.Content.ReadAsByteArrayAsync());
             return pdfContent;
@@ -89,7 +89,7 @@ namespace fgciams.service.LedgerServices
         public async Task<string> GetBankLedgerReport(List<BankLedgerModel> coll)
         {
             var pdfContent = "data:application/pdf;base64,";
-            HttpResponseMessage responseMessage = await client.PostAsJsonAsync(config["ReportServer"] + "/ams-ledger-report/GetBankLedgerReport", coll);
+            HttpResponseMessage responseMessage = await client.PostAsJsonAsync(config["ReportServer"] + "ams-ledger-report/GetBankLedgerReport", coll);
             if(responseMessage.IsSuccessStatusCode)
                 pdfContent += Convert.ToBase64String(await responseMessage.Content.ReadAsByteArrayAsync());
             return pdfContent;
@@ -97,18 +97,78 @@ namespace fgciams.service.LedgerServices
         public async Task<string> GetSubConARReport(List<VoucherDetailModel> vDetails)
         {
             var pdfContent = "data:application/pdf;base64,";
-            HttpResponseMessage responseMessage = await client.PostAsJsonAsync(config["ReportServer"] + "/ams-ledger-report/GetSubConARLedgerReport", vDetails);
-            if(responseMessage.IsSuccessStatusCode)
-                pdfContent += Convert.ToBase64String(await responseMessage.Content.ReadAsByteArrayAsync());
-            return pdfContent+"#toolbar=0";
-        }
-        public async Task<string> GetSubConAPReport(List<VoucherDetailModel> vDetails)
-        {
-            var pdfContent = "data:application/pdf;base64,";
-            HttpResponseMessage responseMessage = await client.PostAsJsonAsync(config["ReportServer"] + "/ams-ledger-report/GetSubConAPLedgerReport", vDetails);
+            HttpResponseMessage responseMessage = await client.PostAsJsonAsync(config["ReportServer"] + "ams-ledger-report/GetSubConARLedgerReport", vDetails);
             if(responseMessage.IsSuccessStatusCode)
                 pdfContent += Convert.ToBase64String(await responseMessage.Content.ReadAsByteArrayAsync());
             return pdfContent;
         }
+        public async Task<string> GetSubConAPReport(List<VoucherDetailModel> vDetails)
+        {
+            var pdfContent = "data:application/pdf;base64,";
+            HttpResponseMessage responseMessage = await client.PostAsJsonAsync(config["ReportServer"] + "ams-ledger-report/GetSubConAPLedgerReport", vDetails);
+            if(responseMessage.IsSuccessStatusCode)
+                pdfContent += Convert.ToBase64String(await responseMessage.Content.ReadAsByteArrayAsync());
+            return pdfContent;
+        }
+        public async Task<string> GenerateARAPSOA(List<CollectionModel> details,string token)
+        {
+          var pdfContent = "data:application/pdf;base64,";
+          client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+          HttpResponseMessage responseMessage = await client.PostAsJsonAsync(config["ReportServer"] + "ams-report-voucher/GetVoucherSOAReport", details);
+          if(responseMessage.IsSuccessStatusCode)
+            pdfContent += Convert.ToBase64String(await responseMessage.Content.ReadAsByteArrayAsync());
+          return pdfContent;
+        }
+
+        public async Task<byte[]> GetAPReportExcel(List<CollectionModel> list, string token)
+        {
+          client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+          HttpResponseMessage responseMessage = await client.PostAsJsonAsync(config["ReportServer"] + "ams-ledger-report/GetAPLedgerExcelReport",list);
+          if(responseMessage.IsSuccessStatusCode)
+            return await responseMessage.Content.ReadAsByteArrayAsync();
+          else
+            return new byte[]{};
+        }
+
+        public async Task<byte[]> GetARReportExcel(List<CollectionModel> list, string token)
+        {
+          client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+          HttpResponseMessage responseMessage = await client.PostAsJsonAsync(config["ReportServer"] + "ams-ledger-report/GetARLedgerExcelReport",list);
+          if(responseMessage.IsSuccessStatusCode)
+            return await responseMessage.Content.ReadAsByteArrayAsync();
+          else
+            return new byte[]{};
+        }
+
+        public async Task<byte[]> GetSubConAPReportExcel(List<VoucherDetailModel> list, string token)
+        {
+          client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+          HttpResponseMessage responseMessage = await client.PostAsJsonAsync(config["ReportServer"] + "ams-ledger-report/GetSubConAPLedgerReport",list);
+          if(responseMessage.IsSuccessStatusCode)
+            return await responseMessage.Content.ReadAsByteArrayAsync();
+          else
+            return new byte[]{};
+        }
+
+        public async Task<byte[]> GetSubConARReportExcel(List<VoucherDetailModel> list, string token)
+        {
+          client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+          HttpResponseMessage responseMessage = await client.PostAsJsonAsync(config["ReportServer"] + "ams-ledger-report/GetSubConARLedgerExcelReport",list);
+          if(responseMessage.IsSuccessStatusCode)
+            return await responseMessage.Content.ReadAsByteArrayAsync();
+          else
+            return new byte[]{};
+        }
+
+        public async Task<byte[]> GetBankReportExcel(List<BankLedgerModel> list, string token)
+        {
+          client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+          HttpResponseMessage responseMessage = await client.PostAsJsonAsync(config["ReportServer"] + "ams-ledger-report/GetBankLedgerExcelReport",list);
+          if(responseMessage.IsSuccessStatusCode)
+            return await responseMessage.Content.ReadAsByteArrayAsync();
+          else
+            return new byte[]{};
+        }
+
     }
 }

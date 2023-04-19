@@ -174,7 +174,24 @@ namespace fgciams.service.RequestForPaymentService
       }
     }
     #endregion
-
+    public async Task<int> RFPListRowCount(FilterParameter param, string token)
+    {
+      int count = 0;
+      _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+      HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("request-for-payment/list/count",param);
+      if (responseMessage.IsSuccessStatusCode)
+          count = await responseMessage.Content.ReadAsAsync<int>();
+      return count;
+    }
+    public async Task<RequestForPaymentModel> GetSignatories(long preparedById, string token)
+    {
+      var signatories = new RequestForPaymentModel();
+      _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+      HttpResponseMessage responseMessage = await _client.GetAsync("request-for-payment/signatories/"+preparedById);
+      if(responseMessage.IsSuccessStatusCode)
+        signatories = await responseMessage.Content.ReadAsAsync<RequestForPaymentModel>();
+      return signatories;
+    }
     #endregion
 
   }

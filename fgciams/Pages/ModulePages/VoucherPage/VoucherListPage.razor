@@ -5,19 +5,20 @@
 @inject IDialogService dialogService
 @inject IVoucherService voucherService
 @inject NavigationManager navigationManager
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject IJSRuntime JSRuntime
 @inject ApplicationState AppState
 @inject IGlobalService globalService
 @inject IRequestForPaymentService requestForPaymentService
 @inject ICheckService checkService
+@inject IAccessLevelService accessLevelService
 
 <div class='page-cont'>
   <div class='drawer-right-min'>
-    <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
-      <FilterComponent OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
-            FilterClick='FilterTable' ResetTableClick='ReloadTable'
-            contentVisible='openSideFilter' moduleName="voucher-list"/>
+    <MudDrawer Class='pa-1' Open='false' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+        <MudTooltip Text='Filter' Arrow Placement='Placement.Left'>
+          <MudIconButton OnClick='(() => openFilter = !openFilter)' Icon='@Icons.Material.Filled.FilterList' arial-label='Close Filter' Size='Size.Small' />
+        </MudTooltip>
     </MudDrawer>
   </div>
 
@@ -30,7 +31,7 @@
     {
       <MudPaper>
         <MudTable Class='table-style-1 ' ServerData='new Func<TableState, Task<TableData<VoucherModel>>>(LoadVoucherServer)' Height='calc(100vh - 185px)'
-          Breakpoint='Breakpoint.Sm' Hover Bordered FixedHeader FixedFooter Dense RowsPerPage='15' @ref='tableVariable'>
+          Breakpoint='Breakpoint.Sm' Hover Bordered FixedHeader FixedFooter Dense @ref='tableVariable'>
           <ToolBarContent>
             <MudText Typo='Typo.caption'>
               @totalItems
@@ -41,24 +42,26 @@
             <MudTooltip Text="Refresh Table">
               <MudIconButton OnClick='ReloadTable' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" ></MudIconButton>
             </MudTooltip>
-            <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' ActivationEvent='MouseEvent.MouseOver'
+            <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' 
               TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
-              @if(AccessLevelAddmin() || AccessLevelRequestors())
-              {
-                <MudMenuItem OnClick='(()=> navigationManager.NavigateTo($"/voucher"))'>
-                    <div class='d-flex align-center gap-2 '>
-                        <MudIcon Icon='@Icons.Material.Filled.Add' Size='Size.Small' />
-                      <MudText Typo='Typo.body2'>Add</MudText>
-                    </div>
-                </MudMenuItem>         
-                <MudMenuItem OnClick="(() => openSideFilter = !openSideFilter)"  >
-                    <div class='d-flex align-center gap-2 '>
-                        <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
-                        <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
-                    </div>
-                </MudMenuItem>               
-              }
-          </MudMenu>
+              <MudMenuItem OnClick='(()=> CreateVoucher() )'>
+                  <div class='d-flex align-center gap-2 '>
+                      <MudIcon Icon='@Icons.Material.Filled.Add' Size='Size.Small' />
+                    <MudText Typo='Typo.body2'>New Voucher</MudText>
+                  </div>
+              </MudMenuItem>         
+              <MudMenuItem OnClick="(() => openFilter = !openFilter)"  >
+                  <div class='d-flex align-center gap-2 '>
+                      <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
+                      <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
+                  </div>
+              </MudMenuItem>               
+            </MudMenu>
+            @if(openFilter)
+            {
+                <PopoverFilterMainComponent IsOpen='openFilter' CloseFilter='(() => openFilter = !openFilter)' IsMainFilter='true' IsModuleList='true'
+                    ModuleName='voucher-list' ApplyFilter='FilterTable' ResetTableData='ReloadTable'/>
+            }
           </ToolBarContent>
           <ColGroup>
             <col style='width:20px' />
@@ -119,7 +122,7 @@
           <RowTemplate>
             <MudTd Class='@(isPinnedCtrlNo ? "col-sticky-left":"")' DataLabel='control no.'>
               <div class='d-flex align-center'>
-                  <MudChip Class='mudchip-tbl' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, snackbarService, JSRuntime))' 
+                  <MudChip Class='mudchip-tbl' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, SnackbarService, JSRuntime))' 
                       Variant='Variant.Outlined' Color='Color.Error' Size='Size.Small'>
                     @context.ControlNumber
                   </MudChip>
@@ -141,7 +144,7 @@
             </MudTd>
             <MudTd DataLabel='Signatories'>
               <MudTooltip Text='Signatories' Placement='Placement.Top'>
-                <MudMenu Icon="@Icons.Material.Filled.Groups" AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
+                <MudMenu Icon="@Icons.Material.Filled.Groups" AnchorOrigin='Origin.BottomLeft' 
                   TransformOrigin='Origin.TopLeft' Dense Size='Size.Small'>
                   <MudMenuItem>
                     <MudPaper class='pa-2 bgc-e7f2fb min-width200px'>
@@ -210,16 +213,30 @@
               </div>
             </MudTd>
             <MudTd Class='@(isPinnedAmt ? "col-sticky-action text-center":"text-center")' DataLabel='Action'>
-              <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
+              <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' 
               TransformOrigin='Origin.TopRight' Dense Size='Size.Small'>
-                <MudMenuItem OnClick='(() => PreviewVoucher(context))'>
+              <VoucherMenuComponent
+                VoucherModel='context'
+                AccountingStatus='AccountingStatus(Enums.ActionMode.Approve).Id'
+                AccountingStatusId='AccountingStatusId(Enums.AccountingStatusEnumCategory.VA)'
+                ViewMenu='ViewMenu(context)'
+                ModuleName='voucher'
+                PreviewClick='( ()=> PreviewVoucher(context) )'
+                EditClick='( ()=> EditVoucher(context) )'
+                ApprovedClick='( ()=> ApprovedVoucher(context) )'
+                CancelClick='( ()=> CancelVoucher(context) )'
+                VoidClick='( ()=> VoidVoucher(context) )'
+                AuditTrailClick='( ()=> { navigationManager.NavigateTo($"/voucher-audit"); GlobalClass.voucher = context; } )'
+                ShowReportClick='( ()=>  context.ShowReport = ShowReport(context.ShowReport, context) )'
+                BIRClick='( ()=> ShowBIRDialog(context) )'
+              />
+                @* <MudMenuItem OnClick='(() => PreviewVoucher(context))'>
                     <div class='d-flex align-center gap-2'>
                         <MudIcon Icon='@Icons.Material.Filled.Preview' Size='Size.Small' Color='Color.Dark'/>
                         <MudText Typo='Typo.body2'>View</MudText>
                     </div>
                 </MudMenuItem>
-                @if((!ViewMenu(context) && AccessLevelAddmin())
-                || (!ViewMenu(context)) && AccessLevelRequestors())
+                @if(!ViewMenu(context))
                 {
                   <MudMenuItem OnClick='(()=> EditVoucher(context))'>
                     <a class='d-flex align-center gap-2 '>
@@ -227,24 +244,20 @@
                       <MudText Typo='Typo.body2'>Edit</MudText>
                     </a>
                   </MudMenuItem>
-                  if(AccessLevelAddmin())
-                  {
-                    <MudMenuItem OnClick='(()=> ApprovedVoucher(context))'>
-                      <div class='d-flex align-center gap-2 '>
-                        <MudIcon Icon='@Icons.Material.Filled.CheckCircle' Size='Size.Small' />
-                        <MudText Typo='Typo.body2'>Approve</MudText>
-                      </div>
-                    </MudMenuItem>
-                    <MudMenuItem OnClick='(()=> CancelVoucher(context))'>
-                      <div class='d-flex align-center gap-2 '>
-                        <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small' />
-                        <MudText Typo='Typo.body2'>Cancel</MudText>
-                      </div>
-                    </MudMenuItem>
-                  }
-
+                  <MudMenuItem OnClick='(()=> ApprovedVoucher(context))'>
+                    <div class='d-flex align-center gap-2 '>
+                      <MudIcon Icon='@Icons.Material.Filled.CheckCircle' Size='Size.Small' />
+                      <MudText Typo='Typo.body2'>Approve</MudText>
+                    </div>
+                  </MudMenuItem>
+                  <MudMenuItem OnClick='(()=> CancelVoucher(context))'>
+                    <div class='d-flex align-center gap-2 '>
+                      <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small' />
+                      <MudText Typo='Typo.body2'>Cancel</MudText>
+                    </div>
+                  </MudMenuItem>
                 }
-                else if(AccountingStatus(Enums.ActionMode.Approve).Id == context.AccountingStatusId && AccessLevelAddmin())
+                else if(AccountingStatus(Enums.ActionMode.Approve).Id == context.AccountingStatusId)
                 {
                   if(!context.IsFiled)
                   {
@@ -276,7 +289,7 @@
                     <MudText Typo='Typo.body2'>BIR</MudText>
                   </div>
                 </MudMenuItem>
-                }
+                } *@
               </MudMenu>
             </MudTd>
           </RowTemplate>
@@ -309,11 +322,21 @@
                     </MudCard>
                   </div>
                 </div>
+                @if (context.isShowChecks && !context.ShowReport)
+                {
+                  <CheckListComponent stringChecks=@context.CheckNumber />
+                }
               </td>
             </MudTr>
           </ChildRowContent>
           <PagerContent>
-              <MudTablePager PageSizeOptions='@GlobalVariable.pageSize'/>
+              <FooterPaginationComponent
+                FilterParameter='filterParameter'
+                NextAndPreviousPage='( async (args)=> await NextAndPreviousPage((bool) args.Item1, (bool) args.Item2))'
+                OnPageSizeChanged='( async (int s)=> await PageSizeChanged(s) )'
+                TotalRow='TotalRow'
+              />
+              @* <MudTablePager PageSizeOptions='@GlobalVariable.pageSize'/> *@
           </PagerContent>
         </MudTable>
       </MudPaper>
@@ -323,7 +346,7 @@
 
 @code{
   [Parameter] public string controlNumber {get;set;} = string.Empty;
-  private bool dataFetched, openSideFilter, isPinnedCtrlNo = true, isPinnedAmt = true;
+  private bool dataFetched, openFilter, isPinnedCtrlNo = true, isPinnedAmt = true;
   private int totalItems;
   private string pdfContent = string.Empty, searchTerm = string.Empty;
   private AccountingStatusModel selectedStatus = new();
@@ -332,19 +355,36 @@
   private FilterParameter filterParameter = new();
   private IEnumerable<AccountingStatusModel> hasAccountingStatus = new HashSet<AccountingStatusModel>();
   private DateRange dateRange = new DateRange(DateTime.Now, DateTime.Now);
+  private int TotalRow = 0;
   protected override async Task OnInitializedAsync()
   {
     GlobalClass.pageTitle = "voucher list";
     if (GlobalClass.currentUserAccount == null || GlobalClassList.accountingStatusList == null)
       await Task.Delay(1);
-    GlobalClassList.listOfChecks = await checkService.LoadCheck(filterParameter, GlobalClass.token);
+    await VoucherListRowCount();
+    Task t = Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.VoucherList);
+    await t;
+    if(t.Status == TaskStatus.RanToCompletion)
+    {
+      filterParameter = new();
+      GlobalVariable.filterParameter = new();
+      Extensions.ViewRestrictions(filterParameter);
+      filterParameter = GlobalVariable.filterParameter;
+      filterParameter.PageSize = 15;
+      filterParameter.PageNo = 0;
+    }
     VoucherHubConnection();
-
     VoucherEntryPage.currActionMode = Enums.ActionMode.Create;
     GlobalClass.voucher = new();
     CompletedFetch();
   }
+  protected override void OnAfterRender(bool firstRender)
+  {
+    if(firstRender)
+    {
 
+    }
+  }
   void CompletedFetch()
   {
     dataFetched = true;
@@ -359,19 +399,20 @@
       }
       return $"{status}";
   }
-  private void FilterTable()
+  private async Task FilterTable()
   {
     filterParameter = GlobalVariable.filterParameter;
-    tableVariable.ReloadServerData();
+    filterParameter.ControlNumber = filterParameter.ControlNumber.Replace(" ","");
+    filterParameter.PageSize = GlobalVariable.PageSize;
+    filterParameter.PageNo = 0;
+    await tableVariable.ReloadServerData();
   }
   private async Task<TableData<VoucherModel>> LoadVoucherServer(TableState tableState)
   {
-    
     if(!String.IsNullOrEmpty(controlNumber))
     {
         filterParameter.IsControlNumber = true;
         filterParameter.ControlNumber = controlNumber;
-        Console.WriteLine("Not null");
     }
     IEnumerable<VoucherModel> data = await voucherService.LoadVouchers(filterParameter, GlobalClass.token);
     switch (tableState.SortLabel)
@@ -394,9 +435,10 @@
     }
     //Testing
     GlobalClassList.Vouchers = data.ToList();
-    pageData = GlobalClassList.Vouchers.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
+
+    pageData = GlobalClassList.Vouchers.Skip(tableState.Page * GlobalVariable.PageSize).Take(GlobalVariable.PageSize).ToArray();
     //show void if all checks are cancelled
-    GlobalClassList.Vouchers.ForEach( v => {
+    @* GlobalClassList.Vouchers.ForEach( v => {
         var checkLists = v.CheckNumber.Split(',').Distinct();
         var newCheckLists = new List<CheckModel>();
         newCheckLists.Clear();
@@ -407,10 +449,9 @@
         v.isChecksCancelled =  newCheckLists.All ( c => 
             AccountingStatusEnumCategory(c.AccountingStatusId) == Enums.AccountingStatusEnumCategory.CC
         );
-    });
-    await Task.Delay(3);
-    totalItems = GlobalClassList.Vouchers.Count();
+    }); *@
 
+    totalItems = GlobalClassList.Vouchers.Count();
     return new TableData<VoucherModel>()
     {
       TotalItems = totalItems,
@@ -471,6 +512,27 @@
     GlobalClass.voucher = voucher;
     navigationManager.NavigateTo($"/voucher");
   }
+  private async Task SendNotify(VoucherModel model, Enums.ActionMode actionMode)
+  {
+    if( GlobalVariable.AMSHubConnection != null)
+    {
+        await Task.Run( async ()=> await GlobalVariable.AMSHubConnection.InvokeAsync("SaveVoucher", model)).
+        ContinueWith( async(t) => 
+        {   
+            if(t.Status == TaskStatus.RanToCompletion) 
+            {  
+                NotificationModel notification = new();
+                notification.SenderId = GlobalClass.currentUserAccount.EmployeeId;
+                notification.StatusAction = actionMode;
+                notification.ModuleName = "Voucher";
+                notification.ControlNumber = model.ControlNumber;
+                notification.PreparedById = model.PreparedById;
+                notification.DateNotify = DateTime.Now;
+                await Extensions.SendNotification(notification); 
+            }
+        });
+    }
+  }
   private async Task VoidVoucher(VoucherModel voucher)
   {
     if(await PromptMessage(Enums.ActionMode.Void, voucher.ControlNumber))
@@ -485,12 +547,11 @@
       voucher.StatusEnumCategoryId = AccountingStatus(Enums.ActionMode.Void).StatusEnumCategoryId;
             
       var updatedStatus = await voucherService.UpdateVoucherStatus(voucher, GlobalClass.token);
-      Extensions.ShowAlert("Voucher successfully voided.", Variant.Filled, snackbarService, Severity.Success);
-      if(GlobalVariable.AMSHubConnection != null)
-        await GlobalVariable.AMSHubConnection.InvokeAsync("SaveVoucher", updatedStatus);
+      Extensions.ShowAlert("Voucher voided.", Variant.Filled, SnackbarService, Severity.Success);
+      await SendNotify(updatedStatus,Enums.ActionMode.Void);
     }
     else
-      Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackbarService, Severity.Normal);
+      Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
   }
   private async Task ApprovedVoucher(VoucherModel voucher)
   {
@@ -507,12 +568,11 @@
       voucher.StatusEnumCategoryId = AccountingStatus(Enums.ActionMode.Approve).StatusEnumCategoryId;
             
       var updatedStatus = await voucherService.UpdateVoucherStatus(voucher, GlobalClass.token);
-      Extensions.ShowAlert("Voucher has been approved", Variant.Filled, snackbarService, Severity.Success);
-      if(GlobalVariable.AMSHubConnection != null)
-        await GlobalVariable.AMSHubConnection.InvokeAsync("SaveVoucher", updatedStatus);
+      Extensions.ShowAlert("Voucher approved", Variant.Filled, SnackbarService, Severity.Success);
+      await SendNotify(updatedStatus,Enums.ActionMode.Approve);
     }
     else
-      Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackbarService, Severity.Normal);
+      Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
   }
   private async Task CancelVoucher(VoucherModel voucher)
   {
@@ -530,14 +590,13 @@
         voucher.StatusEnumCategoryId = AccountingStatus(Enums.ActionMode.Cancel).StatusEnumCategoryId;
 
         var updatedStatus = await voucherService.UpdateVoucherStatus(voucher, GlobalClass.token);
-        Extensions.ShowAlert("Voucher was cancelled", Variant.Filled, snackbarService, Severity.Success);
-        if(GlobalVariable.AMSHubConnection != null)
-          await GlobalVariable.AMSHubConnection.InvokeAsync("SaveVoucher", updatedStatus);
+        Extensions.ShowAlert("Voucher cancelled", Variant.Filled, SnackbarService, Severity.Normal);
+        await SendNotify(updatedStatus,Enums.ActionMode.Cancel);
       }
       else
-        Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackbarService, Severity.Normal);
+        Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
     } else 
-      Extensions.ShowAlert("You are not allowed to cancel the voucher that was filed.", Variant.Filled, snackbarService, Severity.Error);
+      Extensions.ShowAlert("You are not allowed to cancel the voucher that was filed.", Variant.Filled, SnackbarService, Severity.Error);
   }
   private bool ViewMenu(VoucherModel voucher)
   {
@@ -547,6 +606,13 @@
   }
   private bool ShowReport(bool isShow, VoucherModel voucher)
   {
+    int count = 0;
+    voucher.VoucherDetails.ForEach( vDetails => {
+      count++;
+      vDetails.TemporaryId = count;
+    });
+    if(voucher.PrevVoucherDate == null)
+      voucher.PrevVoucherDate = DateTime.Now;
     Task t = Task.WhenAll(LoadVoucherReport(voucher));
     if(t.Status == TaskStatus.RanToCompletion)
       return isShow = !isShow;
@@ -554,7 +620,7 @@
   }
   private async Task LoadVoucherReport(VoucherModel voucher)
   {
-    pdfContent = await voucherService.GenerateReport(voucher);
+    pdfContent = await voucherService.GenerateLiquidationVoucherReport(voucher);
     StateHasChanged();
   }
   private void VoucherHubConnection()
@@ -562,9 +628,11 @@
     try
     {
       if(GlobalVariable.AMSHubConnection != null)
-        GlobalVariable.AMSHubConnection.On<PettyCashModel>("SaveVoucher",(pettyCashModel) => 
+        GlobalVariable.AMSHubConnection.On<VoucherModel>("SaveVoucher",(voucher) => 
         {
-            tableVariable.ReloadServerData();
+            @* filterParameter.PageSize = GlobalVariable.PageSize;
+            filterParameter.PageNo = 0;
+            tableVariable.ReloadServerData(); *@
             StateHasChanged();
         });
     }
@@ -574,35 +642,6 @@
        // TODO
     }
   }
-   private bool CheckAccessLevel()
-    {
-      switch(GlobalClass.currentUserAccount.AccessLevel)
-      {
-        case Enums.AccountingAccessLevel.AccountingViewer :
-        case Enums.AccountingAccessLevel.OthersViewer :
-          return false;
-      }
-
-    return true;
-    }
-    private bool AccessLevelAddmin()
-    {
-      return GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.Administrator 
-      ||GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.AccountingAdmin;
-
-    }
-    private bool AccessLevelRequestors()
-    {
-      return GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.OthersRequestor
-      || GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.AccountingRequestor
-      || GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.AccountingIssuer;
-    
-    }
-    private bool AccessLevelViewers()
-    {
-      return GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.AccountingViewer
-      || GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.OthersViewer;
-    }
     private AccountingStatusModel AccountingStatus(Enums.ActionMode actionMode)
     {
       var acctgStatus = new AccountingStatusModel();
@@ -623,9 +662,18 @@
     }
     private async Task ReloadTable()
     {
+      navigationManager.NavigateTo($"/voucher/list");
+      await VoucherListRowCount();
+      GlobalVariable.filterParameter = new();
       filterParameter = new FilterParameter();
+      Extensions.ViewRestrictions(filterParameter);
+      filterParameter = GlobalVariable.filterParameter;
+      filterParameter.PageSize = GlobalVariable.PageSize;
+      filterParameter.PageNo = 0;
       controlNumber = "";
+
       await tableVariable.ReloadServerData();
+      await VoucherListRowCount();
     }
     private bool EnableClearButton()
     {
@@ -653,6 +701,12 @@
           DisableBackdropClick = true
       };
       var resultDialog = await dialogService.Show<Shared.Dialogs.BIRDialogs.BIRDialog>("", options).Result;
+      if (!resultDialog.Canceled)
+      {
+        int result = (int) resultDialog.Data;
+        if(result == 3)
+          GlobalClass.voucher  = new();
+      }
     }
     private long AccountingStatusId(Enums.AccountingStatusEnumCategory id)
     {
@@ -673,5 +727,50 @@
       parameters.Add("VoucherModel", model);
       var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.Medium, FullWidth = false, NoHeader = false, DisableBackdropClick = false };
       var resultDialog = await dialogService.Show<Shared.Dialogs.PreviewInformationDialogs.PreviewVoucherDialog>("", parameters, options).Result;
+    }
+    private async Task NextAndPreviousPage(bool next, bool skipNext)
+    {
+      if(skipNext)
+      {
+        if(next)
+        {
+          if(GlobalVariable.LastPage != 0)
+            filterParameter.PageNo = GlobalVariable.LastPage;
+          else
+            filterParameter.PageNo++;
+        }
+        else 
+          filterParameter.PageNo = 0;
+      } else {
+        if(next)
+          filterParameter.PageNo++;
+        else 
+          filterParameter.PageNo--;
+      }
+      await tableVariable.ReloadServerData();
+    }
+    private async Task VoucherListRowCount()
+    {
+      int count = TotalRow = await voucherService.VoucherListRowCount(new FilterParameter(){ isActive = true, PageSize = 2000000 , PageNo =0 },GlobalClass.token);
+      if(count % GlobalVariable.PageSize == 0)
+        GlobalVariable.LastPage = (Convert.ToInt32(Math.Floor(Convert.ToDecimal(count) / Convert.ToDecimal(GlobalVariable.PageSize)))) - 1;
+      else
+        GlobalVariable.LastPage = Convert.ToInt32(Math.Floor(Convert.ToDecimal(count) / Convert.ToDecimal(GlobalVariable.PageSize)));
+    }
+    private async Task PageSizeChanged(int s)
+    {
+      filterParameter.PageSize = GlobalVariable.PageSize = s; 
+      await tableVariable.ReloadServerData();
+      await VoucherListRowCount();
+    }
+    private void CreateVoucher()
+    {
+      if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.VoucherEntry))
+      {
+        GlobalClass.voucher = new();
+        navigationManager.NavigateTo($"/voucher");
+      } else {
+        Extensions.ShowAlert("Account has been restricted to create voucher.", Variant.Filled, SnackbarService, Severity.Error);
+      }
     }
 }

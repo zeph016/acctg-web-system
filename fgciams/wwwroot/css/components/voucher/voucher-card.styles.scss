@@ -1,0 +1,75 @@
+@use "../flexgridmods/flexgridmods.styles.css";
+@use "../animations/animation.styles.css";
+
+.voucher-card-list {
+    @extend .fade-in;
+    border-radius: 4px 4px;
+    border: solid thick #542D6F;
+    border-left-style: unset;
+    border-right-style: unset;
+    &__grid {  display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        grid-template-rows: auto;
+        gap: 0px 0px;
+        grid-auto-flow: row;
+        grid-template-areas:
+          "vlist-title vlist-title vlist-title vlist-title"
+          "vlist-content vlist-content vlist-content vlist-content"
+          "vlist-amount vlist-amount vlist-amount vlist-amount"
+          "vlist-footer vlist-footer vlist-footer vlist-footer";
+    }
+    min-width: 280px;
+    .vlist-title { grid-area: vlist-title; }
+    .vlist-content { grid-area: vlist-content; }
+    .vlist-amount { grid-area: vlist-amount; }
+    .vlist-footer { grid-area: vlist-footer; }
+
+    &__lbl, &__amt {
+        @extend .voucher-txt-size;
+    }
+    &__lbl { font-weight: unset !important; }
+    .voucher-card__amt, &__amt:hover { cursor: pointer; }
+    .vlist-title, .vlist-amount {  @extend .dflex-row; }
+
+    .vlist-title {
+        border-bottom: solid thin lightgray;
+        padding: 4px 8px;
+        p {
+            font-size: "SF-Pro-Display Regular";
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+    }
+    .vlist-content {
+        @extend .dflex-col;
+        padding: 4px 8px; 
+        gap: 4px;
+        max-height: calc(100vh - 500px);
+        overflow: auto;
+    }
+    .vlist-amount { padding: 8px 16px; }
+    .vlist-footer { padding: 8px; }
+    .vlist-footer, .vlist-amount { border-top: solid thin lightgray; }
+
+    .voucher-card {
+        background-color: #F6F6F6;
+        border-radius: 4px;
+        padding: 4px 8px;
+    }
+    .voucher-card:hover {
+        background-color: #EBEBEB;
+    }
+    .voucher-card-sl { 
+        @extend .dflex-row;
+        justify-content: space-between;
+    }
+
+    .voucher-txt-size {
+        font-size: 12px;
+        font-weight: bold;
+    }
+}
+
+  
+

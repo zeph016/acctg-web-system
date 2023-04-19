@@ -1,6 +1,6 @@
 @inject IAccountingLineService accountLineService
 @inject IAccountLineTypeService accountLineTypeService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject IDialogService dialogService
 
 <MudDialog Class='customdialog2'>
@@ -106,13 +106,18 @@
     {
         if (accountLine == 0 && !GlobalClass.accountLineGroup.IsActive || accountLine == 1 && !GlobalClass.accountLineType.IsActive)
         {
+            if(!Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Delete))
+            {
+                Extensions.ShowAlert("Account has been restricted to deactivate account line.", Variant.Filled, SnackbarService, Severity.Error);
+                return;
+            }
             currentAction = Enums.ActionMode.Deactivate;
             await PromptMessage();
         }
         else if (ValidateEntries())
             await PromptMessage();
         else
-            Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbarService, Severity.Error);
+            Extensions.ShowAlert("Please complete all required fields", Variant.Filled, SnackbarService, Severity.Error);
     }
     private bool ValidateEntries()
     {
@@ -174,7 +179,7 @@
                 MudDialog.Close(DialogResult.Ok(currentAction));
             }
             catch (System.Exception ex) {
-                Extensions.ShowAlert(ex.Message, Variant.Filled, snackbarService, Severity.Error);
+                Extensions.ShowAlert(ex.Message, Variant.Filled, SnackbarService, Severity.Error);
             }
         }
         else if (currentAction == Enums.ActionMode.Deactivate && accountLine == 0)

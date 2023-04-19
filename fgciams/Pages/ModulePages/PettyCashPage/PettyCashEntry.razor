@@ -2,11 +2,13 @@
 
 @inject IGlobalService globalService
 @inject IPettyCashService pettyCashService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject IDialogService dialogService
 @inject IGlobalService GlobalService
 @inject NavigationManager navigationManager
 @inject IJSRuntime jsRuntimeService
+@inject IAccessLevelService accessLevelService
+
 @attribute [Authorize]
 
 <div class='page-cont d-flex'>
@@ -46,7 +48,7 @@
                                 <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
                             </MudText>
                             <BlazoredTypeahead SearchMethod='LoadPayee' DisableClear placeholder='Payee'
-                                @bind-Value='payeeName' Debounce='500' MaximumSuggestons='10'>
+                                @bind-Value='payeeName' MinimumLength='3' Debounce="300" MaximumSuggestons='10'>
                                 <SelectedTemplate>
                                     <div class='overflow-hidden wspace-nowrap'>
                                         @if (context.ProjectId != 0) {
@@ -78,7 +80,7 @@
                                 date:
                             </MudText>
                             <MudDatePicker Class='txtfield-font12-no-margin txtfield-right' @bind-Date='GlobalClass.pettyCash.RequestDate' IconSize='Size.Small' DisableToolbar
-                                Margin='Margin.Dense' ReadOnly MinDate='@Convert.ToDateTime(GlobalClass.pettyCash.RequestDate).AddDays(-1)' MaxDate='@GlobalClass.pettyCash.RequestDate' />
+                                Margin='Margin.Dense' MaxDate='@GlobalClass.pettyCash.RequestDate' />
                         </div>
                         <div class="pcash-controlno"> 
                             <MudText Class='wspace-nowrap txt-uppercase font-bold font10'>Control No:</MudText>
@@ -120,7 +122,7 @@
                                             }
                                             <div class='d-flex flex-grow-1 flex-column blzrthead-disabled-minheight15'>
                                                 <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear Context='reqby' placeholder='Requested By'
-                                                    Debounce='500' MaximumSuggestions='5' Disabled
+                                                    Debounce="300" MaximumSuggestions='5' Disabled MinimumLength='3'
                                                     Value='requestedBy' ValueExpression='(() => requestedBy)'
                                                     ValueChanged='((UserAccount userAccount) =>
                                                     {
@@ -154,7 +156,7 @@
                                             }
                                             <div class='d-flex flex-grow-1 flex-column'>
                                                 <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear Context='aprby' placeholder='Approved By'
-                                                    Debounce='500' MaximumSuggestions='5'
+                                                    Debounce="300" MaximumSuggestions='10' MinimumLength='3'
                                                     Value="approvedBy" ValueExpression='(() => approvedBy)'  
                                                     ValueChanged="@((UserAccount userAccount) => 
                                                     {
@@ -195,7 +197,7 @@
                                             }
                                             <div class='d-flex flex-grow-1 flex-column'>
                                                 <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear Context='recby' placeholder='Received By'
-                                                    Debounce='500' MaximumSuggestions='5' 
+                                                    Debounce="300" MaximumSuggestions='10' MinimumLength='3'
                                                     Value='receivedBy' ValueExpression="(()=>receivedBy)" 
                                                     ValueChanged="@((UserAccount userAccount) => 
                                                     {
@@ -255,19 +257,19 @@
                                 </MudCardHeader>
                                 <div class='d-flex align-center pa-2 justify-center overflow-hidden @(isSideBarExpanded ? "fade-in" : "fade-out")' style='@(isSideBarExpanded ? "max-height:500px" : "max-height:0px")'>
                                     @if (GlobalClass.pettyCash.Amount > 0) {
-                                        <MudIcon Class='color-green' Icon='@Icons.Outlined.LabelImportant' Size='Size.Medium'/>
+                                        <MudIcon Class='color-green' Icon='@Icons.Material.Outlined.LabelImportant' Size='Size.Medium'/>
                                         <MudSpacer />
                                         <div class='d-flex align-center gap-2'>
                                             <MudText Class='font-bold pl-2 color-green'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
-                                            <MudNumericField Class='txt-search-overflow txt-top-0 txtfield-right tfield-color-green' @bind-Value='GlobalClass.pettyCash.Amount' Culture='CultureInfo.GetCultureInfo("en-PH")'
+                                            <MudNumericField @ref='@_amount' onclick="this.select();" Class='txt-search-overflow txt-top-0 txtfield-right tfield-color-green' @bind-Value='GlobalClass.pettyCash.Amount' Culture='CultureInfo.GetCultureInfo("en-PH")'
                                             Format='N2' Variant='Variant.Text' HideSpinButtons Error='reqAmount' ErrorText=''/>
                                         </div>
                                     } else {
-                                        <MudIcon Icon='@Icons.Outlined.LabelImportant' Size='Size.Medium' Color='Color.Error' />
+                                        <MudIcon Icon='@Icons.Material.Outlined.LabelImportant' Size='Size.Medium' Color='Color.Error' />
                                         <MudSpacer />
                                         <div class='d-flex align-center gap-2'>
-                                            <MudText Class='font-bold pl-2' Color='Color.Error'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
-                                            <MudNumericField Class='txt-search-overflow txt-top-0 txtfield-right tfield-color-red' @bind-Value='GlobalClass.pettyCash.Amount' Culture='CultureInfo.GetCultureInfo("en-PH")'
+                                            <MudText  Class='font-bold pl-2' Color='Color.Error'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
+                                            <MudNumericField @ref='@_amount'  onclick="this.select();" Class='txt-search-overflow txt-top-0 txtfield-right tfield-color-red' @bind-Value='GlobalClass.pettyCash.Amount' Culture='CultureInfo.GetCultureInfo("en-PH")'
                                                 Format='N2' Variant='Variant.Text' HideSpinButtons Error='reqAmount' ErrorText=''/>
                                         </div>
                                     }
@@ -281,7 +283,9 @@
                                                 <MudProgressCircular Class="progsize-21" Size="Size.Small" Indeterminate="true"/>
                                                 <MudText Class='font12 fweight500 pl-2'>GENERATING</MudText>
                                             } else {
-                                                <MudText Class='font12 fweight500'>@submitText</MudText> 
+                                                <MudText Class='font12 fweight500'>
+                                                    @(currActionMode == Enums.ActionMode.Create ? "GENERATE":"UPDATE")
+                                                </MudText> 
                                             }
                                         </MudButton>
                                     </MudCardActions>
@@ -296,6 +300,7 @@
 </div>
 
 @code {
+    [CascadingParameter] public AppStoreState ApplicationState { get; set; } = new();
     private Project payeeName = new Project();
     private UserAccount requestedBy = new UserAccount(); private UserAccount approvedBy = new UserAccount();
     private UserAccount receivedBy = new UserAccount();
@@ -304,46 +309,37 @@
     isSideBarExpanded = true, isSigExpanded = true, isStatusExpanded = true, isAmountExpanded = true;
     public static Enums.ActionMode currActionMode { get; set; }
     private AccountingStatusModel currentStatus = new AccountingStatusModel();
+    private MudNumericField<decimal> _amount  = new MudNumericField<decimal>();
     public override async Task SetParametersAsync(ParameterView parameters)
     {
         if(GlobalClass.pettyCash == null || GlobalClass.pettyCash.Id == 0)
-        {
-            GlobalClass.pettyCash = new();
             currActionMode = Enums.ActionMode.Create;
-        }
         else
             currActionMode = Enums.ActionMode.Update;
-        submitText = PettyCashList.currActionMode == Enums.ActionMode.Create ? "GENERATE" : "UPDATE";
-        currActionMode = PettyCashList.currActionMode == Enums.ActionMode.Create ? Enums.ActionMode.Create : Enums.ActionMode.Update;
         await base.SetParametersAsync(parameters);
     }
     protected override async Task OnInitializedAsync()
     {
         GlobalClass.pageTitle = "PETTY CASH ENTRY";
+        navigationManager.LocationChanged += OnLocationChanged;
         while (GlobalClass.currentUserAccount == null || string.IsNullOrWhiteSpace(GlobalClass.token) || GlobalVariable.ServerTime == null)
             await Task.Delay(1);
         if (GlobalClass.pettyCash.Id != 0)
             await ReMapDetails();
         else
-            if(String.IsNullOrEmpty(GlobalClass.pettyCash.Particular))
-                MapDefaultDetails();
-            else
-                await LoadEmployeePictures();
-        Console.WriteLine(currActionMode);
+            await MapDefaultDetails();
+        await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.PettyCashEntry);
         CompletedFetch();
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        @* await Task.Delay(1);
-        submitText = PettyCashList.currActionMode == Enums.ActionMode.Create ? "GENERATE" : "UPDATE";
-        currActionMode = PettyCashList.currActionMode == Enums.ActionMode.Create ? Enums.ActionMode.Create : Enums.ActionMode.Update; *@
     }
 
     void CompletedFetch()
     {
         dataFetched = true;
         Task.Run(StateHasChanged);
+    }
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        GlobalClass.pettyCash = new();
     }
 
     private async Task<IEnumerable<Project>> LoadPayee(string projectName)
@@ -386,8 +382,9 @@
             currentStatus = result;
         GlobalClass.pettyCash.StatusName = currentStatus.StatusName;   
     }
-    private void MapDefaultDetails()
+    private async Task MapDefaultDetails()
     {
+        requestedBy = await GetEmployeeDetails(GlobalClass.pettyCash.RequestedById);
         GlobalClass.pettyCash = new ();
         GlobalClass.pettyCash.RequestDate = GlobalVariable.ServerTime;
         GlobalClass.pettyCash.IsActive = true;
@@ -412,6 +409,7 @@
         if (result != null)
             currentStatus = result;
         GlobalClass.pettyCash.StatusName = currentStatus.StatusName;   
+        StateHasChanged();
     }
     private async Task<UserAccount> GetEmployeeDetails(long employeeId)
     {
@@ -423,13 +421,15 @@
         _processing = true;
         if (isValidated())
         {
+            GlobalClass.pettyCashForPrint = GlobalClass.pettyCash;
+            GlobalClass.pettyCash = new();
             _processing = false;
             navigationManager.NavigateTo($"/petty-cash/print");
         }
         else
         {
             _processing = false;
-            Extensions.ShowAlert("Cannot create Petty Cash. Incomplete fields.", Variant.Filled, snackbarService, Severity.Error);
+            Extensions.ShowAlert("Cannot create Petty Cash. Incomplete fields.", Variant.Filled, SnackbarService, Severity.Error);
         }
     }
     private async Task New()
@@ -443,6 +443,8 @@
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(string.Empty,parameters,options).Result;
         if(!resultDialog.Canceled)
         {
+            currActionMode = Enums.ActionMode.Create;
+            GlobalClass.pettyCash = new();
             string thisPage = "pc-create";
             navigationManager.NavigateTo($"/refresh/{thisPage}");
         }

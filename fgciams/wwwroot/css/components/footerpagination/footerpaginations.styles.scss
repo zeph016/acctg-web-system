@@ -1,0 +1,40 @@
+@use '../flexgridmods/flexgridmods.styles.css';
+
+.tblfooter-container {
+    &__grid {  display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 0px 0px;
+        grid-auto-flow: row;
+        grid-template-areas:
+          "tblft-left tblft-right"
+          "tblft-left tblft-right";
+        .tblft-left { grid-area: tblft-left; }
+        .tblft-right { grid-area: tblft-right; }
+
+        .tblft-left, .tblft-right {
+            @extend .dflex-row;
+            padding: 0px 8px;
+            gap: 8px;
+        }
+        .tblft-right {
+            justify-content: end;
+        }
+    }
+    &__lbl {
+        font-size: 12px;
+        font-family: "R-Flex Regular";
+    }
+    &__control-container {
+        @extend .dflex-row;
+        gap: 4px;
+    }
+    &__menu {
+        .mud-button-label {
+            font-family: "R-Flex Regular";
+            font-size: 12px !important;
+            font-weight: bold;
+        }
+    }
+}
+

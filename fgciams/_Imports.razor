@@ -15,12 +15,16 @@
 @using System.Reflection
 @using Microsoft.AspNetCore.SignalR.Client
 @using fgciams.Pages.SkeletonPages
+
 @using fgciams.Pages.ModulePages
 @using fgciams.Pages.ModulePages.PettyCashPage
 @using fgciams.Pages.ModulePages.LiquidationPage
 @using fgciams.Pages.ModulePages.RequestForPaymentPage
 @using fgciams.Pages.ModulePages.CheckWriterPage
 @using fgciams.Pages.ModulePages.LedgerPages
+@using fgciams.Pages.ModulePages.VoucherPage
+@using fgciams.Pages.ModulePages.ReportPage
+
 @using fgciams.Pages.ConfigurationPages.AccountingStatusPage
 @using fgciams.Pages.ConfigurationPages.AccountingLinePage
 @using fgciams.Pages.ConfigurationPages.BankPage
@@ -40,6 +44,8 @@
 @using fgciams.Pages.ConfigurationPages.TaxCodePage
 @using fgciams.Pages.ConfigurationPages.ScopeOfWorkPage
 @using fgciams.Pages.ConfigurationPages.VoucherRouteTagPage
+@using fgciams.Pages.ConfigurationPages.AccessLevelPage
+@using fgciams.Pages.ConfigurationPages.CustomerPage
 
 @using Pages.PrintPages
 @using Blazored.Typeahead
@@ -98,6 +104,9 @@
 @using fgciams.domain.clsVoucherRouteTag
 @using fgciams.domain.clsBoundingClientRec
 @using fgciams.domain.clsGeneralAuditTrail
+@using fgciams.domain.clsAccessLevel
+@using fgciams.domain.clsNotification
+@using fgciams.domain.clsCustomer
 
 @using fgciams.service
 @using fgciams.service.UserAccountServices
@@ -138,6 +147,8 @@
 @using fgciams.service.DebitServices
 @using fgciams.service.VoucherRouteTagServices
 @using fgciams.service.JournalServices
+@using fgciams.service.AccessLevelServices
+@using fgciams.service.CustomerServices
 
 @using fgciams.Components.CheckListComponents
 @using fgciams.Components.MudChipComponents
@@ -147,9 +158,26 @@
 @using fgciams.Components.CollectionComponents
 @using fgciams.Components.DateRangeCardComponent
 @using fgciams.Components.FilterComponents
+@using fgciams.Components.FilterComponents.PopoverFilter
 @using fgciams.Components.MudTablePagerComponents
 @using fgciams.Components.VoucherEntryComponents
 @using fgciams.Components.AccctgStatusComponents
 @using fgciams.Components.ButtonComponents
-@using fgciams.Components.ReportComponents
 @using fgciams.Components.AutoCompleteComponents
+@using fgciams.Components.FooterPaginationComponents
+@using fgciams.Components.MainLayoutMenuComponents
+@using fgciams.Components.ModulesMenuComponents
+@using fgciams.Components.ConfigurationModulesMenuComponents
+@using fgciams.Components.NotificationComponents
+@using fgciams.Components.BillingTransactionComponents
+@using fgciams.Components.CardComponents
+@using fgciams.Components.CardComponents.VoucherCards
+@using fgciams.Components.CardComponents.RFPCards
+@using fgciams.Components.ReportComponents
+@using fgciams.Components.ActionsOverlayComponent
+@using fgciams.Components.EmployeeCard
+
+@using fgciams.Shared.Dialogs.PreviewInformationDialogs.Check
+@using fgciams.Shared.Dialogs.PreviewInformationDialogs.Collection
+
+@using fgciams.Store

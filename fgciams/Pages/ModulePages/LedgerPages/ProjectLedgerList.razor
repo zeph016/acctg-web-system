@@ -7,18 +7,16 @@
 
 <div class='page-cont'>
     <div class='drawer-right-min'>
-        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
-          <ProjectChargingOnlyFilter OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
-            FilterClick='GetProjectLedgers' ResetTableClick='ReloadTable' filterParameter='filterParameter'
-            contentVisible='openSideFilter' moduleName="projectLedger-list" />
+        <MudDrawer Class='pa-1' Open='false' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <MudTooltip Text='Filter' Arrow Placement='Placement.Left'>
+                <MudIconButton OnClick='(() => openFilter = !openFilter)' Icon='@Icons.Material.Filled.FilterList' arial-label='Close Filter' Size='Size.Small' />
+            </MudTooltip>
       </MudDrawer>
     </div>
     <MudContainer Class='py-2 pl-2 pr-10  table-toolbar-custom1' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
         @if (!dataFetched)
         {
-            <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
-                <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='calc(100vh - 135px)' Animation='Animation.Wave' />
-            </MudPaper>
+            <SkeletonPageList />
         }
         else
         {
@@ -47,7 +45,7 @@
                     <MudIconButton Class='@(isLoading ? "mudbtnico-rotate":"")' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='(()=>ReloadTable())' 
                         Color='@(isLoading ? Color.Info : Color.Default)'/>
                     </MudTooltip>
-                    <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' ActivationEvent="MouseEvent.MouseOver"
+                    <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' 
                         TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
                         <MudMenuItem OnClick="( async () => await GetReport() )"  >
                             <div class='d-flex align-center gap-2 '>
@@ -55,13 +53,18 @@
                                 <MudText Typo='Typo.body2' Color='Color.Dark'>Print</MudText>
                             </div>
                         </MudMenuItem>
-                        <MudMenuItem OnClick="(() => openSideFilter = !openSideFilter)"  >
+                        <MudMenuItem OnClick="(() => openFilter = !openFilter)"  >
                             <div class='d-flex align-center gap-2 '>
                                 <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
                                 <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
                             </div>
                         </MudMenuItem>
                     </MudMenu>
+                    @if(openFilter)
+                    {
+                        <PopoverFilterMainComponent IsOpen='openFilter' CloseFilter='(() => openFilter = !openFilter)' IsMainFilter='true' IsModuleList='true'
+                            ModuleName='projectLedger-list' ApplyFilter='FilterTable' ResetTableData='ReloadTable'/>
+                    }
                 </ToolBarContent>
                 <ColGroup>
                     <col style='width:1%'/>
@@ -133,7 +136,7 @@
                         </MudText>
                     </MudTd>
                     <MudTd Class='text-center' DataLabel='Action'>
-                        <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
+                        <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' 
                             TransformOrigin='Origin.TopRight' Dense Size='Size.Small'>
                             <MudMenuItem OnClick="(() => ShowCollectionsExpenses(context) )">
                                 <div class='d-flex align-center gap-2 menu-grow-anim'>
@@ -174,7 +177,7 @@
     </MudContainer>
 </div>
 @code{
-    private bool dataFetched,isLoading,openSideFilter;
+    private bool dataFetched,isLoading,openFilter;
     private string searchTerm = string.Empty, visibility = "visibility-animation-hide";
     private int totalItems;
     private FilterParameter filterParameter = new();
@@ -187,14 +190,6 @@
     {
         GlobalClass.pageTitle = "Project Ledger List";
         dataFetched = true;
-    }
-    private void OpenSideFilter()
-    {
-        openSideFilter = !openSideFilter;
-        if (openSideFilter)
-            visibility = "visibility-animation-show";
-        if (!openSideFilter)
-            visibility = "visibility-animation-hide";
     }
     private async Task<TableData<CollectionModel>> LoadProjectLedgers(TableState tableState)
     {
@@ -241,6 +236,13 @@
       };
       var charging = await globalService.LoadChargeProjectLine(filterParameter, GlobalClass.token);
       return charging;
+    }
+    private async Task FilterTable()
+    {
+        filterParameter = GlobalVariable.filterParameter;
+        filterParameter.PageSize = GlobalVariable.PageSize;
+        filterParameter.PageNo = 0;
+        await tableVariable.ReloadServerData();
     }
     private async Task ReloadTable()
     {

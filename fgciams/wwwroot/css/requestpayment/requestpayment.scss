@@ -1,3 +1,9 @@
+@use '../components/flexgridmods/flexgridmods.styles.css';
+@use '../components/animations/animation.styles.css';
+@use '../components/tables/native-html-table.styles.css';
+@use '../components/textfieldmods/textfieldmods.styles.css';
+@use '../components/font/fontmods.styles.css';
+
 .requestpayment {
   padding: 10px 16px !important;
   &__entryform {
@@ -212,38 +218,273 @@
 
 .rfp-body {
   grid-area: rfp-body;
+  border: solid thin lightgray;
+  border-bottom-style: none;
+  overflow: hidden;
   &__grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr auto;
-    grid-template-rows: 1fr 1fr 1fr 130px;
-    gap: 0px 0px;
-    grid-auto-flow: row;
-    grid-template-areas:
-      "body-content body-content body-content body-sidebar"
-      "body-content body-content body-content body-sidebar"
-      "body-content body-content body-content body-sidebar"
-      "body-footer body-footer body-footer body-sidebar";
+    display: grid; 
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto; 
+    grid-template-rows: 30px 180px 30px 1fr 30px auto 30px 45px 45px; 
+    gap: 0px 0px; 
+    grid-template-areas: 
+      "rpfb-toolbar rpfb-toolbar rpfb-toolbar rpfb-toolbar rpfb-toolbar rfpb-billheader"
+      "rfpb-table rfpb-table rfpb-table rfpb-table rfpb-table rfpb-billing"
+      "rfpb-table rfpb-table rfpb-table rfpb-table rfpb-table rfpb-sigheader"
+      "rfpb-table rfpb-table rfpb-table rfpb-table rfpb-table rfpb-signatories"
+      "rfpb-table rfpb-table rfpb-table rfpb-table rfpb-table rfpb-signatories"
+      "rfpb-totals rfpb-totals rfpb-totals rfpb-totals rfpb-totals rfpb-signatories"
+      "rfpb-modheader rfpb-bankheader rfpb-bankheader rfpb-bankheader rfpb-bankheader rfpb-statheader"
+      "rfpb-mod rfpb-bank rfpb-bank rfpb-bank-others rfpb-bank-others rfpb-status"
+      "rfpb-mod rfpb-bank-remarks rfpb-bank-remarks rfpb-bank-remarks rfpb-bank-remarks rfpb-controls";
+    width: 100%;
     height: 100%;
-  }
 
-  .body-content {
-    grid-area: body-content;
-    overflow: hidden;
-  }
+    .rpfb-toolbar { grid-area: rpfb-toolbar; }
+    .rfpb-billheader { grid-area: rfpb-billheader; }
+    .rfpb-billing { grid-area: rfpb-billing; }
+    .rfpb-sigheader { grid-area: rfpb-sigheader; }
+    .rfpb-signatories { grid-area: rfpb-signatories; }
+    .rfpb-statheader { grid-area: rfpb-statheader; }
+    .rfpb-status { grid-area: rfpb-status; }
+    .rfpb-totals { grid-area: rfpb-totals; }
+    .rfpb-modheader { grid-area: rfpb-modheader; }
+    .rfpb-bankheader { grid-area: rfpb-bankheader; }
+    .rfpb-controls { grid-area: rfpb-controls; }
+    .rfpb-mod { grid-area: rfpb-mod; }
+    .rfpb-bank { grid-area: rfpb-bank; }
+    .rfpb-bank-others { grid-area: rfpb-bank-others; }
+    .rfpb-bank-remarks { grid-area: rfpb-bank-remarks; }
+    .rfpb-table { grid-area: rfpb-table; }
 
-  .body-footer {
-    align-items: start;
-    display: flex;
-    border: solid thin lightgray;
-    border-right-style: none;
-    border-left-style: none;
-    grid-area: body-footer;
-  }
+    .rfpb-billing { 
+      overflow: auto;
+      &__container {
+        transform: scale(0.92);
+        position: relative;
+        bottom: 15px;
+        left: 4px;
+      }
+    }
+    .rfpb-signatories {
+      overflow-x: hidden;
+      overflow-y: auto;
+      &__container {
+        @extend .dflex-col;
+        padding: 0px 4px;
+        transform: scale(0.9);
+      }
+      &__container-sigs {
+        @extend .dflex-row;
+        gap: 4px;
+      }
+    }
+    .rfpb-mod {
+      overflow-y: scroll;
+      &__container {
+        transform: scale(0.92);
+        padding: 4px 8px;
+        position: relative;
+        bottom: 10px;
+        .mud-radio-group {
+          display: flex;
+          flex-direction: column;
+        }
+      }
+    }
+    .rfpb-bank {
+      .blazored-typeahead__input-mask {
+        font-size: 12px
+      }
+    }
+    .rfpb-bank, .rfpb-bank-others, .rfpb-bank-remarks {
+     @extend .dflex-row;
+    }
+    .rfpb-bank, .rfpb-bank-others, .rfpb-bank-remarks{
+      padding: 4px 8px;
+    }
 
-  .body-sidebar {
-    border: solid thin lightgray;
-    border-top-style: none;
-    grid-area: body-sidebar;
+    .rfpb-status, .rfpb-controls {
+      @extend .dflex-row;
+      align-items: center;
+      justify-content: center;
+    }
+    .rfpb-bank-remarks, .rfpb-controls { border-top: solid thin lightgray; }
+    .rfpb-modheader,.rfpb-mod, .rfpb-bank {
+      border-right: solid thin lightgray;
+    }
+    .rpfb-toolbar, .rfpb-billheader, .rfpb-billing, .rfpb-sigheader, 
+    .rfpb-signatories, .rfpb-mod, 
+    .rfpb-bank-remarks, .rfpb-controls, .rfpb-statheader,
+    .rfpb-tablem, .rfpb-total, .rfpb-modheader, .rfpb-bankheader,
+    .rfpb-totals, .rfpb-table {
+      border-bottom: solid thin lightgray;
+    }
+    .rfpb-billheader, .rfpb-billing, .rfpb-sigheader, .rfpb-signatories,
+    .rfpb-statheader, .rfpb-status, .rfpb-controls {
+      border-left: solid thin lightgray;
+    }
+
+    .rfpb-billheader, .rfpb-statheader, .rfpb-modheader,
+    .rfpb-bankheader, .rfpb-sigheader {
+      @extend .dflex-row;
+      background-color: #F4F5FB;
+      padding: 0px 4px;
+    }
+    .rfpb-modheader , .rfpb-bankheader {
+      justify-content: center;
+    }
+    .rpfb-toolbar {
+      @extend .dflex-row;
+      &__controls {
+        @extend .dflex-row;
+        gap: 4px;
+        width: 100%;
+        padding: 0px 8px;
+      }
+      &__menu-lbl {
+        font-family: "R-Flex Regular";
+        font-size: 12px;
+        gap: 4px;
+      }
+    }
+    .rfpb-billheader, .rfpb-billing, .rfpb-sigheader, .rfpb-signatories,
+    .rfpb-statheader, .rfpb-status, .rfpb-controls, p {
+      @extend .transition-05s-ease;
+    }
+
+    .rfpb-billheader, .rfpb-sigheader, .rfpb-statheader {
+      .mud-icon-root {
+        margin: 4px 8px;
+      }
+    }
+
+    .rfpb-modheader, .rfpb-bankheader {
+      white-space: nowrap;
+    }
+    .rfpb-table {
+      overflow: auto;
+      .collapsed-subrow {
+        td {
+          padding: 0px !important;
+          border: none !important;
+          overflow: hidden;
+        }
+        .rfpb-table__td-remarks, .rfpb-table__td-text {
+          max-height: 0px !important;
+          padding: 0px !important;
+        }
+      }
+      &__table {
+        @extend .tr-hover-cursor, .th-rflex-12px, .th-m-side-4px;
+        width: 100%;
+        border-collapse: collapse;
+        th {
+          border-bottom: solid thin lightgray;
+        }
+        td {
+          border-bottom: solid thin lightgray;
+          border-right: solid thin lightgray;
+          padding: 4px;
+        }
+        table {
+          border: solid thin lightgray;
+        }
+
+        th:first-child { width: 18px; }
+        th:nth-last-child(4) { width: 10%; }
+        th:nth-last-child(3) { width: 10%; }
+        th:nth-last-child(2) { width: 5%; }
+        th:nth-last-child(1) { width: 18px; }
+
+        td:last-child { border-right-style: none; }
+      }
+      &__td-stock {
+       td:first-child { 
+          max-width: 100px; 
+          p {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+          }
+        }
+      }
+      &__td-edit {
+        @extend .transition-05s-ease;
+        td:first-child { 
+          background-color: lightgray;
+          max-width: unset; 
+          p {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+          }
+        }
+      }
+      &__td-edit-all {
+        @extend .rfpb-table__td-edit;
+        td:last-child {
+          max-width: unset;
+        }
+      }
+      &__td-text {
+        font-size: 11px
+      }
+      &__td-invoice, &__td-chip {
+        text-align: center;
+      }
+      &__td-txtfield {
+        @extend .txt-top-0, .font12-txtfield;
+      }
+      &__td-txtfield--numeric {
+        @extend .txt-top-0, .txtfield-right, .font12-txtfield, .txtbold;
+      }
+      &__tr-footer {
+        td { border-right-style: none; }
+      }
+      &__td-remarks {
+        @extend .transition-05s-ease;
+        padding: 4px;
+        max-height: 4000px;
+      }
+    }
+  }
+  .entry-module-action {
+    @extend .transition-1s-ease;
+  }
+  .collapsed-rfpdetside {
+    .rfpb-billheader, .rfpb-billing, .rfpb-sigheader, .rfpb-signatories,
+    .rfpb-statheader, .rfpb-status, .rfpb-controls {
+      max-width: 48px;
+      overflow-x: hidden;
+      .blzrth-cont, p { @extend .fade-out; white-space: nowrap; }
+      .mud-button-root { margin-left: 6px; }
+      .mud-chip { transform: rotate(-90deg); }
+      .entry-module-action {
+        @extend .dflex-col;
+        align-items: center;
+        gap: 4px;
+        width: 48px;
+      }
+    }
+  }
+  .expanded-rfpdetside {
+    .rfpb-billheader, .rfpb-billing, .rfpb-sigheader, .rfpb-signatories,
+    .rfpb-statheader, .rfpb-status, .rfpb-controls {
+      max-width: 270px;
+      .blzrth-cont, p { @extend .fade-in; white-space: nowrap; }
+      .entry-module-action {
+        @extend .dflex-row;
+        align-items: center;
+        justify-content: center;
+        width: 270px;
+        white-space: nowrap;
+      }
+    }
+  }
+  &__title-label {
+    font-size: 10px;
+    white-space: nowrap;
+    text-transform: uppercase;
   }
 }
 
@@ -262,11 +503,6 @@
   border: solid thin lightgray;
   border-top-style: none;
   border-bottom-style: none;
-}
-
-.rfp-body {
-  border-top: solid thin lightgray;
-  border-left: solid thin lightgray;
 }
 
 .rfp-footer {

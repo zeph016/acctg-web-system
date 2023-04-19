@@ -14,5 +14,9 @@ namespace fgciams.service.CollectionServices
         Task<List<CollectionAuditTrailModel>> GetAuditTrail(long Id, string token);
         Task<List<BankDepositAuditTrailModel>> GetBankDepositTrail(long Id, string token);
         Task<CollectionModel> UpdateCollectionStatus(CollectionModel collection,string token);
+        Task<int> CollectionListRowCount(FilterParameter param, string token);
+        Task<List<CollectionModel>> CollectionReportList(FilterParameter param, string token);
+        Task<string> GetBillingReport(List<CollectionModel> model);
+        Task<string> GetCollectionReport(List<CollectionModel> model);
     }
 }

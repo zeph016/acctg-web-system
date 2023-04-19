@@ -7,16 +7,16 @@
 @inject IAccountingStatusService accountingStatusService
 @inject IExpenseLineService expenseLineService
 @inject IDialogService dialogService
-@inject ISnackbar snackBarService
+@inject ISnackbar SnackbarService
 @inject NavigationManager navigationManager
+@inject IJSRuntime JSRuntime
+@inject IAccessLevelService accessLevelService
 @attribute [Authorize]
 
 <div class='page-cont d-flex'>
     @if (!dataFetched)
     {
-      <div class='flex-1 pa-2'>
-        <SkeletonPageList />
-      </div>
+      <SkeletonPageList />
     }
     else
     {
@@ -84,10 +84,10 @@
                 <MudText Class='txt-uppercase font-bold font10'>Remarks:</MudText>
                 <MudTextField Class='txtfield-overflow-ellipsis font14-txtfield txt-top-0' @bind-Value=GlobalClass.liquidation.Remarks />
               </div>
-              <div class="liq-details d-flex rounded-br rounded-bl overflow-hidden">
-                <div class="liq-details__grid">
-                  <div class="liqdet-tbar">
-                    <div class='liqdet-tbar__control-cont'>
+              <div class="liq-details">
+                <div class='liq-details__grid @(isSideBarExpanded ? "expanded-liqdetside":"collapsed-liqdetside")'>
+                  <div class="liqdet-toolbar">
+                    <div class='liqdet-toolbar__controls'>
                       <MudText Class='txt-uppercase font-bold font12'>Liquidation Detail :</MudText>
                       <MudText Class='txt-uppercase font-bold font10'>
                         @GlobalClass.liquidation.LiquidationDetails.Count()
@@ -119,18 +119,29 @@
                       </MudTooltip>
                     </div>
                     <MudDivider Vertical/>
-                     <MudToggleIconButton @bind-Toggled="isSideBarExpanded" Size='Size.Small' ToggledSize='Size.Small'
-                        Icon="@Icons.Material.Filled.ToggleOff" Color="@Color.Tertiary" Title="Expand Sub Details"
-                        ToggledIcon="@Icons.Material.Filled.ToggleOn" ToggledColor="@Color.Info" ToggledTitle="Collapse Details"/>
+                    <MudToggleIconButton @bind-Toggled="isSideBarExpanded" Size='Size.Small' ToggledSize='Size.Small'
+                      Icon="@Icons.Material.Filled.ToggleOff" Color="@Color.Tertiary" Title="Expand Sub Details"
+                      ToggledIcon="@Icons.Material.Filled.ToggleOn" ToggledColor="@Color.Info" ToggledTitle="Collapse Details"/>
                   </div>
-                  <div class="liqdet-body">
+                  <div class="liqdet-sigheader">
+                    <MudIcon  Icon='@Icons.Material.Filled.PersonPin' Size='Size.Small' Color='Color.Dark'>
+                    </MudIcon>
+                    <p class='txt-uppercase font12 font-bold'>Signatories</p>
+                  </div>
+                  <div class="liqdet-table">
                     <table class='liq-details__table'>
                       <thead>
+                        <th>
+                          <MudIconButton Class='th-btn-expand' OnClick='EditAllRows' Icon='@Icons.Material.Filled.EditNote' 
+                            Color='@(isEditAllRow ? Color.Info:Color.Dark)' Size='Size.Small'/>
+                        </th>
                         <th>Expense</th>
                         <th>Charge</th>
                         <th>Remarks</th>
                         <th>Amount</th>
-                        <th></th>
+                        <th class='@(isSubRowExpanded ? "mudbtn-rotate-180":"")'>
+                          <MudIconButton Class='th-btn-expand' OnClick='ExpandSubRows' Icon='@Icons.Material.Filled.ExpandMore' Size='Size.Small' />
+                        </th>
                       </thead>
                       <MudDivider Vertical />
                       <tbody>
@@ -139,425 +150,290 @@
                           @if(!item.IsEditRow)
                           {
                             <tr class='liq-details__td-stock'>
+                              <td>
+                                <MudIconButton Icon='@Icons.Material.Filled.Edit' Size='Size.Small' Color='Color.Dark' 
+                                  @onfocus='(() => item.IsEditRow = !item.IsEditRow )'>
+                                </MudIconButton>
+                                <MudTooltip Text='Remove Detail' Placement='Placement.Bottom'>
+                                    <MudIconButton OnClick='(() => RemovePettyCash(item))' Icon='@Icons.Material.Filled.RemoveCircle' 
+                                      Color='Color.Error' Size='Size.Small' />
+                                </MudTooltip>
+                              </td>
                               <td @onclick='(() => item.IsEditRow = !item.IsEditRow)'>
                                 <p class='liq-details__td-txt'>@item.ExpenseName</p>
                               </td>
                               <td @onclick='(() => item.IsEditRow = !item.IsEditRow)'>
-                                 <p class='liq-details__td-txt'>@item.selCharge.ProjectName</p>
+                                 <p class='liq-details__td-txt'>@item.ChargingName</p>
                               </td>
                               <td @onclick='(() => item.IsEditRow = !item.IsEditRow)'>
                                  <p class='liq-details__td-txt'>@item.Remarks</p>
                               </td>
                               <td @onclick='(() => item.IsEditRow = !item.IsEditRow)'>
-                                <div class='td-amount-container'>
+                                <div class='td-amount-container @(item.Amount > 0 ? "color-green":"color-red")'>
                                   <p class='liq-details__td-txt'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</p>
                                   <MudSpacer />
                                   <p class='liq-details__td-txt'>@item.Amount.ToString("N2")</p>
                                 </div>
                               </td>
                               <td>
-                                <MudIconButton Icon='@Icons.Material.Filled.Info' Size='Size.Small' Color='Color.Dark' />
+                                <MudIconButton OnClick='(() => item.ShowSubTable = !item.ShowSubTable)' Icon='@Icons.Material.Filled.Info' Size='Size.Small' Color='Color.Dark' />
                               </td>
+                            </tr>
+                            <tr class='@(item.ShowSubTable ? "":"collapsed-subrow")' style='@(item.IsEditRow ? "display:none":"")' tabindex='-1'>
+                              <td colspan="1" />
+                              <td colspan="4">
+                                <div class="liq-details__pcdet-grid" tabindex='-1'>
+                                  <div class="pcdet-header">
+                                    <MudChip Label Size='Size.Small' Color='Color.Error' Variant='Variant.Outlined'>
+                                      <small class='font-bold'>@item.ControlNumber</small>
+                                    </MudChip>
+                                    <MudChip Label Size='Size.Small' Icon='@Icons.Material.Filled.CalendarMonth' Variant='Variant.Outlined'>
+                                      @Convert.ToDateTime(item.RequestDate).ToShortDateString()
+                                    </MudChip>
+                                    <MudChip Label Size='Size.Small' Color='@(item.Amount > 0 ? Color.Success:Color.Error)' Variant='Variant.Outlined'>
+                                      @(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + @item.Amount.ToString("N2"))
+                                    </MudChip>
+                                    <MudChipAcctgStatus moduleName='pettycash' itemId='@item.Id' />
+                                  </div>
+                                  <div class="pcdet-lblpayee">
+                                    <p class='liq-details__label'>Payee:</p>
+                                  </div>
+                                  <div class="pcdet-lblpart">
+                                    <p class='liq-details__label'>Particulars:</p>
+                                  </div>
+                                  <div class="pcdet-lblrem">
+                                    <p class='liq-details__label'>Remarks:</p>
+                                  </div>
+                                  <div class="pcdet-payee">
+                                    <p class='liq-details__txt'>@item.PayeeName</p>
+                                  </div>
+                                  <div class="pcdet-part">
+                                    <p class='liq-details__txt'>@item.Particular</p>
+                                  </div>
+                                  <div class="pcdet-rem">
+                                    <p class='liq-details__txt'>@item.Remarks</p>
+                                  </div>
+                                  <div class="pcdet-signatories">
+                                    <SignatoriesLiquidationDetail LiqDetPCashId='@item.PettyCashId' />
+                                  </div>
+                                </div>
+                              </td>
+                              <td class='border-right-none' colspan="1" />
                             </tr>
                           }
                           else
                           {
-                             <tr class='liq-details__td-edit'>
+                            <tr class='@(isEditAllRow ? "liq-details__td-edit-all":"liq-details__td-edit")'>
+                              <td />
                               <td>
-                                <BlazoredTypeahead SearchMethod='LoadExpense' Context='selexp'
-                                  @bind-Value='@item.selExp' Debounce='500' MaximumSuggestions='5' placeholder='Expense'>
-                                  <SelectedTemplate>
-                                    <small>@item.selExp.ExpenseName</small>
-                                  </SelectedTemplate>
-                                  <ResultTemplate>
-                                    @selexp.ExpenseName
-                                  </ResultTemplate>
-                                </BlazoredTypeahead>
+                                <BlzrTypeAheadExpense ExpenseId='@item.ExpenseLineId'
+                                  OnSelectedExpenseValue='((args) => { 
+                                    item.selExp = args; 
+                                    item.ExpenseLineId = args.Id;
+                                    item.ExpenseName = args.ExpenseName; 
+                                  })' />
                               </td>
                               <td>
-                                <BlazoredTypeahead SearchMethod='LoadCharging' Context='selcharge'
-                                  @bind-Value='@item.selCharge' Debounce='500' MaximumSuggestions='5' placeholder='Charge To'>
-                                    <SelectedTemplate>
-                                      <small>@item.selCharge.ProjectName</small>
-                                    </SelectedTemplate>
-                                    <ResultTemplate>
-                                    <div class='d-flex flex-column'>
-                                        <small class='font-bold'>@selcharge.ProjectName</small>
-                                        <small>@selcharge.Location</small>
-                                        <small>@Extensions.ProjectReference(selcharge)</small>
-                                    </div>
-                                    </ResultTemplate>
-                                  </BlazoredTypeahead> 
+                                <BlzrTypeAheadCharging ChargingName='@item.ChargingName' 
+                                  OnSelectedChargingValue='((args) => {
+                                    item.selCharge = args;
+                                    item.ChargingId = args.ProjectId;
+                                    item.ChargingName = args.ProjectName;
+                                    item.ChargingCategoryId = args.ProjectCategoryId;
+                                  })' />
                               </td>
                               <td>
-                                <MudTextField @bind-Value='@item.Remarks' Variant='Variant.Outlined' Margin='Margin.Dense' />
+                                <MudTextField Class='liq-details__td-txtfield' @bind-Value='@item.Remarks' Variant='Variant.Outlined' Margin='Margin.Dense' />
                               </td>
                               <td>
-                                <MudNumericField @bind-Value='@item.Amount' Culture='@_ph' HideSpinButtons Margin='Margin.Dense' Format='N2' />
+                                <MudNumericField Class='liq-details__td-txtfield--numeric' @bind-Value='@item.Amount' Culture='@GlobalVariable.CulturePh' HideSpinButtons Margin='Margin.Dense' Format='N2' />
                               </td>
                               <td>
-                                <MudIconButton OnClick='(() => item.IsEditRow = !item.IsEditRow)' Icon='@Icons.Material.Filled.Check' Size='Size.Small' />
+                                @if(item.IsEditRow)
+                                {
+                                   <MudIconButton OnClick='(() => { item.IsEditRow = !item.IsEditRow; TotalAmount(); })' Icon='@Icons.Material.Filled.Check' Size='Size.Small' 
+                                     @onfocusout='(() => item.ShowSubTable = !item.ShowSubTable)'></MudIconButton>
+                                }
+                              </td>
+                            </tr>
+                            <tr class='@(item.ShowSubTable ? "":"collapsed-subrow")' tabindex='-1'>
+                              <td colspan="1" />
+                              <td colspan="4">
+                                <div class="liq-details__pcdet-grid" tabindex='-1'>
+                                  <div class="pcdet-header">
+                                    <MudChip Label Size='Size.Small' Color='Color.Error' Variant='Variant.Outlined' tabindex='-1'>
+                                      <small class='font-bold'>@item.ControlNumber</small>
+                                    </MudChip>
+                                    <MudChip Label Size='Size.Small' Icon='@Icons.Material.Filled.CalendarMonth' Variant='Variant.Outlined' tabindex='-1'>
+                                      @Convert.ToDateTime(item.RequestDate).ToShortDateString()
+                                    </MudChip>
+                                    <MudChip Label Size='Size.Small' Color='@(item.Amount > 0 ? Color.Success:Color.Error)' Variant='Variant.Outlined' tabindex='-1'>
+                                      @(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + @item.Amount.ToString("N2"))
+                                    </MudChip>
+                                    <MudChipAcctgStatus moduleName='pettycash' itemId='@item.Id' />
+                                  </div>
+                                  <div class="pcdet-lblpayee">
+                                    <p class='liq-details__label'>Payee:</p>
+                                  </div>
+                                  <div class="pcdet-lblpart">
+                                    <p class='liq-details__label'>Particulars:</p>
+                                  </div>
+                                  <div class="pcdet-lblrem">
+                                    <p class='liq-details__label'>Remarks:</p>
+                                  </div>
+                                  <div class="pcdet-payee">
+                                    <p class='liq-details__txt'>@item.PayeeName</p>
+                                  </div>
+                                  <div class="pcdet-part">
+                                    <p class='liq-details__txt'>@item.Particular</p>
+                                  </div>
+                                  <div class="pcdet-rem">
+                                    <p class='liq-details__txt'>@item.Remarks</p>
+                                  </div>
+                                  <div class="pcdet-signatories">
+                                    <SignatoriesLiquidationDetail LiqDetPCashId='@item.PettyCashId' />
+                                  </div>
+                                </div>
+                              </td>
+                              <td class='border-right-none' colspan="1">
+                                @if(item.ShowSubTable)
+                                {
+                                  <MudIconButton OnClick='(() => item.ShowSubTable = !item.ShowSubTable)' Icon='@Icons.Material.Filled.Info' Size='Size.Small' Color='Color.Dark' 
+                                      tabindex='-1'/>
+                                }
                               </td>
                             </tr>
                           }
                         }
+                        @if(isEditAllRow || GlobalClass.liquidation.LiquidationDetails.Where(x=>x.IsEditRow).Count() > 0)
+                        {
+                          <tr class='liq-details__tr-footer'>
+                            <td colspan="6">
+                              <div class='d-flex align-center gap-2'>
+                                <MudSpacer />
+                                <MudButton Class='th-btn-expand' OnClick='DoneAllRows' EndIcon='@Icons.Material.Filled.DoneAll' 
+                                  Size='Size.Small' Color='Color.Success' Variant='Variant.Text'>
+                                  Done
+                                </MudButton>
+                              </div>
+                            </td>
+                          </tr>
+                        }
                       </tbody>
                     </table>
                   </div>
-                  <div class='liqdet-sidebar'>
-                    <div class='@(isSideBarExpanded ? "max-width250px":"max-width50px")'>
-                     <MudPaper>Hello World</MudPaper>
-                    </div>
+                  <div class='liqdet-footer'>
+                    <p class='liq-details__label'>Rows: @GlobalClass.liquidation.LiquidationDetails.Count()</p>
+                    <MudSpacer />
+                    <p class='liqdet-footer__txt-amount'>Total : </p>
+                    <p Class='liqdet-footer__txt-amount @(totalAmount > 0 ? "color-green":"color-red")'>
+                      @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) 
+                      @(GlobalClass.liquidation.TotalAmount.ToString("N2"))
+                    </p>
                   </div>
-                </div>
-                <div style="display:none">
-                  <div class='d-flex flex-1 flex-column'>
-                    <MudTable Class='table-style-1 mudtoolbar-bg-F4F5FB table-bottom-border sm-tbar-gutter' Items="GlobalClass.liquidation.LiquidationDetails" Bordered
-                      Dense Elevation='0' FixedHeader FixedFooter CustomFooter Hover Square Height='calc(100vh - 295px)'>
-                      <ToolBarContent>
-                          <div class='d-flex align-center gap-2'>
-                            <MudText Class='txt-uppercase font-bold font12'>Liquidation Detail :</MudText>
-                            <MudText Class='txt-uppercase font-bold font10'>
-                              @GlobalClass.liquidation.LiquidationDetails.Count()
-                              @(GlobalClass.liquidation.LiquidationDetails.Count() <= 1 ? "item" : "items")
-                            </MudText>
-                          </div>
-                          <MudSpacer />
-                            @foreach (var item in GlobalClass.liquidation.LiquidationDetails)
-                            {
-                                if (item.ExpenseLineId == 0 || item.ChargingId == 0 || item.ChargingCategoryId == 0)
-                                {
-                                    <MudText Class='font12 font-bold txt-uppercase' Color='Color.Error'>
-                                        Fill in details
-                                    </MudText>
-                                    break;
-                                }
-                            }
-                          <MudSpacer />
-                          <MudTooltip Text='Add Details' Arrow Placement='Placement.Top'>
-                            <MudButton OnClick='AddPettyCash' StartIcon="@Icons.Material.Filled.AddCircle" aria-label="add" 
-                              Size='Size.Small' Variant='Variant.Text' DisableElevation Color='Color.Info'>
-                              <small>Detail</small>
-                            </MudButton>
-                          </MudTooltip>
-                          <MudTooltip Text='Reset Details' Arrow Placement='Placement.Top'>
-                            <MudButton OnClick='ResetLiquidationDetails' StartIcon="@Icons.Material.Filled.Refresh" aria-label="reset" 
-                              Size='Size.Small' Variant='Variant.Text' DisableElevation Color='Color.Warning'>
-                              <small>Reset</small>
-                            </MudButton>
-                          </MudTooltip>
-                          <MudDivider Class='mr-2' Vertical/>
-                          <MudToggleIconButton @bind-Toggled="isSideBarExpanded" Size='Size.Small' ToggledSize='Size.Small'
-                            Icon="@Icons.Material.Filled.ToggleOff" Color="@Color.Tertiary" Title="Expand Sub Details"
-                            ToggledIcon="@Icons.Material.Filled.ToggleOn" ToggledColor="@Color.Info" ToggledTitle="Collapse Details"/>
-                      </ToolBarContent>
-                      <ColGroup>
-                        <col style="width:20px"/>
-                        <col />
-                        <col />
-                        <col />
-                        <col style='width:20px'/>
-                        <col style="width:150px"/>
-                      </ColGroup>
-                      <HeaderContent>
-                          <MudTh Class='wspace-nowrap customheader-1 px-2 pb-0 font10'></MudTh>
-                          <MudTh Class='wspace-nowrap customheader-1 px-2 pb-0 font10'>Expense</MudTh>
-                          <MudTh Class='wspace-nowrap customheader-1 px-2 pb-0 font10'>Charge</MudTh>
-                          <MudTh Class='wspace-nowrap customheader-1 px-2 pb-0 font10'>Remarks</MudTh>
-                          <MudTh Class='wspace-nowrap customheader-1 px-2 pb-0 font10 text-center'>PC</MudTh>
-                          <MudTh Class='wspace-nowrap customheader-1 px-2 pb-0 font10 text-right'>Amount</MudTh>
-                      </HeaderContent>
-                      <RowTemplate>
-                        <MudTd Class='pa-2 text-center' DataLabel='Action'>
-                          <MudTooltip Text='Remove Detail'>
-                              <MudIconButton OnClick='(() => RemovePettyCash(context))' Icon='@Icons.Material.Filled.RemoveCircle' Color='Color.Error' Size='Size.Small' />
-                            </MudTooltip>
-                        </MudTd>
-                        <MudTd Class='pa-2' DataLabel='Expense'>
-                          @* <div class='autocomplete liquidation'>
-                              <AutoCompleteExpenseLineSearch
-                                  ExpenseLine='context.selExp'
-                                  OnExpenseLineValueChanged='((ExpenseLineModel expense) => 
-                                  { 
-                                      context.selExp = expense;
-                                      context.ExpenseLineId = expense.Id;
-                                      context.ExpenseName = expense.ExpenseName;
-                                  })'
-                                  />
-                          </div> *@
-                          <BlazoredTypeahead SearchMethod='LoadExpense' Context='selexp'
-                            @bind-Value='context.selExp' Debounce='500' MaximumSuggestions='5' placeholder='Expense'>
+                  <div class="liqdet-signatories">
+                    <div class='signatory-entry-container'>
+                      <div class='signatory-entry-container__signatory-cont'>
+                        @if (preparedBy.Picture.Count() == 0) {
+                          <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
+                        } else {
+                          <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(preparedBy.Picture)}")' Size='Size.Medium' />
+                        }
+                        <div class='blzrth-cont-signatories blzrthead-disabled-minheight15'>
+                          <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear placheold='Prepared By'
+                            @bind-Value='preparedBy' MinimumLength='3' Debounce="300" MaximumSuggestions='5' Disabled>
                             <SelectedTemplate>
-                              @* @if (selexp.Id != 0) {
-                                <MudText Class='font12'>@selexp.ExpenseName</MudText>
-                                context.ExpenseLineId = selexp.Id;
-                                context.ExpenseName = selexp.ExpenseName;
-                              } else if (context.Id != 0) {
-                                <MudText Class='font12'>@selexp.ExpenseName</MudText>
-                                selexp.Id = context.ExpenseLineId;
-                                selexp.ExpenseName = context.ExpenseName;
-                              } else {
-                                <MudText Class='font12'> - </MudText>
-                              } *@
-                              <small>@selexp.ExpenseName</small>
+                              @if(!requiredPreparedBy)
+                              {
+                                <small>@preparedBy.EmployeeName</small>
+                              }
+                              else
+                              {
+                                <p Class='blzrth-cont-signatories__txt-required' Color='Color.Error'>Required</p>
+                              }
                             </SelectedTemplate>
                             <ResultTemplate>
-                              @selexp.ExpenseName
+                              <div class='ddavatar'>
+                                <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@context.Picture)}")' Size='Size.Small'/>
+                                @context.EmployeeName | @context.Designation
+                              </div>
                             </ResultTemplate>
                           </BlazoredTypeahead>
-                        </MudTd>
-                        <MudTd Class='pa-2' DataLabel='Charge'>
-                          <div class="autocomplete liquidation">
-                              <AutoCompleteProjectSearch 
-                                  ProjectModel='context.selCharge'
-                                  OnProjectValueChanged='( (Project project)=>
-                                  {
-                                      context.selCharge = project;
-                                      context.ChargingId = project.ProjectId;
-                                      context.ChargingName = project.ProjectName;
-                                      context.ChargingCategoryId = project.ProjectCategoryId;
-                                  })'/>
-                              </div>
-                          @* <BlazoredTypeahead SearchMethod='LoadCharging' Context='selcharge' DisableClear
-                          @bind-Value='context.selCharge' Debounce='500' MaximumSuggestions='5' placeholder='Charge To'>
+                          <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
+                              Prepared By
+                              <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                            </MudText>
+                        </div>
+                      </div>
+                      <div class='signatory-entry-container__signatory-cont'>
+                        @if (approvedBy.Picture.Count() == 0) {
+                          <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
+                        } else {
+                          <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(approvedBy.Picture)}")' Size='Size.Medium' />
+                        }
+                        <div class='blzrth-cont-signatories'>
+                          <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear placeholder='Approved By'
+                            @bind-Value='approvedBy' MinimumLength='3' Debounce="300" MaximumSuggestions='5'>
                             <SelectedTemplate>
-                                @if (selcharge.ProjectId != 0) {
-                                  <MudText Class='font12'>@selcharge.ProjectName</MudText>
-                                  context.ChargingId = selcharge.ProjectId;
-                                  context.ChargingName = selcharge.ProjectName;
-                                  context.ChargingCategoryId = selcharge.ProjectCategoryId;
-                                } else if (context.Id != 0 ) {
-                                  <MudText Class='font12'>@context.ChargingName</MudText>
-                                  selcharge.ProjectId = context.ChargingId;
-                                  selcharge.ProjectName = context.ChargingName;
-                                  selcharge.ProjectCategoryId = context.ChargingCategoryId;
-                                } else {
-                                  <MudText Class='font12'> - </MudText>
-                                }
+                              @if(!requiredApprover)
+                              {
+                                <small class='overflow-hidden wspace-nowrap'>@approvedBy.EmployeeName</small>
+                              }
+                             else
+                             {
+                               <p Class='blzrth-cont-signatories__txt-required' Color='Color.Error'>Required</p>
+                             }
                             </SelectedTemplate>
                             <ResultTemplate>
-                            <div class='d-flex flex-column'>
-                                <small class='font-bold'>@selcharge.ProjectName</small>
-                                <small>@selcharge.Location</small>
-                                <small>@Extensions.ProjectReference(selcharge)</small>
-                            </div>
-                            </ResultTemplate>
-                          </BlazoredTypeahead> *@
-                        </MudTd>
-                        <MudTd Class='pa-2' DataLabel='Liquidation Remarks'>
-                          <MudTextField Class='txtfield-overflow-ellipsis font12-txtfield' @bind-Value='context.Remarks' Margin='Margin.Dense' Variant='Variant.Outlined' />
-                        </MudTd>
-                        <MudTd Class='pa-2'>
-                          <MudToggleIconButton @bind-Toggled='context.ShowSubTable'
-                            Icon="@Icons.Material.Filled.ExpandMore" Color="@Color.Tertiary" Title="Expand" Size='Size.Small' ToggledSize='Size.Small'
-                            ToggledIcon="@Icons.Material.Filled.ExpandLess" ToggledColor="@Color.Info" ToggledTitle="Collapse"/>
-                        </MudTd>
-                        <MudTd Class='pa-2' DataLabel='Amount'>
-                          <div class='d-flex align-center pt-2 pr-2 gap-2'>
-                            @if (context.ActualAmount <= 0)
-                            {
-                              <MudText Class='font-bold font12' Color='Color.Error'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
-                              <MudNumericField Class='txtfield-overflow-ellipsis txt-top-0 tfield-color-red txtfield-right font12-txtfield' DebounceInterval='700' OnDebounceIntervalElapsed='HandleIntervalElapsed'
-                              @bind-Value='context.ActualAmount' Margin='Margin.None' Format='N2' HideSpinButtons Variant='Variant.Text' />
-                            }
-                            else
-                            {
-                              <MudText Class='font-bold font12 color-green'>@Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)</MudText>
-                              <MudNumericField Class='txtfield-overflow-ellipsis txt-top-0 tfield-color-green txtfield-right font12-txtfield' DebounceInterval='700' OnDebounceIntervalElapsed='HandleIntervalElapsed'
-                              @bind-Value='context.ActualAmount' Margin='Margin.None' Format='N2' HideSpinButtons Variant='Variant.Text' />
-                            }
-                          </div>
-                        </MudTd>
-                      </RowTemplate>
-                      <ChildRowContent>
-                        <MudTr>
-                          <td colspan="1"></td>
-                          <td colspan="4">
-                            <MudPaper Elevation='1' Square>
-                              <div class='d-flex flex-column transition-05s-ease overflow-hidden bgc-F4F5FB' style='@(context.ShowSubTable ? "max-height:500px" : "max-height:0px")'>
-                                <div class='d-flex align-center pa-2'>
-                                  <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Error' Size='Size.Small' Variant='Variant.Outlined'>@context.ControlNumber</MudChip>
-                                  <MudChipAcctgStatus moduleName='pettycash' itemId='context.PettyCashId' />
-                                  <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Icon='@Icons.Material.Filled.CalendarMonth' Color='Color.Dark' Size='Size.Small' Variant='Variant.Outlined'>
-                                    @Convert.ToDateTime(context.RequestDate).ToShortDateString()
-                                  </MudChip>
-                                  <MudSpacer />
-                                  <MudText Class='font10 txt-uppercase font-bold'>Petty Cash Amount:</MudText>
-                                  @if (context.Amount <= 0)
-                                  {
-                                    <MudText Class='font-bold font10 pl-2' Color='Color.Error'>
-                                      @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.Amount.ToString("N2")
-                                    </MudText>
-                                  }
-                                  else
-                                  {
-                                    <MudText Class='font-bold font10 pl-2 color-green'>
-                                      @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @context.Amount.ToString("N2")
-                                    </MudText>
-                                  }
-                                </div>
-                                <MudDivider />
-                                <div class='d-flex pa-2 gap-2'>
-                                  <MudGrid Spacing='1'>
-                                    <MudItem xs=2>
-                                      <MudText Class='font10 txt-uppercase'>Payee:</MudText>
-                                    </MudItem>
-                                    <MudItem xs=4>
-                                      <MudText Class='font10 txt-uppercase font-bold'>@context.PayeeName</MudText>
-                                    </MudItem>
-                                    <MudItem xs=2>
-                                      <MudText Class='font10 txt-uppercase'>Requested By:</MudText>
-                                    </MudItem>
-                                    <MudItem xs=4>
-                                      <MudText Class='font10 txt-uppercase font-bold'>@context.RequestedByName</MudText>
-                                    </MudItem>
-                                    <MudItem xs=2>
-                                      <MudText Class='font10 txt-uppercase'>Particulars:</MudText>
-                                    </MudItem>
-                                    <MudItem xs=10>
-                                      <MudText Class='font10 txt-uppercase font-bold wbreak-breakword'>@context.Particular</MudText>
-                                    </MudItem>
-                                    <MudItem xs=2>
-                                      <MudText Class='font10 txt-uppercase'>Remarks:</MudText>
-                                    </MudItem>
-                                    <MudItem xs=10>
-                                      <MudText Class='font10 txt-uppercase font-bold wbreak-breakword'>@context.PettyCashRemarks</MudText>
-                                    </MudItem>
-                                  </MudGrid>
-                                </div>
+                              <div class='ddavatar'>
+                                <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@context.Picture)}")' Size='Size.Small' />
+                                @context.EmployeeName | @context.Designation
                               </div>
-                            </MudPaper>
-                          </td>
-                            <td colspan="1"></td>
-                        </MudTr>
-                      </ChildRowContent>
-                      <NoRecordsContent>
-                        <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No details added</MudText>
-                      </NoRecordsContent>
-                    </MudTable>
-                    <div class='d-flex align-center gap-4 overflow-auto border-thin-top bgc-F4F5FB'>
-                      <MudSpacer />
-                      <small Class='txt-uppercase font12 font-bold'>Total amount:</small>
-                      <div class='d-flex align-center px-2'>
-                        <MudIcon Class='@(GlobalClass.liquidation.TotalAmount > 0 ? "color-green":"color-red")' Icon='@Icons.Outlined.LabelImportant' Size='Size.Small'/>
-                        <MudSpacer />
-                        <small Class='font-bold @(GlobalClass.liquidation.TotalAmount > 0 ? "color-green":"color-red")' Typo='Typo.body2' >
-                          @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) 
-                          @(GlobalClass.liquidation.TotalAmount > 0 ? GlobalClass.liquidation.TotalAmount.ToString("N2"):"-")
-                        </small>
+                            </ResultTemplate>
+                          </BlazoredTypeahead>
+                          <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
+                            Approved By
+                            <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                          </MudText>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div class='d-flex flex-column border-thin-left transition-05s-ease width300px' style='@(isSideBarExpanded ? "max-width:300px" : "max-width:57px")'>
-                    <MudCardHeader Class='d-flex align-center justify-center pa-2 border-thin-bottom bgc-F4F5FB height2-05rem cursor-pointer'
-                      @onclick='(() => isSigExpanded = !isSigExpanded)'>
-                      <div class='d-flex align-center transition-05s-ease overflow-hidden @(isSideBarExpanded ? "fade-in flex-1" : "fade-out")' style='@(isSideBarExpanded ? "max-width:500px" : "max-width:0px")'>
-                        <MudText Class='txt-uppercase font12 font-bold'>Signatories</MudText>
-                      </div>
-                      <MudIconButton OnClick='(() => isSigExpanded = !isSigExpanded)' Icon='@Icons.Material.Filled.PersonPin' Size='Size.Small' Color='Color.Dark' />
-                    </MudCardHeader>
-                    <div class='transition-05s-ease @(isSideBarExpanded ? "":"overflow-hidden") @(isSigExpanded ? "fade-in":"overflow-hidden")' style='@(isSigExpanded ? "max-height:245px" : "max-height:0px")'>
-                      <MudCardContent Class='d-flex flex-column pa-2 gap-2'>
-                        <div class='d-flex align-center gap-2'>
-                          @if (preparedBy.Picture.Count() == 0) {
-                            <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
+                  <div class="liqdet-statheader">
+                    <MudIcon Icon='@Icons.Material.Filled.FactCheck' Size='Size.Small' Color='Color.Dark'>
+                    </MudIcon>
+                    <MudText Class='txt-uppercase font12 font-bold'>Status</MudText>
+                  </div>
+                  <div class="liqdet-status">
+                     <MudChip Class='sidebar-chip' Label Size='Size.Medium' Variant='Variant.Outlined'
+                        Style='@(Extensions.BorderColor(GlobalClass.liquidation.StatusId))'>
+                        @GlobalClass.liquidation.StatusName
+                      </MudChip>
+                  </div>
+                  <div class="liqdet-controls">
+                    <div class='entry-module-action'>
+                      @if(!isSideBarExpanded)
+                      {
+                        <MudIconButton OnClick='(()=> navigationManager.NavigateTo($"/liquidation/list"))' Icon='@Icons.Material.Filled.Close' Size='Size.Small'
+                            Variant='Variant.Text' />
+                        <MudIconButton OnClick='PrintLiquidation' Icon='@Icons.Material.Filled.Save' Color='@(currActionMode == Enums.ActionMode.Update ? Color.Info : Color.Primary)' Size='Size.Small'
+                            Variant='Variant.Filled' />
+                      }
+                      else
+                      {
+                        <MudButton Class='btn-ios-d font12' OnClick='(()=> navigationManager.NavigateTo($"/liquidation/list"))' Variant="Variant.Text" Size='Size.Medium' DisableElevation>Cancel</MudButton>
+                        <MudButton Class='btn-ios-d font12' OnClick='PrintLiquidation' Variant="Variant.Filled" Color='@(currActionMode == Enums.ActionMode.Update ? Color.Info : Color.Primary)' Size='Size.Medium' DisableElevation>
+                          @if (_processing) {
+                              <MudProgressCircular Class="progsize-21" Size="Size.Small" Indeterminate="true"/>
+                              <MudText Class='font12 fweight500 pl-2'>GENERATING</MudText>
                           } else {
-                            <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(preparedBy.Picture)}")' Size='Size.Medium' />
-                          }
-                          <div class='d-flex flex-grow-1 flex-column blzrthead-disabled-minheight15'>
-                            <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear placheold='Prepared By'
-                              @bind-Value='preparedBy' Debounce='500' MaximumSuggestions='5' Disabled>
-                              <SelectedTemplate>
-                                <div class='overflow-hidden wspace-nowrap'>
-                                  @if (context.EmployeeId != 0) {
-                                    <MudText Class='font12'>@context.EmployeeName</MudText>
-                                  } else if (requiredPreparedBy) {
-                                    <MudText Class='font12 font-bold txt-uppercase' Color='Color.Error'>Required</MudText>
-                                  } else {
-                                    <MudText Class='font12'> - </MudText>
-                                  }
-                                </div>
-                              </SelectedTemplate>
-                              <ResultTemplate>
-                                <div class='ddavatar'>
-                                  <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@context.Picture)}")' Size='Size.Small'/>
-                                  @context.EmployeeName | @context.Designation
-                                </div>
-                              </ResultTemplate>
-                            </BlazoredTypeahead>
-                            <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
-                                Prepared By
-                                <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                              <MudText Class='font12 fweight500'>
+                                @submitText
                               </MudText>
-                          </div>
-                        </div>
-                        <div class='d-flex align-center gap-2'>
-                          @if (approvedBy.Picture.Count() == 0) {
-                            <MudAvatar Class='mb-1' Image='images/fglogo/fgci1-gs.png' Size='Size.Medium' />
-                          } else {
-                            <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(approvedBy.Picture)}")' Size='Size.Medium' />
                           }
-                          <div class='d-flex flex-grow-1 flex-column'>
-                            <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear placeholder='Approved By'
-                            @bind-Value='approvedBy' Debounce='500' MaximumSuggestions='5'>
-                              <SelectedTemplate>
-                                <div class='overflow-hidden wspace-nowrap'>
-                                  @if (context.EmployeeId != 0) {
-                                    <MudText Class='font12'>@context.EmployeeName</MudText>
-                                  } else if (requiredApprover) {
-                                    <MudText Class='font12 font-bold txt-uppercase' Color='Color.Error'>Required</MudText>
-                                  } else {
-                                    <MudText Class='font12'> - </MudText>
-                                  }
-                                </div>
-                              </SelectedTemplate>
-                              <ResultTemplate>
-                                <div class='ddavatar'>
-                                  <MudAvatar Image='@($"data:image/png;base64, {Convert.ToBase64String(@context.Picture)}")' Size='Size.Small' />
-                                  @context.EmployeeName | @context.Designation
-                                </div>
-                              </ResultTemplate>
-                            </BlazoredTypeahead>
-                            <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10 pl-1'>
-                              Approved By
-                              <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
-                            </MudText>
-                          </div>
-                        </div>
-                      </MudCardContent>
+                        </MudButton>
+                      }
                     </div>
-                    <MudDivider />
-                    <MudCardHeader Class='d-flex align-center justify-center pa-2 border-thin-bottom bgc-F4F5FB height2-05rem cursor-pointer'
-                      @onclick='(() => isStatusExpanded = !isStatusExpanded)'>
-                      <div class='d-flex align-center transition-05s-ease overflow-hidden @(isSideBarExpanded ? "fade-in flex-1" : "fade-out")' style='@(isSideBarExpanded ? "max-width:500px" : "max-width:0px")'>
-                        <MudText Class='txt-uppercase font12 font-bold'>Status</MudText>
-                      </div>
-                      <MudIconButton OnClick='(() => isStatusExpanded = !isStatusExpanded)' Icon='@Icons.Material.Filled.FactCheck' Size='Size.Small' Color='Color.Dark' />
-                    </MudCardHeader>
-                    <div class='d-flex align-start justify-center overflow-hidden @(isStatusExpanded ? "fade-in" : "fade-out")' style='@(isStatusExpanded && isSideBarExpanded ? "max-height:500px" : "max-height:0px")'>
-                      @* <MudCardContent Class='d-flex flex-column align-center pa-2'> *@
-                        <MudChip Class='chip-radius-5 font-bold font12 txt-uppercase' Size='Size.Medium' Variant='Variant.Outlined'
-                          Style='@(Extensions.BorderColor(GlobalClass.liquidation.StatusId))'>
-                          @GlobalClass.liquidation.StatusName
-                        </MudChip>
-                      @* </MudCardContent> *@
-                    </div>
-                    <MudDivider/>
-                    <MudSpacer />
-                    <MudCardActions Class='d-flex align-center justify-end gap-2 border-thin-top'>
-                      <MudSpacer />
-                      <MudButton Class='btn-ios-d font12' OnClick='(()=> navigationManager.NavigateTo($"/liquidation/list"))' Variant="Variant.Text" Size='Size.Medium' DisableElevation>Cancel</MudButton>
-                      <MudButton Class='btn-ios-d font12' OnClick='PrintLiquidation' Variant="Variant.Filled" Color='@(currActionMode == Enums.ActionMode.Update ? Color.Info : Color.Primary)' Size='Size.Medium' DisableElevation>
-                        @if (_processing) {
-                            <MudProgressCircular Class="progsize-21" Size="Size.Small" Indeterminate="true"/>
-                            <MudText Class='font12 fweight500 pl-2'>GENERATING</MudText>
-                        } else {
-                            <MudText Class='font12 fweight500'>
-                              @submitText
-                            </MudText>
-                        }
-                      </MudButton>
-                    </MudCardActions>
                   </div>
                 </div>
               </div>
@@ -577,13 +453,12 @@
     private Project payee = new(); private Project selectedProj = new Project();
     private decimal totalAmount;
     private bool dataFetched, requiredApprover, requiredPreparedBy, openControlDrawer, isLiqTableCollapsed, modifyRemarks, collapseLiqDetails, 
-    openEditDrawer, _processing, isSideBarExpanded = true, isSigExpanded = true, isStatusExpanded = true;
+    openEditDrawer, _processing, isSideBarExpanded = true, isSigExpanded = true, isStatusExpanded = true, isSubRowExpanded = true, isEditAllRow;
     private string _preparedBy = string.Empty, _approvedBy = string.Empty, submitText = "GENERATE", detailCountStatus = string.Empty;
     private string? pettyControl;
     public static Enums.ActionMode currActionMode { get; set; }
     private MudDatePicker datePicker = new MudDatePicker();
     private MudDateRangePicker dateRangePeriod = new MudDateRangePicker();
-    public CultureInfo _ph = CultureInfo.GetCultureInfo("en-PH");
     public override async Task SetParametersAsync(ParameterView parameters)
     {
         preparedBy = new UserAccount(); approvedBy = new UserAccount();
@@ -595,7 +470,7 @@
         GlobalClass.pageTitle = "liquidation entry";
         while (GlobalClass.currentUserAccount == null || preparedBy == null || GlobalVariable.ServerTime == null)
             await Task.Delay(1);
-
+        await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.PettyCashList);
         Task t = Task.WhenAll(InitializeComponents());
         await t;
         if (t.Status == TaskStatus.RanToCompletion)
@@ -756,10 +631,11 @@
 
       GlobalClass.liquidation.LiquidationDetails.ForEach(liq=> 
         {
-          liq.StatusId = GlobalClassList.accountingStatusList
-          .Where(x=>x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCL)
-          .Select(i=>i.Id)
-          .FirstOrDefault();
+          if(liq.Amount > 0)
+            liq.StatusId = GlobalClassList.accountingStatusList
+            .Where(x=>x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCL)
+            .Select(i=>i.Id)
+            .FirstOrDefault();
 
           liq.UserId = GlobalClass.currentUserAccount.EmployeeId;
           liq.Activity = "Petty Cash Liquidated";
@@ -803,9 +679,9 @@
         ChargingId = liquidationDetail.ChargingId,
         ChargingName = liquidationDetail.ChargingName,
         Amount = liquidationDetail.Amount,
+        RequestDate = liquidationDetail.RequestDate,
         ActualAmount = liquidationDetail.ActualAmount,
         Remarks = liquidationDetail.Remarks
-
     }).ToList();
 
     liquidationDate = GlobalClass.liquidation.LiquidationDate;
@@ -831,8 +707,9 @@
 
   void TotalAmount()
   {
-      totalAmount = GlobalClass.liquidation.LiquidationDetails.Sum(x => x.ActualAmount);
+      totalAmount = GlobalClass.liquidation.LiquidationDetails.Sum(x => x.Amount);
       GlobalClass.liquidation.TotalAmount = totalAmount;
+      Console.WriteLine(totalAmount);
   }
 
   #endregion
@@ -845,10 +722,10 @@
     if (Validation())
     {
       pettyControl = GlobalClass.liquidation.LiquidationDetails.Where(x=>x.ActualAmount > x.Amount).Select(x=>x.ControlNumber).FirstOrDefault();
-      switch(GlobalClass.liquidation.LiquidationDetails.Any(x=>x.ActualAmount > x.Amount))
+      switch(GlobalClass.liquidation.LiquidationDetails.Any(x=>x.ActualAmount < x.Amount))
       {
         case true :
-          Extensions.ShowAlert(pettyControl + " : Actual amount is greater than Petty Cash amount", Variant.Filled, snackBarService, Severity.Error);
+          Extensions.ShowAlert(pettyControl + " : Actual amount is greater than Petty Cash amount", Variant.Filled, SnackbarService, Severity.Error);
         break;
         case false :
           GlobalClass.forPrintingOrSaveLiquidation = MapProperties();
@@ -857,7 +734,7 @@
       }
     }
     else
-      Extensions.ShowAlert("Cannot create liquidation, Incomplete fields.", Variant.Filled, snackBarService, Severity.Error);
+      Extensions.ShowAlert("Cannot create liquidation, Incomplete fields.", Variant.Filled, SnackbarService, Severity.Error);
     
     _processing = false;
   }
@@ -921,7 +798,11 @@
 
     if (GlobalClass.liquidation.LiquidationDetails.Count() == 0  || requiredPreparedBy || requiredApprover)
       return false;
-
+    if(GlobalClass.liquidation.LiquidationDetails.Any( x => x.ExpenseLineId == 0) ||
+      GlobalClass.liquidation.LiquidationDetails.Any( x => x.ChargingId == 0))
+      {
+        return false;
+      }
     return true;
   }
 
@@ -969,7 +850,7 @@
     }
     if(dateRangePickerName == dateRangePeriod)
     {
-      periodLiquidation = new DateRange(DateTime.Now.AddDays(-1).Date, DateTime.Now.Date);
+      periodLiquidation = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
       SubmitDateRangePicker(new(), dateRangePickerName);
     }
   }
@@ -986,5 +867,34 @@
       datePickerName.Close(true);
     if(dateRangePickerName == dateRangePeriod)
       dateRangePickerName.Close(true);
+  }
+
+  private void ExpandSubRows()
+  {
+    isSubRowExpanded = !isSubRowExpanded;
+    GlobalClass.liquidation.LiquidationDetails.ForEach(x=>x.ShowSubTable = isSubRowExpanded);
+  }
+
+  private void EditAllRows()
+  {
+    if(!isEditAllRow)
+    {
+      isEditAllRow = !isEditAllRow;
+      GlobalClass.liquidation.LiquidationDetails.ForEach(x=>x.IsEditRow = true);
+    }
+  }
+
+  private void DoneAllRows()
+  {
+    TotalAmount();
+    if(isEditAllRow)
+    {
+      isEditAllRow = !isEditAllRow;
+      GlobalClass.liquidation.LiquidationDetails.ForEach(x=>x.IsEditRow = false);
+    }
+    else
+    {
+       GlobalClass.liquidation.LiquidationDetails.ForEach(x=>x.IsEditRow = false);
+    }
   }
 }

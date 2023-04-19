@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace fgciams.domain.clsVoucher
 {
@@ -73,12 +74,18 @@ namespace fgciams.domain.clsVoucher
         public bool IsFiled { get; set; }
         public bool isShowChild { get; set; }
         public bool isShowChecks { get; set; }
+        [NotMapped]
         public byte[] PreparedByPicture { get; set; } = new byte[] { };
+        [NotMapped]
         public byte[] VerifiedByPicture { get; set; } = new byte[] { };
+        [NotMapped]
         public byte[] ApprovedByPicture { get; set; } = new byte[] { };
         public bool WithSubLedger { get; set; }
         public List<VoucherRouteTagModel> VoucherRouteTags { get; set; } = new();
         public List<VoucherRouteTagModel> RemovedVoucherRouteTags { get; set; } = new();
+        public bool IsEWT { get; set; }
+        public bool IsPosted { get; set; } = false;
+        public DateTime? PrevVoucherDate { get; set; } = DateTime.Now;
         private decimal _VATValue;
         public decimal VATValue
         {

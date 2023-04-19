@@ -1,185 +1,204 @@
 @page "/or/list"
 
 @inject IGlobalService globalService
-@inject ISnackbar snackbarService
 @inject IDialogService dialogService
 @inject ICollectionService collectionService
 @inject NavigationManager navigationManager
 
 <div class='page-cont'>
     <div class='drawer-right-min'>
-        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
-            <FilterComponent OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
-                FilterClick='FilterTable' ResetTableClick='ReloadTable'
-                contentVisible='openSideFilter' moduleName="or-list"/>
+        <MudDrawer Class='pa-1' Open='false' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <MudTooltip Text='Filter' Arrow Placement='Placement.Left'>
+                <MudIconButton OnClick='(() => openFilter = !openFilter)' Icon='@Icons.Material.Filled.FilterList' arial-label='Close Filter' Size='Size.Small' />
+            </MudTooltip>
         </MudDrawer>
     </div>
     <MudContainer Class='py-2 pl-2 pr-10  table-toolbar-custom1' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'> 
-        <MudTable Class='table-style-1' @ref='tableVariable' ServerData='new Func<TableState, Task<TableData<CollectionModel>>>(LoadCollectionList)' Hover Loading='isLoading'
-            Breakpoint="Breakpoint.Xs" FixedHeader FixedFooter CustomFooter Bordered Dense
-            RowsPerPage='15' Elevation='1' Height='calc(100vh - 185px)'>
-            <ToolBarContent>
-                <MudText Typo='Typo.caption'>
-                    @GlobalClassList.collectionList.Count()
-                    @(GlobalClassList.collectionList.Count() == 1 ? "item" : "items") 
-                    in total
-                </MudText>
-                <MudSpacer/>
-                <MudTooltip Text="Refresh Table">
-                    <MudIconButton OnClick='ReloadTable' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" ></MudIconButton>
-                </MudTooltip>
-            </ToolBarContent>
-            <ColGroup>
-                <col style="width:1%" />
-                <col style="width:1%"/>
-                <col style="width:1%" />
-                <col />
-                <col />
-                <col style="width:1%" />
-                <col style="width:1%" />
-                <col style="width:20px"/>
-                <col style="width:20px" />
-                <col style='width:110px' />
-            </ColGroup>
-            <HeaderContent>
-                <MudTh Class='customheader-6'>
-                    <MudTableSortLabel SortLabel='SortOR' T='CollectionModel'
-                            InitialDirection='SortDirection.Ascending'>
-                            OR No.
-                        </MudTableSortLabel>
-                        </MudTh>
-                <MudTh Class='customheader-6'>
+        @if(!dataFetched)
+        {
+            <SkeletonPageList />
+        }
+        else
+        {
+            <MudTable Class='table-style-1' @ref='tableVariable' ServerData='new Func<TableState, Task<TableData<CollectionModel>>>(LoadCollectionList)' Hover Loading='isLoading'
+                Breakpoint="Breakpoint.Xs" FixedHeader FixedFooter CustomFooter Bordered Dense
+                RowsPerPage='15' Elevation='1' Height='calc(100vh - 185px)'>
+                <ToolBarContent>
+                    <MudText Typo='Typo.caption'>
+                        @GlobalClassList.collectionList.Count()
+                        @(GlobalClassList.collectionList.Count() == 1 ? "item" : "items") 
+                        in total
+                    </MudText>
+                    <MudSpacer/>
+                    <MudTooltip Text="Refresh Table">
+                        <MudIconButton OnClick='ReloadTable' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" ></MudIconButton>
+                    </MudTooltip>
+                    <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' 
+                        TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
+                        <MudMenuItem OnClick="(() => openFilter = !openFilter)"  >
+                            <div class='d-flex align-center gap-2 '>
+                                <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
+                                <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
+                            </div>
+                        </MudMenuItem>
+                    </MudMenu>
+                    @if(openFilter)
+                    {
+                        <PopoverFilterMainComponent IsOpen='openFilter' CloseFilter='(() => openFilter = !openFilter)' IsMainFilter='true' IsLedgerList='true'
+                            ModuleName='or-list' ApplyFilter='FilterTable' ResetTableData='ReloadTable'/>
+                    }
+                </ToolBarContent>
+                <ColGroup>
+                    <col style="width:1%" />
+                    <col style="width:1%"/>
+                    <col style="width:1%" />
+                    <col />
+                    <col />
+                    <col style="width:1%" />
+                    <col style="width:1%" />
+                    <col style="width:20px"/>
+                    <col style="width:20px" />
+                    <col style='width:110px' />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh Class='customheader-6'>
+                        <MudTableSortLabel SortLabel='SortOR' T='CollectionModel'
+                                InitialDirection='SortDirection.Ascending'>
+                                OR No.
+                            </MudTableSortLabel>
+                            </MudTh>
+                    <MudTh Class='customheader-6'>
 
-                    <div class='d-flex align-center justify-start'>
-                        <MudTableSortLabel SortLabel='SortControlNumber' T='CollectionModel'
+                        <div class='d-flex align-center justify-start'>
+                            <MudTableSortLabel SortLabel='SortControlNumber' T='CollectionModel'
+                                InitialDirection='SortDirection.None'>
+                                Control No.
+                            </MudTableSortLabel>
+                                Date
+                        </div>
+                    </MudTh>
+                    <MudTh Class='customheader-1 text-center pa-2'>
+                        <MudTableSortLabel SortLabel='SortRefNo' T='CollectionModel'
                             InitialDirection='SortDirection.None'>
-                            Control No.
+                                Ref No.
                         </MudTableSortLabel>
-                            Date
-                    </div>
-                </MudTh>
-                <MudTh Class='customheader-1 text-center pa-2'>
-                    <MudTableSortLabel SortLabel='SortRefNo' T='CollectionModel'
-                        InitialDirection='SortDirection.None'>
-                            Ref No.
-                    </MudTableSortLabel>
-                </MudTh>
-                <MudTh Class='customheader-6'>Charging</MudTh>
-                <MudTh Class='customheader-6'>Description</MudTh>
-                <MudTh Class='customheader-6 text-center'>Expense</MudTh>
-                <MudTh Class='customheader-6 text-center'>Category</MudTh>
-                <MudTh Class='customheader-6'>DEPOSITED</MudTh>
-                <MudTh Class='customheader-6 pa-2'>Misc</MudTh>
-                <MudTh Class='customheader-6 pa-2'>
-                    <MudTableSortLabel Class='text-right' SortLabel='SortNetAmount' T='CollectionModel'
-                        InitialDirection='SortDirection.None'>
-                        NET Amount
-                    </MudTableSortLabel>
-                </MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd DataLabel='Official Receipt'>
-                    <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Text='context.OfficialReceipt' Color='Color.Default' Size='Size.Small'
-                        Variant='Variant.Outlined'>
-                        OR-@context.OfficialReceipt
-                    </MudChip>
-                </MudTd>
-                <MudTd Class='text-center' DataLabel='Control No.'>
-                    <div class='d-flex align-center justify-center'>
-                        <MudTooltip Text='@($"See {context.ControlNumber}")' Arrow Placement='Placement.Top'>
-                            <MudButton Class='btn-tbl-link' StartIcon='@Icons.Material.Filled.Link'
-                                Href='@FindReference(context.ControlNumber)' Target='_blank'
-                                Variant='Variant.Outlined' Color='Color.Error' Size='Size.Small' DisableElevation>
-                                    @(!string.IsNullOrWhiteSpace(context.ControlNumber) ? context.ControlNumber : "None")
-                                </MudButton>
-                        </MudTooltip>
-                        <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Icon='@Icons.Material.Filled.CalendarMonth' Size='Size.Small'
+                    </MudTh>
+                    <MudTh Class='customheader-6'>Charging</MudTh>
+                    <MudTh Class='customheader-6'>Description</MudTh>
+                    <MudTh Class='customheader-6 text-center'>Expense</MudTh>
+                    <MudTh Class='customheader-6 text-center'>Category</MudTh>
+                    <MudTh Class='customheader-6'>DEPOSITED</MudTh>
+                    <MudTh Class='customheader-6 pa-2'>Misc</MudTh>
+                    <MudTh Class='customheader-6 pa-2'>
+                        <MudTableSortLabel Class='text-right' SortLabel='SortNetAmount' T='CollectionModel'
+                            InitialDirection='SortDirection.None'>
+                            NET Amount
+                        </MudTableSortLabel>
+                    </MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel='Official Receipt'>
+                        <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Text='context.OfficialReceipt' Color='Color.Default' Size='Size.Small'
                             Variant='Variant.Outlined'>
-                            @Convert.ToDateTime(context.TransactionDate).ToShortDateString()
+                            OR-@context.OfficialReceipt
                         </MudChip>
-                    </div>
-                </MudTd>
-                <MudTd Class='text-left' DataLabel="Reference Number">
+                    </MudTd>
+                    <MudTd Class='text-center' DataLabel='Control No.'>
+                        <div class='d-flex align-center justify-center'>
+                            <MudTooltip Text='@($"See {context.ControlNumber}")' Arrow Placement='Placement.Top'>
+                                <MudButton Class='btn-tbl-link' StartIcon='@Icons.Material.Filled.Link'
+                                    Href='@FindReference(context.ControlNumber)' Target='_blank'
+                                    Variant='Variant.Outlined' Color='Color.Error' Size='Size.Small' DisableElevation>
+                                        @(!string.IsNullOrWhiteSpace(context.ControlNumber) ? context.ControlNumber : "None")
+                                    </MudButton>
+                            </MudTooltip>
+                            <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Icon='@Icons.Material.Filled.CalendarMonth' Size='Size.Small'
+                                Variant='Variant.Outlined'>
+                                @Convert.ToDateTime(context.TransactionDate).ToShortDateString()
+                            </MudChip>
+                        </div>
+                    </MudTd>
+                    <MudTd Class='text-left' DataLabel="Reference Number">
+                            <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Default' Size='Size.Small'
+                                Variant='Variant.Outlined'>
+                                @context.ReferenceNo
+                            </MudChip>
+                    </MudTd>
+                    <MudTd Class='text-left' DataLabel='Charge Name'>
+                        <div class='dynamic-div-1'>
+                            <small>@context.ChargeName</small>
+                        </div>
+                    </MudTd>
+                    <MudTd Class='text-left pa-2 mudtd-mw-300px' DataLabel='Description'>
+                        <div class='dynamic-div-1'>
+                            <small>@context.Description</small>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel='Expense Name'>
                         <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Default' Size='Size.Small'
                             Variant='Variant.Outlined'>
-                            @context.ReferenceNo
+                            @context.ExpenseName
                         </MudChip>
-                </MudTd>
-                <MudTd Class='text-left' DataLabel='Charge Name'>
-                    <div class='dynamic-div-1'>
-                        <small>@context.ChargeName</small>
-                    </div>
-                </MudTd>
-                <MudTd Class='text-left pa-2 mudtd-mw-300px' DataLabel='Description'>
-                    <div class='dynamic-div-1'>
-                        <small>@context.Description</small>
-                    </div>
-                </MudTd>
-                <MudTd DataLabel='Expense Name'>
-                    <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Default' Size='Size.Small'
-                        Variant='Variant.Outlined'>
-                        @context.ExpenseName
-                    </MudChip>
-                </MudTd>
-                <MudTd DataLabel="Collection Category Id">
-                    <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Info' Size='Size.Small'>
-                            @Extensions.GetEnumDescription(context.CollectionCategoryId)
-                    </MudChip>
-                </MudTd>
-                <MudTd Class='text-center pa-2' DataLabel='Filed'>
-                    <MudCheckBox Class='chip-radius-5 font-bold font10' @bind-Checked=context.isDeposit ReadOnly Dense Size='Size.Small' 
-                        Color='Color.Info' UnCheckedColor='Color.Dark' />
-                </MudTd>
-                <MudTd Class='text-center pa-2' DataLabel='Misc'>
-                    <MudToggleIconButton @bind-Toggled="context.showSubDetails" Size='Size.Small' ToggledSize='Size.Small'
-                        Icon="@Icons.Material.Filled.ExpandMore" Color="@Color.Tertiary" Title="Expand "
-                        ToggledIcon="@Icons.Material.Filled.ExpandLess" ToggledColor="@Color.Info" ToggledTitle="Collapse"/>
-                </MudTd>
-                <MudTd DataLabel='Amount'>
-                    <MudText Class='font-bold font12' Style='@(context.NetAmount > 0 ? "color:green":"color:red")'>
-                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)  @context.NetAmount.ToString("N2")
-                    </MudText>
-                </MudTd>
-            </RowTemplate>
-            <ChildRowContent>
-                <MudTr>
-                    <td colspan="10">
-                        <MudPaper Elevation='1' Square>
-                            <div class='d-flex align-center justify-center transition-05s-ease overflow-hidden bgc-FBFBFB @(context.showSubDetails ? "fade-in border-thin-notop":"fade-out")' style='@(context.showSubDetails ? "max-height:500px" : "max-height:0px")'>
-                                <CollectionChildRowComponent 
-                                    collOR='@context.OfficialReceipt' 
-                                    collCN='@context.CheckNumber'
-                                    collRemarks='@context.Remarks' 
-                                    collDebit='context.Debit'
-                                    collCredit='context.Credit'
-                                    collTax='context.Tax'
-                                    collMob='context.Mobilization' 
-                                    collRet='context.Retention' 
-                                    collOthers='context.Others' 
-                                    collGrossAmt='context.GrossAmount' 
-                                    collNetAmt='context.NetAmount' 
-                                    moduleName = "or-list" />
-                            </div>
-                        </MudPaper>
-                    </td>
-                </MudTr>
-            </ChildRowContent>
-            <NoRecordsContent>
-                    <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No records found</MudText>
-            </NoRecordsContent>
-            <PagerContent>
-                <MudTablePager PageSizeOptions="@GlobalVariable.pageSize" />
-            </PagerContent>
-        </MudTable>
+                    </MudTd>
+                    <MudTd DataLabel="Collection Category Id">
+                        <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Color='Color.Info' Size='Size.Small'>
+                                @Extensions.GetEnumDescription(context.CollectionCategoryId)
+                        </MudChip>
+                    </MudTd>
+                    <MudTd Class='text-center pa-2' DataLabel='Filed'>
+                        <MudCheckBox Class='chip-radius-5 font-bold font10' @bind-Checked=context.isDeposit ReadOnly Dense Size='Size.Small' 
+                            Color='Color.Info' UnCheckedColor='Color.Dark' />
+                    </MudTd>
+                    <MudTd Class='text-center pa-2' DataLabel='Misc'>
+                        <MudToggleIconButton @bind-Toggled="context.showSubDetails" Size='Size.Small' ToggledSize='Size.Small'
+                            Icon="@Icons.Material.Filled.ExpandMore" Color="@Color.Tertiary" Title="Expand "
+                            ToggledIcon="@Icons.Material.Filled.ExpandLess" ToggledColor="@Color.Info" ToggledTitle="Collapse"/>
+                    </MudTd>
+                    <MudTd DataLabel='Amount'>
+                        <MudText Class='font-bold font12' Style='@(context.NetAmount > 0 ? "color:green":"color:red")'>
+                            @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)  @context.NetAmount.ToString("N2")
+                        </MudText>
+                    </MudTd>
+                </RowTemplate>
+                <ChildRowContent>
+                    <MudTr>
+                        <td colspan="10">
+                            <MudPaper Elevation='1' Square>
+                                <div class='d-flex align-center justify-center transition-05s-ease overflow-hidden bgc-FBFBFB @(context.showSubDetails ? "fade-in border-thin-notop":"fade-out")' style='@(context.showSubDetails ? "max-height:500px" : "max-height:0px")'>
+                                    <CollectionChildRowComponent 
+                                        collOR='@context.OfficialReceipt' 
+                                        collCN='@context.CheckNumber'
+                                        collRemarks='@context.Remarks' 
+                                        collDebit='context.Debit'
+                                        collCredit='context.Credit'
+                                        collTax='context.Tax'
+                                        collMob='context.Mobilization' 
+                                        collRet='context.Retention' 
+                                        collOthers='context.Others' 
+                                        collGrossAmt='context.GrossAmount' 
+                                        collNetAmt='context.NetAmount' 
+                                        moduleName = "or-list" />
+                                </div>
+                            </MudPaper>
+                        </td>
+                    </MudTr>
+                </ChildRowContent>
+                <NoRecordsContent>
+                        <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No records found</MudText>
+                </NoRecordsContent>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="@GlobalVariable.pageSize" />
+                </PagerContent>
+            </MudTable>
+        }
     </MudContainer>
 </div>
 
 @code
 {
     [Parameter] public string ReferenceNo {get;set;} = string.Empty;
-    private bool isLoading = true, toggleSidebar = true;
+    private bool openFilter, isLoading = true, toggleSidebar = true, dataFetched;
     private int totalItems;
-    private bool openSideFilter;
     private string searchTerm = string.Empty;
     private Project currentProject = new();
     private FilterParameter filterParameter = new();
@@ -188,10 +207,20 @@
     private MudTable<CollectionModel> tableVariable = new MudTable<CollectionModel>();
     private DateRange dateRange = new DateRange(DateTime.Now, DateTime.Now);
     private DateRange depositDateRange = new DateRange(DateTime.Now, DateTime.Now);
+
     protected override async Task OnInitializedAsync()
     {
         GlobalClass.pageTitle = "Official Receipt Listing";
-        await LocationCollections();
+        Task t = LocationCollections();
+        await t;
+        if (t.Status == TaskStatus.RanToCompletion)
+            CompletedFetch();
+    }
+
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
     }
     private async Task LocationCollections()
     {

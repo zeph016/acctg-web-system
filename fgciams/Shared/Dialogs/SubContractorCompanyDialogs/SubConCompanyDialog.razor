@@ -1,52 +1,55 @@
 @inject ISubContractorCompanyService subContractorCompanyService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject IDialogService dialogService
 
 <MudDialog Class="customdialog2">
   <TitleContent>
-      <div class='d-flex align-center'>
-          @if (GlobalClass.subContractorCompany.Id != 0)
-          {
-              <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1ank" />
-          }
-          else
-          {
-              <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-3 mb-n1" />
-          }
-          <MudText Class='txt-uppercase' Typo='Typo.h6'>@dialogTitle</MudText>
-      </div>
+    <div class='d-flex align-center'>
+      @if (GlobalClass.subContractorCompany.Id != 0)
+      {
+        <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1ank" />
+      }
+      else
+      {
+        <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-3 mb-n1" />
+      }
+      <MudText Class='txt-uppercase' Typo='Typo.h6'>@dialogTitle</MudText>
+    </div>
   </TitleContent>
-    <DialogContent>
-      <MudPaper Class='pa-2' Elevation='0'>
-        <MudGrid Class='pa-2' Spacing='1'>
-          <MudItem xs='8'>
-            <MudTextField @bind-Value='@GlobalClass.subContractorCompany.CompanyName' Label='Company Name' Error=@reqSubCom ErrorText='Company name is required'
-              HelperText='Required*' Margin='Margin.Dense' />
-          </MudItem>
-          <MudItem xs='4'>
-            <MudTextField @bind-Value='@GlobalClass.subContractorCompany.ShortcutName' Label='Short Name' Error=@reqSubComShrt ErrorText='Shortcut name is required'
-             HelperText='Required*' Margin='Margin.Dense' />
-          </MudItem>
-          <MudItem xs='12'>
-            <MudTextField @bind-Value='@GlobalClass.subContractorCompany.Remarks' Label='Remarks' Lines='2' Variant='Variant.Filled' 
-              HelperText='Optional' Margin='Margin.Dense'/>
-          </MudItem>
-        </MudGrid>
-      </MudPaper>
-    </DialogContent>
-    <DialogActions>
-          @if(GlobalClass.subContractorCompany.Id != 0) {
-            <MudCheckBox @bind-Checked='@GlobalClass.subContractorCompany.IsActive' Label='Active' 
-              Color='Color.Dark' Size='Size.Small' Dense/>
-          }
-        <MudSpacer />
-        <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text' Size='Size.Small' DisableElevation>Cancel</MudButton>
-        <MudButton Class='btn-ios-d font12' OnClick="Submit" Variant='Variant.Filled' Color='@(!GlobalClass.subContractorCompany.IsActive ? Color.Error : @color)' Size='Size.Small' DisableElevation>
-          @(!GlobalClass.subContractorCompany.IsActive ? "Deactivate" : @buttonText)
-        </MudButton>
-    </DialogActions>
+  <DialogContent>
+    <MudPaper Class='pa-2' Elevation='0'>
+      <MudGrid Class='pa-2' Spacing='1'>
+        <MudItem xs='8'>
+          <MudTextField @bind-Value='@GlobalClass.subContractorCompany.CompanyName' Label='Company Name'
+            Error=@reqSubCom ErrorText='Company name is required' HelperText='Required*' Margin='Margin.Dense' />
+        </MudItem>
+        <MudItem xs='4'>
+          <MudTextField @bind-Value='@GlobalClass.subContractorCompany.ShortcutName' Label='Short Name'
+            Error=@reqSubComShrt ErrorText='Shortcut name is required' HelperText='Required*' Margin='Margin.Dense' />
+        </MudItem>
+        <MudItem xs='12'>
+          <MudTextField @bind-Value='@GlobalClass.subContractorCompany.Remarks' Label='Remarks' Lines='2'
+            Variant='Variant.Filled' HelperText='Optional' Margin='Margin.Dense' />
+        </MudItem>
+      </MudGrid>
+    </MudPaper>
+  </DialogContent>
+  <DialogActions>
+    @if (GlobalClass.subContractorCompany.Id != 0)
+    {
+      <MudCheckBox @bind-Checked='@GlobalClass.subContractorCompany.IsActive' Label='Active' Color='Color.Dark'
+      Size='Size.Small' Dense />
+    }
+    <MudSpacer />
+    <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text' Size='Size.Small' DisableElevation>
+      Cancel</MudButton>
+    <MudButton Class='btn-ios-d font12' OnClick="Submit" Variant='Variant.Filled'
+      Color='@(!GlobalClass.subContractorCompany.IsActive ? Color.Error : @color)' Size='Size.Small' DisableElevation>
+      @(!GlobalClass.subContractorCompany.IsActive ? "Deactivate" : @buttonText)
+    </MudButton>
+  </DialogActions>
 </MudDialog>
-@code{
+@code {
   [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
   [Parameter] public Color color { get; set; }
   [Parameter] public string dialogTitle { get; set; } = string.Empty;
@@ -56,9 +59,9 @@
   private bool reqSubCom, reqSubComShrt;
   protected override async Task OnInitializedAsync()
   {
-      if (currentAction == Enums.ActionMode.Create)
-        GlobalClass.subContractorCompany.IsActive = true;
-      await Task.Delay(1);
+    if (currentAction == Enums.ActionMode.Create)
+      GlobalClass.subContractorCompany.IsActive = true;
+    await Task.Delay(1);
   }
   void Cancel()
   {
@@ -70,67 +73,89 @@
   {
     if (!GlobalClass.subContractorCompany.IsActive)
     {
+      if (!Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Delete))
+      {
+        Extensions.ShowAlert("Account has been restricted to deactivate subcon company.", Variant.Filled, SnackbarService,Severity.Error);
+        return;
+      }
       currentAction = Enums.ActionMode.Deactivate;
       await PromptMessage();
     }
     else if (ValidateEntries())
       await PromptMessage();
     else
-      Extensions.ShowAlert("Cannot " 
-        + (currentAction == Enums.ActionMode.Create ? "add" : (currentAction == Enums.ActionMode.Update ? "update" : "")) 
-        + " Sub Con Company, Incomplete fields.", Variant.Filled, snackbarService, Severity.Error);
+      Extensions.ShowAlert("Cannot "
+      + (currentAction == Enums.ActionMode.Create ? "add" : (currentAction == Enums.ActionMode.Update ? "update" : ""))
+      + " Sub Con Company, Incomplete fields.", Variant.Filled, SnackbarService, Severity.Error);
   }
   private bool ValidateEntries()
   {
     bool valid = true;
-    if(string.IsNullOrEmpty(GlobalClass.subContractorCompany.CompanyName)) {
+    if (string.IsNullOrEmpty(GlobalClass.subContractorCompany.CompanyName))
+    {
 
       reqSubCom = true;
       valid = false;
 
-    } else reqSubCom = false;
+    }
+    else reqSubCom = false;
 
-    if(string.IsNullOrEmpty(GlobalClass.subContractorCompany.ShortcutName)) {
+    if (string.IsNullOrEmpty(GlobalClass.subContractorCompany.ShortcutName))
+    {
 
       reqSubComShrt = true;
       valid = false;
 
-    } else reqSubComShrt = false;
+    }
+    else reqSubComShrt = false;
 
     return valid;
   }
   private async Task PromptMessage()
   {
-      var parameters = new DialogParameters();
-      string contentText = "company ";
-      string dialogTitle = currentAction.ToString();
-      parameters.Add("actionMode", currentAction);
-      parameters.Add("dialogTitle", dialogTitle);
-      parameters.Add("contentText", contentText);
-      var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
-      var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-      if (!resultDialog.Canceled)
+    var parameters = new DialogParameters();
+    string contentText = "company ";
+    string dialogTitle = currentAction.ToString();
+    parameters.Add("actionMode", currentAction);
+    parameters.Add("dialogTitle", dialogTitle);
+    parameters.Add("contentText", contentText);
+    var options = new DialogOptions()
+    {
+      CloseButton = false,
+      MaxWidth = MaxWidth.ExtraSmall,
+      FullWidth = true,
+      NoHeader =
+    false,
+      DisableBackdropClick = true
+    };
+    var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters,
+    options).Result;
+    if (!resultDialog.Canceled)
+    {
+      try
       {
-        try
+        if (currentAction == Enums.ActionMode.Create)
         {
-          if (currentAction == Enums.ActionMode.Create) {
-            GlobalClass.subContractorCompany = await subContractorCompanyService.AddSubContractorCompany(GlobalClass.subContractorCompany, GlobalClass.token);
-            GlobalClassList.subContractorCompanies.Add(GlobalClass.subContractorCompany);
-          }
-          else
-            GlobalClass.subContractorCompany = await subContractorCompanyService.UpdateSubContractorCompany(GlobalClass.subContractorCompany, GlobalClass.token);
-          if(GlobalVariable.AMSHubConnection != null && ValidateEntries())
-            await GlobalVariable.AMSHubConnection.InvokeAsync("SaveSubContractorCompany", GlobalClass.subContractorCompany);
-          MudDialog.Close(DialogResult.Ok(currentAction));
+          GlobalClass.subContractorCompany = await
+          subContractorCompanyService.AddSubContractorCompany(GlobalClass.subContractorCompany, GlobalClass.token);
+          GlobalClassList.subContractorCompanies.Add(GlobalClass.subContractorCompany);
         }
-        catch (System.Exception ex) {
-              Extensions.ShowAlert(ex.Message, Variant.Filled, snackbarService, Severity.Error);
-        }
+        else
+          GlobalClass.subContractorCompany = await
+          subContractorCompanyService.UpdateSubContractorCompany(GlobalClass.subContractorCompany, GlobalClass.token);
+        if (GlobalVariable.AMSHubConnection != null && ValidateEntries())
+          await GlobalVariable.AMSHubConnection.InvokeAsync("SaveSubContractorCompany", GlobalClass.subContractorCompany);
+        MudDialog.Close(DialogResult.Ok(currentAction));
       }
-      else if (currentAction == Enums.ActionMode.Deactivate)
+      catch (System.Exception ex)
       {
-        GlobalClass.subContractorCompany.IsActive = !GlobalClass.subContractorCompany.IsActive;
-        MudDialog.Cancel();
+        Extensions.ShowAlert(ex.Message, Variant.Filled, SnackbarService, Severity.Error);
       }
+    }
+    else if (currentAction == Enums.ActionMode.Deactivate)
+    {
+      GlobalClass.subContractorCompany.IsActive = !GlobalClass.subContractorCompany.IsActive;
+      MudDialog.Cancel();
+    }
   }
 }

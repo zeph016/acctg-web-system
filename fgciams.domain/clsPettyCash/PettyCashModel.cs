@@ -46,7 +46,11 @@ namespace fgciams.domain.clsPettyCash
         public Enums.MRARType MRARTypeId { get; set; }
         public Enums.AccountingStatusEnumCategory statusCategoryId { get; set; }
         public bool ShowReport {get; set;}
+        public decimal LiquidationAmount { get; set; }
+        public decimal PettyCashAmount { get; set; }
         ////response code
         public HttpResponseMessage responseMessage { get; set; } = new();
+        //For report
+        public List<PettyCashAuditTrail> pettyCashAuditTrail { get; set; } = new();
     }
 }

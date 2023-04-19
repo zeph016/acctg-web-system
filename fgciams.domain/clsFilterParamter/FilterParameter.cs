@@ -53,13 +53,13 @@ namespace fgciams.domain.clsFilterParameter
         public Int64 SupplierId { get; set; }
         public Enums.SupplierCategory POSupplierCategory { get; set; }
         //Others
-        public int PageSize { get; set; }
+        public int PageSize { get; set; } = 15; // Default
         public int PageNo { get; set; }
         public int OffSet
         {
             get
             {
-                return PageSize * PageNo;
+                return (PageSize * PageNo) <= 0? 15 : (PageSize * PageNo);
             }
         }
         public string SortColumnName { get; set; } = string.Empty;
@@ -111,7 +111,15 @@ namespace fgciams.domain.clsFilterParameter
         public Enums.ProjectCategory ChargedCategoryId { get; set; }
         public bool IsDepositCategoryId { get; set; }
         public Enums.CollectionPaymentType DepositCategoryId { get; set; }
-
+        public bool IsRFPControlNumber { get; set; }
+        public string RFPControlNumber { get; set; }
+        public Enums.CheckCategory CheckCategoryId { get; set; }
+        public bool IsViewAll { get; set; }
+        public bool IsViewDepartment { get; set; }
+        public bool IsViewOwn { get; set; }
+        public bool IsAll { get; set; }
+        public string Token { get; set; }
+        public bool IsExport { get; set; }
         public FilterParameter()
         {
             isActive = true;

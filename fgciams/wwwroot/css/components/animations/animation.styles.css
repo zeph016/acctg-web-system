@@ -52,24 +52,13 @@
 }
 
 .fade-in {
-  -webkit-animation: fadein 1s;
-          animation: fadein 1s;
+  animation: fadein 1s;
   visibility: visible;
 }
 
 .fade-out {
-  -webkit-animation: fadeout 1s;
-          animation: fadeout 1s;
+  animation: fadeout 1s;
   visibility: hidden;
-}
-
-@-webkit-keyframes fadein {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
 }
 
 @keyframes fadein {
@@ -78,14 +67,6 @@
   }
   100% {
     opacity: 1;
-  }
-}
-@-webkit-keyframes fadeout {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
   }
 }
 @keyframes fadeout {
@@ -107,32 +88,7 @@
 }
 
 .mudbtnico-rotate {
-  -webkit-animation: mudbtnico-rotate 0.5s linear infinite;
   animation: mudbtnico-rotate 0.5s linear infinite;
-}
-
-@-webkit-keyframes mudbtnico-rotate {
-  0% {
-    transform: rotate(0deg);
-    -ms-transform: rotate(0deg);
-    -moz-transform: rotate(0deg);
-    -webkit-transform: rotate(0deg);
-    -o-transform: rotate(0deg);
-  }
-  50% {
-    transform: rotate(180deg);
-    -ms-transform: rotate(180deg);
-    -moz-transform: rotate(180deg);
-    -webkit-transform: rotate(180deg);
-    -o-transform: rotate(180deg);
-  }
-  100% {
-    transform: rotate(360deg);
-    -ms-transform: rotate(360deg);
-    -moz-transform: rotate(360deg);
-    -webkit-transform: rotate(360deg);
-    -o-transform: rotate(360deg);
-  }
 }
 
 @keyframes mudbtnico-rotate {
@@ -169,8 +125,19 @@
 .mudbtnico-rotate-90:hover .mud-button-root {
   color: #2196f3 !important;
 }
-.mudbtnico-rotate-90:hover .mud-icon-root {
+.mudbtnico-rotate-90:hover .mud-icon-root, .mudbtnico-rotate-90:hover .mud-button-icon-end {
   transform: rotate(90deg);
+  transition: all 0.5s ease;
+  -webkit-transition: all 0.5s ease; /** Chrome & Safari **/
+  -moz-transition: all 0.5s ease; /** Firefox **/
+  -o-transition: all 0.5s ease; /** Opera **/
+}
+
+.mudbtnico-rotate-180:hover .mud-button-root {
+  color: #2196f3 !important;
+}
+.mudbtnico-rotate-180:hover .mud-icon-root {
+  transform: rotate(180deg);
   transition: all 0.5s ease;
   -webkit-transition: all 0.5s ease; /** Chrome & Safari **/
   -moz-transition: all 0.5s ease; /** Firefox **/
@@ -179,31 +146,9 @@
 
 .sticky-div {
   z-index: 1;
-  position: -webkit-sticky;
   position: sticky;
   left: 0;
   background-color: white;
-}
-
-@-webkit-keyframes bounce-in {
-  0% {
-    opacity: 0;
-    transform: scale3d(0.3, 0.3, 0.3);
-  }
-  30% {
-    transform: scale3d(1.1, 1.1, 1.1);
-  }
-  60% {
-    opacity: 1;
-    transform: scale3d(1.03, 1.03, 1.03);
-  }
-  80% {
-    transform: scale3d(0.97, 0.97, 0.97);
-  }
-  to {
-    opacity: 1;
-    transform: scale3d(1, 1, 1);
-  }
 }
 
 @keyframes bounce-in {
@@ -224,5 +169,206 @@
   to {
     opacity: 1;
     transform: scale3d(1, 1, 1);
+  }
+}
+.th-btn-expand .mud-icon-root {
+  transition: all 0.5s ease;
+}
+
+.ripple-animation {
+  background-position: center;
+  transition: background 0.7s;
+}
+
+.ripple-animation:hover {
+  background: rgba(255, 255, 255, 0.5) radial-gradient(circle, transparent 1%, rgba(255, 255, 255, 0.5) 1%) center/15000%;
+}
+
+.ripple-animation:active {
+  background-color: inherit;
+  background-size: 100%;
+  transition: background 0s;
+}
+
+.searching-container {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+.searching-container p {
+  font-size: 14px;
+  font-family: "R-Flex Bold";
+}
+.searching-container__glass {
+  margin: 24px;
+  width: 35px;
+  height: 35px;
+  animation: zoom-in-zoom-out-glass 1s ease infinite;
+}
+
+@keyframes zoom-in-zoom-out-glass {
+  0% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(1.2, 1.2);
+  }
+  100% {
+    transform: scale(1, 1);
+  }
+}
+@keyframes fadeToRight-15px {
+  0% {
+    opacity: 0;
+    transform: translateX(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(15px);
+  }
+}
+.fadeToRight-15px {
+  animation-name: fadeToRight-15px;
+  animation: fadeToRight-15px 1s;
+}
+
+.from-top {
+  animation: fromtop 0.5s;
+}
+
+.to-top {
+  animation: totop 0.5s;
+}
+
+@keyframes fromtop {
+  0% {
+    opacity: 0;
+    transform: translateY(-100px) scale(0.86);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(0.86);
+  }
+}
+@keyframes totop {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(0.86);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100px) scale(0.86);
+  }
+}
+.horizontal-in {
+  animation: horizontalin 0.5s;
+}
+
+@keyframes horizontalin {
+  0% {
+    opacity: 0;
+    transform: translateX(-100px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.from-right {
+  animation: fromright 0.5s;
+}
+
+.to-right {
+  animation: toright 0.5s;
+}
+
+@keyframes fromright {
+  0% {
+    opacity: 0;
+    transform: translateX(100px) scale(0.86);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(0.86);
+  }
+}
+@keyframes toright {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(0.86);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100px) scale(0.86);
+  }
+}
+.bounce-anim-sm {
+  animation: bounce 2s infinite;
+  -webkit-animation: bounce 2s infinite;
+  -moz-animation: bounce 2s infinite;
+  -o-animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-20px);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
+}
+.side-to-side-anim-sm {
+  animation: sidetoside-sm 2s infinite;
+  -webkit-animation: sidetoside-sm 2s infinite;
+  -moz-animation: sidetoside-sm 2s infinite;
+  -o-animation: sidetoside-sm 2s infinite;
+}
+
+@keyframes sidetoside-sm {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateX(-5px);
+  }
+  60% {
+    transform: translateX(5px);
+  }
+}
+.wiggle-anim-sm {
+  animation: wiggle 2s linear infinite;
+}
+
+.wiggle-anim-sm-once {
+  animation: wiggle 0.5s linear infinite;
+}
+
+@keyframes wiggle {
+  0%, 7% {
+    transform: rotateZ(0);
+  }
+  15% {
+    transform: rotateZ(-20deg);
+  }
+  20% {
+    transform: rotateZ(15deg);
+  }
+  25% {
+    transform: rotateZ(-15deg);
+  }
+  30% {
+    transform: rotateZ(11deg);
+  }
+  35% {
+    transform: rotateZ(-9deg);
+  }
+  40%, 100% {
+    transform: rotateZ(0);
   }
 }/*# sourceMappingURL=animation.styles.css.map */

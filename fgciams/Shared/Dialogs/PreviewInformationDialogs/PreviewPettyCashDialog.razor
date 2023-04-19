@@ -7,7 +7,7 @@
         <div class='d-flex align-center'>
             <p class='pcview-dialog__title'>@dialogTitle</p>
             <MudSpacer />
-            <MudChip Class='txt-uppercase font-bold' OnClick='(() => CopyTextToClipboard(pettyCash.ControlNumber))' Label Variant='Variant.Filled'>
+            <MudChip OnClick='(() => CopyTextToClipboard(pettyCash.ControlNumber))' Label Variant='Variant.Filled'>
                 <small class='color-white'>@pettyCash.ControlNumber</small>
             </MudChip>
         </div>
@@ -123,10 +123,7 @@
     private void Close() => MudDialog.Close(DialogResult.Ok(true));
     private void Cancel() => MudDialog.Cancel();
 
-    private async Task CopyTextToClipboard(string stringToCopy)
-    {
-        await Extensions.CopyTextToClipboard(stringToCopy, SnackbarService, JSRuntime);
-    }
+    private async Task CopyTextToClipboard(string stringToCopy) => await Extensions.CopyTextToClipboard(stringToCopy, SnackbarService, JSRuntime);
 
     private void EditPettyCash(PettyCashModel pettyCashModel)
     {

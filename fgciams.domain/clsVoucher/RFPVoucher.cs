@@ -20,6 +20,7 @@ namespace fgciams.domain.clsVoucher
         public long payeeId { get; set; }
         public Enums.ProjectCategory payeeCategory { get; set; }
         public Enums.RFPDetailTypeId rfpType;
+        public Enums.RFPDetailTypeId RFPDetailTypeId { get; set; }
         public string PayeeName = String.Empty;
         public string Remarks = String.Empty;
     }

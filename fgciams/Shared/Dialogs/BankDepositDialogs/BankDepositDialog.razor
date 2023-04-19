@@ -1,7 +1,7 @@
 @inject IBankService bankService
 @inject IBankDepositService bankDepositService
 @inject IDialogService dialogService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject ICheckService checkService
 @inject ICollectionService collectionService
 
@@ -27,7 +27,7 @@
                                 ValueChanged='((BankModel b) => OnBankSelected(b))'
                                 ValueExpression='(() => bank)'
                                 Value='bank'
-                                Context='bank' Debounce="500" placeholder='BANK & ACCOUNT NO.' Disabled='@isView'>
+                                Context='bank' Debounce="300" placeholder='BANK & ACCOUNT NO.' Disabled='@isView'>
                                 <SelectedTemplate>
                                     @if (bank.Id != 0) {
                                         <MudText Class='font12'>@Extensions.BankShortCutName(bank.Id)</MudText>
@@ -107,7 +107,7 @@
     protected override async Task OnInitializedAsync()
     {
         filterParameter.isActive = true;
-        GlobalClassList.listOfChecks = await checkService.LoadCheck(filterParameter, GlobalClass.token);
+        //GlobalClassList.listOfChecks = await checkService.LoadCheck(filterParameter, GlobalClass.token);
         GlobalClass.bankDeposit = await bankDepositService.GetBankDeposit(GlobalClass.collection.Id,GlobalClass.token);
         if(GlobalClass.bankDeposit.Id != 0)
         {
@@ -161,20 +161,16 @@
             GlobalClass.bankDeposit.StatusDate = GlobalClass.bankDeposit.DepositDate = DateTime.Parse(GlobalClass.bankDeposit.DepositDate?.ToString("yyyy-MM-dd"));
             GlobalClass.bankDeposit.Description = GlobalClass.collection.Description;
             if(GlobalClass.bankDeposit.Id == 0)
-            {
                 await bankDepositService.AddBankDeposit(BankDepositProperties(),GlobalClass.token);
-            } else {
+            else 
                 await bankDepositService.UpdateBankDeposit(BankDepositProperties(),GlobalClass.token);
-            }
             await UpdateCollection();
             MudDialog.Cancel();
-            Extensions.ShowAlert("Collection successfuly save.",Variant.Filled,snackbarService,Severity.Success);
+            Extensions.ShowAlert("Collection successfuly saved.",Variant.Filled,SnackbarService,Severity.Success);
         }
     }
-    private void Cancel()
-    {
-        MudDialog.Cancel();
-    }
+    private void Cancel() =>  MudDialog.Cancel();
+    
     private void OnBankSelected(BankModel b)
     {
         bank = b;
@@ -192,7 +188,6 @@
     private string CheckDate()
     {
         return "Check Date: "+GlobalClassList.listOfChecks.Where(check => check.CheckNo == GlobalClass.collection.CheckNumber).Select(check => check.CheckDate?.ToString("MM/dd/yyyy")).FirstOrDefault();
-    
     }
     private async Task UpdateCollection()
     {

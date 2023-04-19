@@ -1,103 +1,24 @@
 @page "/voucher/print"
 
-@inject IVoucherService voucherService
-@inject IDialogService dialogService
-@inject ISnackbar snackBar
-@inject NavigationManager navigationManager
+@inherits VoucherPrintBase
 
 <div class='page-cont d-flex'>
+  <ActionsOverlayComponent IsOverlayVisible='_processing' ActionMode='@actionMode' ModuleName='voucher'
+    ProgressValue='@progressValue' />
   <div class='rpt-container'>
     <MudCard Class='rpt-container__document-cont' Elevation='1'>
       <div class='rpt-container__iframe-cont'>
-        @if(string.IsNullOrWhiteSpace(pdfReport))
+        @if (string.IsNullOrWhiteSpace(pdfReport))
         {
-           <MudProgressCircular Color="Color.Primary" Indeterminate />
+          <MudProgressCircular Color="Color.Primary" Indeterminate />
         }
         else
         {
-            <iframe src='@pdfReport' />
+          <iframe src='@pdfReport' />
         }
       </div>
     </MudCard>
-    <ReportControls 
-      ControlPosition='rptctrls-side-bottom'
-      ConfirmStr='SAVE VOUCHER'
-      IsSaved='isSaved' 
-      Processing='_processing'
-      BackEventClick='Back'
-      PromptEventClick='Prompt' />
+    <ReportControls ControlPosition='rptctrls-side-bottom' ConfirmStr='SAVE VOUCHER' IsSaved='isSaved'
+      Processing='_processing' BackEventClick='Back' PromptEventClick='Prompt' />
   </div>
 </div>
-
-@code{
-  private string pdfReport = string.Empty;
-  bool isSaved, _processing;
-  public static bool isPrint = false;
-  protected override async Task OnInitializedAsync()
-  {
-    GlobalClass.pageTitle = "Voucher Report";
-    Task t = Task.WhenAll(LoadVoucherReport());
-    await t;
-  }
-  private async Task LoadVoucherReport()
-  {
-    pdfReport = await voucherService.GenerateReport(GlobalClass.forPrintingOrSaveVoucher);
-    pdfReport += "#toolbar=0";
-  }
-  private async Task Prompt()
-  {
-    _processing = true;
-    var parameters = new DialogParameters();
-        string contentText = "Voucher";
-        string dialogTitle = GlobalClass.forPrintingOrSaveVoucher.Id == 0 ? "Create " + contentText : "Update " + contentText;
-        parameters.Add("dialogTitle", dialogTitle);
-        parameters.Add("actionMode", GlobalClass.forPrintingOrSaveVoucher.Id == 0 ? Enums.ActionMode.Create : Enums.ActionMode.Update);
-        parameters.Add("contentText", contentText);
-        parameters.Add("controlNumber", GlobalClass.forPrintingOrSaveVoucher.ControlNumber);
-        var options = new DialogOptions() { CloseButton = false,  MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
-        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Canceled)
-        {
-          var SavedVoucher = new VoucherModel();
-          if(GlobalClass.forPrintingOrSaveVoucher.Id == 0)
-          {
-            SavedVoucher = await voucherService.AddVoucher(GlobalClass.forPrintingOrSaveVoucher, GlobalClass.token);
-            Extensions.ShowAlert("Voucher successfully added", Variant.Filled, snackBar,Severity.Success);
-            _processing = false;
-            isSaved = true;
-          }
-          else
-          {
-            SavedVoucher = await voucherService.UpdateVoucher(GlobalClass.forPrintingOrSaveVoucher, GlobalClass.token);
-            Extensions.ShowAlert("Voucher successfully updated", Variant.Filled, snackBar,Severity.Success);
-            _processing = false;
-            isSaved = true;
-          }
-          pdfReport = await voucherService.GenerateReport(SavedVoucher);
-
-          //Dont need after saving set to new() for signal R
-          SavedVoucher.VoucherDetails = new();
-
-          if(GlobalVariable.AMSHubConnection != null)
-            await GlobalVariable.AMSHubConnection.InvokeAsync("SaveVoucher", SavedVoucher);
-        }
-        else
-        {
-          _processing = false;
-        }
-  }
-  private void Back()
-  {
-    if(!isSaved)
-    {
-      isPrint = true;
-      GlobalClass.voucher = GlobalClass.forPrintingOrSaveVoucher;
-      navigationManager.NavigateTo($"/voucher");
-    }
-    else
-    {
-      navigationManager.NavigateTo($"/voucher/list");
-      GlobalClass.forPrintingOrSaveVoucher = default!;
-    }
-  }
-}

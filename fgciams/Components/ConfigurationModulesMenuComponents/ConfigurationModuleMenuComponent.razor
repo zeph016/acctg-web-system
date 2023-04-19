@@ -1,0 +1,142 @@
+@inject ISnackbar SnackbarService
+
+@if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.AccountingStatus))
+{
+    <div class='transition-025s-ease @(PageSequence == 1 ? "activelink" : "")'>
+        <MudNavLink OnClick='(() => DynamicPages(1))' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.FactCheck">ACCOUNTING STATUS</MudNavLink>
+    </div>
+}
+@if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.Bank))
+{
+    <div class='transition-025s-ease @(PageSequence == 2 ? "activelink" : "")'>
+        <MudNavLink Class='transition-025s-ease' OnClick='(() => DynamicPages(2))' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.AccountBalance">BANK</MudNavLink>
+    </div>
+}
+@if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.BillingDocument))
+{
+    <div class='transition-025s-ease @(PageSequence == 3 ? "activelink" : "")'>
+        <MudNavLink Class='fa-icon-center' OnClick='(() => DynamicPages(3))' Match="NavLinkMatch.All" Icon="fa-solid fa-receipt">BILLING DOCUMENT</MudNavLink>
+    </div>
+}
+@if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.Division))
+{
+    <div class='transition-025s-ease @(PageSequence == 4 ? "activelink" : "")'>
+        <MudNavLink Class='fa-icon-center' OnClick='(() => DynamicPages(4))' Match="NavLinkMatch.All" Icon="fa-solid fa-bars-staggered">DIVISION</MudNavLink>
+    </div>
+}
+@if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.ModeofPayment))
+{
+    <div class='transition-025s-ease @(PageSequence == 5 ? "activelink" : "")'>
+        <MudNavLink OnClick='(() => DynamicPages(5))' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Payment">MODE OF PAYMENT</MudNavLink>
+    </div>
+}
+@if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.Payee))
+{
+    <div class='transition-025s-ease @(PageSequence == 6 ? "activelink" : "")'>
+        <MudNavLink Class='fa-icon-center' OnClick='(() => DynamicPages(6))' Match="NavLinkMatch.All" Icon="fa-solid fa-person">PAYEE</MudNavLink>
+    </div>
+}
+@if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.PayeeCategory))
+{
+    <div class='transition-025s-ease @(PageSequence == 7 ? "activelink" : "")'>
+        <MudNavLink OnClick='(() => DynamicPages(7))' Match="NavLinkMatch.All" Icon='@Icons.Material.Filled.Group'>PAYEE CATEGORY</MudNavLink>
+    </div>
+}
+@if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.ProjectChargingLine))
+{
+    <div class='transition-025s-ease @(PageSequence == 8 ? "activelink" : "")'>
+        <MudNavLink OnClick='(() => DynamicPages(8))' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.CreditScore">PROJECT CHARGING LINE</MudNavLink>
+    </div>
+}
+@if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.RequestTypes))
+{
+    <div class='transition-025s-ease @(PageSequence == 9 ? "activelink" : "")'>
+        <MudNavLink Class='fa-icon-center' OnClick='(() => DynamicPages(9))' Match="NavLinkMatch.All" Icon='fa-solid fa-clipboard-check'>REQUEST TYPES</MudNavLink>
+    </div>
+}
+@if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.Subcon))
+{
+    <MudNavGroup Class='childnavgroup expandheight-group fa-icon-center' Title='SUBCON' Icon='fa-solid fa-industry' HideExpandIcon='true'>
+        <div class='transition-025s-ease @(PageSequence == 10 ? "activelink" : "")'>
+            <MudNavLink Class='fa-icon-center' OnClick='(() => DynamicPages(10))' Match="NavLinkMatch.All" Icon='fa-solid fa-building'>SUB CON COMPANY</MudNavLink>
+        </div>
+        <div class='transition-025s-ease @(PageSequence == 11 ? "activelink" : "")'>
+            <MudNavLink OnClick='(() => DynamicPages(11))' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Info">SUB CON GENERAL INFO.</MudNavLink>
+        </div>
+        <div class='transition-025s-ease @(PageSequence == 12 ? "activelink" : "")'>
+            <MudNavLink OnClick='(() => DynamicPages(12))' Match="NavLinkMatch.All" Icon='@Icons.Material.Filled.Engineering'>SUB CON POSITION</MudNavLink>
+        </div>
+        <div class='transition-025s-ease @(PageSequence == 20 ? "activelink" : "")'>
+            <MudNavLink OnClick='(() => DynamicPages(20))' Match="NavLinkMatch.All" Icon='@Icons.Material.Filled.Work'>SCOPE OF WORK</MudNavLink>
+        </div>
+    </MudNavGroup>
+}
+@if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.ChartsofAccounts))
+{
+    <MudNavGroup Class='childnavgroup expandheight-group fa-icon-center' Title='CHART OF ACCOUNTS' Icon='@Icons.Material.Filled.AddChart' HideExpandIcon='true'>
+        <div class='transition-025s-ease @(PageSequence == 13 ? "activelink" : "")'>
+            <MudNavLink Class='fa-icon-center' OnClick='(() => DynamicPages(13))' Match="NavLinkMatch.All" Icon='fa-solid fa-file-invoice-dollar'>EXPENSE LINE</MudNavLink>
+        </div>
+        <div class='transition-025s-ease @(PageSequence == 14 ? "activelink" : "")'>
+            <MudNavLink Class='fa-icon-center' OnClick='(() => DynamicPages(14))' Match="NavLinkMatch.All" Icon="fa-solid fa-business-time">ACCOUNT LINE GROUP</MudNavLink>
+        </div>
+        <div class='transition-025s-ease @(PageSequence == 15 ? "activelink" : "")'>
+            <MudNavLink Class='fa-icon-center' OnClick='(() => DynamicPages(15))' Match="NavLinkMatch.All" Icon='fa-solid fa-money-check'>ACCOUNT TYPE</MudNavLink>
+        </div>
+        <div class='transition-025s-ease @(PageSequence == 16 ? "activelink" : "")'>
+            <MudNavLink Class='fa-icon-center' OnClick='(() => DynamicPages(16))' Match="NavLinkMatch.All" Icon="fa-solid fa-house-laptop">ACCOUNT LINE TYPE</MudNavLink>
+        </div>
+    </MudNavGroup>
+}
+@if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.Supplier))
+{
+    <MudNavGroup Class='childnavgroup expandheight-group fa-icon-center' Title='SUPPLIER' Icon='@Icons.Material.Filled.AirportShuttle' HideExpandIcon='true'>
+        <div class='transition-025s-ease @(PageSequence == 17 ? "activelink" : "")'>
+            <MudNavLink Class='fa-icon-center' OnClick='(() => DynamicPages(17))' Match="NavLinkMatch.All" Icon='@Icons.Material.Filled.Groups'>SUPPLIER</MudNavLink>
+        </div>
+        <div class='transition-025s-ease @(PageSequence == 18 ? "activelink" : "")'>
+                <MudNavLink Class='fa-icon-center' OnClick='(() => DynamicPages(18))' Match="NavLinkMatch.All" Icon='@Icons.Material.Filled.Article'>TERMS OF PAYMENT</MudNavLink>
+        </div>
+        <div class='transition-025s-ease @(PageSequence == 19 ? "activelink" : "")'>
+            <MudNavLink Class='fa-icon-center' OnClick='(() => DynamicPages(19))' Match="NavLinkMatch.All" Icon='@Icons.Material.Filled.Money'>TAX CODE</MudNavLink>
+        </div>
+        <MudNavLink OnClick='(() => OpenVATDialog())' Class='fa-icon-center text-left' Match='NavLinkMatch.All' Icon='@Icons.Material.Filled.Percent'>VAT</MudNavLink>
+    </MudNavGroup>
+}
+@if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.VoucherTag))
+{
+    <div class='transition-025s-ease @(PageSequence == 21 ? "activelink" : "")'>
+        <MudNavLink Class='fa-icon-center' OnClick='(() => DynamicPages(21))' Match="NavLinkMatch.All" Icon='fa-solid fa-user'>VOUCHER TAGS</MudNavLink>
+    </div>
+}
+
+<MudNavGroup Class='childnavgroup expandheight-group fa-icon-center' Title='CUSTOMER' Icon='@Icons.Material.Filled.Person' HideExpandIcon='true'>
+    <div class='transition-025s-ease @(PageSequence == 23 ? "activelink" : "")'>
+        <MudNavLink Class='fa-icon-center' OnClick='(() => DynamicPages(23))' Match="NavLinkMatch.All" Icon='@Icons.Material.Filled.Groups'>CUSTOMER</MudNavLink>
+    </div>
+    <div class='transition-025s-ease @(PageSequence == 24 ? "activelink" : "")'>
+            <MudNavLink Class='fa-icon-center' OnClick='(() => DynamicPages(24))' Match="NavLinkMatch.All" Icon='@Icons.Material.Filled.TypeSpecimen'>CUSTOMER TYPE</MudNavLink>
+    </div>
+</MudNavGroup>
+
+<div class='transition-025s-ease @(PageSequence == 22 ? "activelink" : "")'>
+    <MudNavLink Class='fa-icon-center' OnClick='(() => DynamicPages(22))' Match="NavLinkMatch.All" Icon='@Icons.Material.Filled.ShieldMoon'>USER PRIVILEGES</MudNavLink>
+</div>
+
+
+@code
+{
+    [Parameter] public EventCallback<int> PageClick { get; set; } 
+    [Parameter] public EventCallback VATDialogClick { get; set; }
+    [Parameter] public int PageSequence { get; set; } = 1;
+
+    private async Task DynamicPages(int number) => await PageClick.InvokeAsync(number);
+    
+    private async Task OpenVATDialog()
+    {
+        @* if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.VAT)) *@
+            await VATDialogClick.InvokeAsync();
+        @* else
+            Extensions.ShowAlert("Account has been restricted to change VAT.", Variant.Filled, SnackbarService, Severity.Error); *@
+    }
+}

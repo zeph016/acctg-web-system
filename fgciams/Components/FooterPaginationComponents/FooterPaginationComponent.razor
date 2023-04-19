@@ -1,0 +1,61 @@
+<div class='tblfooter-container'>
+    <div class="tblfooter-container__grid">
+        <div class="tblft-left"></div>
+        <div class="tblft-right">
+            <p class='tblfooter-container__lbl'>Rows per page:</p>
+            <MudMenu Class='tblfooter-container__menu mudbtnico-rotate-180' Label="@FilterParameter.PageSize.ToString()" ActivationEvent="@MouseEvent.MouseOver"
+                Dense EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Size='Size.Small'>
+                @foreach(int size in GlobalVariable.pageSize)
+                {
+                    <MudMenuItem OnClick='(() => ChangePageSize(size))'>
+                        <p class='tblfooter-container__lbl'>@size</p>
+                    </MudMenuItem>
+                }
+            </MudMenu>
+            <p class='tblfooter-container__lbl'>@StartNumber() - @EndNumber() out of @TotalRow</p>
+            <div class='tblfooter-container__control-container'>
+                <MudIconButton OnClick="(() => OnNext(false,true))" Icon="@Icons.Material.Filled.SkipPrevious" Size="Size.Small" Disabled="@(FilterParameter.PageNo == 0 ? true : false)" 
+                    Color='Color.Dark' />
+                <MudIconButton OnClick="(() => OnNext(false,false))" Icon="@Icons.Material.Filled.NavigateBefore" Size="Size.Small" Disabled="@(FilterParameter.PageNo == 0 ? true : false)" 
+                    Color='Color.Dark' />
+                <MudIconButton OnClick="(() => OnNext(true,false))" Icon="@Icons.Material.Filled.NavigateNext" Size="Size.Small" Disabled="isDisabled()" 
+                    Color='Color.Dark' />
+                <MudIconButton OnClick="(() => OnNext(true,true))" Icon="@Icons.Material.Filled.SkipNext" Size="Size.Small" Disabled="isDisabled()" 
+                    Color='Color.Dark' />
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code
+{
+    [Parameter] public FilterParameter FilterParameter { get; set; } = new();
+    [Parameter] public EventCallback<(bool,bool)> NextAndPreviousPage { get; set; }
+    [Parameter] public EventCallback<int> OnPageSizeChanged { get; set; }
+    [Parameter] public int TotalRow { get; set; }
+    public async Task OnNext(bool next, bool skip) => await NextAndPreviousPage.InvokeAsync((next,skip));
+    public bool isOpen;
+    private int StartNumber()
+    {
+        int startNumber = FilterParameter.PageNo * GlobalVariable.PageSize;
+        return startNumber <= 0 ? 1 : startNumber;
+    } 
+    private int EndNumber()
+    {
+        int endNumber = ((FilterParameter.PageNo * GlobalVariable.PageSize ) + GlobalVariable.PageSize);
+        if(GlobalVariable.PageSize > TotalRow)
+            return TotalRow;
+        return endNumber > TotalRow ? TotalRow : endNumber;
+    } 
+    private bool isDisabled()
+    {
+        return FilterParameter.PageNo == GlobalVariable.LastPage || GlobalVariable.LastPage == 0;
+    }
+
+    private async Task ChangePageSize(int value)
+    {
+        FilterParameter.PageSize = value;
+        await OnPageSizeChanged.InvokeAsync(value);
+    }
+}

@@ -3,7 +3,7 @@
 @inject IGlobalService globalService
 @inject NavigationManager navigationManager
 @inject ISupplierService supplierService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 
 <MudDialog Class='customdialog2'>
     <TitleContent>
@@ -51,12 +51,52 @@
                             <p class='rflex-bold-title'>Authorized Personnel</p>
                             <MudGrid Spacing='1'>
                                 <MudItem xs=6>
-                                     <MudTextField @bind-Value='@GlobalClass.voucherBIRModel.Personnel' Text="L. SENDICO / Govt. EE Benefits Officer II" Margin='Margin.Dense'
+                                     <MudTextField @bind-Value='@GlobalClass.voucherBIRModel.Personnel'  Margin='Margin.Dense'
                                  Placeholder="Full name" Variant='Variant.Outlined' />
                                 </MudItem>
                                 <MudItem xs=6>
-                                    <MudTextField Mask="@(new PatternMask("000-000-000-000"))" Text="131-019-875-000" @bind-Value='@GlobalClass.voucherBIRModel.PersonnelTin' Margin='Margin.Dense'
+                                    <MudTextField Mask="@(new PatternMask("000-000-000-000"))" @bind-Value='@GlobalClass.voucherBIRModel.PersonnelTin' Margin='Margin.Dense'
                                         Label='TIN' Placeholder="TIN" Variant='Variant.Outlined' /> 
+                                </MudItem>
+                            </MudGrid>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs=12>
+                        <MudPaper Class='d-flex flex-column pa-2 gap-2'>
+                            <p class='rflex-bold-title'>Other Details</p>
+                            <MudGrid Spacing='1'>
+                                <MudItem xs=4>
+                                     <MudTextField @bind-Value='@GlobalClass.voucherBIRModel.DV'  Margin='Margin.Dense'  Label='DV No.'
+                                 Placeholder="Type here" Variant='Variant.Outlined' />
+                                </MudItem>
+                                <MudItem xs=2>
+                                    <MudSelect T='string' @bind-Value='taxCode' Text='taxCode'  Margin='Margin.Dense'  Label='Code' Variant='Variant.Outlined'>
+                                            @foreach(string codes in taxCodesATC)
+                                            {
+                                                <MudSelectItem Value="codes">@codes</MudSelectItem>
+                                            }
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs=2>
+                                     <MudDatePicker @bind-Date='@GlobalClass.voucherBIRModel.VoucherDate'  Margin='Margin.Dense'  Label='DV Date'
+                                  Variant='Variant.Outlined'></MudDatePicker>
+                                </MudItem>
+                                <MudItem xs=4>
+                                    <MudTextField @bind-Value='@GlobalClass.voucherBIRModel.EWTText' Margin='Margin.Dense'
+                                        Label='EWT' Placeholder="Type here" Variant='Variant.Outlined' /> 
+                                </MudItem>
+                            </MudGrid>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs=12>
+                        <MudPaper Class='d-flex flex-column pa-2 gap-2'>
+                            <MudGrid Spacing='1' Class='pr-2'>
+                                <MudItem xs=11>
+                                     <MudTextField @bind-Value='@GlobalClass.voucherBIRModel.Expenses'  Margin='Margin.Dense'  Label='Expenses'
+                                 Placeholder="Type here" Variant='Variant.Outlined' />
+                                </MudItem>
+                                 <MudItem xs=1 Class='d-flex align-center'>
+                                    <MudCheckBox @bind-Checked='@GlobalClass.voucherBIRModel.ShowExpense' Label='Show' Dense></MudCheckBox>
                                 </MudItem>
                             </MudGrid>
                         </MudPaper>
@@ -65,7 +105,7 @@
                         <MudPaper Class='d-flex flex-column pa-2 gap-2'>
                             <p class='rflex-bold-title'>Payee</p>
                             <BlazoredTypeahead SearchMethod='LoadPayee' DisableClear placeholder='Search'
-                                ValueExpression="@(()=>payee)" Value="payee" ValueChanged="@((Project p) => SelectedPayee(p) )" Debounce='500' MaximumSuggestions='10'>
+                                ValueExpression="@(()=>payee)" MinimumLength='3' Value="payee" ValueChanged="@((Project p) => SelectedPayee(p) )" Debounce="300" MaximumSuggestions='10'>
                                 <SelectedTemplate>
                                     <div class='overflow-hidden wspace-nowrap'>
                                         @if (context.ProjectId != 0) {
@@ -101,7 +141,7 @@
                         <MudPaper Class='d-flex flex-column pa-2 gap-2'>
                             <p class='rflex-bold-title'>Payor</p>
                             <BlazoredTypeahead SearchMethod='LoadPayor' DisableClear placeholder='Search'
-                                ValueExpression="@(()=>payor)" Value="payor" ValueChanged="@((Project p) => SelectedPayor(p) )" Debounce='500' MaximumSuggestions='10'>
+                                ValueExpression="@(()=>payor)" MinimumLength='3' Value="payor" ValueChanged="@((Project p) => SelectedPayor(p) )" Debounce="300" MaximumSuggestions='10'>
                                 <SelectedTemplate>
                                     <div class='overflow-hidden wspace-nowrap'>
                                         @if (context.ProjectId != 0) {
@@ -148,7 +188,7 @@
         </div>
     </DialogActions>
 </MudDialog>
-@code{
+@code {
     [CascadingParameter]
     public MudDialogInstance MudDialog { get; set; } = new MudDialogInstance();
     private bool dataFetch = false;
@@ -158,6 +198,8 @@
     private SupplierModel currentSupplier = new();
     private bool readOnlyAddress,readOnlyZIPCode,readOnlyTIN;
     private MudDateRangePicker dateRangePeriod = new MudDateRangePicker();
+    private List<string> taxCodesATC = new();
+    private string taxCode = string.Empty;
     protected override async Task OnInitializedAsync()
     {
         Task t= Task.WhenAll(LoadVoucherBIR());
@@ -172,11 +214,18 @@
                 {
                     payee = (await globalService.LoadPayees(new FilterParameter(){IsProject=true,
                     ProjectName=GlobalClass.voucher.PayeeName},GlobalClass.token)).FirstOrDefault()?? new();
-                    await PayeeInformation(payee.ProjectId);
+                    if(payee.ProjectCategoryId == Enums.ProjectCategory.Supplier)
+                    {
+                        await PayeeInformation(payee.ProjectId);
+                    } else {
+                        GlobalClass.voucherBIRModel.PayeeRegisteredAddress = payee.Location;
+                        await PayeeTin(payee.ProjectId);
+                    }
                     GlobalClass.voucherBIRModel.PayeeName = payee.ProjectName;
                     GlobalClass.voucherBIRModel.PayeeId = payee.ProjectId;
                     GlobalClass.voucherBIRModel.PayeeCategoryId = payee.ProjectCategoryId;
-                    voucherPeriod = new DateRange(GlobalClass.voucher.PeriodFrom,GlobalClass.voucher.PeriodTo);
+                    DefaultDateRange();
+                    await DefaultPayor();
                     if(GlobalClass.voucherBIRModel.PayorId != 0)
                     {
                        payor = (await LoadPayor(GlobalClass.voucherBIRModel.PayorName)).Where(x=>x.ProjectId == GlobalClass.voucherBIRModel.PayorId).FirstOrDefault()?? new();
@@ -184,11 +233,38 @@
                 } else {
                     payee = new();
                 }
+                GlobalClass.voucherBIRModel.DV = GlobalClass.voucher.ControlNumber;
+                GlobalClass.voucherBIRModel.PayorZipCode = "5000";
+                DefaultEWTText();
+                taxCodesATC = GlobalClassList.taxCodes.Where( code => GlobalClass.voucher.EWTValue == code.TaxRate)
+                    .SelectMany(code => new List<string>() { code.ATCInd, code.ATCCorp }).Distinct().AsEnumerable().Reverse().ToList();
+                taxCode = taxCodesATC.FirstOrDefault()?? "";
             }
+            VoucherExpense();
         }
-        GlobalClass.voucherBIRModel.Personnel = "L. SENDICO / Govt. EE Benefits Officer II";
-        GlobalClass.voucherBIRModel.PersonnelTin = "131-019-875-000";
         CompletedFetch();
+    }
+    private void DefaultEWTText()
+    {
+        var ewt = GlobalClass.voucher.VoucherDetails.Where( vd => vd.IsEWT).FirstOrDefault()?? new();
+        if(ewt.Id == 0)
+             GlobalClass.voucherBIRModel.EWTText = "No EWT";
+        else
+             GlobalClass.voucherBIRModel.EWTText = ewt.ProjectName;
+
+    }
+    private void VoucherExpense()
+    {
+        List<VoucherDetailModel> newList = GlobalClass.voucher.VoucherDetails
+            .Where( v => !v.IsEWT )
+            .GroupBy( g => g.ExpenseName)
+            .Select( g => new VoucherDetailModel{
+                ExpenseName = g.First().ExpenseName,
+                SumOfGroup = g.Sum( d => d.Amount),
+            }).ToList();
+        GlobalClass.voucherBIRModel.Expenses = String.Join(", ", newList
+                .Where( v => !v.IsEWT )
+                .Select( v => v.ExpenseName+" = ₱"+v.SumOfGroup.ToString("N2")));
     }
     private async Task<IEnumerable<Project>> LoadPayee(string projectName)
     {
@@ -203,14 +279,13 @@
     }
     private async Task<IEnumerable<Project>> LoadPayor(string projectName)
     {
-        return await globalService.LoadPayorList(new FilterParameter(),GlobalClass.token);
+        return (await globalService.LoadPayorList(new FilterParameter(),GlobalClass.token)).Where( p => p.ProjectName.Contains(projectName,StringComparison.InvariantCultureIgnoreCase)).ToList();
     }
     void CompletedFetch()
     {
         GlobalClass.voucherBIRModel.PreparedBy = GlobalClass.currentUserAccount.EmployeeName;
         GlobalClass.voucherBIRModel.VoucherId = GlobalClass.voucher.Id;
         GlobalClass.voucherBIRModel.Voucher = GlobalClass.voucher;
-        voucherPeriod = new DateRange(GlobalClass.voucher.PeriodFrom,GlobalClass.voucher.PeriodTo);
         dataFetch = true;
         StateHasChanged();
     }
@@ -231,6 +306,7 @@
         {
             await PayeeInformation(p.ProjectId);
         } else {
+            await PayeeTin(payee.ProjectId);
             GlobalClass.voucherBIRModel.PayeeRegisteredAddress = p.Location;
         }
         GlobalClass.voucherBIRModel.PayeeName = p.ProjectName;
@@ -244,7 +320,7 @@
         payor = p;
         Console.WriteLine(p.ProjectId);
         PayorInformation(p);
-        GlobalClass.voucherBIRModel.PayorRegisteredAddress = p.Location;
+        //GlobalClass.voucherBIRModel.PayorRegisteredAddress = p.Location;
         
     }
     void Cancel() 
@@ -261,7 +337,8 @@
             {
                 //for reporting ATC and description
                 vDetails.TaxCodeDescription = GlobalClassList.taxCodes.Where( code => GlobalClass.voucher.EWTValue == code.TaxRate).Select( code => code.Description).FirstOrDefault()?? "";
-                vDetails.TaxCodeATC = GlobalClassList.taxCodes.Where( code => GlobalClass.voucher.EWTValue == code.TaxRate).Select( code => code.ATCInd).FirstOrDefault()?? "";
+                vDetails.TaxCodeATC = taxCode;
+                //vDetails.TaxCodeATC = GlobalClassList.taxCodes.Where( code => GlobalClass.voucher.EWTValue == code.TaxRate).Select( code => code.ATCInd).FirstOrDefault()?? "";
             }
         });
         if(GlobalClass.voucherBIRModel.PeriodFrom.HasValue)
@@ -271,9 +348,8 @@
             navigationManager.NavigateTo($"/voucher/list");//Purpose to refresh BIR print page
             navigationManager.NavigateTo($"bir/print");
             MudDialog.Close();
-        } else {
-            Extensions.ShowAlert("Voucher period is requred.",Variant.Filled,snackbarService,Severity.Warning);
-        }
+        } else
+            Extensions.ShowAlert("Voucher period is requred.",Variant.Filled,SnackbarService,Severity.Warning);
     
     }
     private async Task DisplayProperties()
@@ -300,6 +376,7 @@
         }
         payor.ProjectName = GlobalClass.voucherBIRModel.PayorName;
         payor = (await LoadPayor(GlobalClass.voucherBIRModel.PayorName)).Where(x=>x.ProjectId == GlobalClass.voucherBIRModel.PayorId).FirstOrDefault()?? new();
+        PayorInformation(payor);
     }
     private async Task PayeeInformation(long projectID)
     {
@@ -309,24 +386,89 @@
             GlobalClass.voucherBIRModel.PayeeTIN = currentSupplier.TIN;
         }
     }
+    private async Task PayeeTin(long projectID)
+    {
+        var payee = await globalService.GetPayee(projectID,GlobalClass.token);
+        GlobalClass.voucherBIRModel.PayeeTIN = payee.TINNo;
+    }
     private void PayorInformation(Project payor)
     {
         GlobalClass.voucherBIRModel.PayorId = payor.ProjectId;
         GlobalClass.voucherBIRModel.PayorName = payor.ProjectName;
+        PayorDetails();
     }
 
     private void DateRangeToday(MudDatePicker datePickerName, MudDateRangePicker dateRangePickerName)
     {
         voucherPeriod = new DateRange(DateTime.Now.AddDays(-1).Date, DateTime.Now.Date);
         SubmitDateRangePicker(new(), dateRangePickerName);
-        
     }
-    private void CancelDateRangePicker(MudDatePicker datePickerName, MudDateRangePicker dateRangePickerName)
+    private void DefaultDateRange()
     {
-        dateRangePickerName.Close(false);
+        var now = DateTime.Now;
+        GlobalClass.voucherBIRModel.VoucherDate = GlobalClass.voucher.VoucherDate;
+        if(GlobalClass.voucher.VoucherDate.Month >= 1 || GlobalClass.voucher.VoucherDate.Month <= 3)
+            voucherPeriod = new DateRange(new DateTime(now.Year,01,1,9,15,0),new DateTime(now.Year,03,DateTime.DaysInMonth(now.Year, 3),9,15,0));
+        else if(GlobalClass.voucher.VoucherDate.Month >= 4 || GlobalClass.voucher.VoucherDate.Month <= 6)
+            voucherPeriod = new DateRange(new DateTime(now.Year,04,1,9,15,0),new DateTime(now.Year,06,DateTime.DaysInMonth(now.Year, 6),9,15,0));
+        else if(GlobalClass.voucher.VoucherDate.Month >= 7 || GlobalClass.voucher.VoucherDate.Month <= 9)
+            voucherPeriod = new DateRange(new DateTime(now.Year,07,1,9,15,0),new DateTime(now.Year,09,DateTime.DaysInMonth(now.Year, 9),9,15,0));
+        else 
+            voucherPeriod = new DateRange(new DateTime(now.Year,10,1,9,15,0),new DateTime(now.Year,12,DateTime.DaysInMonth(now.Year, 12),9,15,0));
     }
-    private void SubmitDateRangePicker(MudDatePicker datePickerName, MudDateRangePicker dateRangePickerName)
+    private async Task DefaultPayor()
     {
-        dateRangePickerName.Close(true);
+        payor = (await LoadPayor("F. Gurrea Construction, Inc.")).Where(x=>x.ProjectId == 1 && x.ProjectCategoryId == Enums.ProjectCategory.Company).FirstOrDefault()?? new();
+        PayorInformation(payor);
+        //GlobalClass.voucherBIRModel.PayorRegisteredAddress = payor.Location;
+    }
+    private void CancelDateRangePicker(MudDatePicker datePickerName, MudDateRangePicker dateRangePickerName) => dateRangePickerName.Close(false);
+    private void SubmitDateRangePicker(MudDatePicker datePickerName, MudDateRangePicker dateRangePickerName) => dateRangePickerName.Close(true);
+
+    private void PayorDetails()
+    {
+        switch (GlobalClass.voucherBIRModel.PayorId)
+        {
+            //FG
+            case 1:
+                GlobalClass.voucherBIRModel.PayorRegisteredAddress = "Q. Abeto St., Mandurriao, Iloilo City";
+                GlobalClass.voucherBIRModel.PayorTIN = "002-006-594-000";
+                GlobalClass.voucherBIRModel.Personnel = "L. SENDICO / Govt. EE Benefits Officer II";
+                GlobalClass.voucherBIRModel.PersonnelTin = "131-019-875-000";
+            break;
+            //Fix resources
+            case 16:
+                GlobalClass.voucherBIRModel.PayorRegisteredAddress = "San Rafael, Mandurriao, Iloilo City";
+                GlobalClass.voucherBIRModel.PayorTIN = "006-231-093-000";
+                GlobalClass.voucherBIRModel.Personnel = "FERN IVES L. GURREA / Authorized Representative";
+                GlobalClass.voucherBIRModel.PersonnelTin = "281-744-618-000";
+            break;
+            //Golden road
+            case 6:
+                GlobalClass.voucherBIRModel.PayorRegisteredAddress = "Q. Abeto St., Mandurriao, Iloilo City";
+                GlobalClass.voucherBIRModel.PayorTIN = "000-250-840-000";
+                GlobalClass.voucherBIRModel.Personnel = "MA. FEMIE LAPI-AN / SUPERVISOR";
+                GlobalClass.voucherBIRModel.PersonnelTin = "150-622-385-000";
+            break;
+            //Good fortune
+            case 7:
+                GlobalClass.voucherBIRModel.PayorRegisteredAddress = "397 Rizal Street, Brgy. Osmeña, City Proper, Iloilo City";
+                GlobalClass.voucherBIRModel.PayorTIN = "000-250-687-000";
+                GlobalClass.voucherBIRModel.Personnel = "AILYN GALARAGA  / President";
+                GlobalClass.voucherBIRModel.PersonnelTin = "136-804-347-000";
+            break;  
+            //Top most
+            case 12:
+                GlobalClass.voucherBIRModel.PayorRegisteredAddress = "Brgy. Calajunan, Mandurriao, Iloilo City";
+                GlobalClass.voucherBIRModel.PayorTIN = "000-251-381-000";
+                GlobalClass.voucherBIRModel.Personnel = "RAYMUND E. TABUGA / General Manager";
+                GlobalClass.voucherBIRModel.PersonnelTin = "117-366-889-000";
+            break;  
+            default:
+                GlobalClass.voucherBIRModel.Personnel = "L. SENDICO / Govt. EE Benefits Officer II";
+                GlobalClass.voucherBIRModel.PersonnelTin = "131-019-875-000";
+            break;
+        }
+        StateHasChanged();
     }
 }

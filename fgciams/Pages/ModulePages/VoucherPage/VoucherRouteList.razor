@@ -3,10 +3,11 @@
 @inject IVoucherService voucherService
 @inject NavigationManager navigationManager
 @inject IDialogService dialogService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject IJSRuntime JSRuntime
 @inject ApplicationState AppState
 @inject IVoucherRouteTagUserService voucherRouteTagUserService
+@inject IAccessLevelService accessLevelService
 
 <div class='page-cont'>
   <div class='drawer-right-min'>
@@ -26,7 +27,7 @@
     {
       <MudTable Class='table-style-1 ' ServerData='new Func<TableState, Task<TableData<VoucherModel>>>(LoadVoucherServer)' Hover='true' Height='calc(100vh - 185px)'
           Breakpoint='Breakpoint.Sm' Bordered FixedHeader FixedFooter Dense Loading='isLoading'
-          RowsPerPage='15' @ref='tableVariable'>
+          @ref='tableVariable'>
           <ToolBarContent>
             <MudText Typo='Typo.caption'>
               @totalItems
@@ -38,7 +39,7 @@
               <MudIconButton Class='@(isLoading ? "mudbtnico-rotate":"")' OnClick='ReloadTable' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" 
                 Color='@(isLoading ? Color.Info : Color.Default)'/>
             </MudTooltip>
-              <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' ActivationEvent='MouseEvent.MouseOver'
+              <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' 
                 TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
                   <MudMenuItem OnClick="RouteVouchers">
                       <div class='d-flex align-center gap-2 '>
@@ -135,7 +136,7 @@
             </MudTd>
             <MudTd DataLabel='Signatories'>
               <MudTooltip Text='Signatories' Placement='Placement.Left'>
-                <MudMenu Icon="@Icons.Material.Filled.Groups" AnchorOrigin='Origin.BottomRight' ActivationEvent='MouseEvent.MouseOver'
+                <MudMenu Icon="@Icons.Material.Filled.Groups" AnchorOrigin='Origin.BottomRight' 
                   TransformOrigin='Origin.TopLeft' Dense Size='Size.Small'>
                   <MudMenuItem>
                     <MudPaper class='pa-2 bgc-e7f2fb min-width200px'>
@@ -205,9 +206,18 @@
               </div>
             </MudTd>
             <MudTd Class='@(isPinnedAmt ? "col-sticky-action text-center":"text-center")' DataLabel='Actions'>
-              <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
+              <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
                 TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
-                  <MudMenuItem OnClick='(() => NavigateToRoute(context))'>
+                <VoucherRouteMenuComponent
+                  ModuleName='voucher route'
+                  VoucherModel='context'
+                  TagsNumber='@getTagsNumbers(context.VoucherRouteTags)'
+                  NavigateToClick='( ()=> NavigateToRoute(context))'
+                  TasgName='@getTagsName(context.VoucherRouteTags)'
+                  ApproveClick='( ()=> ApproveRoute(GetUserTagInVoucher(context.VoucherRouteTags), context))'
+                  AuditTrailClick='( ()=> { navigationManager.NavigateTo($"/voucher-audit"); GlobalClass.voucher = context; })'
+                />
+                  @* <MudMenuItem OnClick='(() => NavigateToRoute(context))'>
                     <a class='d-flex align-center gap-2 '>
                       <MudIcon Icon='fa-solid fa-route' Size='Size.Small' />
                       <MudText Typo='Typo.body2'>Route</MudText>
@@ -228,7 +238,7 @@
                         <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' />
                         <MudText Typo='Typo.body2'>Audit Trail</MudText>
                       </a>
-              </MudMenuItem>
+              </MudMenuItem> *@
               </MudMenu>
             </MudTd>
           </RowTemplate>
@@ -256,7 +266,13 @@
             } *@
           </ChildRowContent>
           <PagerContent>
-            <MudTablePager PageSizeOptions="@GlobalVariable.pageSize" />
+            <FooterPaginationComponent
+                FilterParameter='filterParameter'
+                NextAndPreviousPage='( async (args)=> await NextAndPreviousPage((bool) args.Item1, (bool) args.Item2))'
+                OnPageSizeChanged='( async (int s)=> await PageSizeChanged(s) )'
+                TotalRow='TotalRow'
+              />
+            @* <MudTablePager PageSizeOptions="@GlobalVariable.pageSize" /> *@
           </PagerContent>
       </MudTable>
     }
@@ -277,6 +293,7 @@
     private HashSet<VoucherModel> selectedVouchers = new HashSet<VoucherModel>();
     private List<VoucherRouteTagUserModel> userTags = new List<VoucherRouteTagUserModel>();
     private string tagsNotApproved  = "";
+    private int TotalRow = 0;
     protected override async Task OnInitializedAsync()
     {
         GlobalClass.pageTitle = "Voucher Route List";
@@ -285,6 +302,8 @@
         if(GlobalClass.currentUserAccount == null || GlobalClassList.accountingStatusList == null 
         || GlobalClassList.accountingStatusList.Count() == 0 || GlobalClassList.Vouchers == null)
           await Task.Delay(1);
+        await VoucherListRowCount();
+        await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.VoucherRoute);
         Task t = Task.WhenAll(CurrentUserTag());
         await t;
         if(t.Status == TaskStatus.RanToCompletion)
@@ -296,7 +315,14 @@
       dataFetched = true;
       StateHasChanged();
     }
-
+    protected override void OnAfterRender(bool firstRender)
+    {
+      if(firstRender)
+      {
+        filterParameter.PageSize = 15;
+        filterParameter.PageNo = 0;
+      }
+    }
     private async Task<TableData<VoucherModel>> LoadVoucherServer(TableState tableState)
     {
       isLoading = true;
@@ -314,19 +340,19 @@
           break;
       }
       
-      GlobalClassList.Vouchers = data.Where( v => v.StatusName != "V-Generated").ToList();
       //Multiselection table server side rendering
-      //if(checkAll)
-      //  GlobalClassList.Vouchers.ForEach( v => v.IsSelected = true);
+      GlobalClassList.Vouchers = data.ToList();
+      
       GlobalClassList.selectedVoucherToRoute.ForEach(vSelected => {
         GlobalClassList.Vouchers.ForEach( v =>
         {
-          if(v.IsSelected && v.ControlNumber == vSelected.ControlNumber)
+          if(v.ControlNumber == vSelected.ControlNumber)
             v.IsSelected = true;
         });
       });
+      
       StateHasChanged();
-      pageData = GlobalClassList.Vouchers.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
+      pageData = GlobalClassList.Vouchers.Skip(tableState.Page * GlobalVariable.PageSize).Take(GlobalVariable.PageSize).ToArray();
       totalItems = GlobalClassList.Vouchers.Count();
       isLoading = !isLoading;
       return new TableData<VoucherModel>()
@@ -343,6 +369,8 @@
   private void FilterTable()
   {
     filterParameter = GlobalVariable.filterParameter;
+    filterParameter.PageSize = GlobalVariable.PageSize;
+    filterParameter.PageNo = 0;
     tableVariable.ReloadServerData();
   }
   private void OpenRouters()
@@ -353,11 +381,14 @@
     GlobalClass.voucherRoute.VoucherList = GlobalClassList.selectedVoucherToRoute.ToList();//Add all selected Voucher in Route
     }
     else
-      Extensions.ShowAlert("Please select a voucher/s to be routed",Variant.Filled,snackbarService,Severity.Error);
+      Extensions.ShowAlert("Please select a voucher/s to be routed",Variant.Filled,SnackbarService,Severity.Error);
   }
   private async Task ReloadTable()
   {
+      await VoucherListRowCount();
       filterParameter = new();
+      filterParameter.PageSize = GlobalVariable.PageSize;
+      filterParameter.PageNo = 0;
       await tableVariable.ReloadServerData();
   }
   private bool EnableClearButton()
@@ -376,10 +407,13 @@
   {
     if(GlobalClassList.selectedVoucherToRoute.Count != 0)
     {
-      await RoutesDialog();
+      if(Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Add))
+        await RoutesDialog();
+      else
+        Extensions.ShowAlert("Account has been restricted to route vouchers.", Variant.Filled, SnackbarService, Severity.Error);
     }
     else
-      Extensions.ShowAlert("Please select a voucher/s to be routed",Variant.Filled,snackbarService,Severity.Error);
+      Extensions.ShowAlert("Please select a voucher/s to be routed",Variant.Filled,SnackbarService,Severity.Error);
   }
   private async Task RoutesDialog()
   {
@@ -421,15 +455,15 @@
   private async Task ApproveRoute(List<VoucherRouteTagModel> tag, VoucherModel voucher)
   {
     //checkpoint validation
-    if(getTagsNumbers(tag) == 0)
+    if(getTagsNumbers(tag) > 0)
     {
       if(GetUserTagInVoucher(tag).Count > 0)
         await PromptConfirmation( tag , voucher);
       else
-        Extensions.ShowAlert("You are not allowed to approve the tag of this voucher ("+voucher.ControlNumber+")", Variant.Filled, snackbarService, Severity.Error);
+        Extensions.ShowAlert("You are not allowed to approve the tag of this voucher ("+voucher.ControlNumber+")", Variant.Filled, SnackbarService, Severity.Error);
     } else 
     {
-      Extensions.ShowAlert(String.Format("This Voucher({0}) has been approved for filing.",voucher.ControlNumber), Variant.Filled, snackbarService, Severity.Error);
+      Extensions.ShowAlert(String.Format("This Voucher({0}) has been approved for filing.",voucher.ControlNumber), Variant.Filled, SnackbarService, Severity.Error);
     }
   }
   private async Task PromptConfirmation(List<VoucherRouteTagModel> tag, VoucherModel voucher)
@@ -461,12 +495,12 @@
         voucher.Activity = "Approved Route ("+tagsList+")";
         voucher.IsActive = true;
         voucher = await voucherService.UpdateVoucher(voucher, GlobalClass.token);
-        Extensions.ShowAlert("Voucher successfully filed", Variant.Filled, snackbarService, Severity.Success);
+        Extensions.ShowAlert("Voucher successfully filed", Variant.Filled, SnackbarService, Severity.Success);
       }
     }
     else
     {
-      Extensions.ShowAlert(String.Format("This Voucher({0}) has been approved for filing.",voucher.ControlNumber), Variant.Filled, snackbarService, Severity.Error);
+      Extensions.ShowAlert(String.Format("This Voucher({0}) has been approved for filing.",voucher.ControlNumber), Variant.Filled, SnackbarService, Severity.Error);
     }
     StateHasChanged();
   }
@@ -521,4 +555,39 @@
         checkAll = !checkAll;
     }
   }
+  private async Task NextAndPreviousPage(bool next, bool skipNext)
+    {
+      if(skipNext)
+      {
+        if(next)
+        {
+          if(GlobalVariable.LastPage != 0)
+            filterParameter.PageNo = GlobalVariable.LastPage;
+          else
+            filterParameter.PageNo++;
+        }
+        else 
+          filterParameter.PageNo = 0;
+      } else {
+        if(next)
+          filterParameter.PageNo++;
+        else 
+          filterParameter.PageNo--;
+      }
+      await tableVariable.ReloadServerData();
+    }
+    private async Task VoucherListRowCount()
+    {
+      int count = TotalRow = await voucherService.VoucherListRowCount(new FilterParameter(){ isActive = true, PageSize = 2000000 , PageNo =0 },GlobalClass.token);
+      if(count % GlobalVariable.PageSize == 0)
+        GlobalVariable.LastPage = (Convert.ToInt32(Math.Floor(Convert.ToDecimal(count) / Convert.ToDecimal(GlobalVariable.PageSize)))) - 1;
+      else
+        GlobalVariable.LastPage = Convert.ToInt32(Math.Floor(Convert.ToDecimal(count) / Convert.ToDecimal(GlobalVariable.PageSize)));
+    }
+    private async Task PageSizeChanged(int s)
+    {
+      filterParameter.PageSize = GlobalVariable.PageSize = s; 
+      await tableVariable.ReloadServerData();
+      await VoucherListRowCount();
+    }
 }

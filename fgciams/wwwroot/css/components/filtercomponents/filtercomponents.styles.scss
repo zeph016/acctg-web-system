@@ -1,3 +1,7 @@
+@use "../flexgridmods/flexgridmods.styles.css";
+@use "../buttonmods/buttonmods.styles.css";
+@use "../animations/animation.styles.css";
+
 .selfiltereditems-container {
     align-items: center;
     display: flex;
@@ -9,5 +13,79 @@
     overflow: auto;
     .mud-chip-content {
         font-size: 10px;
+    }
+}
+
+.popover-scale1 {
+    z-index: calc(1200 + 1) !important;
+}
+
+.popfilter {
+    transform: scale(0.86);
+    position: absolute;
+    z-index: 1200;
+    transition: all ease;
+    backface-visibility: hidden;
+}
+
+.popover-list {
+    right: -25px;
+    top: -5px;
+}
+
+.popover-dialog {
+    right: -10px;
+    top: -1%;
+}
+
+.popfilter-container { 
+    border-top: solid thick #542D6F;
+    border-radius: 4px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 40px 1fr 1fr auto;
+    gap: 0px 0px;
+    grid-auto-flow: row;
+    grid-template-areas:
+      "popfilter-header popfilter-header popfilter-header popfilter-header"
+      "popfilter-content popfilter-content popfilter-content popfilter-content"
+      "popfilter-content popfilter-content popfilter-content popfilter-content"
+      "popfilter-footer popfilter-footer popfilter-footer popfilter-footer";
+    min-width: 350px;
+    max-width: 400px;
+
+    .popfilter-header { grid-area: popfilter-header; }
+    .popfilter-content { grid-area: popfilter-content; }
+    .popfilter-footer { grid-area: popfilter-footer; }
+    .popfilter-header {
+        @extend .dflex-row;
+        gap: 8px;
+        padding: 8px;
+        &__title {
+            font-family: "SF-Pro-Display Regular";
+            font-size: 16px;
+            text-transform: capitalize;
+        }
+    }
+    .popfilter-footer {
+        &__actions {
+            @extend .dflex-row, .button-m;
+            padding: 8px;
+            gap: 8px;
+        }
+    }
+    .mud-grid-item { 
+        @extend .dflex-row; 
+        justify-content: center;
+    }
+    .mud-checkbox { padding-top: 12px; }
+    &__control {
+        padding-right: 12px;
+    }
+    .mud-input-root-text { padding: 0px !important; }
+    .popfilter-content {
+        &__ctrlno-container {
+            padding: 8px;
+        }
     }
 }

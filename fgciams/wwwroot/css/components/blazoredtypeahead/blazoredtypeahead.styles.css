@@ -106,4 +106,19 @@
 
 .blzrth-result-height-rfp-payee .blazored-typeahead__results {
   max-height: calc(100vh - 200px) !important;
+}
+
+.blzrth-cont-signatories {
+  flex: 1 1 0%;
+}
+.blzrth-cont-signatories small {
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.blzrth-cont-signatories__txt-required {
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
 }/*# sourceMappingURL=blazoredtypeahead.styles.css.map */

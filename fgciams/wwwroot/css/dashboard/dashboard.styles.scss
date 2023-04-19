@@ -1,3 +1,5 @@
+@use "../components/flexgridmods/flexgridmods.styles.css";
+
 .dboard-container {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
@@ -38,4 +40,36 @@
 
 .dboard-bottom-right {
   grid-area: dboard-bottom-right;
+}
+
+.dashboard-container {
+  height: 100%;
+  padding: 8px !important;
+}
+
+.dashboard {
+  display: grid; 
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr; 
+  grid-template-rows: auto 1fr 1fr 1fr 1fr 1fr; 
+  gap: 0px 0px; 
+  grid-template-areas: 
+    "dashboard-header dashboard-header dashboard-header dashboard-header dashboard-header dashboard-header"
+    "dashboard-content dashboard-content dashboard-content dashboard-content dashboard-content dashboard-content"
+    "dashboard-content dashboard-content dashboard-content dashboard-content dashboard-content dashboard-content"
+    "dashboard-content dashboard-content dashboard-content dashboard-content dashboard-content dashboard-content"
+    "dashboard-content dashboard-content dashboard-content dashboard-content dashboard-content dashboard-content"
+    "dashboard-footer dashboard-footer dashboard-footer dashboard-footer dashboard-footer dashboard-footer"; 
+  .dashboard-header { grid-area: dashboard-header; }
+  .dashboard-content { grid-area: dashboard-content; }
+  .dashboard-footer { grid-area: dashboard-footer; }
+  height: 100%;
+  .dashboard-header, .dashboard-content, .dashboard-footer{
+    @extend .dflex-row;
+    padding: 4px 8px;
+  }
+  &__title {
+    font-family: "SF-Pro-Display Regular";
+    font-size: 18px;
+    font-weight: bold;
+  }
 }

@@ -1,0 +1,170 @@
+@inherits PreviewCollectionBase
+
+<div class='custom-dialog2'>
+    <div class='custom-dialog2__title'>
+        <MudIcon Class='@(IsFAIcon ? "mr-2":"")' Icon='@IconString' Size='@(IsFAIcon ? Size.Small:Size.Medium)' />
+        <p>@DialogTitle</p>
+        <MudSpacer />
+        <MudChip OnClick='(() => CopyTextToClipboard(Collection.ControlNumber))' Label Variant='Variant.Filled'>
+            <small>@Collection.ControlNumber</small>
+        </MudChip>
+    </div>
+    <div class='custom-dialog2__content'>
+        @if (!dataFetched)
+        {
+            <div class='circular-progress-cont'>
+                <MudProgressCircular Indeterminate Size='Size.Medium' Color='Color.Primary' />
+            </div>
+        }
+        else
+        {
+            <MudPaper Class='collectiondialog-view'>
+               <div class="collectiondialog-view__grid">
+                    <div class="coll-lbltransdate">
+                        <p class='collectiondialog-view__lbl'>Date:</p>
+                    </div>
+                    <div class="coll-transdate">
+                        <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Variant='Variant.Outlined' 
+                            Icon='@Icons.Material.Filled.CalendarMonth'>
+                            @Convert.ToDateTime(Collection.TransactionDate).ToShortDateString()
+                        </MudChip>
+                    </div>
+                    <div class="coll-lblcat">
+                        <p class='collectiondialog-view__lbl'>Category:</p>
+                    </div>
+                    <div class="coll-cat">
+                        <p class='collectiondialog-view__txt'>@Extensions.GetEnumDescription(Collection.CollectionCategoryId)</p>
+                    </div>
+                    <div class="coll-controls">
+                        <MudSpacer />
+                        <MudTooltip Text='@(Collection.StatusId != 1 ? "Cannot modify Collection, Check Status":"Modify Collection")' Arrow Placement='Placement.Top'>
+                            <MudIconButton Class='circular-ico-24 chkmod-btn' OnClick='(() => EditCollection(Collection))' Icon="@Icons.Material.Filled.Edit" aria-label="Edit" Size='Size.Small' 
+                                Variant='Variant.Filled' Color='Color.Tertiary' Disabled='@(Collection.StatusId != 1 ? true:false)'/>
+                        </MudTooltip>
+                    </div>
+                    <div class='coll-lblstatus'>
+                        <p class='collectiondialog-view__lbl'>Status:</p>
+                    </div>
+                    <div class='coll-status'>
+                          <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Style='@Extensions.BorderColor(Collection.StatusId)' Variant='Variant.Outlined'
+                            Label>
+                            @(AcctgStatus(Collection.StatusId).StatusName == string.Empty ? "N/A" : AcctgStatus(Collection.StatusId).StatusName)
+                        </MudChip>
+                    </div>
+                    <div class="coll-lblcust">
+                        <p class='collectiondialog-view__lbl'>Customer:</p>
+                    </div>
+                    <div class="coll-cust">
+                        <p class='collectiondialog-view__txt'>@Collection.CustomerName</p>
+                    </div>
+                    <div class="coll-lblprojc">
+                        <p class='collectiondialog-view__lbl'>PROJ/CHRG:</p>
+                    </div>
+                    <div class="coll-projc">
+                        <p class='collectiondialog-view__txt'>@Collection.ChargeName</p>
+                    </div>
+                    <div class="coll-lblexp">
+                        <p class='collectiondialog-view__lbl'>Expense:</p>
+                    </div>
+                    <div class="coll-exp">
+                        <p class='collectiondialog-view__txt'>@Collection.ExpenseName</p>
+                    </div>
+                    <div class="coll-lblref">
+                        <p class='collectiondialog-view__lbl'>Reference:</p>
+                    </div>
+                    <div class="coll-ref">
+                           <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Variant='Variant.Outlined' Color='Color.Dark'
+                            Label>
+                                @Collection.ReferenceNo
+                            </MudChip>
+                    </div>
+                    <div class="coll-lblor">
+                        <p class='collectiondialog-view__lbl'>OR.:</p>
+                    </div>
+                    <div class="coll-or">
+                        <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Variant='Variant.Outlined' 
+                            Color='@(Collection.OfficialReceipt == "0" ? Color.Dark:Color.Info)' Label>
+                            @(Collection.OfficialReceipt == "0" ? "N/A" : Collection.OfficialReceipt)
+                        </MudChip>
+                    </div>
+                    <div class="coll-lbltype">
+                        <p class='collectiondialog-view__lbl'>Type:</p>
+                    </div>
+                    <div class="coll-type">
+                        <p class='collectiondialog-view__txt'>@Extensions.GetEnumDescription(Collection.PaymentTypeId)</p>
+                    </div>
+                    <div class="coll-lblchkdate">
+                       <p class='collectiondialog-view__lbl'>Check Date:</p>
+                    </div>
+                    <div class="coll-chkdate">
+                        <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Variant='Variant.Outlined' 
+                            Icon='@Icons.Material.Filled.CalendarMonth'>
+                             @Convert.ToDateTime(Collection.CheckDate).ToShortDateString()
+                        </MudChip>
+                    </div>
+                    <div class="coll-lblcheckno">
+                        <p class='collectiondialog-view__lbl'>Check:</p>
+                    </div>
+                    <div class="coll-checkno">
+                         <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Variant='Variant.Outlined' 
+                            Color='@(Collection.CheckNumber == "0" ? Color.Dark:Color.Error)' Label>
+                            @(Collection.CheckNumber == "0" ? "N/A" : Collection.CheckNumber)
+                        </MudChip>
+                    </div>
+                    <div class="coll-postdated">
+                        <MudCheckBox Class='chkbox-sm' @bind-Checked='@Collection.IsPDC' Label='Post Dated'
+                            Size='Size.Small' UnCheckedColor='Color.Dark' Color='Color.Info' />
+                    </div>
+                    <div class="coll-lblgross">
+                        <p class='collectiondialog-view__lbl'>Total Gross:</p>
+                    </div>
+                    <div class="coll-gross">
+                         <MudChip OnClick='(() => CopyTextToClipboard(Math.Round(Collection.TotalGrossAmount,2).ToString("N2")))' Class='cursor-pointer' Variant='Variant.Text' 
+                            Size='Size.Small' Color='@(Collection.TotalGrossAmount > 0 ? Color.Success:Color.Error)'>
+                                <p class='collectiondialog-view__txt font-bold @(Collection.TotalGrossAmount > 0 ? "color-green":"color-red")'>
+                                    @("₱" + Math.Round(Collection.TotalGrossAmount,2).ToString("N2"))
+                                </p>
+                         </MudChip>
+                    </div>
+                    <div class="coll-lblnet">
+                        <p class='collectiondialog-view__lbl'>Net Amount:</p>
+                    </div>
+                    <div class="coll-net">
+                        <MudChip OnClick='(() => CopyTextToClipboard(Math.Round(Collection.NetAmount,2).ToString("N2")))' Class='cursor-pointer' Variant='Variant.Text' 
+                            Size='Size.Small' Color='@(Collection.NetAmount > 0 ? Color.Success:Color.Error)'>
+                               <p class='collectiondialog-view__txt font-bold @(Collection.TotalGrossAmount > 0 ? "color-green":"color-red")'>
+                                    @("₱" + Math.Round(Collection.NetAmount,2).ToString("N2"))
+                                </p>
+                        </MudChip>'
+                    </div>
+                    <div class="coll-lbldesc pt-1">
+                        <p class='collectiondialog-view__lbl'>Description:</p>
+                    </div>
+                    <div class="coll-desc">
+                        <div class='coll-textarea'>
+                            <p class='collectiondialog-view__txt'>
+                                @(Collection.Description == string.Empty ? "No Description" : Collection.Description)
+                            </p>
+                        </div>
+                    </div>
+                    <div class="coll-lblrem pt-1">
+                        <p class='collectiondialog-view__lbl'>Remarks:</p>
+                    </div>
+                    <div class="coll-rem">
+                        <div class='coll-textarea'>
+                            <p class='collectiondialog-view__txt'>
+                                @(Collection.Remarks == string.Empty ? "No Remarks" : Collection.Remarks)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </MudPaper>
+        }
+    </div>
+    <div class='custom-dialog2__actions'>
+        <MudSpacer />
+        <MudButton OnClick='Cancel' Size='Size.Small' Variant='Variant.Text' DisableElevation >
+            @CancelText
+        </MudButton>
+    </div>
+</div>

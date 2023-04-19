@@ -99,7 +99,7 @@
                             <SignatoriesComponent employeeId='@Liquidation.PreparedById' avatarSize='Size.Medium' />
                         </MudPaper>
                         <MudPaper Class='pa-2 bgc-e7f2fb min-width200px'>
-                            <MudText Class='font10 font-bold'>Prepared By:</MudText>
+                            <MudText Class='font10 font-bold'>Approved By:</MudText>
                             <SignatoriesComponent employeeId='@Liquidation.ApprovedById' avatarSize='Size.Medium' />
                         </MudPaper>
                     </div>
@@ -143,11 +143,7 @@
 
     private void Close() => MudDialog.Close(DialogResult.Ok(true));
     private void Cancel() => MudDialog.Cancel();
-
-    private async Task CopyTextToClipboard(string stringToCopy)
-    {
-        await Extensions.CopyTextToClipboard(stringToCopy, SnackbarService, JSRuntime);
-    }
+    private async Task CopyTextToClipboard(string stringToCopy) => await Extensions.CopyTextToClipboard(stringToCopy, SnackbarService, JSRuntime);
 
     private async Task GetLiquidationDetails()
     {

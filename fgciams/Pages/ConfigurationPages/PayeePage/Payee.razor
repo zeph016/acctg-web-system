@@ -2,8 +2,9 @@
 
 @inject IPayeeService payeeService
 @inject IDialogService dialogService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject ApplicationState AppState
+@inject IAccessLevelService accessLevelService
 
 <div class='page-cont'>
     <div class='drawer-right'>
@@ -21,6 +22,15 @@
                     <MudTextField Class='txtfield-75' @bind-Value='searchTerm' Placeholder='Payee Name'
                     Adornment='Adornment.Start' AdornmentIcon='@Icons.Material.Filled.Search' IconSize='Size.Small'
                     Clearable='true' Variant='Variant.Outlined' />
+                    <MudSelect Class='txtfield-75' Label='Category' Value='searchCategory' ValueChanged='( (PayeeCategoryModel cat)=> SelectedCategory(cat) )'  Clearable='true' Text=''
+                        IconSize='Size.Small' Dense Placeholder='Category' Variant='Variant.Outlined'
+                        Adornment='Adornment.Start' AdornmentIcon='@Icons.Material.Filled.Search'
+                        AnchorOrigin='Origin.BottomCenter' TransformOrigin='Origin.TopCenter'>
+                        @foreach (var item in GlobalClassList.payeeCategoryList)
+                        {
+                            <MudSelectItem Value="@item">@item.CategoryName</MudSelectItem>
+                        }
+                    </MudSelect>
                     <MudButton Variant='Variant.Filled' Color='Color.Secondary'>Apply Filter</MudButton>
                 </div>
             </div>
@@ -44,9 +54,9 @@
                     </MudText>
                     <MudSpacer/>
                     <MudTooltip Text="Refresh Table">
-                        <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='(()=>{searchTerm = "";})' ></MudIconButton>
+                        <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='(()=>{ searchTerm = ""; searchCategory = new(); })' ></MudIconButton>
                     </MudTooltip>
-                    <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                    <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
                         TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
                         <MudMenuItem OnClick='(() => PayeeDialog(new PayeeModel(), Enums.ActionMode.Create))'>
                             <div class='d-flex align-center gap-2 '>
@@ -89,7 +99,7 @@
                     </MudTd>
                     <MudTd Class="text-center"><MudCheckBox Checked="@context.HasInvoice" ReadOnly="true" Size='Size.Small' /></MudTd>
                     <MudTd Class="text-center pa-2">
-                        <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                        <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
                         TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
                             <MudMenuItem OnClick='(() => PayeeDialog(context, Enums.ActionMode.Update))'>
                                 <div class='d-flex align-center gap-2 '>
@@ -135,7 +145,7 @@
     private bool dataFetched, openSideFilter;
     private int[] pageSize = new int[] { 30, 50, 100, 500, 1000 };
     private string searchTerm = string.Empty, visibility = "visibility-animation-hide";
-    
+    private PayeeCategoryModel searchCategory = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -143,10 +153,16 @@
         while (GlobalClass.currentUserAccount == null || GlobalClassList.payeeList == null || GlobalClassList.payeeCategoryList == null)
             await Task.Delay(1);
         await AppState.UpdateMainLayoutComponent(true);
+        await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.Payee);
         CompletedFetch();
         SignalR();
     }
 
+    private void SelectedCategory(PayeeCategoryModel cat)
+    {
+        searchCategory = cat;
+        PayeeModel payee = GlobalClassList.payeeList.Where(c => c.PayeeCategoryId == cat.Id).FirstOrDefault()?? new();
+    }
     void CompletedFetch()
     {
         dataFetched = true;
@@ -155,6 +171,13 @@
 
     private async Task PayeeDialog(PayeeModel payee, Enums.ActionMode action)
     {
+        Enums.AISModuleFunctions function = action == Enums.ActionMode.Update? Enums.AISModuleFunctions.Edit : Enums.AISModuleFunctions.Add;
+        if (!Common.Privileges.isPrivilegeFunction(function))
+        {
+                string act = action == Enums.ActionMode.Update ? "edit" : "add";
+                Extensions.ShowAlert(String.Format("Account has been restricted to {0} Payee.", act), Variant.Filled, SnackbarService, Severity.Error);
+                return;
+        }
         var parameters = new DialogParameters();
         GlobalClass.payee = payee;
         string dialogTitle = GlobalClass.payee.Id != 0 ? "Edit Payee" : "Add Payee";
@@ -169,23 +192,31 @@
         if (!resultDialog.Canceled)
         {
             if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Create)
-                Extensions.ShowAlert("Payee successfully added.", Variant.Filled,snackbarService,Severity.Success);
+                Extensions.ShowAlert("Payee successfully saved.", Variant.Filled,SnackbarService,Severity.Success);
             else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Update)
-                Extensions.ShowAlert("Payee successfully updated.", Variant.Filled,snackbarService,Severity.Info);
+                Extensions.ShowAlert("Payee successfully updated.", Variant.Filled,SnackbarService,Severity.Info);
             else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Deactivate)
-                Extensions.ShowAlert("Payee has been deactivated.", Variant.Filled,snackbarService,Severity.Info);
+                Extensions.ShowAlert("Payee has been deactivated.", Variant.Filled,SnackbarService,Severity.Info);
             else
                 await LoadPayees();
         } else if (resultDialog.Canceled)
-            Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
+            Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
     }
 
     private bool FilterItems(PayeeModel items)
     {
-        if (string.IsNullOrEmpty(searchTerm))
+        if(searchCategory.Id == 0 && string.IsNullOrEmpty(searchTerm))
             return true;
-        if (items.PayeeName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase))
-            return true;
+        @* //Dual filter
+        if(searchCategory.Id != 0 && !string.IsNullOrEmpty(searchTerm))
+            if (items.PayeeCategoryId == searchCategory.Id && items.PayeeName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase))
+                return true; *@
+        if (!string.IsNullOrEmpty(searchTerm))
+            if (items.PayeeName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase))
+                return true;
+        if(searchCategory.Id != 0)
+            if (items.PayeeCategoryId == searchCategory.Id)
+                return true;
         return false;
     }
 
@@ -215,8 +246,5 @@
             throw;
         }
     }
-    private async Task LoadPayees()
-    {
-        GlobalClassList.payeeList = await payeeService.LoadPayee(GlobalClass.token);
-    }
+    private async Task LoadPayees() => GlobalClassList.payeeList = await payeeService.LoadPayee(GlobalClass.token);
 }

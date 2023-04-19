@@ -10,7 +10,7 @@
     <DialogContent>
         <div Class='customdialog__content-container'>
             <BlazoredTypeahead SearchMethod=LoadProject 
-            @bind-Value='payee' Debounce="500" placeholder='Project / Charge' >
+            @bind-Value='payee' Debounce="300" MinimumLength='3' placeholder='Project / Charge' >
               <SelectedTemplate>
               @context.ProjectName | @context.Location
               </SelectedTemplate>

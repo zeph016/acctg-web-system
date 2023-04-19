@@ -1,12 +1,14 @@
+@use "../components/flexgridmods/flexgridmods.styles.css";
+
 .voucherpage {
   &__grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 130px 1fr;
-    grid-template-rows: 40px 50px 40px 40px calc(100vh - 290px);
+    grid-template-columns: 1fr 1fr 1fr 130px 0.6fr;
+    grid-template-rows: 40px 50px auto 40px calc(100vh - 290px);
     gap: 0px 0px;
     grid-template-areas:
       "voucher-header voucher-header voucher-header voucher-header voucher-header"
-      "voucher-payee voucher-payee voucher-payee voucher-status voucher-status"
+      "voucher-payee voucher-payee voucher-status voucher-status voucher-status"
       "voucher-rfp voucher-rfp voucher-rfp voucher-rfp voucher-rfp"
       "voucher-desc voucher-desc voucher-remarks voucher-remarks voucher-remarks"
       "voucher-details voucher-details voucher-details voucher-details voucher-details";
@@ -52,8 +54,25 @@
     border-left: solid thin lightgray;
   }
 
+  .voucher-rfp {
+    @extend .dflex-row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0px 8px;
+    &__subcontainer {
+      @extend .dflex-row;
+      flex: 1 1 0% !important;;
+      overflow: hidden;
+      gap: 8px;
+    }
+  }
+
   .voucher-status,
   .voucher-remarks {
+    border-right: solid thin lightgray;
+  }
+  .voucher-status,
+  .voucher-period {
     border-right: solid thin lightgray;
   }
 
@@ -166,5 +185,11 @@
   }
   .bg-f4f5fb {
     background-color: #f4f5fb;
+  }
+  .checkbox-ewt {
+    .mud-icon-button {
+      padding: 4px !important;
+    }
+    p { font-size: 12px !important; }
   }
 }

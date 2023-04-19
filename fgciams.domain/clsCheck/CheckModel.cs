@@ -35,16 +35,17 @@ namespace fgciams.domain.clsCheck
         public bool isShowChild {get;set;}
         public bool showReport {get;set;}
         public DateTime? StatusDate {get;set;} = DateTime.Now;
+        public Enums.CheckCategory CheckCategoryId { get; set; }
         public string CheckCategory
         {
             get
             {
                 DateTime checkDate = Convert.ToDateTime(CheckDate?.ToString("MM/dd/yyyy"));
                 var months = (DateTime.Now.Year - checkDate.Year) * 12 + DateTime.Now.Month - checkDate.Month + (checkDate.Day >= DateTime.Now.Day ? 0 : -1);
-                if(AccountingStatusId == 17  && months > 6) //Check not cleared and greater then 6 months, 17 is C-Issued
-                    return "Stale Check";
                 if(AccountingStatusId == 17 && months < 6 && checkDate > DateTime.Now) //Check not cleared and within 6months
                     return "In-Transit";
+                if(AccountingStatusId == 17  && months > 6) //Check not cleared and greater then 6 months, 17 is C-Issued
+                    return "Stale Check";
                 return "Post-Dated";
             }
         }

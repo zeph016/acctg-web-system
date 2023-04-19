@@ -2,15 +2,18 @@ using System.Net.Http.Headers;
 using fgciams.domain.clsBankDeposit;
 using fgciams.domain.clsCollection;
 using fgciams.domain.clsFilterParameter;
+using Microsoft.Extensions.Configuration;
 
 namespace fgciams.service.CollectionServices
 {
     public class CollectionService : ICollectionService
     {
         private readonly HttpClient client;
-        public CollectionService(HttpClient _client)
+        private readonly IConfiguration configuration;
+        public CollectionService(HttpClient _client, IConfiguration _config)
         {
-            this.client = _client;
+            client = _client;
+            configuration = _config;
         }
         public async Task<List<CollectionAuditTrailModel>> GetAuditTrail(long Id, string token)
         {
@@ -87,6 +90,40 @@ namespace fgciams.service.CollectionServices
             if (responseMessage.IsSuccessStatusCode)
                 coll = await responseMessage.Content.ReadAsAsync<CollectionModel>();
             return coll;
+        }
+        public async Task<int> CollectionListRowCount(FilterParameter param, string token)
+        {
+          int count = 0;
+          client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+          HttpResponseMessage responseMessage = await client.PostAsJsonAsync("/collection/list/count",param);
+          if (responseMessage.IsSuccessStatusCode)
+              count = await responseMessage.Content.ReadAsAsync<int>();
+          return count;
+        }
+        public async Task<List<CollectionModel>> CollectionReportList(FilterParameter param, string token)
+        {
+            var listCollections = new List<CollectionModel>();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            HttpResponseMessage responseMessage = await client.PostAsJsonAsync("/collection-report/billing-accomplishment",param);
+            if (responseMessage.IsSuccessStatusCode)
+                listCollections = await responseMessage.Content.ReadAsAsync<List<CollectionModel>>();
+            return listCollections;
+        }
+        public async Task<string> GetBillingReport(List<CollectionModel> model)
+        {
+            var pdfContent = "data:application/pdf;base64,";
+            HttpResponseMessage responseMessage = await client.PostAsJsonAsync(configuration["ReportServer"] + "ams-Billing/BillingReport", model);
+            if(responseMessage.IsSuccessStatusCode)
+                pdfContent += Convert.ToBase64String(await responseMessage.Content.ReadAsByteArrayAsync());
+            return pdfContent;
+        }
+        public async Task<string> GetCollectionReport(List<CollectionModel> model)
+        {
+            var pdfContent = "data:application/pdf;base64,";
+            HttpResponseMessage responseMessage = await client.PostAsJsonAsync(configuration["ReportServer"] + "ams/collection/DailyCollectionReport", model);
+            if(responseMessage.IsSuccessStatusCode)
+                pdfContent += Convert.ToBase64String(await responseMessage.Content.ReadAsByteArrayAsync());
+            return pdfContent;
         }
     }
 }

@@ -1,0 +1,46 @@
+@inject ISnackbar SnackbarService
+
+<MudMenuItem OnClick='NavigateTo'>
+    <a class='d-flex align-center gap-2 '>
+        <MudIcon Icon='fa-solid fa-route' Size='Size.Small' />
+        <MudText Typo='Typo.body2'>Route</MudText>
+    </a>
+</MudMenuItem>
+<MudMenuItem OnClick='Approve'>
+    <a class='d-flex align-center gap-2 '>
+        <MudIcon Icon='@(VoucherModel.VoucherRouteTags.All(x=> x.IsRouted) == true ? "fa-solid fa-check":"fa-solid fa-clock")' Size='Size.Small' />
+        <MudTooltip Text='@(VoucherModel.VoucherRouteTags.All(x=> x.IsRouted) == true ? "All tags has been Approved":"Pending tags("+TasgName+")")'>
+        <MudText Typo='Typo.body2'>@(VoucherModel.VoucherRouteTags.All(x=> x.IsRouted) == true ? "Approved for Filing" 
+            : (TagsNumber == 0) ? "Approved for Filing"
+            : " Approve for Filing ("+TagsNumber+" "+(TagsNumber <= 1 ? "Pending":"Pendings")+")")</MudText>
+        </MudTooltip>
+    </a>
+</MudMenuItem>
+<MudMenuItem OnClick='AuditTrail'>
+    <a class='d-flex align-center gap-2 '>
+        <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' />
+        <MudText Typo='Typo.body2'>Audit Trail</MudText>
+    </a>
+</MudMenuItem>
+@code
+{
+    [Parameter] public string ModuleName { get; set; } = string.Empty;
+    [Parameter] public VoucherModel VoucherModel { get; set; } = new();
+    [Parameter] public string TasgName { get; set; } = string.Empty;
+    [Parameter] public int TagsNumber { get; set; } = 0; 
+    [Parameter] public EventCallback NavigateToClick { get; set; }
+    [Parameter] public EventCallback ApproveClick { get; set; }
+    [Parameter] public EventCallback AuditTrailClick { get; set; }
+
+    private async Task NavigateTo() => await isAllowed(NavigateToClick, Enums.AISModuleFunctions.Add); 
+    private async Task Approve() => await isAllowed(ApproveClick, Enums.AISModuleFunctions.ChangeStatus); 
+    private async Task AuditTrail() => await isAllowed(AuditTrailClick, Enums.AISModuleFunctions.View);
+    
+    private async Task isAllowed(EventCallback callback, Enums.AISModuleFunctions function)
+    {
+        if(Common.Privileges.isPrivilegeFunction(function))
+            await callback.InvokeAsync();
+        else
+            Extensions.ShowAlert(String.Format("Account has been restricted to {0} {1}.",function.ToString().ToLower(), ModuleName), Variant.Filled, SnackbarService, Severity.Error);
+    }
+}

@@ -2,9 +2,9 @@
 
 @inject IProjectChargingLineService projectChargingLineService
 @inject IDialogService dialogService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject ApplicationState AppState
-
+@inject IAccessLevelService accessLevelService
 
 <div class='page-cont'>
   <div class='drawer-right'>
@@ -48,7 +48,7 @@
                 <MudTooltip Text="Refresh Table">
                     <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='(()=>{searchTerm = "";})' ></MudIconButton>
                 </MudTooltip>
-                <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
                         TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
                       <MudMenuItem OnClick='(() => ProjectChargingLineDialog(new ProjectChargingLineModel(), Enums.ActionMode.Create))'>
                           <div class='d-flex align-center gap-2 '>
@@ -76,7 +76,7 @@
                 <MudTd DataLabel="ShortcutName">@context.Remarks</MudTd>
                 <MudTd class="text-center pa-2">
                   <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft'
-                  TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' ActivationEvent='MouseEvent.MouseOver'>
+                  TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' >
                       <MudMenuItem OnClick='(() => ProjectChargingLineDialog(context, Enums.ActionMode.Update))'>
                           <div class='d-flex align-center gap-2 '>
                               <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' />
@@ -107,13 +107,12 @@
     while (GlobalClass.currentUserAccount == null || GlobalClassList.projectChargingLines == null)
       await Task.Delay(1);
     await AppState.UpdateMainLayoutComponent(true);
+    await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.ProjectChargingLine);
     CompletedFetch();
     SignalR();
   }
-  private async Task LoadChargingLines()
-  {
-      GlobalClassList.projectChargingLines = await projectChargingLineService.LoadProjectChargingLine(GlobalClass.token);
-  }
+  private async Task LoadChargingLines() => GlobalClassList.projectChargingLines = await projectChargingLineService.LoadProjectChargingLine(GlobalClass.token);
+  
   void CompletedFetch()
   {
       dataFetched = true;
@@ -122,6 +121,13 @@
 
   private async Task ProjectChargingLineDialog(ProjectChargingLineModel projectCharging, Enums.ActionMode action)
   {
+    Enums.AISModuleFunctions function = action == Enums.ActionMode.Update? Enums.AISModuleFunctions.Edit : Enums.AISModuleFunctions.Add;
+    if (!Common.Privileges.isPrivilegeFunction(function))
+    {
+      string act = action == Enums.ActionMode.Update ? "edit" : "add";
+      Extensions.ShowAlert(String.Format("Account has been restricted to {0} Project Charging Line.", act), Variant.Filled, SnackbarService, Severity.Error);
+      return;
+    }
     var parameters = new DialogParameters();
     GlobalClass.projectChargingLine = projectCharging;
     string dialogTitle = GlobalClass.projectChargingLine.Id != 0 ? "Edit Project Charging Line" : "Add Project Charging Line";
@@ -136,14 +142,14 @@
     if (!resultDialog.Canceled)
     {
       if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Create)
-        Extensions.ShowAlert("Project Charging Line successfully added.", Variant.Filled,snackbarService,Severity.Success);
+        Extensions.ShowAlert("Project Charging Line successfully saved.", Variant.Filled,SnackbarService,Severity.Success);
       else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Update)
-        Extensions.ShowAlert("Project Charging Line successfully updated.", Variant.Filled,snackbarService,Severity.Info);
+        Extensions.ShowAlert("Project Charging Line successfully updated.", Variant.Filled,SnackbarService,Severity.Info);
       else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Update)
-        Extensions.ShowAlert("Project Charging Line has been deactivated.", Variant.Filled,snackbarService,Severity.Warning);
+        Extensions.ShowAlert("Project Charging Line has been deactivated.", Variant.Filled,SnackbarService,Severity.Warning);
       GlobalClassList.projectChargingLines = GlobalClassList.projectChargingLines.Where(x => x.IsActive == true).ToList();
     } else if (resultDialog.Canceled)
-        Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
+       Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
   }
 
   private bool FilterItems(ProjectChargingLineModel items)

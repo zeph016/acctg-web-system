@@ -13,7 +13,7 @@ namespace fgciams.service.VoucherServices
 {
     public interface IVoucherService
     {
-        Task<List<RequestForPaymentModel>> NotInVoucher(string token);
+        Task<List<RequestForPaymentModel>> NotInVoucher(FilterParameter param, string token);
         Task<VoucherModel> AddVoucher(VoucherModel voucher, string token);
         Task<List<VoucherModel>> LoadVouchers(FilterParameter filterParameter, string token);
         Task<VoucherModel> UpdateVoucher(VoucherModel voucher, string token);
@@ -25,5 +25,14 @@ namespace fgciams.service.VoucherServices
         Task<List<VoucherDetailModel>> GetProjectSubledgers(FilterParameter parameter, string token);
         Task<SubContractorProjectModel> GetContractAmount(long subContractorId, long projectId, long SOWId, string token);
         Task<List<VoucherDetailModel>> GetSunbConProjects(FilterParameter parameter, string token);
+        Task<int> VoucherListRowCount(FilterParameter paramemter, string token);
+        Task<string> GenerateLiquidationVoucherReport(VoucherModel voucher);
+        Task<VoucherModel> GetSignatories(long preparedById, string token);
+        Task<List<VoucherDetailModel>> VoucherDetailListForReport(FilterParameter param, string token);
+        Task<string> GenerateNewVoucherReport(FilterParameter param, string token);
+        Task<string> GenerateVoucherSOA(List<VoucherDetailModel> details,string token);
+        Task<List<VoucherDetailModel>> VoucherDetailSOAList(FilterParameter param, string token);
+        Task<byte[]> VoucherReportGetExcel(FilterParameter param, string token);
+        Task<List<VoucherDetailModel>> GetSubConAPProjects(FilterParameter param, string token);
     }
 }

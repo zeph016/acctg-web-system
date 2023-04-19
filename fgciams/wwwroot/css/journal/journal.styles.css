@@ -162,8 +162,16 @@
   max-width: 100px !important;
 }
 
+.max-width260px {
+  max-width: 260px;
+}
+
 .max-width250px {
   max-width: 250px;
+}
+
+.max-width57px {
+  max-width: 57px;
 }
 
 .min-width200px {
@@ -244,6 +252,18 @@
   white-space: nowrap !important;
 }
 
+.chkbox50px {
+  height: 30px !important;
+  width: 50px !important;
+}
+
+.chkbox50px .mud-typography {
+  margin-top: 2px;
+  font-size: 10px !important;
+  font-weight: bold;
+  white-space: nowrap !important;
+}
+
 .dynamic-width-1, .jrnl-td-width {
   max-width: calc(80vw - 760px);
   align-items: center;
@@ -279,7 +299,7 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-} /*# sourceMappingURL=heightwidth.styles.css.map */
+} 
 .jrnl-td-width {
   justify-content: space-between;
 }

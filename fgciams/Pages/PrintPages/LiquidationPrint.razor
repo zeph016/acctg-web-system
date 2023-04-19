@@ -1,13 +1,11 @@
 @page "/liquidationreport/print"
 @page "/liquidation/print"
 
-@inject ILiquidationService liquidationService
-@inject NavigationManager navigationManager
-@inject IDialogService dialogService
-@inject ISnackbar snackBarService
-@inject IConfiguration config
+@inherits LiquidationPrintBase
 
 <div class='page-cont d-flex'>
+    <ActionsOverlayComponent IsOverlayVisible='_processing' ActionMode='@actionMode' ModuleName="Liquidation"
+        ProgressValue='@progressValue' />
     <div class='rpt-container'>
         <MudCard Class='rpt-container__document-cont' Elevation='1'>
             <div class='rpt-container__iframe-cont'>
@@ -23,76 +21,10 @@
         </MudCard>
          <ReportControls 
             ControlPosition='rptctrls-side-bottom'
-            ConfirmStr='SAVE Liquidation'
+            ConfirmStr='SAVE LIQUIDATION'
             IsSaved='isSaved' 
             Processing='_processing'
             BackEventClick='Back'
             PromptEventClick='Prompt' />
     </div>
 </div>
-
-@code{
-    string pdfReport = string.Empty;
-    bool isSaved, _processing;
-    protected override async Task OnInitializedAsync()
-    {
-        GlobalClass.pageTitle = "liquidation report";
-        Task t = Task.WhenAll(LoadPDFReport());
-        await t;
-    }
-    private async Task LoadPDFReport()
-    {
-        pdfReport = await liquidationService.PrintSaveLiquidation(GlobalClass.forPrintingOrSaveLiquidation);
-        pdfReport += "#toolbar=0";
-    }
-    private async Task Prompt()
-    {
-        _processing = true;
-        var liquidation = new LiquidationModel();
-        var parameters = new DialogParameters();
-        string contentText = "Liquidation";
-        string dialogTitle = GlobalClass.forPrintingOrSaveLiquidation.Id == 0 ? "Create " + contentText : "Update " + contentText;
-        parameters.Add("contentText", contentText);
-        parameters.Add("dialogTitle", dialogTitle);
-        parameters.Add("controlNumber", GlobalClass.forPrintingOrSaveLiquidation.ControlNumber);
-        parameters.Add("actionMode", GlobalClass.forPrintingOrSaveLiquidation.Id == 0 ? Enums.ActionMode.Create : Enums.ActionMode.Update);
-        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
-        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Canceled)
-        {
-            if (GlobalClass.forPrintingOrSaveLiquidation.Id == 0)
-            {
-                liquidation = await liquidationService.AddLiquidation(GlobalClass.forPrintingOrSaveLiquidation, GlobalClass.token);
-                Extensions.ShowAlert("Liquidation successfully added", Variant.Filled, snackBarService, Severity.Success);
-                _processing = false;
-                isSaved = true;
-            }
-            else
-            {
-                liquidation = await liquidationService.UpdateLiquidation(GlobalClass.forPrintingOrSaveLiquidation, GlobalClass.token);
-                Extensions.ShowAlert("Liquidation successfully updated", Variant.Filled, snackBarService, Severity.Success);
-                _processing = false;
-                isSaved = true;
-            }
-
-            pdfReport = await liquidationService.PrintSaveLiquidation(liquidation);
-            if(GlobalVariable.AMSHubConnection != null)
-                await GlobalVariable.AMSHubConnection.InvokeAsync("SaveLiquidation", liquidation);
-
-        }
-        _processing = false;
-    }
-    private void Back()
-    {
-      if(!isSaved)
-      {
-        GlobalClass.liquidation = GlobalClass.forPrintingOrSaveLiquidation;
-        navigationManager.NavigateTo($"/liquidation");  
-      }
-      else
-      {
-        navigationManager.NavigateTo($"/liquidation/list");
-        GlobalClass.forPrintingOrSaveLiquidation = default!;
-      }
-    }
-}

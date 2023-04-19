@@ -1,0 +1,115 @@
+@inject ISnackbar SnackbarService
+
+
+@if( AccountingStatusId == RequestForPaymentModel.AccountingStatusId)
+{
+    if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.VoucherEntry))
+    {
+    <MudMenuItem OnClick='CreateVoucher'>
+        <div class='d-flex align-center gap-2'>
+            <MudIcon Icon='@Icons.Material.Filled.LibraryAddCheck' Size='Size.Small' />
+            <MudText Typo='Typo.body2'>Create Voucher</MudText>
+        </div>
+    </MudMenuItem>
+    }
+}
+<MudMenuItem OnClick='PreviewRFP'>
+    <div class='d-flex align-center gap-2'>
+        <MudIcon Icon='@Icons.Material.Filled.Preview' Size='Size.Small' Color='Color.Dark'/>
+        <MudText Typo='Typo.body2'>View</MudText>
+    </div>
+</MudMenuItem>
+@if(!EnabledEdit)
+{
+<MudMenuItem OnClick='EditRFP'>
+    <div class='d-flex align-center gap-2'>
+        <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' />
+        <MudText Typo='Typo.body2'>Edit</MudText>
+    </div>
+</MudMenuItem>
+<MudMenuItem OnClick='ApprovedRFPStatus'>
+    <div class='d-flex align-center gap-2'>
+    <MudIcon Icon='@Icons.Material.Filled.CheckCircle' Size='Size.Small' />
+    <MudText Typo='Typo.body2'>Approve</MudText>
+    </div>
+</MudMenuItem>
+
+<MudMenuItem OnClick='CancelRFPStatus'>
+    <div class='d-flex align-center gap-2'>
+    <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small' />
+    <MudText Typo='Typo.body2'>Cancel</MudText>
+    </div>
+</MudMenuItem>
+}
+else if( AccountingStatusId == RequestForPaymentModel.AccountingStatusId)
+{
+    if(Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Void))
+    {
+        <MudMenuItem OnClick='VoidRFP'>
+            <div class='d-flex align-center gap-2'>
+                <MudIcon Icon='@Icons.Material.Filled.CancelPresentation' Size='Size.Small' />
+                <MudText Typo='Typo.body2'>Generated (Void)</MudText>
+            </div>
+        </MudMenuItem>
+    }
+}
+<MudMenuItem OnClick='ViewAuditTrail'>
+    <div class='d-flex align-center gap-2'>
+        <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' />
+        <MudText Typo='Typo.body2'>Audit Trail</MudText>
+    </div>
+</MudMenuItem>
+<MudMenuItem OnClick='ShowReport'>
+    <div class='d-flex align-center gap-2'>
+        <MudIcon Icon='@Icons.Material.Filled.PictureAsPdf' Size='Size.Small' />
+        <MudText Typo='Typo.body2'> @(RequestForPaymentModel.ShowReport ? "Close" : "Show") Report</MudText>
+    </div>
+</MudMenuItem>
+@code
+{
+    [Parameter] public RequestForPaymentModel RequestForPaymentModel { get; set; } = new();
+    [Parameter] public string ModuleName { get; set; } = string.Empty;
+    [Parameter] public bool EnabledEdit { get; set; } = false;
+    [Parameter] public long AccountingStatusId { get; set; } = 0;
+    [Parameter] public EventCallback PreviewClick { get; set; }
+    [Parameter] public EventCallback EditClick { get; set; }
+    [Parameter] public EventCallback ApproveClick { get; set; }
+    [Parameter] public EventCallback CancelClick { get; set; }
+    [Parameter] public EventCallback VoidClick { get; set; }
+    [Parameter] public EventCallback AuditTrailClick { get; set; }
+    [Parameter] public EventCallback ShowReportClick { get; set; }
+    [Parameter] public EventCallback CreateVoucherClick { get; set; }
+
+
+    private async Task PreviewRFP() => await isAllowed(PreviewClick, Enums.AISModuleFunctions.View);
+    private async Task VoidRFP() => await isAllowed(VoidClick, Enums.AISModuleFunctions.Void);
+    private async Task ViewAuditTrail() => await isAllowed(AuditTrailClick, Enums.AISModuleFunctions.View);
+    private async Task ShowReport() => await isAllowed(ShowReportClick, Enums.AISModuleFunctions.View);
+    private async Task ApprovedRFPStatus() => await isAllowed(ApproveClick, Enums.AISModuleFunctions.ChangeStatus);
+    private async Task CancelRFPStatus() => await isAllowed(CancelClick, Enums.AISModuleFunctions.ChangeStatus);
+    private async Task CreateVoucher() => await CreateVoucherClick.InvokeAsync();
+    private async Task EditRFP()
+    {
+        if(Common.Privileges.isAllowEdit(RequestForPaymentModel))
+            await EditClick.InvokeAsync();
+        else
+            Extensions.ShowAlert("Account has been restricted to edit other requests for payment", Variant.Filled, SnackbarService, Severity.Error);
+    }
+    private async Task isAllowed(EventCallback callback, Enums.AISModuleFunctions function)
+    {
+        if(function == Enums.AISModuleFunctions.View)
+        {
+            if(Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.View) || 
+            Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.ViewDepartment) || 
+            Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.ViewOwn))
+                await callback.InvokeAsync();
+            else
+                Extensions.ShowAlert(String.Format("Account has been restricted to {0} {1}.",function.ToString().ToLower(), ModuleName), Variant.Filled, SnackbarService, Severity.Error);
+        } else {
+            if(Common.Privileges.isPrivilegeFunction(function))
+                await callback.InvokeAsync();
+            else
+                Extensions.ShowAlert(String.Format("Account has been restricted to {0} {1}.",function.ToString().ToLower(), ModuleName), Variant.Filled, SnackbarService, Severity.Error);
+        }
+    }
+}

@@ -1,31 +1,33 @@
 @page "/liquidation/list"
+@page "/liquidation/list/{notificationCNo}"
+
 @inject ILiquidationService liquidationService
 @inject NavigationManager navigationManager
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject IJSRuntime JSRuntime
 @inject IDialogService dialogService
 @inject IConfiguration config
+@inject IPettyCashService pettyCashService
+@inject IAccessLevelService accessLevelService
 
 <div class='page-cont'>
   <div class='drawer-right-min'>
-      <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
-          <FilterComponent OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
-            FilterClick='FilterTable' ResetTableClick='ReloadTable'
-            contentVisible='openSideFilter' moduleName="liquidation-list"/>
+      <MudDrawer Class='pa-1' Open='false' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <MudTooltip Text='Filter' Arrow Placement='Placement.Left'>
+                <MudIconButton OnClick='(() => openFilter = !openFilter)' Icon='@Icons.Material.Filled.FilterList' arial-label='Close Filter' Size='Size.Small' />
+            </MudTooltip>
       </MudDrawer>
   </div>
 
   <MudContainer Class='py-2 pl-2 pr-10  table-toolbar-custom1' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
     @if (!dataFetched)
     {
-      <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
-        <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='calc(100vh - 135px)' Animation='Animation.Wave' />
-      </MudPaper>
+      <SkeletonPageList />
     }
     else
     {
       <MudTable Class='table-style-1 ' ServerData='new Func<TableState, Task<TableData<LiquidationModel>>>(LoadLiquidationFromServer)' 
-        Breakpoint='Breakpoint.Sm' Hover FixedHeader FixedFooter Bordered Dense RowsPerPage='15' Filter='new Func<LiquidationModel,bool>(FilterItems)' @ref='tableVariable'
+        Breakpoint='Breakpoint.Sm' Hover FixedHeader FixedFooter Bordered Dense Filter='new Func<LiquidationModel,bool>(FilterItems)' @ref='tableVariable'
           Loading='isLoading'> 
         <ToolBarContent>
           <MudText Typo='Typo.caption'>
@@ -38,24 +40,26 @@
                 <MudIconButton Class='@(isLoading ? "mudbtnico-rotate":"")' OnClick='ReloadTable' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" 
                   Color='@(isLoading ? Color.Info : Color.Default)'/>
             </MudTooltip>
-            <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' ActivationEvent='MouseEvent.MouseOver'
+            <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' 
                 TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
-                @if(AccessLevelAddmin() || AccessLevelRequestors())
-                  {
-                    <MudMenuItem OnClick='(()=> navigationManager.NavigateTo($"/liquidation"))'>
-                      <div class='d-flex align-center gap-2 '>
-                          <MudIcon Icon='@Icons.Material.Filled.Add' Size='Size.Small' />
-                          <MudText Typo='Typo.body2'>Create liquidation</MudText>
-                      </div>
-                    </MudMenuItem>
-                    <MudMenuItem OnClick="(() => openSideFilter = !openSideFilter)"  >
-                        <div class='d-flex align-center gap-2 '>
-                            <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
-                            <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
-                        </div>
-                    </MudMenuItem>                        
-                  }
+                <MudMenuItem OnClick='CreateLiquidation'>
+                  <div class='d-flex align-center gap-2 '>
+                      <MudIcon Icon='@Icons.Material.Filled.Add' Size='Size.Small' />
+                      <MudText Typo='Typo.body2'>New Liquidation</MudText>
+                  </div>
+                </MudMenuItem>
+                <MudMenuItem OnClick="(() => openFilter = !openFilter)"  >
+                    <div class='d-flex align-center gap-2 '>
+                        <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
+                        <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
+                    </div>
+                </MudMenuItem>                        
             </MudMenu>
+            @if(openFilter)
+            {
+              <PopoverFilterMainComponent IsOpen='openFilter' CloseFilter='(() => openFilter = !openFilter)' IsMainFilter='true' IsModuleList='true'
+                  ModuleName='liquidation-list' ApplyFilter='FilterTable' ResetTableData='ReloadTable'/>
+            }
         </ToolBarContent>
         <ColGroup>
           <col style='width: 1%' />
@@ -139,16 +143,28 @@
             </div>
           </MudTd>
           <MudTd Class='@(isPinnedAmt ? "col-sticky-action text-center":"text-center")'>
-            <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
+            <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' 
               TransformOrigin='Origin.TopRight' Dense Size='Size.Small'>
-                <MudMenuItem OnClick='(() => PreviewLiquidation(context))'>
+              <LiquidationMenuComponent
+                  ModuleName="liquidation"
+                  LiquidationModel="context"
+                  PreviewClick='(() => PreviewLiquidation(context))'
+                  EditLiquidationClick='(()=> EditLiquidation(context))'
+                  ApproveLiquidationClick='(()=> ApproveLiquidation(context))'
+                  EnableEditApproved ='EnableEditApproved(context)'
+                  CancelLiquidationClick="(()=> CancelLiquidation(context))"
+                  VoidLiquidationClick="(()=> VoidLiquidation(context))"
+                  AccountingStatus="AccountingStatus(Enums.ActionMode.Approve).Id == context.StatusId"
+                  AuditTrailClick="(()=> ViewAuditTrail(context))"
+                  ShowReportClick="( ()=> context.ShowReport = ShowReport(context.ShowReport, context) )"
+              />
+                @* <MudMenuItem OnClick='(() => PreviewLiquidation(context))'>
                     <div class='d-flex align-center gap-2'>
                         <MudIcon Icon='@Icons.Material.Filled.Preview' Size='Size.Small' Color='Color.Dark'/>
                         <MudText Typo='Typo.body2'>View</MudText>
                     </div>
                 </MudMenuItem>
-                @if((!EnableEditApproved(context) && AccessLevelAddmin()) 
-                || (!EnableEditApproved(context) && AccessLevelRequestors()))
+                @if(!EnableEditApproved(context))
                 {
                   <MudMenuItem OnClick='(()=> EditLiquidation(context))' Disabled='EnableEditApproved(context)'>
                     <a class='d-flex align-center gap-2 '>
@@ -156,24 +172,21 @@
                       <MudText Typo='Typo.body2'>Edit</MudText>
                     </a>
                   </MudMenuItem>
-                  if(AccessLevelAddmin())
-                  {
-                    <MudMenuItem OnClick='(()=> ApproveLiquidation(context))'>
-                      <div class='d-flex align-center gap-2 '>
-                        <MudIcon Icon='@Icons.Material.Filled.CheckCircle' Size='Size.Small'/>
-                        <MudText Typo='Typo.body2'>Approve</MudText>
-                      </div>
-                    </MudMenuItem>
-                    <MudMenuItem OnClick='(()=> CancelLiquidation(context))'>
-                      <div class='d-flex align-center gap-2 '>
-                        <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small'/>
-                        <MudText Typo='Typo.body2'>Cancel</MudText>
-                      </div>
-                    </MudMenuItem>
-                  }
-
+                  <MudMenuItem OnClick='(()=> ApproveLiquidation(context))'>
+                    <div class='d-flex align-center gap-2 '>
+                      <MudIcon Icon='@Icons.Material.Filled.CheckCircle' Size='Size.Small'/>
+                      <MudText Typo='Typo.body2'>Approve</MudText>
+                    </div>
+                  </MudMenuItem>
+                  <MudMenuItem OnClick='(()=> CancelLiquidation(context))'>
+                    <div class='d-flex align-center gap-2 '>
+                      <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small'/>
+                      <MudText Typo='Typo.body2'>Cancel</MudText>
+                    </div>
+                  </MudMenuItem>
                 }
-                else if(AccountingStatus(Enums.ActionMode.Approve).Id == context.StatusId && AccessLevelAddmin())
+                else 
+                if(AccountingStatus(Enums.ActionMode.Approve).Id == context.StatusId)
                 {
                   <MudMenuItem OnClick='(()=> VoidLiquidation(context))'>
                     <a class='d-flex align-center gap-2 '>
@@ -193,7 +206,7 @@
                         <MudIcon Icon='@Icons.Material.Filled.PictureAsPdf' Size='Size.Small' />
                         <MudText Typo='Typo.body2'> @(context.ShowReport ? "Close" : "Show") Report</MudText>
                     </div>
-                </MudMenuItem>
+                </MudMenuItem> *@
             </MudMenu>
           </MudTd>
         </RowTemplate>
@@ -218,6 +231,9 @@
                             <iframe class='rpt-container-listview__iframe-scaled' src='@pdfContent' />
                           }
                           <ReportControls 
+                            Exporting='isExporting'
+                            AllowExportEXCEL='true'
+                            ExportToEXCEL='ExportToExcel'
                             IsCloseOnly='true'
                             ConfirmStr='Close Report' 
                             BackEventClick='(() => context.ShowReport = !context.ShowReport)' />
@@ -230,7 +246,12 @@
             </MudTr>
         </ChildRowContent>
         <PagerContent>
-            <MudTablePager PageSizeOptions="GlobalVariable.pageSize" />
+          <FooterPaginationComponent
+                FilterParameter='filterParameter'
+                NextAndPreviousPage='( async (args)=> await NextAndPreviousPage((bool) args.Item1, (bool) args.Item2))'
+                OnPageSizeChanged='( async (int s)=> await PageSizeChanged(s) )'
+                TotalRow='TotalRow'              />
+            @* <MudTablePager PageSizeOptions="GlobalVariable.pageSize" /> *@
         </PagerContent>
         </MudTable>
     }
@@ -238,8 +259,8 @@
 </div>
 
 @code{
-
-  private bool dataFetched, openSideFilter, isLoading, isPinnedCtrlNo = true, isPinnedAmt = true;
+  [Parameter] public string notificationCNo { get; set; } = string.Empty;
+  private bool dataFetched, openFilter, isLoading, isPinnedCtrlNo = true, isPinnedAmt = true;
   private string pdfContent = default!;
   private string searchTerm = string.Empty, noRecordsStr = string.Empty;
   private int totalItems;
@@ -251,14 +272,30 @@
   private AccountingStatusModel selectedStatus = new();
   private IEnumerable<AccountingStatusModel> hasAccountingStatus {get; set;} = new HashSet<AccountingStatusModel>();
   private List<AccountingStatusModel> statusList = new();
+  private List<PettyCashModel> pettyCashList = new();
+  private int TotalRow = 0;
+  private bool isExporting = false;
+  private LiquidationModel LiquidationToExport = new();
   protected override async Task OnInitializedAsync()
   {
     GlobalClass.pageTitle = "Liquidation List";
     while (GlobalClass.currentUserAccount == null || string.IsNullOrEmpty(GlobalClass.token) 
     || GlobalClassList.accountingStatusList == null)
-        await Task.Delay(1);
-    
-    SignalRHubConnection();
+       await Task.Delay(1);
+    await LiquidationListRowCount();
+    Task t = Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.LiquidationList);
+    await t;
+    if(t.Status == TaskStatus.RanToCompletion)
+    {
+        filterParameter = new();
+        GlobalVariable.filterParameter = new();
+        Extensions.ViewRestrictions(filterParameter);
+        filterParameter = GlobalVariable.filterParameter;
+        filterParameter.IsPettyCash = false;
+        filterParameter.PageSize = 15;
+        filterParameter.PageNo = 0;
+    }
+    //SignalRHubConnection();
     CompletedFetch();
 
     statusList = GlobalClassList.accountingStatusList;
@@ -267,6 +304,13 @@
   {
     dataFetched = true;
     StateHasChanged();
+  }
+  protected override void OnAfterRender(bool firstRender)
+  {
+      if(firstRender)
+      {
+
+      }
   }
   private async void EditLiquidation(LiquidationModel liquidation)
   {
@@ -280,19 +324,31 @@
   }
   private async Task LoadLiquidationDetails(LiquidationModel liquidationDetail)
   {
-    var liquidationDetails = await liquidationService.LiquidationDetails(liquidationDetail.Id, GlobalClass.token);
-    liquidationDetail.LiquidationDetails = liquidationDetails.Select(details=> new LiquidationDetailModel()
+      Task<LiquidationModel> t = LoadLiquidatonDetails(liquidationDetail);
+      await t;
+      if(t.Status == TaskStatus.RanToCompletion)
+      {
+        LiquidationToExport = t.Result;
+        pdfContent = await liquidationService.PrintSaveLiquidation(t.Result);
+        StateHasChanged();
+      }
+  }
+  private async Task<LiquidationModel> LoadLiquidatonDetails(LiquidationModel model)
+  {
+    var liquidationDetails = await liquidationService.LiquidationDetails(model.Id, GlobalClass.token);
+    model.LiquidationDetails = liquidationDetails.Select(details=> new LiquidationDetailModel()
     {
       Id = details.Id,
       PettyCashId = details.PettyCashId,
       ControlNumber = details.ControlNumber,
       PayeeId = details.PayeeId,
+      RequestDate = details.RequestDate,
       PayeeName = details.PayeeName,
       PayeeCategoryId = details.PayeeCategoryId,
       Particular = details.Particular,
       RequestedById = details.RequestedById,
       RequestedByName = details.RequestedByName,
-      LiquidationId = liquidationDetail.Id,
+      LiquidationId = model.Id,
       IsActive = details.IsActive,
       StatusId = details.StatusId,
       StatusName = details.StatusName,
@@ -306,9 +362,28 @@
       Remarks = details.Remarks
 
       }).ToList();
-
-      pdfContent = await liquidationService.PrintSaveLiquidation(liquidationDetail);
-      StateHasChanged();
+      return model;
+  }
+  private async Task SendNotify(LiquidationModel model, Enums.ActionMode actionMode)
+  {
+    if( GlobalVariable.AMSHubConnection != null)
+    {
+        await Task.Run( async ()=> await GlobalVariable.AMSHubConnection.InvokeAsync("SaveLiquidation", model)).
+        ContinueWith( async(t) => 
+        {   
+            if(t.Status == TaskStatus.RanToCompletion) 
+            {  
+                NotificationModel notification = new();
+                notification.SenderId = GlobalClass.currentUserAccount.EmployeeId;
+                notification.StatusAction = actionMode;
+                notification.ModuleName = "Liquidation";
+                notification.ControlNumber = model.ControlNumber;
+                notification.PreparedById = model.PreparedById;
+                notification.DateNotify = DateTime.Now;
+                await Extensions.SendNotification(notification); 
+            }
+        });
+    }
   }
   private async Task VoidLiquidation(LiquidationModel liquidation)
   {
@@ -318,12 +393,11 @@
       liquidation.Activity = "Activity: Update liquidation status to generated (void); Remarks: "+GlobalVariable.PromptRemarks;
       liquidation.UserId = GlobalClass.currentUserAccount.EmployeeId;
       var updatedStatus = await liquidationService.UpdateLiquidationStatus(liquidation, GlobalClass.token);
-      Extensions.ShowAlert("Liquidation voided", Variant.Filled, snackbarService, Severity.Info);
-      if(GlobalVariable.AMSHubConnection != null)
-        await GlobalVariable.AMSHubConnection.InvokeAsync("SaveLiquidation", updatedStatus);
+      Extensions.ShowAlert("Liquidation voided", Variant.Filled, SnackbarService, Severity.Info);
+      await SendNotify(updatedStatus,Enums.ActionMode.Void);
     }
     else
-       Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackbarService, Severity.Normal);
+      Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
   }
   private async Task ApproveLiquidation(LiquidationModel liquidation)
   {
@@ -333,29 +407,51 @@
       liquidation.Activity = "Approved Status";
       liquidation.UserId = GlobalClass.currentUserAccount.EmployeeId;
       var updatedStatus = await liquidationService.UpdateLiquidationStatus(liquidation, GlobalClass.token);
-      Extensions.ShowAlert("Liquidation approved", Variant.Filled, snackbarService, Severity.Info);
-      if(GlobalVariable.AMSHubConnection != null)
-        await GlobalVariable.AMSHubConnection.InvokeAsync("SaveLiquidation", updatedStatus);
+      Extensions.ShowAlert("Liquidation approved", Variant.Filled, SnackbarService, Severity.Success);
+      await SendNotify(updatedStatus,Enums.ActionMode.Approve);
     }
     else
-      Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackbarService, Severity.Normal);
+      Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
 
   }
   private async Task CancelLiquidation(LiquidationModel liquidation)
   {
     if (await PromptMessage(Enums.ActionMode.Cancel, liquidation))
     {
+      //Revert status of PC to Received due to cancelation of liquidation
+      var liquidationDetails = await liquidationService.LiquidationDetails(liquidation.Id, GlobalClass.token);
+      var acctgStatus = GlobalClassList.accountingStatusList.Where(x => x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCR).FirstOrDefault();
+      liquidationDetails.ForEach( async (lDetails) => {
+        PettyCashModel newDetails = new();
+        newDetails = (await pettyCashService.LoadPettyCashList(new FilterParameter()
+                      {
+                         isActive = true, 
+                         PageNo = 0, 
+                         PageSize = 15, 
+                         IsControlNumber = true,
+                         ControlNumber = lDetails.ControlNumber
+                      }, GlobalClass.token)).LastOrDefault()?? new();//since query using LIKE operator and descending order
+        //newDetails = pettyCashList.Where( pc => lDetails.ControlNumber == pc.ControlNumber).FirstOrDefault()?? new();
+        //Audit Trail
+        newDetails.Activity = "Liquidation of pettycash has been cancelled.";
+        newDetails.UserId = GlobalClass.currentUserAccount.EmployeeId;
+        //Status Received
+        newDetails.StatusName = acctgStatus.StatusName;
+        newDetails.StatusId = (Int64)acctgStatus.Id;
+        newDetails.StatusEnumCategoryId = acctgStatus.StatusEnumCategoryId;
+        await pettyCashService.UpdatePettyCash(newDetails,GlobalClass.token);
+      });
+
       liquidation.StatusId = GlobalClassList.accountingStatusList.Where(x => x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.LC).Select(x => x.Id).FirstOrDefault();
       liquidation.Activity = "Cancelled Status";
       liquidation.UserId = GlobalClass.currentUserAccount.EmployeeId;
       var cancelLiquidation = await liquidationService.UpdateLiquidationStatus(liquidation, GlobalClass.token);
       GlobalClassList.liquidations = GlobalClassList.liquidations.Where(x => x.StatusId != liquidation.StatusId).OrderByDescending(x => x.ControlNumber).ToList();
-      Extensions.ShowAlert("Liquidation cancelled", Variant.Filled, snackbarService, Severity.Info);
-      if(GlobalVariable.AMSHubConnection != null)
-        await GlobalVariable.AMSHubConnection.InvokeAsync("SaveLiquidation", cancelLiquidation);
+      Extensions.ShowAlert("Liquidation cancelled", Variant.Filled, SnackbarService, Severity.Info);
+      await SendNotify(cancelLiquidation,Enums.ActionMode.Cancel);
     }
     else
-      Extensions.ShowAlert("Action Cancelled", Variant.Filled, snackbarService, Severity.Normal);
+      Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
   }
   private bool EnableEditApproved(LiquidationModel liquidation)
   {
@@ -366,6 +462,11 @@
   private async Task<TableData<LiquidationModel>> LoadLiquidationFromServer(TableState tableState)
   {
     isLoading = true;
+    if(!String.IsNullOrEmpty(notificationCNo))
+    {
+        filterParameter.IsControlNumber = true;
+        filterParameter.ControlNumber = notificationCNo;
+    }
     IEnumerable<LiquidationModel> data = await liquidationService.LiquidationList(filterParameter, GlobalClass.token);
     switch (tableState.SortLabel)
     {
@@ -379,7 +480,7 @@
 
     GlobalClassList.liquidations = data.ToList();
     noRecordsStr = (data.Count() == 0 ? "No records found":string.Empty);
-    pageData = GlobalClassList.liquidations.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
+    pageData = GlobalClassList.liquidations.Skip(tableState.Page * GlobalVariable.PageSize).Take(GlobalVariable.PageSize).ToArray();
     totalItems = GlobalClassList.liquidations.Count();
     isLoading = !isLoading;
     return new TableData<LiquidationModel>()
@@ -391,6 +492,8 @@
   private async Task FilterTable()
   {
     filterParameter = GlobalVariable.filterParameter;
+    filterParameter.PageSize = GlobalVariable.PageSize;
+    filterParameter.PageNo = 0;
     filterParameter.ControlNumber = filterParameter.ControlNumber.Replace(" ","");//avoid white space when searching CN
     await tableVariable.ReloadServerData();
   }
@@ -442,7 +545,8 @@
       {
         if(GlobalVariable.AMSHubConnection != null)
           GlobalVariable.AMSHubConnection.On<LiquidationModel>("SaveLiquidation", (_liquidation)=> {
-          
+          filterParameter.PageSize = GlobalVariable.PageSize;
+          filterParameter.PageNo = 0;
           tableVariable.ReloadServerData();
           
           StateHasChanged();
@@ -454,24 +558,6 @@
          Console.WriteLine(ex.Message);
          throw;
       }
-  }
-  private bool AccessLevelAddmin()
-  {
-    return GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.Administrator 
-    ||GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.AccountingAdmin;
-
-  }
-  private bool AccessLevelRequestors()
-  {
-    return GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.OthersRequestor
-    || GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.AccountingRequestor
-    || GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.AccountingIssuer;
-    
-  }
-  private bool AccessLevelViewers()
-  {
-    return GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.AccountingViewer
-    || GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.OthersViewer;
   }
   private void ViewAuditTrail(LiquidationModel liquidation)
   {
@@ -498,8 +584,16 @@
     Task.Run(async()=> await tableVariable.ReloadServerData());
   }
   private async Task ReloadTable()
-  {
+  {        
+    navigationManager.NavigateTo($"/liquidation/list");
+    await LiquidationListRowCount();
     filterParameter = new FilterParameter();
+    GlobalVariable.filterParameter = new();
+    Extensions.ViewRestrictions(filterParameter);
+    filterParameter.IsPettyCash = false;
+    filterParameter = GlobalVariable.filterParameter;
+    filterParameter.PageSize = GlobalVariable.PageSize;
+    filterParameter.PageNo = 0;
     await tableVariable.ReloadServerData();
   }
   private bool EnableClearButton()
@@ -545,17 +639,73 @@
           StateHasChanged();
       }
   }
-  private async Task CopyTextToClipboard(string ctrlNo)
-  {
-      await Extensions.CopyTextToClipboard(ctrlNo, snackbarService, JSRuntime);
-  }
+  private async Task CopyTextToClipboard(string ctrlNo) => await Extensions.CopyTextToClipboard(ctrlNo, SnackbarService, JSRuntime);
 
   private async Task PreviewLiquidation(LiquidationModel model)
+  {
+      var parameters = new DialogParameters();
+      parameters.Add("DialogTitle", "Liquidation");
+      parameters.Add("Liquidation", model);
+      var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.Small, FullWidth = true, NoHeader = false, DisableBackdropClick = false };
+      var resultDialog = await dialogService.Show<Shared.Dialogs.PreviewInformationDialogs.PreviewLiquidationDialog>("", parameters, options).Result;
+  }
+  private async Task NextAndPreviousPage(bool next, bool skipNext)
+  {
+    if(skipNext)
     {
-        var parameters = new DialogParameters();
-        parameters.Add("DialogTitle", "Liquidation");
-        parameters.Add("Liquidation", model);
-        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.Small, FullWidth = true, NoHeader = false, DisableBackdropClick = false };
-        var resultDialog = await dialogService.Show<Shared.Dialogs.PreviewInformationDialogs.PreviewLiquidationDialog>("", parameters, options).Result;
+      if(next)
+      {
+        //Waiting for row count to be calculated
+        @* double lastPage = Math.Floor(Convert.ToDouble(GlobalVariable.LastPage) / Convert.ToDouble(GlobalVariable.PageSize));
+        int remainder = ((Convert.ToDouble(GlobalVariable.LastPage)) % Convert.ToDouble(GlobalVariable.PageSize)) <= 0? 0 : 1;
+        filterParameter.PageNo = Convert.ToInt32(lastPage+ remainder);//Last Page *@
+        filterParameter.PageNo++;
+      }
+      else 
+        filterParameter.PageNo = 0;
+    } else {
+      if(next)
+        filterParameter.PageNo++;
+      else 
+        filterParameter.PageNo--;
+    }
+    await tableVariable.ReloadServerData();
+  }
+
+     private void CreateLiquidation(){
+        if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.LiquidationEntry))
+       {
+           GlobalClass.liquidation = new();
+          navigationManager.NavigateTo($"/liquidation");
+        } else {
+           Extensions.ShowAlert("Account has been restricted to create liquidation.", Variant.Filled, SnackbarService, Severity.Error);
+       } 
+        
+    }
+    private async Task LiquidationListRowCount()
+    {
+      int count = TotalRow = await liquidationService.LiquidationListRowCount(new FilterParameter(){ isActive = true, PageSize = 2000000 , PageNo =0 },GlobalClass.token);
+      if(count % GlobalVariable.PageSize == 0)
+        GlobalVariable.LastPage = (Convert.ToInt32(Math.Floor(Convert.ToDecimal(count) / Convert.ToDecimal(GlobalVariable.PageSize)))) - 1;
+      else
+        GlobalVariable.LastPage = Convert.ToInt32(Math.Floor(Convert.ToDecimal(count) / Convert.ToDecimal(GlobalVariable.PageSize)));
+    }
+    private async Task PageSizeChanged(int s)
+    {
+      filterParameter.PageSize = GlobalVariable.PageSize = s; 
+      await tableVariable.ReloadServerData();
+      await LiquidationListRowCount();
+    }
+    private async Task ExportToExcel()
+    {
+      isExporting = true;
+      Task<byte[]> t1 = liquidationService.LiquidationReportGetExcel(LiquidationToExport, GlobalClass.token);
+      await t1;
+      if(t1.Status == TaskStatus.RanToCompletion)
+      {
+          using var streamRef = new DotNetStreamReference(new MemoryStream(t1.Result), true);
+          await JSRuntime.InvokeVoidAsync("downloadFileFromStream", "Liquidation.xlsx", streamRef);
+      }
+      isExporting = false;
     }
 }

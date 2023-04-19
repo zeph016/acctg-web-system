@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using fgciams.domain.clsEnums;
 using fgciams.domain.clsExpenseLine;
 using fgciams.domain.clsProject;
@@ -15,7 +16,9 @@ namespace fgciams.domain.clsCollection
         public string ChargeName { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
         [Required(ErrorMessage = "Date is required")]
-        public DateTime? TransactionDate { get; set; } = DateTime.Now;
+        public DateTime? TransactionDate { get; set; }  = DateTime.Now;
+        [Required(ErrorMessage = "Date is required")]
+        public string TransactionDateString { get; set; } = string.Empty;
         public Int64 ExpenseId { get; set; }
         [Required(ErrorMessage = "Please select an Expense")]
         public string ExpenseName { get; set; } = string.Empty;
@@ -70,9 +73,25 @@ namespace fgciams.domain.clsCollection
                 GrossAmount = value;
             }
         }
-
+        public decimal Percentage { get; set; }
+        public decimal ContractAmount { get; set; }
+        public string License { get; set; } = string.Empty;
+        public decimal PrevPercentage { get; set; }
+        public decimal PresPercentage { get; set; }
+        public decimal ToDatePercentage { get; set; }
+        public decimal PrevNetAmount { get; set; }
+        public decimal ToDateNetAmount { get; set; }
+        public decimal ToDateAmount { get; set; }
+        public decimal PresentAmount { get; set; }
+        public string ReportDate { get; set; } = string.Empty;
+        public string ReportHeader { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string PayeeName { get; set; } = string.Empty;
+        public string ReportTitle { get; set; } = string.Empty;
         //Extra do not pass to service
+        [NotMapped]
         public bool showSubDetails { get; set; }
+        [NotMapped]
         public bool IsSelected { get; set; }
     }
 }

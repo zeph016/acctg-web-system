@@ -4,14 +4,14 @@
 @inject IVoucherService voucherService
 @inject IBankService bankService
 @inject ICheckService checkService
-@inject ISnackbar snackBarService
+@inject ISnackbar SnackbarService
 @inject IGlobalService globalService
 @inject NavigationManager NavigationManager
 
 <div class='page-cont d-flex overflow-auto'>
     @if (!dataFetched)
     {
-        <div class='flex-1 pa-2'>
+        <div class='pa-2 width100'>
             <SkeletonPageList />
         </div>
     }
@@ -44,7 +44,7 @@
                                 <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
                             </MudText>
                             <BlazoredTypeahead SearchMethod='LoadProject' Context='selpayee' DisableClear placeholder='Payee'
-                            @bind-Value='payee' Debounce='500' MaximumSuggestions='10'>
+                            @bind-Value='payee' Debounce="300" MinimumLength='3' MaximumSuggestions='10'>
                                 <SelectedTemplate>
                                     @if (selpayee.ProjectId != 0) {
                                         <MudText Class='font12'>@selpayee.ProjectName</MudText>
@@ -90,7 +90,7 @@
                                 <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
                             </MudText>
                             <BlazoredTypeahead SearchMethod='( (string s)=> Extensions.SearchBank(s, false) )' ValueChanged="((BankModel bank)=>SelectedBank(bank))" ValueExpression='(()=>bank)' Value="bank"
-                                Context='selbank' Debounce="500" placeholder='BANK & ACCOUNT NO.'>
+                                Context='selbank' Debounce="300" placeholder='BANK & ACCOUNT NO.'>
                                 <SelectedTemplate>
                                     @if (selbank.Id != 0) {
                                         <MudText Class='font12'>@selbank.ShortcutName</MudText>
@@ -115,7 +115,7 @@
                         </div>
                         <div class='chkw-blankcont d-flex justify-center align-center gap-2'>
                             <MudText Class='wspace-nowrap txt-uppercase font-bold font10'>Control No:</MudText>
-                            <MudChip Class='chip-radius-5 txt-uppercase font-bold font12' Color='Color.Error' Size='Size.Medium' Variant='Variant.Outlined'>
+                            <MudChip Class='chip-radius-5 txt-uppercase font-bold font12 width100' Color='Color.Error' Size='Size.Medium' Variant='Variant.Outlined'>
                                 @(GlobalClass.checkModel.Id == 0 ? "Auto":GlobalClass.checkModel.ControlNumber)
                             </MudChip>
                         </div>
@@ -173,7 +173,7 @@
                                         }
                                         <div class='d-flex flex-grow-1 flex-column'>
                                             <BlazoredTypeahead SearchMethod='LoadEmployee' Context='selprep' DisableClear placeholder='Prepared By'
-                                            @bind-Value='preparedBy' Debounce='500' MaximumSuggestions='5' Disabled>
+                                            @bind-Value='preparedBy' MinimumLength='3' Debounce="300" MaximumSuggestions='5' Disabled>
                                                 <SelectedTemplate>
                                                     <div class='overflow-hidden wspace-nowrap'>
                                                         @if (selprep.EmployeeId != 0) {
@@ -206,7 +206,7 @@
                                     <MudIcon Icon='@Icons.Material.Filled.Equalizer' Size='Size.Small' />
                                 </MudCardHeader>
                                 <MudCardContent Class='d-flex align-center pa-2 gap-2 border-thin-top'>
-                                    <MudIcon Class='@(GlobalClass.checkModel.Amount > 0 ? "color-green":"color-red")' Icon='@Icons.Outlined.LabelImportant' Size='Size.Small'/>
+                                    <MudIcon Class='@(GlobalClass.checkModel.Amount > 0 ? "color-green":"color-red")' Icon='@Icons.Material.Outlined.LabelImportant' Size='Size.Small'/>
                                     <MudSpacer />
                                     <small Class='font-bold align-self-end @(GlobalClass.checkModel.Amount > 0 ? "color-green":"color-red")'>
                                         @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) @GlobalClass.checkModel.Amount.ToString("N2")
@@ -246,7 +246,7 @@
         GlobalClass.pageTitle = "Check Entry";
         while (GlobalClass.currentUserAccount == null || GlobalVariable.ServerTime == null)
             await Task.Delay(1);
-        Task t = Task.WhenAll(VoucherNotInCheck(),GetPayees());
+        Task t = Task.WhenAll(VoucherNotInCheck());
         await t;
         if(t.Status == TaskStatus.RanToCompletion)
         {
@@ -257,15 +257,12 @@
                // currentActionMode = Enums.ActionMode.Create;
             } else {
                 await RemapCheck();
-                Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(GlobalClass.checkModel, Newtonsoft.Json.Formatting.Indented));
             }
         }
         dataFetched =true;
     }
-    private async Task VoucherNotInCheck()
-    {
-        voucherNotInCheck = await voucherService.VoucherNotInCheck(new FilterParameter(){isActive=true},GlobalClass.token);
-    }
+    private async Task VoucherNotInCheck() => voucherNotInCheck = await voucherService.VoucherNotInCheck(new FilterParameter(){ isActive=true, PageNo = 0, PageSize = 15},GlobalClass.token);
+
     private async Task GetPayees()
     {
        var filterParameter = new FilterParameter()
@@ -369,6 +366,7 @@
     private void MapDefaults()
     {
         GlobalClass.checkModel.Id = 0;
+        GlobalClass.checkModel.CheckCategoryId = Enums.CheckCategory.Check;
         GlobalClass.checkModel.PreparedByName = GlobalClass.currentUserAccount.EmployeeName;
         checkDate = GlobalVariable.ServerTime;
     }
@@ -386,7 +384,8 @@
         if (filteredPayee != null)
             payee = filteredPayee; *@
         //Fixes
-        payee = (await LoadProject(GlobalClass.checkModel.PayeeName)).FirstOrDefault()?? new();
+        payee = (await LoadProject(GlobalClass.checkModel.PayeeName))
+                .Where( p=> p.ProjectId == GlobalClass.checkModel.PayeeId && p.ProjectCategoryId == GlobalClass.checkModel.PayeeCategoryId ).FirstOrDefault()?? new();
     }
     private void MapProperties(Enums.AccountingStatusEnumCategory status)
     {   
@@ -442,9 +441,9 @@
         else
         {
             if(GlobalClass.checkModel.CheckVouchers.Count ==0)
-                Extensions.ShowAlert("Cannot create Check. No voucher selected.",Variant.Filled,snackBarService,Severity.Error);
+                Extensions.ShowAlert("Cannot create Check. No voucher selected.",Variant.Filled,SnackbarService,Severity.Error);
             else
-                Extensions.ShowAlert("Cannot create Check. Incomplete fields.",Variant.Filled,snackBarService,Severity.Error);
+                Extensions.ShowAlert("Cannot create Check. Incomplete fields.",Variant.Filled,SnackbarService,Severity.Error);
         }
     }
     private async Task SelectedBank(BankModel model)
@@ -470,14 +469,9 @@
         checkDate = DateTime.Now;
         SubmitDateRangePicker();
     }
-    private void CancelDateRangePicker()
-    {
-        dateCheckDate.Close(false);
-    }
-    private void SubmitDateRangePicker()
-    {
-        dateCheckDate.Close(true);
-    }
+    private void CancelDateRangePicker() => dateCheckDate.Close(false);
+    
+    private void SubmitDateRangePicker() => dateCheckDate.Close(true);
     private async Task CreateNew()
     {
         var parameters = new DialogParameters();
@@ -492,8 +486,5 @@
             New();
         }
     }
-    private void Cancel()
-    {
-        NavigationManager.NavigateTo($"check/list");
-    }
+    private void Cancel() => NavigationManager.NavigateTo($"check/list");
 }

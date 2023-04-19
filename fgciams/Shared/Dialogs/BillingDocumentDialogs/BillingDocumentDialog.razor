@@ -1,5 +1,5 @@
 @inject IBillingDocumentService billingDocumentService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject IDialogService dialogService
 
 <MudDialog class="customdialog2">
@@ -66,13 +66,18 @@
     {
         if (!GlobalClass.billingDoc.IsActive)
         {
+            if(!Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Delete))
+            {
+               Extensions.ShowAlert("Account has been restricted to deactivate billing document.", Variant.Filled, SnackbarService, Severity.Error);
+                return;
+            }
             currentAction = Enums.ActionMode.Deactivate;
             await PromptMessage();
         }
         else if (ValidateEntries())
             await PromptMessage();
         else
-            Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" billing document"+GlobalVariable.errorPromptText,Variant.Filled,snackbarService,Severity.Error);
+            Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" billing document"+GlobalVariable.errorPromptText,Variant.Filled,SnackbarService,Severity.Error);
     }
     private bool ValidateEntries()
     {
@@ -110,7 +115,7 @@
                   
             }
             catch(System.Exception ex) {
-                Extensions.ShowAlert(ex.Message, Variant.Filled, snackbarService, Severity.Error);
+                Extensions.ShowAlert(ex.Message, Variant.Filled, SnackbarService, Severity.Error);
             }
         }
         else if (currentAction == Enums.ActionMode.Deactivate)

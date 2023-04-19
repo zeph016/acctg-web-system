@@ -30,7 +30,7 @@
                     </div>
                     <div class='blzrthead-disabled-minheight15'>
                         <BlazoredTypeahead SearchMethod=LoadProject EnableDropDown DisableClear
-                            @bind-Value='payee' Debounce="500" placeholder='Payee' >
+                            @bind-Value='payee' MinimumLength='3' Debounce="300" placeholder='Payee' >
                             <SelectedTemplate>
                                 <small class='blzsmallpayproj-170px ml-2 pt-1'>@payee.ProjectName</small>
                             </SelectedTemplate>
@@ -60,7 +60,7 @@
                     </div>
                     <div class='blzrthead-disabled-minheight15'>
                         <BlazoredTypeahead SearchMethod=LoadEmployee EnableDropDown DisableClear
-                            @bind-Value='requestor' Debounce="500" placeholder='Requested By' >
+                            @bind-Value='requestor' MinimumLength='3' Debounce="300" placeholder='Requested By' >
                             <SelectedTemplate>
                                 <MudAvatar Class='avatar-20px' Image='@(requestor.Picture.Count() > 0 ? 
                                     $"data:image/png;base64, {Convert.ToBase64String(@requestor.Picture)}":"images/fglogo/fgci1-gs.png")' Size='Size.Small' />
@@ -88,7 +88,7 @@
                     </div>
                     <div class='blzrthead-disabled-minheight15'>
                         <BlazoredTypeahead SearchMethod=LoadProject EnableDropDown DisableClear
-                            @bind-Value='payee' Debounce="500" placeholder='Payee' >
+                            @bind-Value='payee' MinimumLength='3' Debounce="300" placeholder='Payee' >
                             <SelectedTemplate>
                                 <small class='blzsmallpayproj-170px ml-2 pt-1'>@payee.ProjectName</small>
                             </SelectedTemplate>
@@ -109,19 +109,21 @@
                         filterParameter.IsAccountingStatus = !filterParameter.IsAccountingStatus;
                     })' Checked='filterParameter.IsAccountingStatus' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
                 </MudItem>
-                <MudSelect Class='txtfield-75' MultiSelectionTextFunc='@(new Func<List<string>, string>(AccountingStatus))' @bind-SelectedValues='hasAccountingStatus' IconSize='Size.Small'
-                    @bind-Value="selectedStatus" Dense="true" MultiSelection=true Disabled='!filterParameter.IsAccountingStatus' Placeholder='Accounting Status' Variant='Variant.Outlined'>
-                    @if(GlobalClassList.accountingStatusList != null)
-                    {
-                        foreach (var item in GlobalClassList.accountingStatusList.Where(x=> 
-                        (int)x.StatusEnumCategoryId == 11 || 
-                        (int)x.StatusEnumCategoryId == 12 || 
-                        (int)x.StatusEnumCategoryId == 13 ))
+                <MudItem xs=10 Class='pr-3'>
+                    <MudSelect Class='txtfield-75' MultiSelectionTextFunc='@(new Func<List<string>, string>(AccountingStatus))' @bind-SelectedValues='hasAccountingStatus' IconSize='Size.Small'
+                        @bind-Value="selectedStatus" Dense="true" MultiSelection=true Disabled='!filterParameter.IsAccountingStatus' Placeholder='Accounting Status' Variant='Variant.Outlined'>
+                        @if(GlobalClassList.accountingStatusList != null)
                         {
-                        <MudSelectItem Value="@item">@item.StatusName</MudSelectItem>
+                            foreach (var item in GlobalClassList.accountingStatusList.Where(x=> 
+                            (int)x.StatusEnumCategoryId == 11 || 
+                            (int)x.StatusEnumCategoryId == 12 || 
+                            (int)x.StatusEnumCategoryId == 13 ))
+                            {
+                            <MudSelectItem Value="@item">@item.StatusName</MudSelectItem>
+                            }
                         }
-                    }
-                </MudSelect>
+                    </MudSelect>
+                </MudItem>
             }
             @if(lookUpType != Enums.LookUpType.Voucher && lookUpType != Enums.LookUpType.PO)
             {
@@ -151,7 +153,6 @@
                         Clearable Disabled="@(!filterParameter.IsPONumber)" Variant='Variant.Outlined' Margin='Margin.Dense'/>
                 </MudItem>
             }
-            
             <MudItem class='d-flex align-center justify-center' xs=2>
                 <MudCheckBox CheckedChanged='( (bool b)=> 
                     { 

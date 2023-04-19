@@ -1,6 +1,6 @@
 @inject IPayeeService payeeService
 @inject IPayeeCategoryService payeeCategoryService
-@inject ISnackbar snackBar
+@inject ISnackbar SnackbarService
 @inject IDialogService dialogService
 
 <MudDialog Class="customdialog2">
@@ -74,6 +74,19 @@
                     <MudTextField @bind-Value='@GlobalClass.payee.Remarks' Variant='Variant.Filled' Lines='2' Label='Remarks'
                         Margin='Margin.Dense' />
                 </MudItem>
+                <MudItem xs='10'>
+                    <MudSelect Margin="Margin.Dense" Text="@GlobalClass.payee.TaxCodeName" Label='Tax Code' Placeholder="Code" HelperText="Required*"
+                        Variant='Variant.Outlined' T='TaxCodeModel' Value='taxCode'  ValueChanged="@((TaxCodeModel tc)=>SelectedTaxCode(tc))">
+                        @foreach (var item in GlobalClassList.taxCodes)
+                        {
+                            <MudSelectItem Value="@item">@item.Description</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs='2'>
+                    <MudTextField @bind-Value='@GlobalClass.payee.TaxRate' Format="N2" Margin="Margin.Dense" Label='Rate' ReadOnly=true
+                    Variant='Variant.Outlined'/>
+                </MudItem>
             </MudGrid>
         </MudPaper>
     </DialogContent>
@@ -101,12 +114,17 @@
     [Parameter] public Enums.ActionMode currentAction { get; set; }
     private bool isReadOnly = false;
     private bool notValidPayee,notValidCategory,notValidShortName,notValidTIN,isCorporated = false;
+    private TaxCodeModel taxCode = new();
     protected override async Task OnInitializedAsync()
     {
         if (currentAction == Enums.ActionMode.Create)
         {
+            taxCode = GlobalClassList.taxCodes.Where(x=>x.TaxRate==0).FirstOrDefault()?? new();
             GlobalClass.payee.IsActive = true;
             isReadOnly = true;
+        } else
+        {
+            taxCode = GlobalClassList.taxCodes.Where( x => x.Id == GlobalClass.payee.TaxCodeId).FirstOrDefault()?? new();
         }
         await Task.Delay(1);
     }
@@ -121,13 +139,18 @@
     {
         if(!GlobalClass.payee.IsActive)
         {
+            if(!Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Delete))
+            {
+               Extensions.ShowAlert("Account has been restricted to deactivate Payee.", Variant.Filled, SnackbarService, Severity.Error);
+                return;
+            }
             currentAction = Enums.ActionMode.Deactivate;
             await Prompt();
         }
         else if (IsValidated())
             await Prompt();
         else
-            Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" payee"+GlobalVariable.errorPromptText,Variant.Filled,snackBar,Severity.Error);
+            Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" payee"+GlobalVariable.errorPromptText,Variant.Filled,SnackbarService,Severity.Error);
     }
     private async Task Prompt()
     {
@@ -156,7 +179,7 @@
                     await GlobalVariable.AMSHubConnection.InvokeAsync("SavePayee",GlobalClass.payee);
                 MudDialog.Close(DialogResult.Ok(currentAction));
             } catch(Exception ex) {
-                Extensions.ShowAlert(ex.Message,Variant.Filled,snackBar,Severity.Info);
+                Extensions.ShowAlert(ex.Message,Variant.Filled,SnackbarService,Severity.Info);
             }
         }
         else if (currentAction == Enums.ActionMode.Deactivate)
@@ -188,5 +211,11 @@
         notValidPayee = false;
         notValidCategory = false;
         notValidShortName = false;
+    }
+    private void SelectedTaxCode(TaxCodeModel tc)
+    {
+        taxCode = tc;
+        GlobalClass.payee.TaxCodeId = taxCode.Id;
+        GlobalClass.payee.TaxRate = decimal.Round(taxCode.TaxRate,2);
     }
 }

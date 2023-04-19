@@ -19,5 +19,7 @@ namespace fgciams.domain.clsCheck
         //extra do not map to add/update
         [NotMapped]
         public string VoucherCtrlNo { get; set; } = string.Empty;
+        [NotMapped]
+        public string VoucherNumber { get; set; } = string.Empty;
     }
 }

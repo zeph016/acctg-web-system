@@ -1,0 +1,109 @@
+@inject IGlobalService GlobalService
+@inject IPettyCashService PettyCashService
+
+<div>
+    @if (!dataFetched)
+    {
+        
+    }
+    else
+    {
+        <MudTooltip Text='Requestor' Arrow Placement='Placement.Top'>
+        <div class='d-flex align-center gap-2 '>
+            @if (requestor.Picture.Count() == 0) {
+                <MudAvatar Class='avatar20px' Image='images/fglogo/fgci1-gs.png' Size='Size.Small' />
+            } else {
+                <MudAvatar Class='avatar20px' Image='@($"data:image/png;base64, {Convert.ToBase64String(requestor.Picture)}")' Size='Size.Small' />
+            }
+            <p class='font10'>@requestor.EmployeeName</p>
+        </div>
+        </MudTooltip>
+        <MudTooltip Text='Approver' Arrow Placement='Placement.Top'>
+        <div class='d-flex align-center gap-2 '>
+            @if (approver.Picture.Count() == 0) {
+                <MudAvatar Class='avatar20px' Image='images/fglogo/fgci1-gs.png' Size='Size.Small' />
+            } else {
+                <MudAvatar Class='avatar20px' Image='@($"data:image/png;base64, {Convert.ToBase64String(approver.Picture)}")' Size='Size.Small' />
+            }
+            <p class='font10'>@approver.EmployeeName</p>
+        </div>
+        </MudTooltip>
+        <MudTooltip Text='Receiver' Arrow Placement='Placement.Top'>
+            <div class='d-flex align-center gap-2 '>
+                @if (receiver.Picture.Count() == 0) {
+                    <MudAvatar Class='avatar20px' Image='images/fglogo/fgci1-gs.png' Size='Size.Small' />
+                } else {
+                    <MudAvatar Class='avatar20px' Image='@($"data:image/png;base64, {Convert.ToBase64String(receiver.Picture)}")' Size='Size.Small' />
+                }
+                <p class='font10'>@receiver.EmployeeName</p>
+            </div>
+        </MudTooltip>
+    }
+</div>
+
+@code {
+    [Parameter] public long LiqDetPCashId { get; set; }
+    private bool dataFetched;
+    private UserAccount requestor = new UserAccount();
+    private UserAccount approver = new UserAccount();
+    private UserAccount receiver = new UserAccount();
+    private PettyCashModel pettyCashModel { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        while (GlobalClass.liquidation == null)
+            await Task.Delay(1);
+        Task t = Task.WhenAll(MapPettyCash());
+        await t;
+        if(t.Status == TaskStatus.RanToCompletion)
+        {
+            Task u = Task.WhenAll(GetRequestor(),GetApprover(),GetReceiver());
+            await u;
+            if (u.Status == TaskStatus.RanToCompletion)
+                CompletedFetch();
+        }
+    }
+
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+
+    private async Task MapPettyCash()
+    {
+        pettyCashModel = await LoadPettyCash();
+    }
+
+    private async Task<PettyCashModel> LoadPettyCash()
+    {
+        var response = await PettyCashService.GetPettyCash(LiqDetPCashId, GlobalClass.token);
+        if (response != null)
+            return response;
+        else
+            return new();
+    }
+
+    private async Task<UserAccount> GetEmployeeDetails(long employeeId)
+    {
+        var response = await GlobalService.GetEmployeeById(employeeId, GlobalClass.token);
+        if (response != null)
+            return response;
+        else
+            return new();
+    }
+    private async Task GetRequestor()
+    {
+        requestor = await GetEmployeeDetails(pettyCashModel.RequestedById);
+    }
+
+    private async Task GetApprover()
+    {
+        approver = await GetEmployeeDetails(pettyCashModel.ApprovedById);
+    }
+
+    private async Task GetReceiver()
+    {
+        receiver = await GetEmployeeDetails(pettyCashModel.ReceivedById);
+    }
+}

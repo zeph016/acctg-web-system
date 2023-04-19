@@ -162,7 +162,9 @@
   max-width: 110px;
   width: 100%;
 }
-
+.checklist-amt-container {
+  @extend .dflex-row;
+}
 .amt-container-voucher {
   @extend .dflex-row-align-center, .txt-oflow-el;
   gap: 2px;

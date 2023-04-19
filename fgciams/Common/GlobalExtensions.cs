@@ -13,6 +13,7 @@ using Blazored.LocalStorage;
 using MudBlazor;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.IdentityModel.Tokens.Jwt;
+using fgciams.Components.NotificationComponents;
 
 using fgciams.domain.clsEnums;
 using fgciams.domain.clsUserAccount;
@@ -26,6 +27,7 @@ using fgciams.service.GlobalServices;
 using fgciams.service.UserAccountServices;
 using fgciams.domain.clsProject;
 using fgciams.domain.clsRequest;
+using fgciams.domain.clsNotification;
 
 public static class Extensions
 {
@@ -288,7 +290,8 @@ public static class Extensions
 
     public static string DetermineActionTaken(string activity)
     {
-        if(activity.Contains("Create", StringComparison.InvariantCultureIgnoreCase) || activity.Contains("Add Liquidation", StringComparison.InvariantCultureIgnoreCase))
+        if(activity.Contains("Create", StringComparison.InvariantCultureIgnoreCase) || activity.Contains("Add Liquidation", StringComparison.InvariantCultureIgnoreCase)
+        || activity.Contains("Add Voucher", StringComparison.InvariantCultureIgnoreCase))
             return Enums.ActionMode.Create.ToString();
         if(activity.Contains("Approve", StringComparison.InvariantCultureIgnoreCase))
             return Enums.ActionMode.Approve.ToString();
@@ -300,6 +303,8 @@ public static class Extensions
             return Enums.ActionMode.Receive.ToString();
         if(activity.Contains("Liquidated", StringComparison.InvariantCultureIgnoreCase))
             return "Liquidated";
+        if(activity.Contains("Check Issued", StringComparison.InvariantCultureIgnoreCase))
+            return "Check Issued";
         return string.Empty;
     }
 
@@ -394,6 +399,10 @@ public static class Extensions
                 return "[Equipment PPE Type]";
             case Enums.ProjectCategory.ProjectChargingLine:
                 return "[Project Charging Line]";
+            case Enums.ProjectCategory.ProjectCustomer:
+                return "[Project Customer]";
+            case Enums.ProjectCategory.Bank:
+                return "[Bank]";
             default:
                 return String.Format("[{0}]", project.ProjectCategoryId.ToString());
         }
@@ -402,4 +411,162 @@ public static class Extensions
     {
         return GlobalClassList.expenseLineList.Where( ex => ex.ExpenseName == "None").FirstOrDefault()?? new();
     }
+    public static string AuditTrailActivity(string act)
+    {
+        if(act.Contains("Remarks", StringComparison.InvariantCultureIgnoreCase))
+            return act.Substring(0,act.IndexOf("Remarks")-2);//remove ; and blank
+        else
+            return act;
+    }
+    public static string AuditTrailRemarks(string act)
+    {
+        if(act.Contains("Remarks", StringComparison.InvariantCultureIgnoreCase))
+            return act.Substring(act.IndexOf("Remarks"));
+        else
+            return string.Empty;
+    }
+    public static void ViewRestrictions(FilterParameter filterParameter)
+    {
+        if(!GlobalVariable.filterParameter.IsRequestor)
+            GlobalVariable.filterParameter.PreparedById = GlobalClass.currentUserAccount.EmployeeId;
+        if(Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.View))
+        { GlobalVariable.filterParameter.IsViewAll = true; return; }
+        else if(Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.ViewDepartment))
+         {   GlobalVariable.filterParameter.IsViewDepartment = true; return; }
+        else
+        {    GlobalVariable.filterParameter.IsViewOwn = true; return; }
+    }
+    public static string GetParentDefaultIcons(Enums.AISParentModules parentModId)
+    {
+        return parentModId switch
+        {
+            Enums.AISParentModules.Dashboard => Icons.Material.Filled.Dashboard,
+            Enums.AISParentModules.PettyCash => "fa-solid fa-coins",
+            Enums.AISParentModules.Liquidation => Icons.Material.Filled.ReceiptLong,
+            Enums.AISParentModules.RequestForPayment => Icons.Material.Filled.Payments,
+            Enums.AISParentModules.Voucher => Icons.Material.Filled.Receipt,
+            Enums.AISParentModules.CheckWriter => Icons.Material.Filled.CreditScore,
+            Enums.AISParentModules.VoucherRoute => "fa-solid fa-route",
+            Enums.AISParentModules.Collections => "icon-stack1",
+            Enums.AISParentModules.Ledgers => "icon-book",
+            Enums.AISParentModules.Settings => Icons.Material.Filled.Settings,
+            _ => string.Empty,
+        };
+    }
+    public static List<Enums.AISModules> GetRelatedModules(Enums.AISParentModules parentModule)
+    {
+        if(Enums.AISParentModules.PettyCash == parentModule)
+            return new List<Enums.AISModules>(new Enums.AISModules[] 
+            { Enums.AISModules.PettyCashEntry, Enums.AISModules.PettyCashList });
+        else if(Enums.AISParentModules.Liquidation == parentModule)
+            return new List<Enums.AISModules>(new Enums.AISModules[]
+            { Enums.AISModules.LiquidationEntry, Enums.AISModules.LiquidationList });
+        else if(Enums.AISParentModules.RequestForPayment == parentModule)
+            return new List<Enums.AISModules>(new Enums.AISModules[]
+            { Enums.AISModules.RequestForPaymentEntry, Enums.AISModules.RequesitForPaymentList });
+        else if(Enums.AISParentModules.Voucher == parentModule)
+            return new List<Enums.AISModules>(new Enums.AISModules[]
+            { Enums.AISModules.VoucherEntry, Enums.AISModules.VoucherList });
+        else if(Enums.AISParentModules.CheckWriter == parentModule)
+            return new List<Enums.AISModules>(new Enums.AISModules[]
+            { Enums.AISModules.CheckWriteEntry, Enums.AISModules.CheckWriterList, Enums.AISModules.DebitEntry, Enums.AISModules.DebitList,
+             Enums.AISModules.DirectDepositList });
+        else if(Enums.AISParentModules.VoucherRoute == parentModule)
+            return new List<Enums.AISModules>(new Enums.AISModules[]
+            { Enums.AISModules.VoucherRoute, Enums.AISModules.BatchEntry, Enums.AISModules.BatchList });
+        else if(Enums.AISParentModules.Collections== parentModule)
+            return new List<Enums.AISModules>(new Enums.AISModules[]
+            { Enums.AISModules.CollectionEntry, Enums.AISModules.CollectionList, Enums.AISModules.BillingEntry, Enums.AISModules.BillingList });
+        else if(Enums.AISParentModules.Ledgers == parentModule)
+            return new List<Enums.AISModules>(new Enums.AISModules[]
+            { Enums.AISModules.ARLedger, Enums.AISModules.APLedger, Enums.AISModules.BankLedger, Enums.AISModules.SubconLedger,
+             Enums.AISModules.SubconARLedger, Enums.AISModules.SubconAPLedger, Enums.AISModules.ORListing, Enums.AISModules.ProjectLedger, 
+             Enums.AISModules.Journal });
+        else if(Enums.AISParentModules.Settings == parentModule)
+            return new List<Enums.AISModules>(new Enums.AISModules[]
+            { Enums.AISModules.AccountingStatus, Enums.AISModules.Bank, Enums.AISModules.BillingDocument, Enums.AISModules.Division,
+             Enums.AISModules.Division, Enums.AISModules.ModeofPayment, Enums.AISModules.Payee, Enums.AISModules.PayeeCategory, 
+             Enums.AISModules.ProjectChargingLine, Enums.AISModules.RequestTypes, Enums.AISModules.Subcon, Enums.AISModules.ChartsofAccounts,
+             Enums.AISModules.Supplier, Enums.AISModules.VoucherTag, Enums.AISModules.UserPrivilege });
+        return new();
+    }   
+    public static async Task SendNotification(NotificationModel notification)
+    {
+        if (GlobalVariable.AMSHubConnection != null)
+            await GlobalVariable.AMSHubConnection.InvokeAsync("ApproveNotification", notification);
+    }
+    public static void ShowNotificationSnackbar(ISnackbar snackbar, NotificationModel notification,NavigationManager navigationManager,
+        ILocalStorageService localStorageService, UserAccount employee)
+    {
+        // string profilePicture = Convert.ToBase64String(notification.Sender.Picture);
+        string activity = String.Format("{0} {1}", notification.ModuleName, notification.StatusAction);
+        snackbar.Configuration.VisibleStateDuration = 15000;
+        snackbar.Configuration.ShowCloseIcon = true;
+        snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomStart;
+        snackbar.Configuration.SnackbarVariant = Variant.Filled;
+        snackbar.Add<NotificationCard>(new Dictionary<string, object>() {
+            { "Employee", employee },
+            { "Notification", notification },
+            { "Activity", String.Format("{0} {1}", notification.ModuleName, PastTense(notification.StatusAction.ToString().ToLower())) }
+        }, Severity.Normal, config => {
+            config.HideIcon = true;
+            config.Onclick = snackbar =>
+            {
+                notification.IsSeen = true;
+                NavigateToDocument(notification,navigationManager,localStorageService);
+                return Task.CompletedTask;
+            };
+        });
+    }
+    public static void NavigateToDocument(NotificationModel notification, NavigationManager navigationManager,Blazored.LocalStorage.ILocalStorageService localStorageService)
+    {
+        notification.ControlNumber = notification.ControlNumber.ToLower();
+        navigationManager.NavigateTo($"/refresh");
+        if(notification.ControlNumber.StartsWith("pc"))
+            navigationManager.NavigateTo($"/petty-cash/list/{notification.ControlNumber}");
+        else if(notification.ControlNumber.StartsWith("l-"))
+            navigationManager.NavigateTo($"/liquidation/list/{notification.ControlNumber}");
+        else if(notification.ControlNumber.StartsWith("rfp-"))
+            navigationManager.NavigateTo($"/request-payment/list/{notification.ControlNumber}");
+        else if(notification.ControlNumber.StartsWith("v-"))
+            navigationManager.NavigateTo($"/voucher/list/{notification.ControlNumber}");
+        // await RemoveAndSetNotificationStorage(localStorageService);
+    }
+    public static async Task RemoveAndSetNotificationStorage(Blazored.LocalStorage.ILocalStorageService localStorageService)
+    {
+        //remove and replace
+        await localStorageService.RemoveItemAsync("notifications");
+        await localStorageService.SetItemAsync("notifications", GlobalClassList.notificationList);
+    }
+    public static string PastTense(string text)
+    {
+        return text.Substring(text.Length -1) == "e" ? text.ToLower()+"d" : text.ToLower()+"ed";
+    }
+    public static string GetActionString(Enums.ActionMode action, string moduleName)
+    {
+        if (action == Enums.ActionMode.Create)
+            return $"Saving {moduleName}";
+        else if (action == Enums.ActionMode.Update)
+            return $"Updating {moduleName} changes";
+        else
+            return string.Empty;
+    }
+    public static async Task<bool> CheckNotificationSetting(ILocalStorageService localStorageService)
+    {
+        return await localStorageService.GetItemAsync<bool>("notif-silent");
+    }
+    public static async Task SetSilentNotification(ILocalStorageService localStorageService, bool value)
+    {
+        await localStorageService.SetItemAsync("notif-silent", value);
+    }
+    public static async Task<List<NotificationModel>> GetNotifications(ILocalStorageService localStorageService)
+    {
+        return await localStorageService.GetItemAsync<List<NotificationModel>>("notifications");
+    }
+    public static async Task SetNotificationsLocalStorage(ILocalStorageService localStorageService, List<NotificationModel> notifications)
+    {
+        await localStorageService.SetItemAsync("notifications", notifications);
+    }
+    public static async Task ClearNotifications(ILocalStorageService localStorageService) =>  await localStorageService.RemoveItemAsync("notifications");
+    public static async Task SetDarkMode(ILocalStorageService localStorageService, bool value) => await localStorageService.SetItemAsync("darkmode", value);
 }

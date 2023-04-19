@@ -64,12 +64,6 @@
 @code {
     [Parameter] public LiquidationModel Liquidation { get; set; } = new();
     [Parameter] public EventCallback ReturnEventClick { get; set; }
-    private async Task CopyTextToClipboard(string stringToCopy)
-    {
-        await Extensions.CopyTextToClipboard(stringToCopy, SnackbarService, JSRuntime);
-    }
-    protected async Task Return()
-    {
-        await ReturnEventClick.InvokeAsync();
-    }
+    private async Task CopyTextToClipboard(string stringToCopy) => await Extensions.CopyTextToClipboard(stringToCopy, SnackbarService, JSRuntime);
+    protected async Task Return() => await ReturnEventClick.InvokeAsync();
 }

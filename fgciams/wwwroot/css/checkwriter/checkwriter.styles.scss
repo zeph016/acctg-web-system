@@ -14,33 +14,16 @@
       "chkw-desc chkw-desc chkw-desc chkw-desc chkw-desc"
       "chkw-details chkw-details chkw-details chkw-details chkw-details";
   }
-  .chkw-header {
-    grid-area: chkw-header;
-  }
-  .chkw-payee {
-    grid-area: chkw-payee;
-  }
-  .chkw-banks {
-    grid-area: chkw-banks;
-  }
-  .chkw-checkdate {
-    grid-area: chkw-checkdate;
-  }
-  .chkw-checkno {
-    grid-area: chkw-checkno;
-  }
-  .chkw-blankcont {
-    grid-area: chkw-blankcont;
-  }
-  .chkw-voucher {
-    grid-area: chkw-voucher;
-  }
-  .chkw-desc {
-    grid-area: chkw-desc;
-  }
-  .chkw-details {
-    grid-area: chkw-details;
-  }
+  .chkw-header { grid-area: chkw-header; }
+  .chkw-payee { grid-area: chkw-payee; }
+  .chkw-banks { grid-area: chkw-banks;  }
+  .chkw-checkdate { grid-area: chkw-checkdate; }
+  .chkw-checkno { grid-area: chkw-checkno; }
+  .chkw-blankcont { grid-area: chkw-blankcont; }
+  .chkw-voucher { grid-area: chkw-voucher; }
+  .chkw-desc { grid-area: chkw-desc; }
+  .chkw-details { grid-area: chkw-details; }
+  
 
   .chkw-header,
   .chkw-details {
@@ -84,5 +67,51 @@
     font-size: 16px;
     font-family: "R-Flex Regular";
     font-weight: bold;
+  }
+  &__debtgrid {
+    display: grid;
+    padding: 8px;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-rows: 40px 50px 50px 40px 40px 1fr;
+    gap: 0px 0px;
+    grid-template-areas:
+      "chkw-header chkw-header chkw-header chkw-header chkw-header"
+      "chkw-payee chkw-payee chkw-payee chkw-blankcont chkw-signatories"
+      "chkw-banks chkw-banks chkw-banks chkw-checkdate chkw-signatories"
+      "chkw-voucher chkw-voucher chkw-voucher chkw-voucher chkw-signatories"
+      "chkw-desc chkw-desc chkw-desc chkw-desc chkw-signatories"
+      "chkw-desc chkw-desc chkw-desc chkw-desc chkw-controls";
+
+      .chkw-header { grid-area: chkw-header; }
+      .chkw-payee { grid-area: chkw-payee; }
+      .chkw-banks { grid-area: chkw-banks; }
+      .chkw-checkdate { grid-area: chkw-checkdate; }
+      .chkw-checkno { grid-area: chkw-checkno; }
+      .chkw-blankcont { grid-area: chkw-blankcont; }
+      .chkw-voucher { grid-area: chkw-voucher; }
+      .chkw-desc {  grid-area: chkw-desc; }
+      .chkw-details {  grid-area: chkw-details; }
+      .chkw-signatories
+      {
+        grid-area: chkw-signatories;
+        border-right: solid thin lightgrey;
+        overflow: hidden;
+      }
+      .chkw-controls
+      {
+        grid-area: chkw-controls;
+        padding: 8px;
+      }
+      .chkw-controls
+      {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .chkw-desc,.chkw-controls{
+        border-bottom: solid thin lightgrey;
+        border-right: solid thin lightgrey;
+      }
+      .chkw-blankcont { padding: 4px 8px; }
   }
 }

@@ -2,11 +2,14 @@
 using fgciams.domain.clsEnums;
 using fgciams.domain.clsRequestForPaymentAuditTrail;
 using fgciams.domain.clsRFPBillingDocuments;
+using fgciams.domain.clsVoucher;
+using fgciams.domain.clsCheck;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace fgciams.domain.clsRequest
 {
@@ -120,13 +123,25 @@ namespace fgciams.domain.clsRequest
         public string RFP{get; set;} = string.Empty;
         public Enums.RFPDetailTypeId RFPDetailTypeId { get; set; }
         public bool ShowReport {get; set;}
+        [NotMapped]
         public byte[] PreparedByPicture {get;set;} = new byte[]{};
+        [NotMapped]
         public byte[] RequestedByPicture {get;set;} = new byte[]{};
+        [NotMapped]
         public byte[] RecommendedByPicture {get;set;} = new byte[]{};
+        [NotMapped]
         public byte[] ApprovedByPicture {get;set;} = new byte[]{};
         public string StatusName {get;set;} = string.Empty;
         public Enums.AccountingStatusEnumCategory StatusEnumCategoryId {get;set;}
         public DateTime? PeriodDateFrom { get; set; } = DateTime.Now;
         public DateTime? PeriodDateTo { get; set; } = DateTime.Now;
+        public string VoucherDate { get; set; } = string.Empty;
+        public string VoucherNumber { get; set; } = string.Empty;
+        public string VoucherStatus { get; set; } = string.Empty;
+        public List<VoucherModel> vouchers { get; set; } = new();
+        public string CheckDate { get; set; } = string.Empty;
+        public string CheckNumber { get; set; } = string.Empty;
+        public string CheckStatus { get; set; } = string.Empty;
+        public List<CheckModel> checks { get; set; } = new();
     }
 }

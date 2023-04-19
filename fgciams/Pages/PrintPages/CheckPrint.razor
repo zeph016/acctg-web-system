@@ -3,7 +3,7 @@
 @inject ICheckService checkService
 @inject NavigationManager navigationManager
 @inject IDialogService dialogService
-@inject ISnackbar snackBarService
+@inject ISnackbar SnackbarService
 
      <div class='d-flex flex-1 pa-2 ma-2'>
         <MudPaper Class='d-flex flex-1 flex-column pa-2' Elevation='1' Height='calc(100vh - 120px)' Width='100%'>
@@ -64,12 +64,12 @@
             if (CheckWriter.currentActionMode == Enums.ActionMode.Create)
             {
                 returnedModel =  await checkService.AddCheck(GlobalClass.checkModel,GlobalClass.token);
-                Extensions.ShowAlert("Check has been created",Variant.Filled,snackBarService,Severity.Success);
+                Extensions.ShowAlert("Check successfully saved.",Variant.Filled,SnackbarService,Severity.Success);
             }
             else if (CheckWriter.currentActionMode == Enums.ActionMode.Update)
             {
                 returnedModel = await checkService.UpdateCheck(GlobalClass.checkModel,GlobalClass.token);
-                Extensions.ShowAlert("Check has been updated",Variant.Filled,snackBarService,Severity.Info);
+                Extensions.ShowAlert("Check successfully updated.",Variant.Filled,SnackbarService,Severity.Info);
             }
             if(GlobalVariable.AMSHubConnection != null)
                 await GlobalVariable.AMSHubConnection.InvokeAsync("SaveCheck",returnedModel);

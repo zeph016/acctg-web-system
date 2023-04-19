@@ -185,4 +185,10 @@
   font-family: "R-Flex Regular";
   font-size: 14px;
   text-transform: uppercase;
+}
+
+.label-gray {
+  font-size: 10px;
+  color: #9F9F9F;
+  text-transform: uppercase;
 }/*# sourceMappingURL=fontmods.styles.css.map */

@@ -1,0 +1,49 @@
+@inject IGlobalService GlobalService
+
+<MudAutocomplete Class='h-w-division' T='UserAccount' Variant="Variant.Outlined" Margin='Margin.Dense'
+        Value='UserAccountModel' 
+        ValueChanged='( (UserAccount account)=> OnChanged(account) )'
+        SearchFunc="@LoadEmployee"
+        DebounceInterval='300'
+        MinCharacters='3'
+        ToStringFunc="@(result => result == null? null : result.EmployeeName)"
+        ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info" AdornmentIcon='null' IconSize='0' Disabled='@Disabled'>
+<ItemTemplate Context="account">                            
+    <MudText>
+        <MudTooltip Class='wspace-breakword'>
+            @* Drop down *@
+            <small>@account.EmployeeName</small>
+        </MudTooltip>
+    </MudText>
+</ItemTemplate>
+<ItemSelectedTemplate Context="account">                
+    <MudText>
+        <div class='d-flex flex-column'>
+            <small class='font-bold'>@account.EmployeeName</small>
+            <small>@account.Designation</small>
+        </div>
+    </MudText>
+</ItemSelectedTemplate>
+</MudAutocomplete>
+
+@code
+{
+    [Parameter] public EventCallback<UserAccount> OnEmployeeDataChanged { get; set; }
+    [Parameter] public UserAccount UserAccountModel { get; set; } = new();
+    [Parameter] public bool Disabled { get; set; }
+    private void OnChanged(UserAccount account)
+    {
+        OnEmployeeDataChanged.InvokeAsync(account); 
+    }
+    private async Task<IEnumerable<UserAccount>> LoadEmployee(string employeeName)
+    {
+        var filterParameter = new FilterParameter()
+        {
+            IsName = true,
+            Name = employeeName,
+            IsLookUp = true
+        };
+        var employee = await GlobalService.LoadAllEmployee(filterParameter, GlobalClass.token);
+        return employee;
+    }
+}

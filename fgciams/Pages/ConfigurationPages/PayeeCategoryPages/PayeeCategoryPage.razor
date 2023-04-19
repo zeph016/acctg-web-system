@@ -2,8 +2,10 @@
 
 @inject IPayeeCategoryService payeeCategoryService
 @inject IDialogService dialogService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject ApplicationState AppState
+@inject IAccessLevelService accessLevelService
+@inject IAccessLevelService accessLevelService
 
 <div class='page-cont'>
     <div class='drawer-right'>
@@ -46,7 +48,7 @@
                     <MudTooltip Text="Refresh Table">
                         <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='(()=>{searchTerm = "";})' ></MudIconButton>
                     </MudTooltip>
-                    <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                    <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
                             TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
                             <MudMenuItem OnClick='(() => PayeeCategoryDialog(new PayeeCategoryModel(), Enums.ActionMode.Create))'>
                                 <div class='d-flex align-center gap-2 '>
@@ -70,7 +72,7 @@
                 <RowTemplate>
                         <MudTd DataLabel="lblStatusName">@context.CategoryName</MudTd>
                         <MudTd class="text-center pa-2">
-                            <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                            <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
                             TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
                                 <MudMenuItem OnClick='(() => PayeeCategoryDialog(context, Enums.ActionMode.Update))'>
                                     <div class='d-flex align-center gap-2 '>
@@ -100,6 +102,7 @@
         while (GlobalClass.currentUserAccount == null || GlobalClassList.payeeList == null || GlobalClassList.payeeCategoryList == null)
             await Task.Delay(1);
         await AppState.UpdateMainLayoutComponent(true);
+        await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.PayeeCategory);
         CompletedFetch();
         SignalR();
     }
@@ -112,6 +115,13 @@
 
     private async Task PayeeCategoryDialog(PayeeCategoryModel payeeCategory, Enums.ActionMode action)
     {
+        Enums.AISModuleFunctions function = action == Enums.ActionMode.Update? Enums.AISModuleFunctions.Edit : Enums.AISModuleFunctions.Add;
+        if (!Common.Privileges.isPrivilegeFunction(function))
+        {
+            string act = action == Enums.ActionMode.Update ? "edit" : "add";
+            Extensions.ShowAlert(String.Format("Account has been restricted to {0} Payee Category.", act), Variant.Filled, SnackbarService, Severity.Error);
+            return;
+        }
         var parameters = new DialogParameters();
         GlobalClass.payeeCategory = payeeCategory;
         string dialogTitle = GlobalClass.payeeCategory.Id != 0 ? "Edit Payee Category" : "Add Payee Category";
@@ -126,15 +136,15 @@
         if (!resultDialog.Canceled)
         {
             if((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Create)
-                Extensions.ShowAlert("Payee Category successfully added.", Variant.Filled,snackbarService,Severity.Success);
+                Extensions.ShowAlert("Payee Category successfully saved.", Variant.Filled,SnackbarService,Severity.Success);
             else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Update)
-                Extensions.ShowAlert("Payee Category successfully updated.", Variant.Filled,snackbarService,Severity.Info);
+                Extensions.ShowAlert("Payee Category successfully updated.", Variant.Filled,SnackbarService,Severity.Info);
             else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Deactivate)
-                Extensions.ShowAlert("Payee Category has been deactivated.", Variant.Filled,snackbarService,Severity.Warning);
+                Extensions.ShowAlert("Payee Category has been deactivated.", Variant.Filled,SnackbarService,Severity.Warning);
             else
                 await LoadPayeeCategories();
         } else if (resultDialog.Canceled)
-            Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
+            Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
     }
 
     private bool FilterItems(PayeeCategoryModel items)
@@ -172,8 +182,5 @@
             throw;
         }
     }
-    private async Task LoadPayeeCategories()
-    {
-        GlobalClassList.payeeCategoryList = await payeeCategoryService.LoadListOfPayeeCategory(GlobalClass.token);
-    }
+    private async Task LoadPayeeCategories() => GlobalClassList.payeeCategoryList = await payeeCategoryService.LoadListOfPayeeCategory(GlobalClass.token);
 }

@@ -1,0 +1,56 @@
+<div class='notification-list__mudlist-container'>
+    <MudList Clickable>
+        <Virtualize Context="notification" Items="NotificationListModel">
+            <MudListItem Class='@(!notification.IsSeen ? "bgc-dcdcdc6b" :"")' OnClick="() => Navigate(notification)">
+                <div class="notification-list-card">
+                    <div class='notification-list-card__grid'>
+                        <div class="ntfll-avatar">
+                            <MudBadge Color='@(notification.IsSeen ? Color.Dark:Color.Error)' Origin='Origin.TopLeft'
+                                Overlap Icon='@(notification.IsSeen ? Icons.Material.Filled.MarkEmailRead : Icons.Material.Filled.MarkEmailUnread)'>
+                                <img class='notification-list-card__avatar'
+                                    src='@($"data:image/png;base64, {Convert.ToBase64String(@notification.Sender.Picture)}")' />
+                            </MudBadge>
+                        </div>
+                        <div class="ntfll-name">
+                            <p class='notification-list-card__emp-lbl'><b>@notification.Sender.EmployeeName</b></p>
+                        </div>
+                        <div class="ntfll-activity">
+                            <div class="d-flex flex-row align-center">
+                            <p class='notification-list-card__activity-lbl'>@Action(notification)</p>
+                            <MudChip Class='mudchip-tbl h-notif' Size='Size.Small' Variant='Variant.Outlined' Color='Color.Error'>@notification.ControlNumber</MudChip>
+                            </div>
+                        </div>
+                        <div class="ntfll-timespan">
+                            <p class='notification-list-card__datenotif-lbl'>@notification.DateNotify</p>
+                            <p class='notification-list-card__timespan-lbl'>@notification.TimeElapseText</p>
+                        </div>
+                    </div>
+                </div>
+                </MudListItem>
+        </Virtualize>
+        <MudDivider />
+    </MudList>
+</div>
+
+@code
+{
+    [Parameter] public List<NotificationModel> NotificationListModel { get; set; } = new();
+    [Parameter] public EventCallback<NotificationModel> NotificationClick{ get; set; }
+
+    private async Task Navigate(NotificationModel notification)
+    {
+        await NotificationClick.InvokeAsync(notification);
+    }
+    private string Action(NotificationModel notification)
+    {
+        if (notification.StatusAction == Enums.ActionMode.Create)
+            return String.Format("Created a {0} ", notification.ModuleName.ToLower());
+        else if (notification.StatusAction == Enums.ActionMode.Approve)
+            return String.Format("Approved your {0}", notification.ModuleName.ToLower());
+        else if (notification.StatusAction == Enums.ActionMode.Receive)
+            return String.Format("Received your {0}", notification.ModuleName.ToLower());
+        else
+            return String.Format("Your {0} has been {1} ", notification.ModuleName.ToLower(),
+            Extensions.PastTense(notification.StatusAction.ToString().ToLower()));
+    }
+}

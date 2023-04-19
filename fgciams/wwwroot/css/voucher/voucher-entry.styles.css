@@ -1,9 +1,94 @@
+.dflex-row-align-center {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+}
+
+.dflex-row, .voucherpage .voucher-rfp, .voucherpage .voucher-rfp__subcontainer {
+  align-items: center;
+  display: flex;
+}
+
+.dflex-col, .dflex-col-start-end {
+  flex-direction: column !important;
+  display: flex !important;
+}
+
+.dflex-ac {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+}
+
+.flex-full {
+  flex: 1 1 0%;
+}
+
+.dflex {
+  display: flex;
+}
+
+.dblock {
+  display: block;
+}
+
+.dnone {
+  display: none;
+}
+
+.dblock-inline {
+  display: inline-block;
+}
+
+.vis-hide {
+  visibility: hidden;
+}
+
+.vis-show {
+  visibility: visible;
+}
+
+.jcenter {
+  justify-content: center;
+}
+
+.dflex-col-start-end {
+  align-items: start;
+  justify-content: end;
+}
+
+.line-clamp-2 {
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  -webkit-line-clamp: 3;
+}
+
+.line-clamp-8 {
+  -webkit-line-clamp: 8;
+}
+
+.line-clamp-10 {
+  -webkit-line-clamp: 10;
+}
+
+.line-clamp-16 {
+  -webkit-line-clamp: 16;
+}
+
+.line-clamp-props, .line-clamp-2, .line-clamp-3, .line-clamp-8, .line-clamp-10, .line-clamp-16 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+} 
 .voucherpage__grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 130px 1fr;
-  grid-template-rows: 40px 50px 40px 40px calc(100vh - 290px);
+  grid-template-columns: 1fr 1fr 1fr 130px 0.6fr;
+  grid-template-rows: 40px 50px auto 40px calc(100vh - 290px);
   gap: 0px 0px;
-  grid-template-areas: "voucher-header voucher-header voucher-header voucher-header voucher-header" "voucher-payee voucher-payee voucher-payee voucher-status voucher-status" "voucher-rfp voucher-rfp voucher-rfp voucher-rfp voucher-rfp" "voucher-desc voucher-desc voucher-remarks voucher-remarks voucher-remarks" "voucher-details voucher-details voucher-details voucher-details voucher-details";
+  grid-template-areas: "voucher-header voucher-header voucher-header voucher-header voucher-header" "voucher-payee voucher-payee voucher-status voucher-status voucher-status" "voucher-rfp voucher-rfp voucher-rfp voucher-rfp voucher-rfp" "voucher-desc voucher-desc voucher-remarks voucher-remarks voucher-remarks" "voucher-details voucher-details voucher-details voucher-details voucher-details";
 }
 .voucherpage .voucher-header {
   grid-area: voucher-header;
@@ -43,8 +128,22 @@
   border-right: solid thin lightgray;
   border-left: solid thin lightgray;
 }
+.voucherpage .voucher-rfp {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0px 8px;
+}
+.voucherpage .voucher-rfp__subcontainer {
+  flex: 1 1 0% !important;
+  overflow: hidden;
+  gap: 8px;
+}
 .voucherpage .voucher-status,
 .voucherpage .voucher-remarks {
+  border-right: solid thin lightgray;
+}
+.voucherpage .voucher-status,
+.voucherpage .voucher-period {
   border-right: solid thin lightgray;
 }
 .voucherpage .voucher-details {
@@ -135,4 +234,10 @@
 }
 .vou-entry-amtinfo-grid .bg-f4f5fb, .vou-entry-amtinfo-grid .amtinfo-cont1, .vou-entry-amtinfo-grid .amtinfo-cont2, .vou-entry-amtinfo-grid .amtinfo-cont3, .vou-entry-amtinfo-grid .amtinfo-cont5 {
   background-color: #f4f5fb;
+}
+.vou-entry-amtinfo-grid .checkbox-ewt .mud-icon-button {
+  padding: 4px !important;
+}
+.vou-entry-amtinfo-grid .checkbox-ewt p {
+  font-size: 12px !important;
 }/*# sourceMappingURL=voucher-entry.styles.css.map */

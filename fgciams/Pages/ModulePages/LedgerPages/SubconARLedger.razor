@@ -3,13 +3,15 @@
 @inject IVoucherService voucherService
 @inject ILedgerService ledgerService
 @inject NavigationManager navigationManager
+@inject ISnackbar SnackbarService
+@inject IJSRuntime JSRuntime
 
 <div class='page-cont'>
      <div class='drawer-right-min'>
-        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
-            <LedgerFilterComponent OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
-                FilterClick='FilterTable' ResetTableClick='ReloadTable'
-                contentVisible='openSideFilter' moduleName="subcon-ar-list"/>
+        <MudDrawer Class='pa-1' Open='false' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <MudTooltip Text='Filter' Arrow Placement='Placement.Left'>
+                <MudIconButton OnClick='(() => openFilter = !openFilter)' Icon='@Icons.Material.Filled.FilterList' arial-label='Close Filter' Size='Size.Small' />
+            </MudTooltip>
         </MudDrawer>
      </div>
     <MudContainer Class='py-2 pl-2 pr-10' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
@@ -19,7 +21,7 @@
                 <MudButton Class='align-self-end mb-2' OnClick='( ()=> isPrint = false )' EndIcon='@Icons.Material.Filled.Close' Variant='Variant.Filled' Color='Color.Default' Size='Size.Small' DisableElevation>
                     Close Report
                 </MudButton>
-                <iframe style='height:calc(100vh - 235px);' src='@PDFContent'/>
+                <iframe style='height:83vh;' src='@PDFContent'/>
             </div>
         }
         else 
@@ -33,30 +35,36 @@
                         @(GlobalClassList.subconARList.Count() > 1 ? "items" : "item") 
                         in total
                     </MudText>
-                    <FilteredItemsView filterParameter='filterParameter' OpenSideFilter='(() => openSideFilter = !openSideFilter)'/>
+                    <FilteredItemsView filterParameter='filterParameter' OpenSideFilter='(() => openFilter = !openFilter)'/>
                     <MudSpacer />
                     <MudTooltip Text="Refresh Table" Arrow Placement='Placement.Bottom'>
                         <MudIconButton Class='@(isLoading ? "mudbtnico-rotate":"")' OnClick='ReloadTable' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small"
                             Color='@(isLoading ? Color.Info : Color.Dark)'/>
                     </MudTooltip>
-                    <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' ActivationEvent="MouseEvent.MouseOver"
+                    <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' 
                         TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
-                        <MudMenuItem OnClick="( async () => await GetReport() )"  >
+                        @* <MudMenuItem OnClick="( async () => await GetReport() )"  >
                             <div class='d-flex align-center gap-2 '>
                                 <MudIcon Icon='@Icons.Material.Filled.PictureAsPdf' Size='Size.Small' Color='Color.Dark' />
                                 <MudText Typo='Typo.body2' Color='Color.Dark'>Print</MudText>
                             </div>
-                        </MudMenuItem>
-                        <MudMenuItem OnClick="(() => openSideFilter = !openSideFilter)"  >
+                        </MudMenuItem> *@
+                        <MudMenuItem OnClick="(() => openFilter = !openFilter)"  >
                             <div class='d-flex align-center gap-2 '>
                                 <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
                                 <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
                             </div>
                         </MudMenuItem>
                     </MudMenu>
+                    @if(openFilter)
+                    {
+                        <PopoverFilterMainComponent IsOpen='openFilter' CloseFilter='(() => openFilter = !openFilter)' IsMainFilter='true' IsLedgerList='true' 
+                            ModuleName='subcon-ar-list' ResetTableData='ReloadTable' ApplyFilter='FilterTable'/>
+                    }
                 </ToolBarContent>
                 <ColGroup>
                     <col style="width:20px" />
+                    <col />
                     <col />
                     <col />
                     <col style="width:20px" />
@@ -77,6 +85,7 @@
                         </div>
                     </MudTh>
                     <MudTh Class='customheader-6'>Payee</MudTh>
+                    <MudTh Class='customheader-6'>Charging</MudTh>
                     <MudTh Class='customheader-6'>Remarks</MudTh>
                     <MudTh Class='customheader-6 text-center'>Debit</MudTh>
                     <MudTh Class='customheader-6 text-center'>Credit</MudTh>
@@ -89,9 +98,9 @@
                                 @context.VoucherDate.ToShortDateString()
                             </MudChip>
                             <MudTooltip Text='@($"See {context.ControlNumber}")' Arrow Placement='Placement.Top'>
-                                <MudButton Class='btn-tbl-link' StartIcon='@Icons.Material.Filled.Link'
+                                <MudButton Class='btn-tbl-link width100' StartIcon='@Icons.Material.Filled.Link'
                                 Href='@FindReference(context.ControlNumber)' Target='_blank'
-                                    Variant='Variant.Filled' Color='Color.Error' Size='Size.Small' DisableElevation>
+                                    Variant='Variant.Outlined' Color='Color.Info' Size='Size.Small' DisableElevation>
                                         @context.ControlNumber
                                 </MudButton>
                             </MudTooltip>
@@ -100,6 +109,11 @@
                     <MudTd DataLabel="Project Name">
                         <div class='dynamic-width-1'>
                             <small>@context.ProjectName</small>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Project Name">
+                        <div class='dynamic-width-1'>
+                            <small>@context.SubLedgerName</small>
                         </div>
                     </MudTd>
                     <MudTd DataLabel="SubContractor Name">
@@ -132,7 +146,7 @@
                             </small>
                             <MudSpacer />
                             <small class='font-bold color-green font12'>
-                                @context.RunningBalances.ToString("N2")
+                                @context.RunningBalance.ToString("N2")
                             </small>
                         </div>
                     </MudTd>
@@ -150,7 +164,7 @@
 
 @code{
 
-    private bool isLoading, toggleSidebar = true, openSideFilter, isPopOverOpen;
+    private bool isLoading, toggleSidebar = true, openFilter, isPopOverOpen;
     private IEnumerable<VoucherDetailModel>? pageData;
     private MudTable<VoucherDetailModel> tableVariable = new MudTable<VoucherDetailModel>();
     private FilterParameter filterParameter = new();
@@ -163,6 +177,7 @@
     private async Task<TableData<VoucherDetailModel>> LoadARList(TableState tableState)
     {
         isLoading = true;
+        filterParameter.IsAR = true;
         IEnumerable<VoucherDetailModel> data = await voucherService.GetSunbConProjects(filterParameter,GlobalClass.token);
         switch (tableState.SortLabel)
         {
@@ -192,7 +207,16 @@
     private async Task FilterTable()
     {
         filterParameter = GlobalVariable.filterParameter;
-        await tableVariable.ReloadServerData();
+        if(IsValidate(filterParameter))
+        {
+            Task t = tableVariable.ReloadServerData();
+            await t;
+            if(t.Status == TaskStatus.RanToCompletion)
+                if(GlobalVariable.filterParameter.IsExport)
+                    await GetReport();
+        } else {
+            Extensions.ShowAlert("Please fill in the required field.", Variant.Filled, SnackbarService , Severity.Error);
+        }
     }
     private string FindReference(string voucherControlNumber)
     {
@@ -201,8 +225,40 @@
     private async Task GetReport()
     {
         GlobalClassList.subconARList.ForEach( ar => ar.PayeeName = filterParameter.PayeeName);
-        PDFContent = await ledgerService.GetSubConARReport(GlobalClassList.subconARList);
-        isPrint = true;
+        if(GlobalVariable.FileType == Enums.FileType.PDF)
+        {
+            GlobalVariable.FileDownloading = true;
+            Task<string> t = ledgerService.GetSubConARReport(GlobalClassList.subconARList);
+            await t;
+            if(t.Status == TaskStatus.RanToCompletion)
+            {
+                PDFContent = t.Result;
+                GlobalVariable.FileDownloading = true;
+                isPrint = true;
+            } else {
+                GlobalVariable.FileDownloading = true;
+                Extensions.ShowAlert("There was a problem while exporting your file", Variant.Filled, SnackbarService, Severity.Error);
+            }
+        } else {
+            await ExportToExcel();
+        }
     }
-
+    private bool IsValidate(FilterParameter param)
+    {
+        if(param.ProjectId == 0)
+            return false;
+        return true;
+    }
+    private async Task ExportToExcel()
+    {
+        GlobalVariable.FileDownloading = true;
+        Task<byte[]> t1 = ledgerService.GetSubConARReportExcel(GlobalClassList.subconARList, GlobalClass.token);
+        await t1;
+        if(t1.Status == TaskStatus.RanToCompletion)
+        {
+            using var streamRef = new DotNetStreamReference(new MemoryStream(t1.Result), true);
+            await JSRuntime.InvokeVoidAsync("downloadFileFromStream", "SubconARLedger.xls", streamRef);
+        }
+        GlobalVariable.FileDownloading = false;
+    }
 }

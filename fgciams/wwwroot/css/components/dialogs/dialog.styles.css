@@ -12,14 +12,23 @@
 .liqview-dialog__grid .liqgrid-period, .liqview-dialog__grid .liqgrid-details__label-cont, .rfpview-dialog__grid .rfpgrid-lblstatus, .rfpview-dialog__grid .rfpgrid-lbldatereq, .rfpview-dialog__grid .rfpgrid-lbldateneed, .rfpview-dialog__grid .rfpgrid-lbldateperiod,
 .rfpview-dialog__grid .rfpgrid-lblpayee, .rfpview-dialog__grid .rfpgrid-lblbillreq, .rfpview-dialog__grid .rfpgrid-controls, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-body__item-row, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-proj, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-div, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-exp, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-amt, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-footer, .rfpview-dialog__total-amount--cont, .vouchview-dialog__grid .vvgrid-lblstatus, .vouchview-dialog__grid .vvgrid-lbldate, .vouchview-dialog__grid .vvgrid-lblrfp, .vouchview-dialog__grid .vvgrid-lbldesc,
 .vouchview-dialog__grid .vvgrid-lblperiod, .vouchview-dialog__grid .vvgrid-lblrem, .vouchview-dialog__grid .vvgrid-controls, .vouchview-dialog__grid .vvgrid-status,
-.vouchview-dialog__grid .vvgrid-date, .vouchview-dialog__grid .vvgrid-period, .vouchview-dialog__grid .vvgrid-desc, .vouchview-dialog__grid .vvgrid-rfp, .vouchview-dialog__grid .vvgrid-rem, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-header__item-row, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-body__item-row, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-body__item-row--right, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-body__item-row--center, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-footer, .vroutedialog__grid .vroutedialog-lbldate, .vroutedialog__grid .vroutedialog-controlnumbers__grid .vroutediasub-title, .vroutedialog__grid .vroutedialog-controlnumbers__grid .vroutediasub-footer {
+.vouchview-dialog__grid .vvgrid-date, .vouchview-dialog__grid .vvgrid-period, .vouchview-dialog__grid .vvgrid-desc, .vouchview-dialog__grid .vvgrid-rfp, .vouchview-dialog__grid .vvgrid-rem, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-header__item-row, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-body__item-row, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-body__item-row--right, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-body__item-row--center, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-footer, .vroutedialog__grid .vroutedialog-lbldate, .vroutedialog__grid .vroutedialog-controlnumbers__grid .vroutediasub-title, .vroutedialog__grid .vroutedialog-controlnumbers__grid .vroutediasub-footer, .custom-dialog2__title, .custom-dialog2__actions, .checkdialog-view__grid .chkd-headerleft, .checkdialog-view__grid .chkd-lbldate, .checkdialog-view__grid .chkd-date, .checkdialog-view__grid .chkd-lblpayee, .checkdialog-view__grid .chkd-payee,
+.checkdialog-view__grid .chkd-amtno, .checkdialog-view__grid .chkd-lblpeso, .checkdialog-view__grid .chkd-amtwords, .checkdialog-view__grid .chkd-footer, .checkdialog-view__grid .chkd-footer__misc-info > div, .checkdialog-view .border-bottom, .debitdialog-view__grid .debitv-lblbank, .debitdialog-view__grid .debitv-bank, .debitdialog-view__grid .debitv-controls, .debitdialog-view__grid .debitv-lbldate,
+.debitdialog-view__grid .debitv-lblamt, .debitdialog-view__grid .debitv-amt, .debitdialog-view__grid .debitv-lblrem, .debitdialog-view__grid .debitv-rem, .collectiondialog-view__grid .coll-lblstatus, .collectiondialog-view__grid .coll-status,
+.collectiondialog-view__grid .coll-lbltransdate, .collectiondialog-view__grid .coll-transdate, .collectiondialog-view__grid .coll-lblcat, .collectiondialog-view__grid .coll-cat,
+.collectiondialog-view__grid .coll-lblcust, .collectiondialog-view__grid .coll-cust, .collectiondialog-view__grid .coll-lblprojc, .collectiondialog-view__grid .coll-projc,
+.collectiondialog-view__grid .coll-lblexp, .collectiondialog-view__grid .coll-exp, .collectiondialog-view__grid .coll-lblref, .collectiondialog-view__grid .coll-ref,
+.collectiondialog-view__grid .coll-lblor, .collectiondialog-view__grid .coll-or, .collectiondialog-view__grid .coll-lbltype, .collectiondialog-view__grid .coll-type,
+.collectiondialog-view__grid .coll-lblchkdate, .collectiondialog-view__grid .coll-chkdate, .collectiondialog-view__grid .coll-lblcheckno, .collectiondialog-view__grid .coll-checkno,
+.collectiondialog-view__grid .coll-lblgross, .collectiondialog-view__grid .coll-gross, .collectiondialog-view__grid .coll-lblnet, .collectiondialog-view__grid .coll-net,
+.collectiondialog-view__grid .coll-controls, .dialog-action {
   align-items: center;
   display: flex;
 }
 
-.dflex-col, .pcview-dialog .pcgrid-signatories, .liqview-dialog__grid .liqgrid-details__pc-ctrlno--cont, .liqview-dialog .liqgrid-signatories, .rfpview-dialog__grid .rfpgrid-details, .rfpview-dialog__grid .rfpgrid-signatories, .vouchview-dialog__grid .vvgrid-signatories {
-  flex-direction: column;
-  display: flex;
+.dflex-col, .pcview-dialog .pcgrid-signatories, .liqview-dialog__grid .liqgrid-details__pc-ctrlno--cont, .liqview-dialog .liqgrid-signatories, .rfpview-dialog__grid .rfpgrid-details, .rfpview-dialog__grid .rfpgrid-signatories, .vouchview-dialog__grid .vvgrid-signatories, .checkdialog-view__grid .chkd-footer__misc-info, .dflex-col-start-end {
+  flex-direction: column !important;
+  display: flex !important;
 }
 
 .dflex-ac {
@@ -41,9 +50,56 @@
   display: block;
 }
 
+.dnone {
+  display: none;
+}
+
 .dblock-inline, .liqview-dialog__grid .liqgrid-details__pc-chips-cont {
   display: inline-block;
-} /*# sourceMappingURL=flexgridmods.styles.css.map */
+}
+
+.vis-hide {
+  visibility: hidden;
+}
+
+.vis-show {
+  visibility: visible;
+}
+
+.jcenter {
+  justify-content: center;
+}
+
+.dflex-col-start-end {
+  align-items: start;
+  justify-content: end;
+}
+
+.line-clamp-2 {
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  -webkit-line-clamp: 3;
+}
+
+.line-clamp-8 {
+  -webkit-line-clamp: 8;
+}
+
+.line-clamp-10 {
+  -webkit-line-clamp: 10;
+}
+
+.line-clamp-16 {
+  -webkit-line-clamp: 16;
+}
+
+.line-clamp-props, .line-clamp-2, .line-clamp-3, .line-clamp-8, .line-clamp-10, .line-clamp-16 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+} 
 .visibility-animation-hide {
   display: none;
   visibility: hidden;
@@ -99,40 +155,22 @@
   transform: translateY(-2px);
 }
 
-.fade-in, .main-dialog-content, .pcview-dialog__grid, .liqview-dialog__grid {
-  -webkit-animation: fadein 1s;
+.fade-in, .main-dialog-content, .pcview-dialog__grid, .liqview-dialog__grid, .checkdialog-view__grid {
   animation: fadein 1s;
   visibility: visible;
 }
 
 .fade-out {
-  -webkit-animation: fadeout 1s;
   animation: fadeout 1s;
   visibility: hidden;
 }
 
-@-webkit-keyframes fadein {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
 @keyframes fadein {
   0% {
     opacity: 0;
   }
   100% {
     opacity: 1;
-  }
-}
-@-webkit-keyframes fadeout {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
   }
 }
 @keyframes fadeout {
@@ -154,33 +192,9 @@
 }
 
 .mudbtnico-rotate {
-  -webkit-animation: mudbtnico-rotate 0.5s linear infinite;
   animation: mudbtnico-rotate 0.5s linear infinite;
 }
 
-@-webkit-keyframes mudbtnico-rotate {
-  0% {
-    transform: rotate(0deg);
-    -ms-transform: rotate(0deg);
-    -moz-transform: rotate(0deg);
-    -webkit-transform: rotate(0deg);
-    -o-transform: rotate(0deg);
-  }
-  50% {
-    transform: rotate(180deg);
-    -ms-transform: rotate(180deg);
-    -moz-transform: rotate(180deg);
-    -webkit-transform: rotate(180deg);
-    -o-transform: rotate(180deg);
-  }
-  100% {
-    transform: rotate(360deg);
-    -ms-transform: rotate(360deg);
-    -moz-transform: rotate(360deg);
-    -webkit-transform: rotate(360deg);
-    -o-transform: rotate(360deg);
-  }
-}
 @keyframes mudbtnico-rotate {
   0% {
     transform: rotate(0deg);
@@ -216,8 +230,20 @@
   color: #2196f3 !important;
 }
 
-.mudbtnico-rotate-90:hover .mud-icon-root {
+.mudbtnico-rotate-90:hover .mud-icon-root, .mudbtnico-rotate-90:hover .mud-button-icon-end {
   transform: rotate(90deg);
+  transition: all 0.5s ease;
+  -webkit-transition: all 0.5s ease; /** Chrome & Safari **/
+  -moz-transition: all 0.5s ease; /** Firefox **/
+  -o-transition: all 0.5s ease; /** Opera **/
+}
+
+.mudbtnico-rotate-180:hover .mud-button-root {
+  color: #2196f3 !important;
+}
+
+.mudbtnico-rotate-180:hover .mud-icon-root {
+  transform: rotate(180deg);
   transition: all 0.5s ease;
   -webkit-transition: all 0.5s ease; /** Chrome & Safari **/
   -moz-transition: all 0.5s ease; /** Firefox **/
@@ -226,32 +252,11 @@
 
 .sticky-div {
   z-index: 1;
-  position: -webkit-sticky;
   position: sticky;
   left: 0;
   background-color: white;
 }
 
-@-webkit-keyframes bounce-in {
-  0% {
-    opacity: 0;
-    transform: scale3d(0.3, 0.3, 0.3);
-  }
-  30% {
-    transform: scale3d(1.1, 1.1, 1.1);
-  }
-  60% {
-    opacity: 1;
-    transform: scale3d(1.03, 1.03, 1.03);
-  }
-  80% {
-    transform: scale3d(0.97, 0.97, 0.97);
-  }
-  to {
-    opacity: 1;
-    transform: scale3d(1, 1, 1);
-  }
-}
 @keyframes bounce-in {
   0% {
     opacity: 0;
@@ -271,7 +276,210 @@
     opacity: 1;
     transform: scale3d(1, 1, 1);
   }
-} /*# sourceMappingURL=animation.styles.css.map */
+}
+.th-btn-expand .mud-icon-root {
+  transition: all 0.5s ease;
+}
+
+.ripple-animation {
+  background-position: center;
+  transition: background 0.7s;
+}
+
+.ripple-animation:hover {
+  background: rgba(255, 255, 255, 0.5) radial-gradient(circle, transparent 1%, rgba(255, 255, 255, 0.5) 1%) center/15000%;
+}
+
+.ripple-animation:active {
+  background-color: inherit;
+  background-size: 100%;
+  transition: background 0s;
+}
+
+.searching-container {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+.searching-container p {
+  font-size: 14px;
+  font-family: "R-Flex Bold";
+}
+
+.searching-container__glass {
+  margin: 24px;
+  width: 35px;
+  height: 35px;
+  animation: zoom-in-zoom-out-glass 1s ease infinite;
+}
+
+@keyframes zoom-in-zoom-out-glass {
+  0% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(1.2, 1.2);
+  }
+  100% {
+    transform: scale(1, 1);
+  }
+}
+@keyframes fadeToRight-15px {
+  0% {
+    opacity: 0;
+    transform: translateX(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(15px);
+  }
+}
+.fadeToRight-15px {
+  animation-name: fadeToRight-15px;
+  animation: fadeToRight-15px 1s;
+}
+
+.from-top {
+  animation: fromtop 0.5s;
+}
+
+.to-top {
+  animation: totop 0.5s;
+}
+
+@keyframes fromtop {
+  0% {
+    opacity: 0;
+    transform: translateY(-100px) scale(0.86);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(0.86);
+  }
+}
+@keyframes totop {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(0.86);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100px) scale(0.86);
+  }
+}
+.horizontal-in {
+  animation: horizontalin 0.5s;
+}
+
+@keyframes horizontalin {
+  0% {
+    opacity: 0;
+    transform: translateX(-100px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.from-right {
+  animation: fromright 0.5s;
+}
+
+.to-right {
+  animation: toright 0.5s;
+}
+
+@keyframes fromright {
+  0% {
+    opacity: 0;
+    transform: translateX(100px) scale(0.86);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(0.86);
+  }
+}
+@keyframes toright {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(0.86);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100px) scale(0.86);
+  }
+}
+.bounce-anim-sm {
+  animation: bounce 2s infinite;
+  -webkit-animation: bounce 2s infinite;
+  -moz-animation: bounce 2s infinite;
+  -o-animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-20px);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
+}
+.side-to-side-anim-sm {
+  animation: sidetoside-sm 2s infinite;
+  -webkit-animation: sidetoside-sm 2s infinite;
+  -moz-animation: sidetoside-sm 2s infinite;
+  -o-animation: sidetoside-sm 2s infinite;
+}
+
+@keyframes sidetoside-sm {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateX(-5px);
+  }
+  60% {
+    transform: translateX(5px);
+  }
+}
+.wiggle-anim-sm {
+  animation: wiggle 2s linear infinite;
+}
+
+.wiggle-anim-sm-once {
+  animation: wiggle 0.5s linear infinite;
+}
+
+@keyframes wiggle {
+  0%, 7% {
+    transform: rotateZ(0);
+  }
+  15% {
+    transform: rotateZ(-20deg);
+  }
+  20% {
+    transform: rotateZ(15deg);
+  }
+  25% {
+    transform: rotateZ(-15deg);
+  }
+  30% {
+    transform: rotateZ(11deg);
+  }
+  35% {
+    transform: rotateZ(-9deg);
+  }
+  40%, 100% {
+    transform: rotateZ(0);
+  }
+} 
 .bgc-white {
   background-color: #ffffff !important;
 }
@@ -344,8 +552,20 @@
   background-color: crimson !important;
 }
 
-.bgc-F3F5F7, .main-dialog-content, .globalrfp-dialog-content {
-  background-color: #F3F5F7;
+.bgc-F3F5F7, .main-dialog-content, .globalrfp-dialog-content, .debitdialog-view, .collectiondialog-view {
+  background-color: #F3F5F7 !important;
+}
+
+.bgc-dcdcdc6b {
+  background-color: rgba(220, 220, 220, 0.4196078431) !important;
+}
+
+.line-bg-lightpurple {
+  border-top: solid thick rgba(200, 182, 182, 0.4705882353);
+}
+
+.line-bg-maincolor {
+  border-top: solid thick #542D6F;
 }
 
 .bgc-4d43521a {
@@ -417,22 +637,217 @@
 
 .opacity30 {
   opacity: 30%;
-} /*# sourceMappingURL=colors.styles.css.map */
+}
+
+.material-success {
+  color: #66BB6A;
+}
+
+.material-info {
+  color: #4A86FF;
+}
+
+.material-warning {
+  color: #FFA726;
+}
+
+.material-error {
+  color: #F44336;
+}
+
+.bg-material-success, .bg-material-success, .bg-material-info,
+.bg-material-warning, .bg-material-error {
+  color: white !important;
+}
+
+.bg-material-success {
+  background-color: #66BB6A !important;
+}
+
+.bg-material-info {
+  background-color: #4A86FF !important;
+}
+
+.bg-material-warning {
+  background-color: #FFA726 !important;
+}
+
+.bg-material-error {
+  background-color: #F44336 !important;
+} 
+.dflex-row-align-center {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+}
+
+.dflex-row, .pcview-dialog__crumb, .pcview-dialog .pcgrid-lblstatus, .pcview-dialog .pcgrid-lbldate, .pcview-dialog .pcgrid-lblpayee,
+.pcview-dialog .pcgrid-lblamt, .pcview-dialog .pcgrid-status, .pcview-dialog .pcgrid-date, .pcview-dialog .pcgrid-payee,
+.pcview-dialog .pcgrid-amt, .pcview-dialog .pcgrid-controls, .liqview-dialog__grid .liqgrid-lblstatus, .liqview-dialog__grid .liqgrid-lbldate, .liqview-dialog__grid .liqgrid-lblperiod,
+.liqview-dialog__grid .liqgrid-lblremarks, .liqview-dialog__grid .liqgrid-status, .liqview-dialog__grid .liqgrid-controls,
+.liqview-dialog__grid .liqgrid-date, .liqview-dialog__grid .liqgrid-lblamt, .liqview-dialog__grid .liqgrid-totalamt,
+.liqview-dialog__grid .liqgrid-period, .liqview-dialog__grid .liqgrid-details__label-cont, .rfpview-dialog__grid .rfpgrid-lblstatus, .rfpview-dialog__grid .rfpgrid-lbldatereq, .rfpview-dialog__grid .rfpgrid-lbldateneed, .rfpview-dialog__grid .rfpgrid-lbldateperiod,
+.rfpview-dialog__grid .rfpgrid-lblpayee, .rfpview-dialog__grid .rfpgrid-lblbillreq, .rfpview-dialog__grid .rfpgrid-controls, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-body__item-row, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-proj, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-div, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-exp, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-amt, .rfpview-dialog__grid .rfpgrid-details__grid .rfpdg-footer, .rfpview-dialog__total-amount--cont, .vouchview-dialog__grid .vvgrid-lblstatus, .vouchview-dialog__grid .vvgrid-lbldate, .vouchview-dialog__grid .vvgrid-lblrfp, .vouchview-dialog__grid .vvgrid-lbldesc,
+.vouchview-dialog__grid .vvgrid-lblperiod, .vouchview-dialog__grid .vvgrid-lblrem, .vouchview-dialog__grid .vvgrid-controls, .vouchview-dialog__grid .vvgrid-status,
+.vouchview-dialog__grid .vvgrid-date, .vouchview-dialog__grid .vvgrid-period, .vouchview-dialog__grid .vvgrid-desc, .vouchview-dialog__grid .vvgrid-rfp, .vouchview-dialog__grid .vvgrid-rem, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-header__item-row, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-body__item-row, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-body__item-row--right, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-body__item-row--center, .vouchview-dialog__grid .vvgrid-details__grid .vvdet-footer, .vroutedialog__grid .vroutedialog-lbldate, .vroutedialog__grid .vroutedialog-controlnumbers__grid .vroutediasub-title, .vroutedialog__grid .vroutedialog-controlnumbers__grid .vroutediasub-footer, .custom-dialog2__title, .custom-dialog2__actions, .checkdialog-view__grid .chkd-headerleft, .checkdialog-view__grid .chkd-lbldate, .checkdialog-view__grid .chkd-date, .checkdialog-view__grid .chkd-lblpayee, .checkdialog-view__grid .chkd-payee,
+.checkdialog-view__grid .chkd-amtno, .checkdialog-view__grid .chkd-lblpeso, .checkdialog-view__grid .chkd-amtwords, .checkdialog-view__grid .chkd-footer, .checkdialog-view__grid .chkd-footer__misc-info > div, .checkdialog-view .border-bottom, .debitdialog-view__grid .debitv-lblbank, .debitdialog-view__grid .debitv-bank, .debitdialog-view__grid .debitv-controls, .debitdialog-view__grid .debitv-lbldate,
+.debitdialog-view__grid .debitv-lblamt, .debitdialog-view__grid .debitv-amt, .debitdialog-view__grid .debitv-lblrem, .debitdialog-view__grid .debitv-rem, .collectiondialog-view__grid .coll-lblstatus, .collectiondialog-view__grid .coll-status,
+.collectiondialog-view__grid .coll-lbltransdate, .collectiondialog-view__grid .coll-transdate, .collectiondialog-view__grid .coll-lblcat, .collectiondialog-view__grid .coll-cat,
+.collectiondialog-view__grid .coll-lblcust, .collectiondialog-view__grid .coll-cust, .collectiondialog-view__grid .coll-lblprojc, .collectiondialog-view__grid .coll-projc,
+.collectiondialog-view__grid .coll-lblexp, .collectiondialog-view__grid .coll-exp, .collectiondialog-view__grid .coll-lblref, .collectiondialog-view__grid .coll-ref,
+.collectiondialog-view__grid .coll-lblor, .collectiondialog-view__grid .coll-or, .collectiondialog-view__grid .coll-lbltype, .collectiondialog-view__grid .coll-type,
+.collectiondialog-view__grid .coll-lblchkdate, .collectiondialog-view__grid .coll-chkdate, .collectiondialog-view__grid .coll-lblcheckno, .collectiondialog-view__grid .coll-checkno,
+.collectiondialog-view__grid .coll-lblgross, .collectiondialog-view__grid .coll-gross, .collectiondialog-view__grid .coll-lblnet, .collectiondialog-view__grid .coll-net,
+.collectiondialog-view__grid .coll-controls, .dialog-action, .action-buttons {
+  align-items: center;
+  display: flex;
+}
+
+.dflex-col, .pcview-dialog .pcgrid-signatories, .liqview-dialog__grid .liqgrid-details__pc-ctrlno--cont, .liqview-dialog .liqgrid-signatories, .rfpview-dialog__grid .rfpgrid-details, .rfpview-dialog__grid .rfpgrid-signatories, .vouchview-dialog__grid .vvgrid-signatories, .checkdialog-view__grid .chkd-footer__misc-info, .dflex-col-start-end {
+  flex-direction: column !important;
+  display: flex !important;
+}
+
+.dflex-ac {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+}
+
+.flex-full, .liqview-dialog__grid .liqgrid-details, .liqview-dialog__grid .liqgrid-details__pc-chips-cont {
+  flex: 1 1 0%;
+}
+
+.dflex, .liqview-dialog__grid .liqgrid-details {
+  display: flex;
+}
+
+.dblock {
+  display: block;
+}
+
+.dnone {
+  display: none;
+}
+
+.dblock-inline, .liqview-dialog__grid .liqgrid-details__pc-chips-cont {
+  display: inline-block;
+}
+
+.vis-hide {
+  visibility: hidden;
+}
+
+.vis-show {
+  visibility: visible;
+}
+
+.jcenter {
+  justify-content: center;
+}
+
+.dflex-col-start-end {
+  align-items: start;
+  justify-content: end;
+}
+
+.line-clamp-2 {
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  -webkit-line-clamp: 3;
+}
+
+.line-clamp-8 {
+  -webkit-line-clamp: 8;
+}
+
+.line-clamp-10 {
+  -webkit-line-clamp: 10;
+}
+
+.line-clamp-16 {
+  -webkit-line-clamp: 16;
+}
+
+.line-clamp-props, .line-clamp-2, .line-clamp-3, .line-clamp-8, .line-clamp-10, .line-clamp-16 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.btnicon-mr-0 .mud-button-icon-start {
+  margin-right: 0px !important;
+}
+
+.btn-ios-d {
+  font-weight: 500 !important;
+  min-width: 70px !important;
+}
+
+.btn-ios-d .mud-button-icon-start {
+  margin-right: 0px !important;
+}
+
+.btn-lbl-font12 .mud-button-label {
+  font-size: 10px !important;
+}
+
+.btn-tbl-link {
+  border-radius: 5px;
+  font-size: 10px !important;
+  font-weight: bold;
+  text-transform: uppercase !important;
+  white-space: nowrap;
+}
+
+.btn-circular, .btn-scroll {
+  border-radius: 24px !important;
+}
+
+.btn-scroll {
+  position: sticky;
+}
+
+.button-m .mud-button, .customdialog .mud-dialog-title .mud-button,
+.customdialog-table-only .mud-dialog-title .mud-button, .custom-dialog2__actions .mud-button, .dialog-action .mud-button, .action-buttons .mud-button {
+  padding: 2px 8px !important;
+}
+
+.button-m .mud-button .mud-button-label, .customdialog .mud-dialog-title .mud-button .mud-button-label,
+.customdialog-table-only .mud-dialog-title .mud-button .mud-button-label, .custom-dialog2__actions .mud-button .mud-button-label, .dialog-action .mud-button .mud-button-label, .action-buttons .mud-button .mud-button-label {
+  font-size: 0.8125rem !important;
+  text-transform: capitalize !important;
+}
+
+.action-buttons {
+  width: 100%;
+  gap: 4px;
+} 
 .customdialog .mud-dialog-title,
 .customdialog-table-only .mud-dialog-title {
+  padding: 8px 16px !important;
   background-color: #542d6f !important;
   color: white;
 }
-.customdialog .mud-dialog-title .mud-typography,
-.customdialog-table-only .mud-dialog-title .mud-typography {
-  font-family: "Theramin";
+.customdialog .mud-dialog-title p,
+.customdialog-table-only .mud-dialog-title p {
+  font-family: "SF-Pro-Display Regular";
+}
+.customdialog .mud-dialog-title .mud-icon-root, .customdialog .mud-dialog-title .mud-button-root,
+.customdialog-table-only .mud-dialog-title .mud-icon-root,
+.customdialog-table-only .mud-dialog-title .mud-button-root {
+  border-color: #ffffff;
+  color: #ffffff;
 }
 .customdialog__content-container,
 .customdialog-table-only__content-container {
   font-size: 1rem;
   padding: 10px 14px;
 }
-
+.customdialog .mud-dialog-content,
 .customdialog-table-only .mud-dialog-content {
   overflow: hidden;
   padding: 0px !important;
@@ -455,8 +870,7 @@
 }
 
 .main-dialog-content {
-  -webkit-animation: fadein 1s 1;
-          animation: fadein 1s 1;
+  animation: fadein 1s 1;
   border: solid thin lightgray;
   border-radius: 5px;
   box-shadow: var(--mud-elevation-1);
@@ -466,7 +880,6 @@
 }
 
 .globalrfp-dialog-content {
-  padding-right: 32px;
   overflow: hidden;
 }
 
@@ -550,12 +963,12 @@
   border-bottom: dotted thin black;
   padding: 5px;
 }
-.pcview-dialog__label, .vroutedialog__lbl, .vouchview-dialog__label, .rfpview-dialog__label, .liqview-dialog__label {
+.pcview-dialog__label, .collectiondialog-view__lbl, .debitdialog-view__lbl, .vroutedialog__lbl, .vouchview-dialog__label, .rfpview-dialog__label, .liqview-dialog__label {
   font-size: 10px;
   color: #9F9F9F;
   text-transform: uppercase;
 }
-.pcview-dialog__txt, .vroutedialog__txt, .vouchview-dialog__txt, .rfpview-dialog__txt, .liqview-dialog__txt, .pcview-dialog__txt--content-title, .vouchview-dialog__txt--content-title, .rfpview-dialog__txt--content-title, .liqview-dialog__txt--content-title {
+.pcview-dialog__txt, .collectiondialog-view__txt, .debitdialog-view__txt, .vroutedialog__txt, .vouchview-dialog__txt, .rfpview-dialog__txt, .liqview-dialog__txt, .pcview-dialog__txt--content-title, .vouchview-dialog__txt--content-title, .rfpview-dialog__txt--content-title, .liqview-dialog__txt--content-title {
   font-size: 12px;
   margin: 4px;
   padding: 0px 12px;
@@ -948,4 +1361,344 @@
   justify-content: center;
   padding: 0px 8px 8px 8px;
   margin: 4px 4px 0px 4px;
+}
+
+.custom-dialog2 {
+  min-width: 340px;
+}
+.custom-dialog2__title {
+  border-radius: 4px 4px 0px 0px;
+  gap: 8px;
+  background-color: #542d6f;
+  padding: 16px 24px;
+}
+.custom-dialog2__title p {
+  font-family: "SF-Pro-Display Regular";
+  font-size: 20px;
+  color: #ffffff;
+}
+.custom-dialog2__title small {
+  font-family: "SF-Pro-Display Regular";
+  letter-spacing: 1px;
+  color: #ffffff;
+}
+.custom-dialog2__title .mud-icon-root {
+  color: #ffffff;
+}
+.custom-dialog2__content {
+  padding: 12px 24px;
+}
+.custom-dialog2__actions {
+  gap: 8px;
+  padding: 8px;
+}
+.custom-dialog2__warning-txt {
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgb(148, 148, 148);
+}
+
+.checkdialog-view {
+  background: #ffffff;
+  background-image: url(../../../images/fgbgimg.png), linear-gradient(217deg, rgba(179, 220, 204, 0), #C9E6D4 70.71%), linear-gradient(127deg, #C9E6D4, rgba(242, 240, 215, 0) 70.71%), linear-gradient(336deg, rgba(242, 240, 215, 0), #EBD5AE 70.71%);
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: auto;
+  padding: 4px 12px;
+}
+.checkdialog-view__grid {
+  display: grid;
+  grid-template-columns: 42px 42px 1fr 55px 42px 158px;
+  grid-template-rows: auto;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas: "chkd-headerleft chkd-headerleft chkd-headerleft chkd-headerleft chkd-lbldate chkd-date" "chkd-lblpayee chkd-lblpayee chkd-payee chkd-payee chkd-amtno chkd-amtno" "chkd-lblpeso chkd-amtwords chkd-amtwords chkd-amtwords chkd-amtwords chkd-amtwords" "chkd-footer chkd-footer chkd-footer chkd-footer chkd-footer chkd-footer";
+  min-width: 600px;
+  max-width: calc(100vw - 300px);
+}
+.checkdialog-view__grid .chkd-headerleft {
+  grid-area: chkd-headerleft;
+}
+.checkdialog-view__grid .chkd-lbldate {
+  grid-area: chkd-lbldate;
+}
+.checkdialog-view__grid .chkd-date {
+  grid-area: chkd-date;
+}
+.checkdialog-view__grid .chkd-lblpayee {
+  grid-area: chkd-lblpayee;
+}
+.checkdialog-view__grid .chkd-payee {
+  grid-area: chkd-payee;
+}
+.checkdialog-view__grid .chkd-amtno {
+  grid-area: chkd-amtno;
+}
+.checkdialog-view__grid .chkd-lblpeso {
+  grid-area: chkd-lblpeso;
+}
+.checkdialog-view__grid .chkd-amtwords {
+  grid-area: chkd-amtwords;
+}
+.checkdialog-view__grid .chkd-footer {
+  grid-area: chkd-footer;
+}
+.checkdialog-view__grid .chkd-headerleft, .checkdialog-view__grid .chkd-lbldate, .checkdialog-view__grid .chkd-date, .checkdialog-view__grid .chkd-lblpayee, .checkdialog-view__grid .chkd-payee,
+.checkdialog-view__grid .chkd-amtno, .checkdialog-view__grid .chkd-lblpeso, .checkdialog-view__grid .chkd-amtwords, .checkdialog-view__grid .chkd-footer {
+  padding: 8px;
+}
+.checkdialog-view__grid .chkd-lbldate, .checkdialog-view__grid .chkd-date {
+  padding: 0px 8px;
+}
+.checkdialog-view__grid .chkd-date {
+  gap: 12px;
+}
+.checkdialog-view__grid .chkd-lblpayee, .checkdialog-view__grid .chkd-payee, .checkdialog-view__grid .chkd-amtno, .checkdialog-view__grid .chkd-footer {
+  padding: 0px 5px 8px 8px;
+}
+.checkdialog-view__grid .chkd-amtwords {
+  align-items: start;
+}
+.checkdialog-view__grid .chkd-date {
+  justify-content: center;
+}
+.checkdialog-view__grid .chkd-amtno {
+  gap: 4px;
+  text-align: center;
+}
+.checkdialog-view__grid .chkd-amtno p {
+  background-color: #ffffff;
+  border: solid thin black;
+  width: 100%;
+  letter-spacing: 0.5px;
+}
+.checkdialog-view__grid .chkd-headerleft .mud-chip {
+  min-width: 100px;
+}
+.checkdialog-view__grid .chkd-headerleft__lbl-chip {
+  color: #656D68;
+  font-weight: unset;
+  text-transform: uppercase;
+  margin-bottom: 40px;
+  position: fixed;
+  font-size: 8px;
+}
+.checkdialog-view__grid .chkd-headerleft .check-no {
+  margin-left: 2px;
+}
+.checkdialog-view__grid .chkd-headerleft .issued-date {
+  margin-left: 16px;
+}
+.checkdialog-view__grid .mud-chip-content {
+  font-weight: bold;
+}
+.checkdialog-view__grid .chkd-footer__lbl-note {
+  font-size: 10px;
+}
+.checkdialog-view__grid .chkd-footer__lbl-placeholder {
+  font-family: "R-Flex Bold";
+  font-style: italic;
+}
+.checkdialog-view__lbl, .checkdialog-view__txt {
+  font-size: 12px;
+}
+.checkdialog-view__lbl {
+  text-transform: uppercase;
+}
+.checkdialog-view__txt {
+  font-weight: bold;
+}
+.checkdialog-view .border-bottom {
+  border-bottom: solid thin black;
+  height: 100%;
+  width: 100%;
+}
+.checkdialog-view .date-text {
+  font-weight: bold;
+  letter-spacing: 7px;
+  margin-left: 6px;
+  position: fixed;
+}
+.checkdialog-view .lbl-date {
+  font-size: 10px;
+}
+.checkdialog-view .chkmod-btn {
+  position: fixed;
+  right: 8px;
+  top: 100px;
+}
+
+.debitdialog-view {
+  padding: 6px 12px;
+}
+.debitdialog-view__grid {
+  display: grid;
+  grid-template-columns: 50px 1fr 1fr 50px;
+  grid-template-rows: auto;
+  gap: 0px 0px;
+  grid-template-areas: "debitv-lblbank debitv-bank debitv-bank debitv-controls" "debitv-lbldate debitv-date debitv-date debitv-date" "debitv-lblamt debitv-amt debitv-amt debitv-amt" "debitv-lblrem debitv-rem debitv-rem debitv-rem";
+  min-width: 500px;
+}
+.debitdialog-view__grid .debitv-lblbank {
+  grid-area: debitv-lblbank;
+}
+.debitdialog-view__grid .debitv-bank {
+  grid-area: debitv-bank;
+}
+.debitdialog-view__grid .debitv-controls {
+  grid-area: debitv-controls;
+}
+.debitdialog-view__grid .debitv-lbldate {
+  grid-area: debitv-lbldate;
+}
+.debitdialog-view__grid .debitv-date {
+  grid-area: debitv-date;
+}
+.debitdialog-view__grid .debitv-lblamt {
+  grid-area: debitv-lblamt;
+}
+.debitdialog-view__grid .debitv-amt {
+  grid-area: debitv-amt;
+}
+.debitdialog-view__grid .debitv-lblrem {
+  grid-area: debitv-lblrem;
+}
+.debitdialog-view__grid .debitv-rem {
+  grid-area: debitv-rem;
+}
+.debitdialog-view__grid .debitv-controls {
+  gap: 4px;
+  justify-content: end;
+}
+.debitdialog-view__grid .debitv-bank, .debitdialog-view__grid .debitv-date, .debitdialog-view__grid .debitv-amt, .debitdialog-view__grid .debitv-rem {
+  border-bottom: solid thin lightgray;
+}
+.collectiondialog-view {
+  padding: 6px 12px;
+  max-width: 600px;
+}
+.collectiondialog-view__grid {
+  display: grid;
+  grid-template-columns: 75px 1fr 1fr 55px 1fr 55px 1fr 1fr;
+  grid-template-rows: auto auto auto auto auto auto auto minmax(50px, 1fr) minmax(50px, 1fr);
+  gap: 4px;
+  grid-template-areas: "coll-lblstatus coll-status coll-status  coll-status  coll-status  coll-status coll-controls coll-controls" "coll-lbltransdate coll-transdate coll-transdate coll-lblcat coll-cat coll-cat coll-controls coll-controls" "coll-lblcust coll-cust coll-cust coll-cust coll-cust coll-cust coll-cust coll-cust" "coll-lblprojc coll-projc coll-projc coll-projc coll-projc coll-lblexp coll-exp coll-exp" "coll-lblref coll-ref coll-ref coll-lblor coll-or coll-lbltype coll-type coll-type" "coll-lblchkdate coll-chkdate coll-chkdate coll-lblcheckno coll-checkno coll-checkno coll-postdated coll-postdated" "coll-lblgross coll-gross coll-gross coll-gross coll-lblnet coll-net coll-net coll-net" "coll-lbldesc coll-desc coll-desc coll-desc coll-desc coll-desc coll-desc coll-desc" "coll-lblrem coll-rem coll-rem coll-rem coll-rem coll-rem coll-rem coll-rem";
+}
+.collectiondialog-view__grid .coll-lbltransdate {
+  grid-area: coll-lbltransdate;
+}
+.collectiondialog-view__grid .coll-transdate {
+  grid-area: coll-transdate;
+}
+.collectiondialog-view__grid .coll-lblcat {
+  grid-area: coll-lblcat;
+}
+.collectiondialog-view__grid .coll-cat {
+  grid-area: coll-cat;
+}
+.collectiondialog-view__grid .coll-controls {
+  grid-area: coll-controls;
+}
+.collectiondialog-view__grid .coll-lblsatus {
+  grid-area: coll-lblstatus;
+}
+.collectiondialog-view__grid .coll-status {
+  grid-area: coll-status;
+}
+.collectiondialog-view__grid .coll-lblcust {
+  grid-area: coll-lblcust;
+}
+.collectiondialog-view__grid .coll-cust {
+  grid-area: coll-cust;
+}
+.collectiondialog-view__grid .coll-lblprojc {
+  grid-area: coll-lblprojc;
+}
+.collectiondialog-view__grid .coll-projc {
+  grid-area: coll-projc;
+}
+.collectiondialog-view__grid .coll-lblexp {
+  grid-area: coll-lblexp;
+}
+.collectiondialog-view__grid .coll-exp {
+  grid-area: coll-exp;
+}
+.collectiondialog-view__grid .coll-lblref {
+  grid-area: coll-lblref;
+}
+.collectiondialog-view__grid .coll-ref {
+  grid-area: coll-ref;
+}
+.collectiondialog-view__grid .coll-lblor {
+  grid-area: coll-lblor;
+}
+.collectiondialog-view__grid .coll-or {
+  grid-area: coll-or;
+}
+.collectiondialog-view__grid .coll-lbltype {
+  grid-area: coll-lbltype;
+}
+.collectiondialog-view__grid .coll-type {
+  grid-area: coll-type;
+}
+.collectiondialog-view__grid .coll-lblchkdate {
+  grid-area: coll-lblchkdate;
+}
+.collectiondialog-view__grid .coll-chkdate {
+  grid-area: coll-chkdate;
+}
+.collectiondialog-view__grid .coll-lblcheckno {
+  grid-area: coll-lblcheckno;
+}
+.collectiondialog-view__grid .coll-checkno {
+  grid-area: coll-checkno;
+}
+.collectiondialog-view__grid .coll-postdated {
+  grid-area: coll-postdated;
+}
+.collectiondialog-view__grid .coll-lblgross {
+  grid-area: coll-lblgross;
+}
+.collectiondialog-view__grid .coll-gross {
+  grid-area: coll-gross;
+}
+.collectiondialog-view__grid .coll-lblnet {
+  grid-area: coll-lblnet;
+}
+.collectiondialog-view__grid .coll-net {
+  grid-area: coll-net;
+}
+.collectiondialog-view__grid .coll-lbldesc {
+  grid-area: coll-lbldesc;
+}
+.collectiondialog-view__grid .coll-desc {
+  grid-area: coll-desc;
+}
+.collectiondialog-view__grid .coll-lblrem {
+  grid-area: coll-lblrem;
+}
+.collectiondialog-view__grid .coll-rem {
+  grid-area: coll-rem;
+}
+.collectiondialog-view__grid .coll-status,
+.collectiondialog-view__grid .coll-transdate, .collectiondialog-view__grid .coll-cat, .collectiondialog-view__grid .coll-cust, .collectiondialog-view__grid .coll-projc,
+.collectiondialog-view__grid .coll-exp, .collectiondialog-view__grid .coll-ref, .collectiondialog-view__grid .coll-or, .collectiondialog-view__grid .coll-type,
+.collectiondialog-view__grid .coll-chkdate, .collectiondialog-view__grid .coll-checkno, .collectiondialog-view__grid .coll-gross, .collectiondialog-view__grid .coll-net {
+  border-bottom: solid thin lightgray;
+}
+.collectiondialog-view__grid .coll-controls {
+  gap: 4px;
+  justify-content: end;
+}
+.collectiondialog-view .coll-textarea {
+  border-radius: 4px;
+  border: solid thin lightgray;
+  height: 100%;
+}
+.collectiondialog-view .coll-desc, .collectiondialog-view .coll-ref {
+  padding: 4px 0px;
+}
+
+.dialog-action {
+  gap: 8px;
 }/*# sourceMappingURL=dialog.styles.css.map */

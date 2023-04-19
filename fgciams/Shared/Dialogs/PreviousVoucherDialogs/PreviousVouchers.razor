@@ -145,6 +145,8 @@
         filterParameter.PayeeId = GlobalClass.voucher.PayeeId;
         filterParameter.PayeeCategoryId = GlobalClass.voucher.PayeeCategoryId;
         filterParameter.IsPayee = true;
+        filterParameter.PageSize = 2000000;
+        filterParameter.PageNo = 0;
         GlobalClassList.previousVouchers = await voucherService.LoadVouchers(filterParameter, GlobalClass.token);
         GlobalClassList.previousVouchers.RemoveAll(x=>x.ControlNumber == GlobalClass.voucher.ControlNumber);
     }

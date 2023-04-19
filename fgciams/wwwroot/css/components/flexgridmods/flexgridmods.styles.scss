@@ -10,8 +10,8 @@
 }
 
 .dflex-col {
-  flex-direction: column;
-  display: flex;
+  flex-direction: column !important;
+  display: flex !important;
 }
 
 .dflex-ac {
@@ -28,9 +28,42 @@
 .dflex {
   display: flex;
 }
-.dblock {
-  display: block;
+.dblock { display: block; }
+.dnone { display: none; }
+.dblock-inline { display: inline-block; }
+.vis-hide { visibility: hidden; }
+.vis-show { visibility: visible; }
+.jcenter { justify-content: center; }
+
+.dflex-col-start-end {
+  @extend .dflex-col;
+  align-items: start;
+  justify-content: end;
 }
-.dblock-inline {
-  display: inline-block;
+
+.line-clamp-2 {
+  @extend .line-clamp-props;
+  -webkit-line-clamp: 2;
+}
+.line-clamp-3 {
+  @extend .line-clamp-props;
+  -webkit-line-clamp: 3;
+}
+.line-clamp-8 {
+  @extend .line-clamp-props;
+  -webkit-line-clamp: 8;
+}
+.line-clamp-10 {
+  @extend .line-clamp-props;
+  -webkit-line-clamp: 10;
+}
+.line-clamp-16 {
+  @extend .line-clamp-props;
+  -webkit-line-clamp: 16;
+}
+
+.line-clamp-props{
+display: -webkit-box;
+-webkit-box-orient: vertical;
+overflow: hidden;
 }

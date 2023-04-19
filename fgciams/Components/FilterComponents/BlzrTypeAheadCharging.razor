@@ -1,0 +1,83 @@
+@inject IGlobalService GlobalService
+
+@if(!dataFetched)
+{
+    <MudSkeleton Animation='Animation.Wave' Width='100%' Height='30px' />
+}
+else
+{
+    <BlazoredTypeahead SearchMethod='LoadCharging' Debounce='300' placeholder='Charging Name' MinimumLength='3'
+        Value='@projectModel' ValueExpression='(() => projectModel)'
+        ValueChanged='(async (Project model) => { 
+            projectModel = model;
+            await SelectedCharging(model); 
+        })'>
+        <SelectedTemplate>
+            <small class='wspace-nowrap'>@projectModel.ProjectName</small>
+        </SelectedTemplate>
+        <ResultTemplate>
+            <div class='d-flex flex-column'>
+                <small class='font-bold'>@context.ProjectName</small>
+                <small>@context.Location</small>
+                <small>@Extensions.ProjectReference(context)</small>
+            </div>
+        </ResultTemplate>
+    </BlazoredTypeahead>
+}
+
+ @* projectModel = (model != null ? model:new()); *@
+@code {
+    [Parameter] public EventCallback<Project> OnSelectedChargingValue { get; set; }
+    [Parameter] public string ChargingName { get; set; } = string.Empty;
+    private bool dataFetched;
+    private Project projectModel = new();
+
+    private FilterParameter filterParameter = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(!string.IsNullOrWhiteSpace(ChargingName))
+            projectModel = await LoadChargingName();
+        CompletedFetch();
+    }
+
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+
+    private async Task<Project> LoadChargingName()
+    {
+        filterParameter = new FilterParameter()
+        {
+            IsProject = true,
+            ProjectName = ChargingName,
+            IsId = false
+
+        };
+        var result = await GlobalService.LoadChargeProjectLine(filterParameter, GlobalClass.token);
+        if (result != null)
+            return result.FirstOrDefault() ?? new();
+        else
+            return new();
+    }
+
+    private async Task<IEnumerable<Project>> LoadCharging(string chargingName)
+    {
+        filterParameter = new FilterParameter()
+        {
+            IsProject = true,
+            ProjectName = chargingName,
+            IsId = false
+
+        };
+        var result = await GlobalService.LoadChargeProjectLine(filterParameter, GlobalClass.token);
+        return result;
+    }
+    private async Task SelectedCharging(Project model)
+    {
+        if(model != null)
+            await OnSelectedChargingValue.InvokeAsync(model);
+    }
+}

@@ -3,7 +3,7 @@
 @inject IBIRService birService
 @inject NavigationManager navigationManager
 @inject IDialogService dialogService
-@inject ISnackbar snackBarService
+@inject ISnackbar SnackbarService
 @attribute [Authorize]
 
 <div class='page-cont d-flex'>
@@ -58,6 +58,7 @@
       var parameters = new DialogParameters();
       GlobalClass.voucher.PeriodFrom = GlobalClass.voucherBIRModel.PeriodFrom;
       GlobalClass.voucher.PeriodTo = GlobalClass.voucherBIRModel.PeriodTo;
+      GlobalClass.voucher.ControlNumber = GlobalClass.voucherBIRModel.DV;
       var options = new DialogOptions()
       {
           CloseButton = false,
@@ -97,13 +98,13 @@
             if (action == Enums.ActionMode.Create)
             {
                 returnedModel =  await birService.AddVoucherBIR(GlobalClass.voucherBIRModel,GlobalClass.token);
-                Extensions.ShowAlert("B.I.R has been CREATED",Variant.Filled,snackBarService,Severity.Info);
+                Extensions.ShowAlert("B.I.R successfully saved.",Variant.Filled,SnackbarService,Severity.Info);
                 _processing = false;
             }
             else if (action == Enums.ActionMode.Update)
             {
                 returnedModel = await birService.UpdateVoucherBIR(GlobalClass.voucherBIRModel,GlobalClass.token);
-                Extensions.ShowAlert("B.I.R has been UPDATED",Variant.Filled,snackBarService,Severity.Info);
+                Extensions.ShowAlert("B.I.R successfully updated.",Variant.Filled,SnackbarService,Severity.Info);
                 _processing = false;
             }
            

@@ -1,4 +1,4 @@
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 
 <MudDialog Class='customdialog'>
     <TitleContent>
@@ -70,7 +70,7 @@
     {
         if(actionMode == Enums.ActionMode.Void)
             if(GlobalVariable.PromptRemarks.Equals(string.Empty))
-                Extensions.ShowAlert("Remarks are required", Variant.Filled, snackbarService, Severity.Error);
+                Extensions.ShowAlert("Remarks are required.", Variant.Filled, SnackbarService, Severity.Error);
             else
                 MudDialog.Close(DialogResult.Ok(true));
         else
@@ -141,9 +141,10 @@
         }
         else if(actionMode == Enums.ActionMode.Invalid)
         {
-            contentText = $"Your are not allowed to remove this details, payee have EWT value.";
+            contentText = $"Are you sure you want to remove the EWT of the payee?";
             buttonText = "OK";
-            color = Color.Info;
+            note = "Note: This will not affect the EWT value of payee in configuration.";
+            color = Color.Warning;
         }
         else if (actionMode == Enums.ActionMode.Prompt)
         {

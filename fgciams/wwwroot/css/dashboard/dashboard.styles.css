@@ -1,3 +1,88 @@
+.dflex-row-align-center {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+}
+
+.dflex-row, .dashboard .dashboard-header, .dashboard .dashboard-content, .dashboard .dashboard-footer {
+  align-items: center;
+  display: flex;
+}
+
+.dflex-col, .dflex-col-start-end {
+  flex-direction: column !important;
+  display: flex !important;
+}
+
+.dflex-ac {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+}
+
+.flex-full {
+  flex: 1 1 0%;
+}
+
+.dflex {
+  display: flex;
+}
+
+.dblock {
+  display: block;
+}
+
+.dnone {
+  display: none;
+}
+
+.dblock-inline {
+  display: inline-block;
+}
+
+.vis-hide {
+  visibility: hidden;
+}
+
+.vis-show {
+  visibility: visible;
+}
+
+.jcenter {
+  justify-content: center;
+}
+
+.dflex-col-start-end {
+  align-items: start;
+  justify-content: end;
+}
+
+.line-clamp-2 {
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  -webkit-line-clamp: 3;
+}
+
+.line-clamp-8 {
+  -webkit-line-clamp: 8;
+}
+
+.line-clamp-10 {
+  -webkit-line-clamp: 10;
+}
+
+.line-clamp-16 {
+  -webkit-line-clamp: 16;
+}
+
+.line-clamp-props, .line-clamp-2, .line-clamp-3, .line-clamp-8, .line-clamp-10, .line-clamp-16 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+} 
 .dboard-container {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
@@ -34,4 +119,35 @@
 
 .dboard-bottom-right {
   grid-area: dboard-bottom-right;
+}
+
+.dashboard-container {
+  height: 100%;
+  padding: 8px !important;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+  grid-template-rows: auto 1fr 1fr 1fr 1fr 1fr;
+  gap: 0px 0px;
+  grid-template-areas: "dashboard-header dashboard-header dashboard-header dashboard-header dashboard-header dashboard-header" "dashboard-content dashboard-content dashboard-content dashboard-content dashboard-content dashboard-content" "dashboard-content dashboard-content dashboard-content dashboard-content dashboard-content dashboard-content" "dashboard-content dashboard-content dashboard-content dashboard-content dashboard-content dashboard-content" "dashboard-content dashboard-content dashboard-content dashboard-content dashboard-content dashboard-content" "dashboard-footer dashboard-footer dashboard-footer dashboard-footer dashboard-footer dashboard-footer";
+  height: 100%;
+}
+.dashboard .dashboard-header {
+  grid-area: dashboard-header;
+}
+.dashboard .dashboard-content {
+  grid-area: dashboard-content;
+}
+.dashboard .dashboard-footer {
+  grid-area: dashboard-footer;
+}
+.dashboard .dashboard-header, .dashboard .dashboard-content, .dashboard .dashboard-footer {
+  padding: 4px 8px;
+}
+.dashboard__title {
+  font-family: "SF-Pro-Display Regular";
+  font-size: 18px;
+  font-weight: bold;
 }/*# sourceMappingURL=dashboard.styles.css.map */

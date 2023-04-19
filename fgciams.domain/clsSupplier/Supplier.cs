@@ -29,7 +29,6 @@ namespace fgciams.domain.clsSupplier
         [Range(1, int.MaxValue, ErrorMessage = "Select a location")]
         public int MuniCityId { get; set; }
         public string MuniCityName { get; set; } = string.Empty;
-        [Range(1, int.MaxValue, ErrorMessage = "Select a Tax Code")]
         public Int64 TaxCodeId { get; set; }
         public string TaxCode { get; set; }
         public decimal TaxRate { get; set; }

@@ -7,6 +7,7 @@ using fgciams.domain.clsEnums;
 using fgciams.domain.clsProject;
 using fgciams.domain.clsDivision;
 using fgciams.domain.clsExpenseLine;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace fgciams.domain.clsRequest
 {
@@ -85,5 +86,9 @@ namespace fgciams.domain.clsRequest
         public Project projectModel { get; set; } = new Project();
         public DivisionModel divisionModel { get; set; } = new DivisionModel();
         public ExpenseLineModel expenseLineModel { get; set; } = new ExpenseLineModel();
+        [NotMapped]
+        public bool IsEditRow { get; set; }
+        [NotMapped]
+        public bool IsShowRemarks { get; set; }
     }
 }

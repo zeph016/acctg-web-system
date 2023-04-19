@@ -2,16 +2,16 @@
 
 @inject IGlobalService globalService
 @inject IVoucherService voucherService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject ILedgerService ledgerService
 @inject NavigationManager navigationManager
 
 <div class='page-cont'>
     <div class='drawer-right-min'>
-        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
-            <LedgerFilterComponent OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
-                FilterClick='FilterTable' ResetTableClick='ReloadTable'
-                contentVisible='openSideFilter' moduleName="bankledger-list"/>
+        <MudDrawer Class='pa-1' Open='false' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <MudTooltip Text='Filter' Arrow Placement='Placement.Left'>
+                <MudIconButton OnClick='(() => openFilter = !openFilter)' Icon='@Icons.Material.Filled.FilterList' arial-label='Close Filter' Size='Size.Small' />
+            </MudTooltip>
         </MudDrawer>
     </div>
     <MudContainer Class='py-2 pl-2 pr-10  table-toolbar-custom1' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
@@ -40,7 +40,7 @@
                         <MudIconButton Class='@(isLoading ? "mudbtnico-rotate":"")' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='(()=>ReloadTable())' 
                             Color='@(isLoading ? Color.Info : Color.Default)'/>
                     </MudTooltip>
-                    <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' ActivationEvent="MouseEvent.MouseOver"
+                    <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' 
                         TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
                         <MudMenuItem OnClick="( async () => await GetReport() )"  >
                             <div class='d-flex align-center gap-2 '>
@@ -48,13 +48,18 @@
                                 <MudText Typo='Typo.body2' Color='Color.Dark'>Print</MudText>
                             </div>
                         </MudMenuItem>
-                        <MudMenuItem OnClick="(() => openSideFilter = !openSideFilter)"  >
+                        <MudMenuItem OnClick="(() => openFilter = !openFilter)"  >
                             <div class='d-flex align-center gap-2 '>
                                 <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
                                 <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
                             </div>
                         </MudMenuItem>
                     </MudMenu>
+                    @if(openFilter)
+                    {
+                        <PopoverFilterMainComponent IsOpen='openFilter' CloseFilter='(() => openFilter = !openFilter)' IsMainFilter='true' IsLedgerList='true' 
+                            ModuleName='bankledger-list' ResetTableData='ReloadTable'/>
+                    }
                 </ToolBarContent>
                 <ColGroup>
                     <col />
@@ -146,7 +151,7 @@
 
 @code
 {
-    private bool isLoading, toggleSidebar = true, openSideFilter;
+    private bool isLoading, toggleSidebar = true, openFilter;
     private FilterParameter filterParameter = new();
     private List<BankLedgerModel> listOfBankLedgers = new();
     private BankModel bank = new();
@@ -236,10 +241,6 @@
         filterParameter.IsDate = false;
         dateRange = new DateRange(DateTime.Now, DateTime.Now);
         listOfBankLedgers.Clear();
-    }
-    private void InvalidSearch()
-    {
-        Extensions.ShowAlert("Please complete search filters", Variant.Filled,snackbarService,Severity.Error);
     }
     private void NavigateToBankDetails(long bankID)
     {

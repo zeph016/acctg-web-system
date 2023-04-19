@@ -1,0 +1,34 @@
+@page "/reports/soa"
+
+@inherits SOABase
+
+<div class='page-cont'>
+    <div class='drawer-right-min'>
+        <MudDrawer Class='pa-1' Open='false' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <MudTooltip Text='Filter' Arrow Placement='Placement.Left'>
+                <MudIconButton OnClick='(() => openFilter = !openFilter)' Icon='@Icons.Material.Filled.FilterList' arial-label='Close Filter' Size='Size.Small' />
+            </MudTooltip>
+      </MudDrawer>
+    </div>
+    <MudContainer Class='py-2 pl-2 pr-10  table-toolbar-custom1' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+        @if (!IsDataFetch)
+        {
+            <SkeletonPageList />
+        }
+        else
+        {
+            <MudPaper Class="pa-2">
+                @if(openFilter)
+                {
+                <div>
+                    <PopoverFilterMainComponent Class='mr-10 mt-10' IsOpen='openFilter' CloseFilter='(() => openFilter = !openFilter)' IsMainFilter='true' IsModuleList='true'
+                    ModuleName='voucher-report' ApplyFilter='FilterTable'/>
+                </div>
+                }
+                <div class="d-flex align-items-end flex-column mb-2">
+                    <iframe style='height:83vh;' src='@PDFContent'/>
+                </div>
+            </MudPaper>
+        }
+    </MudContainer>
+</div>

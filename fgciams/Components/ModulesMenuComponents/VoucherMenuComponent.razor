@@ -1,0 +1,107 @@
+@inject ISnackbar SnackbarService
+
+<MudMenuItem OnClick='PreviewVoucher'>
+    <div class='d-flex align-center gap-2'>
+        <MudIcon Icon='@Icons.Material.Filled.Preview' Size='Size.Small' Color='Color.Dark' />
+        <MudText Typo='Typo.body2'>View</MudText>
+    </div>
+</MudMenuItem>
+@if (!ViewMenu)
+{
+    <MudMenuItem OnClick='EditVoucher'>
+        <a class='d-flex align-center gap-2 '>
+            <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' />
+            <MudText Typo='Typo.body2'>Edit</MudText>
+        </a>
+    </MudMenuItem>
+    <MudMenuItem OnClick='ApprovedVoucher'>
+        <div class='d-flex align-center gap-2 '>
+            <MudIcon Icon='@Icons.Material.Filled.CheckCircle' Size='Size.Small' />
+            <MudText Typo='Typo.body2'>Approve</MudText>
+        </div>
+    </MudMenuItem>
+    <MudMenuItem OnClick='CancelVoucher'>
+        <div class='d-flex align-center gap-2 '>
+            <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small' />
+            <MudText Typo='Typo.body2'>Cancel</MudText>
+        </div>
+    </MudMenuItem>
+}
+else if (AccountingStatus == VoucherModel.AccountingStatusId)
+{
+    if (!VoucherModel.IsFiled)
+    {
+        if(Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Void))
+        {
+            <MudMenuItem OnClick='VoidVoucher'>
+                <div class='d-flex align-center gap-2 '>
+                    <MudIcon Icon='@Icons.Material.Filled.CancelPresentation' Size='Size.Small' />
+                    <MudText Typo='Typo.body2'>Generate (Void)</MudText>
+                </div>
+            </MudMenuItem>
+        }
+    }
+}
+<MudMenuItem OnClick='ShowAuditTrail'>
+    <a class='d-flex align-center gap-2 '>
+        <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' />
+        <MudText Typo='Typo.body2'>Audit Trail</MudText>
+    </a>
+</MudMenuItem>
+<MudMenuItem OnClick='ShowReport'>
+    <div class='d-flex align-center gap-2 '>
+        <MudIcon Icon='@Icons.Material.Filled.PictureAsPdf' Size='Size.Small' />
+        <MudText Typo='Typo.body2'>Show Report</MudText>
+    </div>
+</MudMenuItem>
+@if (VoucherModel.AccountingStatusId == AccountingStatusId)
+{
+    <MudMenuItem OnClick='ShowBIRDialog'>
+        <div class='d-flex align-center gap-2 '>
+            <MudIcon Icon='@Icons.Material.Filled.DocumentScanner' Size='Size.Small' />
+            <MudText Typo='Typo.body2'>BIR</MudText>
+        </div>
+    </MudMenuItem>
+}
+
+@code
+{
+    [Parameter] public VoucherModel VoucherModel { get; set; } = new();
+    [Parameter] public long AccountingStatus { get; set; } = 0;
+    [Parameter] public long AccountingStatusId { get; set; } = 0;
+    [Parameter] public bool ViewMenu { get; set; } = false;
+    [Parameter] public string ModuleName { get; set; } = string.Empty;
+    [Parameter] public EventCallback PreviewClick { get; set; }
+    [Parameter] public EventCallback EditClick { get; set; }
+    [Parameter] public EventCallback ApprovedClick { get; set; }
+    [Parameter] public EventCallback CancelClick { get; set; }
+    [Parameter] public EventCallback VoidClick { get; set; }
+    [Parameter] public EventCallback AuditTrailClick { get; set; }
+    [Parameter] public EventCallback ShowReportClick { get; set; }
+    [Parameter] public EventCallback BIRClick { get; set; }
+
+    private async Task PreviewVoucher() => await isAllowed(PreviewClick, Enums.AISModuleFunctions.View);
+    private async Task ApprovedVoucher() =>await isAllowed(ApprovedClick, Enums.AISModuleFunctions.ChangeStatus);
+    private async Task CancelVoucher() => await isAllowed(CancelClick, Enums.AISModuleFunctions.ChangeStatus);
+    private async Task VoidVoucher() => await isAllowed(VoidClick, Enums.AISModuleFunctions.Void);
+    private async Task ShowAuditTrail() => await isAllowed(AuditTrailClick, Enums.AISModuleFunctions.View);
+    private async Task ShowReport() => await isAllowed(ShowReportClick, Enums.AISModuleFunctions.View);
+    private async Task ShowBIRDialog() =>  await isAllowed(BIRClick, Enums.AISModuleFunctions.BIR);
+
+    private async Task EditVoucher()
+    {
+        if(Common.Privileges.isAllowEdit(VoucherModel))
+            await EditClick.InvokeAsync();
+        else
+            Extensions.ShowAlert("Account has been restricted to edit other vouchers", Variant.Filled, SnackbarService, Severity.Error);
+    }
+    
+    private async Task isAllowed(EventCallback callback, Enums.AISModuleFunctions function)
+    {
+        if(Common.Privileges.isPrivilegeFunction(function))
+            await callback.InvokeAsync();
+        else
+            Extensions.ShowAlert(String.Format("Account has been restricted to {0} {1}.",Extensions.GetEnumDescription(function).ToLower(), ModuleName), Variant.Filled, SnackbarService, Severity.Error);
+    
+    }
+}

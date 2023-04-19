@@ -4,14 +4,14 @@
   flex-direction: row;
 }
 
-.dflex-row {
+.dflex-row, .checklist-amt-container {
   align-items: center;
   display: flex;
 }
 
-.dflex-col {
-  flex-direction: column;
-  display: flex;
+.dflex-col, .dflex-col-start-end {
+  flex-direction: column !important;
+  display: flex !important;
 }
 
 .dflex-ac {
@@ -33,9 +33,56 @@
   display: block;
 }
 
+.dnone {
+  display: none;
+}
+
 .dblock-inline {
   display: inline-block;
-} /*# sourceMappingURL=flexgridmods.styles.css.map */
+}
+
+.vis-hide {
+  visibility: hidden;
+}
+
+.vis-show {
+  visibility: visible;
+}
+
+.jcenter {
+  justify-content: center;
+}
+
+.dflex-col-start-end {
+  align-items: start;
+  justify-content: end;
+}
+
+.line-clamp-2 {
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  -webkit-line-clamp: 3;
+}
+
+.line-clamp-8 {
+  -webkit-line-clamp: 8;
+}
+
+.line-clamp-10 {
+  -webkit-line-clamp: 10;
+}
+
+.line-clamp-16 {
+  -webkit-line-clamp: 16;
+}
+
+.line-clamp-props, .line-clamp-2, .line-clamp-3, .line-clamp-8, .line-clamp-10, .line-clamp-16 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+} 
 .txtdate-noline .mud-input-slot {
   text-align: right !important;
 }

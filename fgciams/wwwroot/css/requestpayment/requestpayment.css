@@ -1,3 +1,991 @@
+.dflex-row-align-center {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+}
+
+.dflex-row, .rfp-body__grid .rfpb-signatories__container-sigs, .rfp-body__grid .rfpb-bank, .rfp-body__grid .rfpb-bank-others, .rfp-body__grid .rfpb-bank-remarks, .rfp-body__grid .rfpb-status, .rfp-body__grid .rfpb-controls, .rfp-body__grid .rfpb-billheader, .rfp-body__grid .rfpb-statheader, .rfp-body__grid .rfpb-modheader,
+.rfp-body__grid .rfpb-bankheader, .rfp-body__grid .rfpb-sigheader, .rfp-body__grid .rpfb-toolbar, .rfp-body__grid .rpfb-toolbar__controls, .rfp-body .expanded-rfpdetside .rfpb-billheader .entry-module-action, .rfp-body .expanded-rfpdetside .rfpb-billing .entry-module-action, .rfp-body .expanded-rfpdetside .rfpb-sigheader .entry-module-action, .rfp-body .expanded-rfpdetside .rfpb-signatories .entry-module-action,
+.rfp-body .expanded-rfpdetside .rfpb-statheader .entry-module-action, .rfp-body .expanded-rfpdetside .rfpb-status .entry-module-action, .rfp-body .expanded-rfpdetside .rfpb-controls .entry-module-action {
+  align-items: center;
+  display: flex;
+}
+
+.dflex-col, .rfp-body__grid .rfpb-signatories__container, .rfp-body .collapsed-rfpdetside .rfpb-billheader .entry-module-action, .rfp-body .collapsed-rfpdetside .rfpb-billing .entry-module-action, .rfp-body .collapsed-rfpdetside .rfpb-sigheader .entry-module-action, .rfp-body .collapsed-rfpdetside .rfpb-signatories .entry-module-action,
+.rfp-body .collapsed-rfpdetside .rfpb-statheader .entry-module-action, .rfp-body .collapsed-rfpdetside .rfpb-status .entry-module-action, .rfp-body .collapsed-rfpdetside .rfpb-controls .entry-module-action, .dflex-col-start-end {
+  flex-direction: column !important;
+  display: flex !important;
+}
+
+.dflex-ac {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+}
+
+.flex-full {
+  flex: 1 1 0%;
+}
+
+.dflex {
+  display: flex;
+}
+
+.dblock {
+  display: block;
+}
+
+.dnone {
+  display: none;
+}
+
+.dblock-inline {
+  display: inline-block;
+}
+
+.vis-hide {
+  visibility: hidden;
+}
+
+.vis-show {
+  visibility: visible;
+}
+
+.jcenter {
+  justify-content: center;
+}
+
+.dflex-col-start-end {
+  align-items: start;
+  justify-content: end;
+}
+
+.line-clamp-2 {
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  -webkit-line-clamp: 3;
+}
+
+.line-clamp-8 {
+  -webkit-line-clamp: 8;
+}
+
+.line-clamp-10 {
+  -webkit-line-clamp: 10;
+}
+
+.line-clamp-16 {
+  -webkit-line-clamp: 16;
+}
+
+.line-clamp-props, .line-clamp-2, .line-clamp-3, .line-clamp-8, .line-clamp-10, .line-clamp-16 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+} 
+.visibility-animation-hide {
+  display: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s linear 0.2s, opacity 0.2s linear;
+}
+
+.visibility-animation-show {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  transition-delay: 0s;
+}
+
+.transition-2s-ease {
+  transition: all 2s;
+  transition-timing-function: ease;
+}
+
+.transition-1-5s-ease {
+  transition: all 1.5s;
+  transition-timing-function: ease;
+}
+
+.transition-1s-ease, .rfp-body .entry-module-action {
+  transition: all 1s;
+  transition-timing-function: ease;
+}
+
+.transition-05s-ease, .rfp-body__grid .rfpb-billheader, .rfp-body__grid .rfpb-billing, .rfp-body__grid .rfpb-sigheader, .rfp-body__grid .rfpb-signatories,
+.rfp-body__grid .rfpb-statheader, .rfp-body__grid .rfpb-status, .rfp-body__grid .rfpb-controls, .rfp-body__grid p, .rfp-body__grid .rfpb-table__td-edit, .rfp-body__grid .rfpb-table__td-edit-all, .rfp-body__grid .rfpb-table__td-remarks {
+  transition: all 0.5s;
+  transition-timing-function: ease;
+}
+
+.transition-025s-ease {
+  transition: all 0.25s;
+  transition-timing-function: ease;
+}
+
+.menu-grow-anim {
+  transition: all 0.15s ease-in-out !important;
+}
+
+.menu-grow-anim:hover {
+  transform: scale(1.025) !important;
+}
+
+.row-popup-anim-2px tr {
+  transition: all 0.2s ease-in-out;
+}
+
+.row-popup-anim-2px tr:hover {
+  transform: translateY(-2px);
+}
+
+.fade-in, .rfp-body .expanded-rfpdetside .rfpb-billheader .blzrth-cont, .rfp-body .expanded-rfpdetside .rfpb-billheader p, .rfp-body .expanded-rfpdetside .rfpb-billing .blzrth-cont, .rfp-body .expanded-rfpdetside .rfpb-billing p, .rfp-body .expanded-rfpdetside .rfpb-sigheader .blzrth-cont, .rfp-body .expanded-rfpdetside .rfpb-sigheader p, .rfp-body .expanded-rfpdetside .rfpb-signatories .blzrth-cont, .rfp-body .expanded-rfpdetside .rfpb-signatories p,
+.rfp-body .expanded-rfpdetside .rfpb-statheader .blzrth-cont,
+.rfp-body .expanded-rfpdetside .rfpb-statheader p, .rfp-body .expanded-rfpdetside .rfpb-status .blzrth-cont, .rfp-body .expanded-rfpdetside .rfpb-status p, .rfp-body .expanded-rfpdetside .rfpb-controls .blzrth-cont, .rfp-body .expanded-rfpdetside .rfpb-controls p {
+  animation: fadein 1s;
+  visibility: visible;
+}
+
+.fade-out, .rfp-body .collapsed-rfpdetside .rfpb-billheader .blzrth-cont, .rfp-body .collapsed-rfpdetside .rfpb-billheader p, .rfp-body .collapsed-rfpdetside .rfpb-billing .blzrth-cont, .rfp-body .collapsed-rfpdetside .rfpb-billing p, .rfp-body .collapsed-rfpdetside .rfpb-sigheader .blzrth-cont, .rfp-body .collapsed-rfpdetside .rfpb-sigheader p, .rfp-body .collapsed-rfpdetside .rfpb-signatories .blzrth-cont, .rfp-body .collapsed-rfpdetside .rfpb-signatories p,
+.rfp-body .collapsed-rfpdetside .rfpb-statheader .blzrth-cont,
+.rfp-body .collapsed-rfpdetside .rfpb-statheader p, .rfp-body .collapsed-rfpdetside .rfpb-status .blzrth-cont, .rfp-body .collapsed-rfpdetside .rfpb-status p, .rfp-body .collapsed-rfpdetside .rfpb-controls .blzrth-cont, .rfp-body .collapsed-rfpdetside .rfpb-controls p {
+  animation: fadeout 1s;
+  visibility: hidden;
+}
+
+@keyframes fadein {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes fadeout {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.icon-rotate180 .mud-button-icon-end {
+  transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
+}
+
+.mudbtn-rotate-180 .mud-icon-root {
+  transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
+}
+
+.mudbtnico-rotate {
+  animation: mudbtnico-rotate 0.5s linear infinite;
+}
+
+@keyframes mudbtnico-rotate {
+  0% {
+    transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+  }
+}
+.mudbtnico-rotate-90 .mud-icon-root {
+  transform: rotate(0deg);
+  transition: all 0.5s ease;
+  -webkit-transition: all 0.5s ease; /** Chrome & Safari **/
+  -moz-transition: all 0.5s ease; /** Firefox **/
+  -o-transition: all 0.5s ease; /** Opera **/
+}
+
+.mudbtnico-rotate-90:hover .mud-button-root {
+  color: #2196f3 !important;
+}
+
+.mudbtnico-rotate-90:hover .mud-icon-root, .mudbtnico-rotate-90:hover .mud-button-icon-end {
+  transform: rotate(90deg);
+  transition: all 0.5s ease;
+  -webkit-transition: all 0.5s ease; /** Chrome & Safari **/
+  -moz-transition: all 0.5s ease; /** Firefox **/
+  -o-transition: all 0.5s ease; /** Opera **/
+}
+
+.mudbtnico-rotate-180:hover .mud-button-root {
+  color: #2196f3 !important;
+}
+
+.mudbtnico-rotate-180:hover .mud-icon-root {
+  transform: rotate(180deg);
+  transition: all 0.5s ease;
+  -webkit-transition: all 0.5s ease; /** Chrome & Safari **/
+  -moz-transition: all 0.5s ease; /** Firefox **/
+  -o-transition: all 0.5s ease; /** Opera **/
+}
+
+.sticky-div {
+  z-index: 1;
+  position: sticky;
+  left: 0;
+  background-color: white;
+}
+
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale3d(0.3, 0.3, 0.3);
+  }
+  30% {
+    transform: scale3d(1.1, 1.1, 1.1);
+  }
+  60% {
+    opacity: 1;
+    transform: scale3d(1.03, 1.03, 1.03);
+  }
+  80% {
+    transform: scale3d(0.97, 0.97, 0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale3d(1, 1, 1);
+  }
+}
+.th-btn-expand .mud-icon-root {
+  transition: all 0.5s ease;
+}
+
+.ripple-animation {
+  background-position: center;
+  transition: background 0.7s;
+}
+
+.ripple-animation:hover {
+  background: rgba(255, 255, 255, 0.5) radial-gradient(circle, transparent 1%, rgba(255, 255, 255, 0.5) 1%) center/15000%;
+}
+
+.ripple-animation:active {
+  background-color: inherit;
+  background-size: 100%;
+  transition: background 0s;
+}
+
+.searching-container {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+.searching-container p {
+  font-size: 14px;
+  font-family: "R-Flex Bold";
+}
+
+.searching-container__glass {
+  margin: 24px;
+  width: 35px;
+  height: 35px;
+  animation: zoom-in-zoom-out-glass 1s ease infinite;
+}
+
+@keyframes zoom-in-zoom-out-glass {
+  0% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(1.2, 1.2);
+  }
+  100% {
+    transform: scale(1, 1);
+  }
+}
+@keyframes fadeToRight-15px {
+  0% {
+    opacity: 0;
+    transform: translateX(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(15px);
+  }
+}
+.fadeToRight-15px {
+  animation-name: fadeToRight-15px;
+  animation: fadeToRight-15px 1s;
+}
+
+.from-top {
+  animation: fromtop 0.5s;
+}
+
+.to-top {
+  animation: totop 0.5s;
+}
+
+@keyframes fromtop {
+  0% {
+    opacity: 0;
+    transform: translateY(-100px) scale(0.86);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(0.86);
+  }
+}
+@keyframes totop {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(0.86);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100px) scale(0.86);
+  }
+}
+.horizontal-in {
+  animation: horizontalin 0.5s;
+}
+
+@keyframes horizontalin {
+  0% {
+    opacity: 0;
+    transform: translateX(-100px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.from-right {
+  animation: fromright 0.5s;
+}
+
+.to-right {
+  animation: toright 0.5s;
+}
+
+@keyframes fromright {
+  0% {
+    opacity: 0;
+    transform: translateX(100px) scale(0.86);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(0.86);
+  }
+}
+@keyframes toright {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(0.86);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100px) scale(0.86);
+  }
+}
+.bounce-anim-sm {
+  animation: bounce 2s infinite;
+  -webkit-animation: bounce 2s infinite;
+  -moz-animation: bounce 2s infinite;
+  -o-animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-20px);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
+}
+.side-to-side-anim-sm {
+  animation: sidetoside-sm 2s infinite;
+  -webkit-animation: sidetoside-sm 2s infinite;
+  -moz-animation: sidetoside-sm 2s infinite;
+  -o-animation: sidetoside-sm 2s infinite;
+}
+
+@keyframes sidetoside-sm {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateX(-5px);
+  }
+  60% {
+    transform: translateX(5px);
+  }
+}
+.wiggle-anim-sm {
+  animation: wiggle 2s linear infinite;
+}
+
+.wiggle-anim-sm-once {
+  animation: wiggle 0.5s linear infinite;
+}
+
+@keyframes wiggle {
+  0%, 7% {
+    transform: rotateZ(0);
+  }
+  15% {
+    transform: rotateZ(-20deg);
+  }
+  20% {
+    transform: rotateZ(15deg);
+  }
+  25% {
+    transform: rotateZ(-15deg);
+  }
+  30% {
+    transform: rotateZ(11deg);
+  }
+  35% {
+    transform: rotateZ(-9deg);
+  }
+  40%, 100% {
+    transform: rotateZ(0);
+  }
+} 
+.tr-hover-cursor tr:hover, .rfp-body__grid .rfpb-table__table tr:hover {
+  background-color: rgba(89, 74, 226, 0.0588235294);
+  cursor: pointer;
+}
+
+.th-bottom-border {
+  border-bottom: solid thin lightgray !important;
+}
+
+.th-rflex-12px th, .rfp-body__grid .rfpb-table__table th {
+  font-family: "R-Flex Regular";
+  font-size: 12px;
+  font-weight: unset;
+  text-transform: uppercase;
+}
+
+.td-border td {
+  border-bottom: solid thin lightgray;
+  border-right: solid thin lightgray;
+  padding: 4px;
+}
+
+.th-m-side-4px th, .rfp-body__grid .rfpb-table__table th {
+  margin: 0px 4px;
+  white-space: nowrap;
+}
+
+.th-m-side-4px th, .rfp-body__grid .rfpb-table__table th {
+  padding: 0px 4px;
+  white-space: nowrap;
+} 
+.dflex-row-align-center, .amount-container, .amt-container-voucher {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+}
+
+.dflex-row, .rfp-body__grid .rfpb-signatories__container-sigs, .rfp-body__grid .rfpb-bank, .rfp-body__grid .rfpb-bank-others, .rfp-body__grid .rfpb-bank-remarks, .rfp-body__grid .rfpb-status, .rfp-body__grid .rfpb-controls, .rfp-body__grid .rfpb-billheader, .rfp-body__grid .rfpb-statheader, .rfp-body__grid .rfpb-modheader,
+.rfp-body__grid .rfpb-bankheader, .rfp-body__grid .rfpb-sigheader, .rfp-body__grid .rpfb-toolbar, .rfp-body__grid .rpfb-toolbar__controls, .rfp-body .expanded-rfpdetside .rfpb-billheader .entry-module-action, .rfp-body .expanded-rfpdetside .rfpb-billing .entry-module-action, .rfp-body .expanded-rfpdetside .rfpb-sigheader .entry-module-action, .rfp-body .expanded-rfpdetside .rfpb-signatories .entry-module-action,
+.rfp-body .expanded-rfpdetside .rfpb-statheader .entry-module-action, .rfp-body .expanded-rfpdetside .rfpb-status .entry-module-action, .rfp-body .expanded-rfpdetside .rfpb-controls .entry-module-action, .checklist-amt-container {
+  align-items: center;
+  display: flex;
+}
+
+.dflex-col, .rfp-body__grid .rfpb-signatories__container, .rfp-body .collapsed-rfpdetside .rfpb-billheader .entry-module-action, .rfp-body .collapsed-rfpdetside .rfpb-billing .entry-module-action, .rfp-body .collapsed-rfpdetside .rfpb-sigheader .entry-module-action, .rfp-body .collapsed-rfpdetside .rfpb-signatories .entry-module-action,
+.rfp-body .collapsed-rfpdetside .rfpb-statheader .entry-module-action, .rfp-body .collapsed-rfpdetside .rfpb-status .entry-module-action, .rfp-body .collapsed-rfpdetside .rfpb-controls .entry-module-action, .dflex-col-start-end {
+  flex-direction: column !important;
+  display: flex !important;
+}
+
+.dflex-ac {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+}
+
+.flex-full {
+  flex: 1 1 0%;
+}
+
+.dflex {
+  display: flex;
+}
+
+.dblock {
+  display: block;
+}
+
+.dnone {
+  display: none;
+}
+
+.dblock-inline {
+  display: inline-block;
+}
+
+.vis-hide {
+  visibility: hidden;
+}
+
+.vis-show {
+  visibility: visible;
+}
+
+.jcenter {
+  justify-content: center;
+}
+
+.dflex-col-start-end {
+  align-items: start;
+  justify-content: end;
+}
+
+.line-clamp-2 {
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  -webkit-line-clamp: 3;
+}
+
+.line-clamp-8 {
+  -webkit-line-clamp: 8;
+}
+
+.line-clamp-10 {
+  -webkit-line-clamp: 10;
+}
+
+.line-clamp-16 {
+  -webkit-line-clamp: 16;
+}
+
+.line-clamp-props, .line-clamp-2, .line-clamp-3, .line-clamp-8, .line-clamp-10, .line-clamp-16 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.txtdate-noline .mud-input-slot {
+  text-align: right !important;
+}
+
+.txtdate-noline .mud-input.mud-input-underline::before {
+  border-bottom: 0px !important;
+}
+
+.txtdate-noline .mud-input.mud-input-underline::after {
+  border-bottom: 0px !important;
+}
+
+.txtfield-right .mud-input-slot, .rfp-body__grid .rfpb-table__td-txtfield--numeric .mud-input-slot, .txtnumeric-green-1 .mud-input-slot, .txtnumeric-red-1 .mud-input-slot {
+  text-align: right;
+}
+
+.txtfield-center .mud-input-slot {
+  text-align: center;
+}
+
+.txt-search-overflow .mud-input-slot, .txtnumeric-green-1 .mud-input-slot, .txtnumeric-red-1 .mud-input-slot {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.txtfield-overflow-ellipsis .mud-input-slot {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.txt-top-0, .rfp-body__grid .rfpb-table__td-txtfield, .rfp-body__grid .rfpb-table__td-txtfield--numeric {
+  margin-top: 0px !important;
+}
+
+.txt-top-0 .mud-input-control, .rfp-body__grid .rfpb-table__td-txtfield .mud-input-control, .rfp-body__grid .rfpb-table__td-txtfield--numeric .mud-input-control,
+.txt-top-0 .mud-input,
+.rfp-body__grid .rfpb-table__td-txtfield .mud-input,
+.rfp-body__grid .rfpb-table__td-txtfield--numeric .mud-input {
+  margin-top: 0px !important;
+}
+
+.txt-oflow-el, .vrfp-amt, .txt-green,
+.txt-red, .amt-container-voucher, .amount-container {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.txt-dense-v2 .mud-input > input.mud-input-root-outlined.mud-input-root-margin-dense,
+.txt-dense-v2 div.mud-input-slot.mud-input-root-outlined.mud-input-root-margin-dense {
+  padding: 5px;
+}
+
+.oflow-el {
+  text-overflow: ellipsis;
+}
+
+.txtfield-padlr-4px .mud-input-slot {
+  padding-right: 8px !important;
+  padding-left: 8px !important;
+}
+
+.txt-bold .mud-input {
+  font-weight: bold !important;
+}
+
+.numerictxt-right-10px-w75px {
+  margin-top: 0px !important;
+}
+
+.numerictxt-right-10px-w75px .mud-input-control,
+.numerictxt-right-10px-w75px .mud-input {
+  margin-top: 0px !important;
+}
+
+.numerictxt-right-10px-w75px .mud-input {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.numerictxt-right-10px-w75px .mud-input-slot {
+  overflow: hidden !important;
+  text-align: right;
+  text-overflow: ellipsis;
+  width: 75px !important;
+  white-space: nowrap !important;
+}
+
+.chargingline-txtcont {
+  font-size: 12px !important;
+  white-space: nowrap !important;
+}
+
+.expenseline-txtcont {
+  font-size: 12px !important;
+}
+
+.lbl10 {
+  font-size: 10px !important;
+  font-weight: bold !important;
+  text-transform: uppercase !important;
+  white-space: nowrap;
+}
+
+.lblhelper-type {
+  font-size: 12px !important;
+  color: #767676;
+}
+
+.lblamount-red-10px {
+  font-size: 10px !important;
+  font-weight: bold !important;
+}
+
+.lbl-ellipsis-w320px {
+  font-size: 12px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.txtfield-font12-no-margin, .txtnumeric-green-1, .txtnumeric-red-1 {
+  margin-top: 0px !important;
+}
+
+.txtfield-font12-no-margin .mud-input-control, .txtnumeric-green-1 .mud-input-control, .txtnumeric-red-1 .mud-input-control,
+.txtfield-font12-no-margin .mud-input,
+.txtnumeric-green-1 .mud-input,
+.txtnumeric-red-1 .mud-input {
+  font-size: 12px;
+  margin-top: 0px !important;
+}
+
+.txtfield-font14-no-margin {
+  margin-top: 0px !important;
+}
+
+.txtfield-font14-no-margin .mud-input-control,
+.txtfield-font14-no-margin .mud-input {
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: 0px !important;
+}
+
+.amount-container {
+  gap: 2px;
+  justify-content: right;
+  max-width: 110px;
+  width: 100%;
+}
+
+.amt-container-voucher {
+  gap: 2px;
+  max-width: 120px;
+  width: 100%;
+}
+
+.txt-green {
+  color: green;
+}
+
+.txt-red {
+  color: red;
+}
+
+.txt-green,
+.txt-red {
+  font-weight: bold;
+}
+
+.globalrfp-amt-indialog {
+  display: block;
+  font-weight: bold;
+  max-width: 100px;
+  overflow: hidden;
+  padding-left: 4px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.txtnumeric-red-1 .mud-input {
+  color: red;
+  font-weight: bold;
+}
+
+.txtnumeric-green-1 .mud-input {
+  color: green;
+  font-weight: bold;
+}
+
+.vrfp-amt {
+  display: block;
+  font-weight: bold;
+  max-width: 100px;
+} 
+.text-center {
+  text-align: center !important;
+}
+
+.text-right {
+  text-align: right !important;
+}
+
+.text-left {
+  text-align: left !important;
+}
+
+.font-bold {
+  font-weight: bold !important;
+}
+
+.font8 {
+  font-size: 8px !important;
+}
+
+.font10 {
+  font-size: 10px !important;
+}
+
+.font11 {
+  font-size: 11px !important;
+}
+
+.font12 {
+  font-size: 12px !important;
+}
+
+.font14 {
+  font-size: 14px !important;
+}
+
+.font16 {
+  font-size: 16px !important;
+}
+
+.font20 {
+  font-size: 20px !important;
+}
+
+.font-1-1rem {
+  font-size: 1.1rem !important;
+}
+
+.font-1-2rem {
+  font-size: 1.2rem !important;
+}
+
+.font10-txtfield .mud-input {
+  font-size: 10px;
+}
+
+.font12-txtfield .mud-input, .rfp-body__grid .rfpb-table__td-txtfield .mud-input, .rfp-body__grid .rfpb-table__td-txtfield--numeric .mud-input {
+  font-size: 12px;
+}
+
+.font14-txtfield .mud-input {
+  font-size: 14px;
+}
+
+.font16-txtfield .mud-input {
+  font-size: 16px;
+}
+
+.txtbold .mud-input, .rfp-body__grid .rfpb-table__td-txtfield--numeric .mud-input {
+  font-weight: bold !important;
+}
+
+.txtem .mud-input {
+  font-style: italic !important;
+}
+
+.txtfield-75 .mud-input {
+  height: 35px;
+}
+
+.txtfield-75 .mud-input-slot,
+.txtfield-75 .mud-input-label {
+  font-size: 0.75rem !important;
+}
+
+.txtfield-70 .mud-input {
+  height: 20px;
+}
+
+.txtfield-70 .mud-input-slot,
+.txtfield-70 .mud-input-label {
+  font-size: 0.75rem !important;
+}
+
+.selectparent-75 .mud-input {
+  font-size: 0.75rem;
+  height: 35px;
+  text-align: left;
+}
+
+.selectitem-75 .mud-typography {
+  font-size: 0.75rem !important;
+}
+
+.title875 {
+  font-size: 0.875rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.lbl75 {
+  font-size: 0.775rem !important;
+  font-weight: bold !important;
+  text-transform: uppercase !important;
+}
+
+.lbl70 {
+  font-size: 0.7rem !important;
+}
+
+.txt-uppercase {
+  text-transform: uppercase !important;
+}
+
+.txt-lowercase {
+  text-transform: lowercase !important;
+}
+
+.fweight500 {
+  font-weight: 500 !important;
+}
+
+.chkbxfont10 .mud-typography {
+  font-size: 10px;
+}
+
+.chkbxtxbold .mud-typography {
+  font-weight: bold;
+}
+
+.toolbar-sm-font12 .mud-table-pagination-information,
+.toolbar-sm-font12 .mud-table-page-number-information {
+  font-size: 12px !important;
+}
+
+.fontpad-t-2px {
+  padding-top: 2px;
+}
+
+.ff-theramin {
+  font-family: "Theramin" !important;
+}
+
+.ltr-spacing-1px {
+  letter-spacing: 1px !important;
+}
+
+.validation-font12 .validation-message {
+  font-size: 12px !important;
+}
+
+.txt-datepicker-custom-small .mud-input {
+  font-size: 10px;
+  font-weight: bold;
+  margin-top: 0px !important;
+}
+
+.txt-label10px .mud-input {
+  margin-top: 10px !important;
+}
+
+.txt-label10px .mud-input-label {
+  font-size: 12px !important;
+}
+
+.title-rfp {
+  font-family: "Theramin" !important;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.rflex-bold-title {
+  font-family: "R-Flex Bold";
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.rflex-bold-title .rflex-regular {
+  font-family: "R-Flex Regular";
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.label-gray {
+  font-size: 10px;
+  color: #9F9F9F;
+  text-transform: uppercase;
+} 
 .requestpayment {
   padding: 10px 16px !important;
 }
@@ -183,32 +1171,273 @@
 
 .rfp-body {
   grid-area: rfp-body;
+  border: solid thin lightgray;
+  border-bottom-style: none;
+  overflow: hidden;
 }
 .rfp-body__grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr auto;
-  grid-template-rows: 1fr 1fr 1fr 130px;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto;
+  grid-template-rows: 30px 180px 30px 1fr 30px auto 30px 45px 45px;
   gap: 0px 0px;
-  grid-auto-flow: row;
-  grid-template-areas: "body-content body-content body-content body-sidebar" "body-content body-content body-content body-sidebar" "body-content body-content body-content body-sidebar" "body-footer body-footer body-footer body-sidebar";
+  grid-template-areas: "rpfb-toolbar rpfb-toolbar rpfb-toolbar rpfb-toolbar rpfb-toolbar rfpb-billheader" "rfpb-table rfpb-table rfpb-table rfpb-table rfpb-table rfpb-billing" "rfpb-table rfpb-table rfpb-table rfpb-table rfpb-table rfpb-sigheader" "rfpb-table rfpb-table rfpb-table rfpb-table rfpb-table rfpb-signatories" "rfpb-table rfpb-table rfpb-table rfpb-table rfpb-table rfpb-signatories" "rfpb-totals rfpb-totals rfpb-totals rfpb-totals rfpb-totals rfpb-signatories" "rfpb-modheader rfpb-bankheader rfpb-bankheader rfpb-bankheader rfpb-bankheader rfpb-statheader" "rfpb-mod rfpb-bank rfpb-bank rfpb-bank-others rfpb-bank-others rfpb-status" "rfpb-mod rfpb-bank-remarks rfpb-bank-remarks rfpb-bank-remarks rfpb-bank-remarks rfpb-controls";
+  width: 100%;
   height: 100%;
 }
-.rfp-body .body-content {
-  grid-area: body-content;
+.rfp-body__grid .rpfb-toolbar {
+  grid-area: rpfb-toolbar;
+}
+.rfp-body__grid .rfpb-billheader {
+  grid-area: rfpb-billheader;
+}
+.rfp-body__grid .rfpb-billing {
+  grid-area: rfpb-billing;
+}
+.rfp-body__grid .rfpb-sigheader {
+  grid-area: rfpb-sigheader;
+}
+.rfp-body__grid .rfpb-signatories {
+  grid-area: rfpb-signatories;
+}
+.rfp-body__grid .rfpb-statheader {
+  grid-area: rfpb-statheader;
+}
+.rfp-body__grid .rfpb-status {
+  grid-area: rfpb-status;
+}
+.rfp-body__grid .rfpb-totals {
+  grid-area: rfpb-totals;
+}
+.rfp-body__grid .rfpb-modheader {
+  grid-area: rfpb-modheader;
+}
+.rfp-body__grid .rfpb-bankheader {
+  grid-area: rfpb-bankheader;
+}
+.rfp-body__grid .rfpb-controls {
+  grid-area: rfpb-controls;
+}
+.rfp-body__grid .rfpb-mod {
+  grid-area: rfpb-mod;
+}
+.rfp-body__grid .rfpb-bank {
+  grid-area: rfpb-bank;
+}
+.rfp-body__grid .rfpb-bank-others {
+  grid-area: rfpb-bank-others;
+}
+.rfp-body__grid .rfpb-bank-remarks {
+  grid-area: rfpb-bank-remarks;
+}
+.rfp-body__grid .rfpb-table {
+  grid-area: rfpb-table;
+}
+.rfp-body__grid .rfpb-billing {
+  overflow: auto;
+}
+.rfp-body__grid .rfpb-billing__container {
+  transform: scale(0.92);
+  position: relative;
+  bottom: 15px;
+  left: 4px;
+}
+.rfp-body__grid .rfpb-signatories {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.rfp-body__grid .rfpb-signatories__container {
+  padding: 0px 4px;
+  transform: scale(0.9);
+}
+.rfp-body__grid .rfpb-signatories__container-sigs {
+  gap: 4px;
+}
+.rfp-body__grid .rfpb-mod {
+  overflow-y: scroll;
+}
+.rfp-body__grid .rfpb-mod__container {
+  transform: scale(0.92);
+  padding: 4px 8px;
+  position: relative;
+  bottom: 10px;
+}
+.rfp-body__grid .rfpb-mod__container .mud-radio-group {
+  display: flex;
+  flex-direction: column;
+}
+.rfp-body__grid .rfpb-bank .blazored-typeahead__input-mask {
+  font-size: 12px;
+}
+.rfp-body__grid .rfpb-bank, .rfp-body__grid .rfpb-bank-others, .rfp-body__grid .rfpb-bank-remarks {
+  padding: 4px 8px;
+}
+.rfp-body__grid .rfpb-status, .rfp-body__grid .rfpb-controls {
+  align-items: center;
+  justify-content: center;
+}
+.rfp-body__grid .rfpb-bank-remarks, .rfp-body__grid .rfpb-controls {
+  border-top: solid thin lightgray;
+}
+.rfp-body__grid .rfpb-modheader, .rfp-body__grid .rfpb-mod, .rfp-body__grid .rfpb-bank {
+  border-right: solid thin lightgray;
+}
+.rfp-body__grid .rpfb-toolbar, .rfp-body__grid .rfpb-billheader, .rfp-body__grid .rfpb-billing, .rfp-body__grid .rfpb-sigheader,
+.rfp-body__grid .rfpb-signatories, .rfp-body__grid .rfpb-mod,
+.rfp-body__grid .rfpb-bank-remarks, .rfp-body__grid .rfpb-controls, .rfp-body__grid .rfpb-statheader,
+.rfp-body__grid .rfpb-tablem, .rfp-body__grid .rfpb-total, .rfp-body__grid .rfpb-modheader, .rfp-body__grid .rfpb-bankheader,
+.rfp-body__grid .rfpb-totals, .rfp-body__grid .rfpb-table {
+  border-bottom: solid thin lightgray;
+}
+.rfp-body__grid .rfpb-billheader, .rfp-body__grid .rfpb-billing, .rfp-body__grid .rfpb-sigheader, .rfp-body__grid .rfpb-signatories,
+.rfp-body__grid .rfpb-statheader, .rfp-body__grid .rfpb-status, .rfp-body__grid .rfpb-controls {
+  border-left: solid thin lightgray;
+}
+.rfp-body__grid .rfpb-billheader, .rfp-body__grid .rfpb-statheader, .rfp-body__grid .rfpb-modheader,
+.rfp-body__grid .rfpb-bankheader, .rfp-body__grid .rfpb-sigheader {
+  background-color: #F4F5FB;
+  padding: 0px 4px;
+}
+.rfp-body__grid .rfpb-modheader, .rfp-body__grid .rfpb-bankheader {
+  justify-content: center;
+}
+.rfp-body__grid .rpfb-toolbar__controls {
+  gap: 4px;
+  width: 100%;
+  padding: 0px 8px;
+}
+.rfp-body__grid .rpfb-toolbar__menu-lbl {
+  font-family: "R-Flex Regular";
+  font-size: 12px;
+  gap: 4px;
+}
+.rfp-body__grid .rfpb-billheader .mud-icon-root, .rfp-body__grid .rfpb-sigheader .mud-icon-root, .rfp-body__grid .rfpb-statheader .mud-icon-root {
+  margin: 4px 8px;
+}
+.rfp-body__grid .rfpb-modheader, .rfp-body__grid .rfpb-bankheader {
+  white-space: nowrap;
+}
+.rfp-body__grid .rfpb-table {
+  overflow: auto;
+}
+.rfp-body__grid .rfpb-table .collapsed-subrow td {
+  padding: 0px !important;
+  border: none !important;
   overflow: hidden;
 }
-.rfp-body .body-footer {
-  align-items: start;
-  display: flex;
-  border: solid thin lightgray;
-  border-right-style: none;
-  border-left-style: none;
-  grid-area: body-footer;
+.rfp-body__grid .rfpb-table .collapsed-subrow .rfpb-table__td-remarks, .rfp-body__grid .rfpb-table .collapsed-subrow .rfpb-table__td-text {
+  max-height: 0px !important;
+  padding: 0px !important;
 }
-.rfp-body .body-sidebar {
+.rfp-body__grid .rfpb-table__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.rfp-body__grid .rfpb-table__table th {
+  border-bottom: solid thin lightgray;
+}
+.rfp-body__grid .rfpb-table__table td {
+  border-bottom: solid thin lightgray;
+  border-right: solid thin lightgray;
+  padding: 4px;
+}
+.rfp-body__grid .rfpb-table__table table {
   border: solid thin lightgray;
-  border-top-style: none;
-  grid-area: body-sidebar;
+}
+.rfp-body__grid .rfpb-table__table th:first-child {
+  width: 18px;
+}
+.rfp-body__grid .rfpb-table__table th:nth-last-child(4) {
+  width: 10%;
+}
+.rfp-body__grid .rfpb-table__table th:nth-last-child(3) {
+  width: 10%;
+}
+.rfp-body__grid .rfpb-table__table th:nth-last-child(2) {
+  width: 5%;
+}
+.rfp-body__grid .rfpb-table__table th:nth-last-child(1) {
+  width: 18px;
+}
+.rfp-body__grid .rfpb-table__table td:last-child {
+  border-right-style: none;
+}
+.rfp-body__grid .rfpb-table__td-stock td:first-child {
+  max-width: 100px;
+}
+.rfp-body__grid .rfpb-table__td-stock td:first-child p {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.rfp-body__grid .rfpb-table__td-edit td:first-child, .rfp-body__grid .rfpb-table__td-edit-all td:first-child {
+  background-color: lightgray;
+  max-width: unset;
+}
+.rfp-body__grid .rfpb-table__td-edit td:first-child p, .rfp-body__grid .rfpb-table__td-edit-all td:first-child p {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.rfp-body__grid .rfpb-table__td-edit-all td:last-child {
+  max-width: unset;
+}
+.rfp-body__grid .rfpb-table__td-text {
+  font-size: 11px;
+}
+.rfp-body__grid .rfpb-table__td-invoice, .rfp-body__grid .rfpb-table__td-chip {
+  text-align: center;
+}
+.rfp-body__grid .rfpb-table__tr-footer td {
+  border-right-style: none;
+}
+.rfp-body__grid .rfpb-table__td-remarks {
+  padding: 4px;
+  max-height: 4000px;
+}
+.rfp-body .collapsed-rfpdetside .rfpb-billheader, .rfp-body .collapsed-rfpdetside .rfpb-billing, .rfp-body .collapsed-rfpdetside .rfpb-sigheader, .rfp-body .collapsed-rfpdetside .rfpb-signatories,
+.rfp-body .collapsed-rfpdetside .rfpb-statheader, .rfp-body .collapsed-rfpdetside .rfpb-status, .rfp-body .collapsed-rfpdetside .rfpb-controls {
+  max-width: 48px;
+  overflow-x: hidden;
+}
+.rfp-body .collapsed-rfpdetside .rfpb-billheader .blzrth-cont, .rfp-body .collapsed-rfpdetside .rfpb-billheader p, .rfp-body .collapsed-rfpdetside .rfpb-billing .blzrth-cont, .rfp-body .collapsed-rfpdetside .rfpb-billing p, .rfp-body .collapsed-rfpdetside .rfpb-sigheader .blzrth-cont, .rfp-body .collapsed-rfpdetside .rfpb-sigheader p, .rfp-body .collapsed-rfpdetside .rfpb-signatories .blzrth-cont, .rfp-body .collapsed-rfpdetside .rfpb-signatories p,
+.rfp-body .collapsed-rfpdetside .rfpb-statheader .blzrth-cont,
+.rfp-body .collapsed-rfpdetside .rfpb-statheader p, .rfp-body .collapsed-rfpdetside .rfpb-status .blzrth-cont, .rfp-body .collapsed-rfpdetside .rfpb-status p, .rfp-body .collapsed-rfpdetside .rfpb-controls .blzrth-cont, .rfp-body .collapsed-rfpdetside .rfpb-controls p {
+  white-space: nowrap;
+}
+.rfp-body .collapsed-rfpdetside .rfpb-billheader .mud-button-root, .rfp-body .collapsed-rfpdetside .rfpb-billing .mud-button-root, .rfp-body .collapsed-rfpdetside .rfpb-sigheader .mud-button-root, .rfp-body .collapsed-rfpdetside .rfpb-signatories .mud-button-root,
+.rfp-body .collapsed-rfpdetside .rfpb-statheader .mud-button-root, .rfp-body .collapsed-rfpdetside .rfpb-status .mud-button-root, .rfp-body .collapsed-rfpdetside .rfpb-controls .mud-button-root {
+  margin-left: 6px;
+}
+.rfp-body .collapsed-rfpdetside .rfpb-billheader .mud-chip, .rfp-body .collapsed-rfpdetside .rfpb-billing .mud-chip, .rfp-body .collapsed-rfpdetside .rfpb-sigheader .mud-chip, .rfp-body .collapsed-rfpdetside .rfpb-signatories .mud-chip,
+.rfp-body .collapsed-rfpdetside .rfpb-statheader .mud-chip, .rfp-body .collapsed-rfpdetside .rfpb-status .mud-chip, .rfp-body .collapsed-rfpdetside .rfpb-controls .mud-chip {
+  transform: rotate(-90deg);
+}
+.rfp-body .collapsed-rfpdetside .rfpb-billheader .entry-module-action, .rfp-body .collapsed-rfpdetside .rfpb-billing .entry-module-action, .rfp-body .collapsed-rfpdetside .rfpb-sigheader .entry-module-action, .rfp-body .collapsed-rfpdetside .rfpb-signatories .entry-module-action,
+.rfp-body .collapsed-rfpdetside .rfpb-statheader .entry-module-action, .rfp-body .collapsed-rfpdetside .rfpb-status .entry-module-action, .rfp-body .collapsed-rfpdetside .rfpb-controls .entry-module-action {
+  align-items: center;
+  gap: 4px;
+  width: 48px;
+}
+.rfp-body .expanded-rfpdetside .rfpb-billheader, .rfp-body .expanded-rfpdetside .rfpb-billing, .rfp-body .expanded-rfpdetside .rfpb-sigheader, .rfp-body .expanded-rfpdetside .rfpb-signatories,
+.rfp-body .expanded-rfpdetside .rfpb-statheader, .rfp-body .expanded-rfpdetside .rfpb-status, .rfp-body .expanded-rfpdetside .rfpb-controls {
+  max-width: 270px;
+}
+.rfp-body .expanded-rfpdetside .rfpb-billheader .blzrth-cont, .rfp-body .expanded-rfpdetside .rfpb-billheader p, .rfp-body .expanded-rfpdetside .rfpb-billing .blzrth-cont, .rfp-body .expanded-rfpdetside .rfpb-billing p, .rfp-body .expanded-rfpdetside .rfpb-sigheader .blzrth-cont, .rfp-body .expanded-rfpdetside .rfpb-sigheader p, .rfp-body .expanded-rfpdetside .rfpb-signatories .blzrth-cont, .rfp-body .expanded-rfpdetside .rfpb-signatories p,
+.rfp-body .expanded-rfpdetside .rfpb-statheader .blzrth-cont,
+.rfp-body .expanded-rfpdetside .rfpb-statheader p, .rfp-body .expanded-rfpdetside .rfpb-status .blzrth-cont, .rfp-body .expanded-rfpdetside .rfpb-status p, .rfp-body .expanded-rfpdetside .rfpb-controls .blzrth-cont, .rfp-body .expanded-rfpdetside .rfpb-controls p {
+  white-space: nowrap;
+}
+.rfp-body .expanded-rfpdetside .rfpb-billheader .entry-module-action, .rfp-body .expanded-rfpdetside .rfpb-billing .entry-module-action, .rfp-body .expanded-rfpdetside .rfpb-sigheader .entry-module-action, .rfp-body .expanded-rfpdetside .rfpb-signatories .entry-module-action,
+.rfp-body .expanded-rfpdetside .rfpb-statheader .entry-module-action, .rfp-body .expanded-rfpdetside .rfpb-status .entry-module-action, .rfp-body .expanded-rfpdetside .rfpb-controls .entry-module-action {
+  align-items: center;
+  justify-content: center;
+  width: 270px;
+  white-space: nowrap;
+}
+.rfp-body__title-label {
+  font-size: 10px;
+  white-space: nowrap;
+  text-transform: uppercase;
 }
 
 .rfp-sidebar {
@@ -227,11 +1456,6 @@
   border: solid thin lightgray;
   border-top-style: none;
   border-bottom-style: none;
-}
-
-.rfp-body {
-  border-top: solid thin lightgray;
-  border-left: solid thin lightgray;
 }
 
 .rfp-footer {

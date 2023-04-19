@@ -11,9 +11,9 @@
   display: flex;
 }
 
-.dflex-col {
-  flex-direction: column;
-  display: flex;
+.dflex-col, .dflex-col-start-end {
+  flex-direction: column !important;
+  display: flex !important;
 }
 
 .dflex-ac {
@@ -35,9 +35,56 @@
   display: block;
 }
 
+.dnone {
+  display: none;
+}
+
 .dblock-inline {
   display: inline-block;
-} /*# sourceMappingURL=flexgridmods.styles.css.map */
+}
+
+.vis-hide {
+  visibility: hidden;
+}
+
+.vis-show {
+  visibility: visible;
+}
+
+.jcenter {
+  justify-content: center;
+}
+
+.dflex-col-start-end {
+  align-items: start;
+  justify-content: end;
+}
+
+.line-clamp-2 {
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  -webkit-line-clamp: 3;
+}
+
+.line-clamp-8 {
+  -webkit-line-clamp: 8;
+}
+
+.line-clamp-10 {
+  -webkit-line-clamp: 10;
+}
+
+.line-clamp-16 {
+  -webkit-line-clamp: 16;
+}
+
+.line-clamp-props, .line-clamp-2, .line-clamp-3, .line-clamp-8, .line-clamp-10, .line-clamp-16 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+} 
 .checkwriterpage__grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 130px 1fr;
@@ -111,4 +158,60 @@
   font-size: 16px;
   font-family: "R-Flex Regular";
   font-weight: bold;
+}
+.checkwriterpage__debtgrid {
+  display: grid;
+  padding: 8px;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  grid-template-rows: 40px 50px 50px 40px 40px 1fr;
+  gap: 0px 0px;
+  grid-template-areas: "chkw-header chkw-header chkw-header chkw-header chkw-header" "chkw-payee chkw-payee chkw-payee chkw-blankcont chkw-signatories" "chkw-banks chkw-banks chkw-banks chkw-checkdate chkw-signatories" "chkw-voucher chkw-voucher chkw-voucher chkw-voucher chkw-signatories" "chkw-desc chkw-desc chkw-desc chkw-desc chkw-signatories" "chkw-desc chkw-desc chkw-desc chkw-desc chkw-controls";
+}
+.checkwriterpage__debtgrid .chkw-header {
+  grid-area: chkw-header;
+}
+.checkwriterpage__debtgrid .chkw-payee {
+  grid-area: chkw-payee;
+}
+.checkwriterpage__debtgrid .chkw-banks {
+  grid-area: chkw-banks;
+}
+.checkwriterpage__debtgrid .chkw-checkdate {
+  grid-area: chkw-checkdate;
+}
+.checkwriterpage__debtgrid .chkw-checkno {
+  grid-area: chkw-checkno;
+}
+.checkwriterpage__debtgrid .chkw-blankcont {
+  grid-area: chkw-blankcont;
+}
+.checkwriterpage__debtgrid .chkw-voucher {
+  grid-area: chkw-voucher;
+}
+.checkwriterpage__debtgrid .chkw-desc {
+  grid-area: chkw-desc;
+}
+.checkwriterpage__debtgrid .chkw-details {
+  grid-area: chkw-details;
+}
+.checkwriterpage__debtgrid .chkw-signatories {
+  grid-area: chkw-signatories;
+  border-right: solid thin lightgrey;
+  overflow: hidden;
+}
+.checkwriterpage__debtgrid .chkw-controls {
+  grid-area: chkw-controls;
+  padding: 8px;
+}
+.checkwriterpage__debtgrid .chkw-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.checkwriterpage__debtgrid .chkw-desc, .checkwriterpage__debtgrid .chkw-controls {
+  border-bottom: solid thin lightgrey;
+  border-right: solid thin lightgrey;
+}
+.checkwriterpage__debtgrid .chkw-blankcont {
+  padding: 4px 8px;
 }/*# sourceMappingURL=checkwriter.styles.css.map */

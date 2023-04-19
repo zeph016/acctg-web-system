@@ -1,0 +1,34 @@
+@inherits ListRFPChecksCardBase
+
+<MudTable Items="@CheckList" Bordered ReadOnly='false'
+            Dense Elevation='0' FixedHeader FixedFooter RowsPerPage="100">
+    <ColGroup>
+        <col />
+        <col />
+        <col />
+    </ColGroup>
+    <HeaderContent>
+        <MudTh Class='customheader-6 text-center'>
+            Date
+        </MudTh>
+        <MudTh Class='customheader-6 text-center'>
+            Control Number
+        </MudTh>
+        <MudTh Class='customheader-6 text-center'>
+            Status
+        </MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd Class='text-center'>
+            @context.CheckDate?.ToString("MM/dd/yyyy")
+        </MudTd>
+        <MudTd Class='text-center'>
+            @context.ControlNumber
+        </MudTd>
+        <MudTd Class='text-center'>
+            @context.StatusName
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+

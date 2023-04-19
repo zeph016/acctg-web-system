@@ -1,0 +1,152 @@
+@page "/billing/report/"
+
+@inject IGlobalService GlobalService
+@inject ICollectionService CollectionServices
+
+<div class='page-cont'>
+    <div class='drawer-right-min'>
+        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <FilterComponent OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
+                contentVisible='openSideFilter' moduleName="collection-list-billing"/>
+        </MudDrawer>
+    </div>
+    <MudContainer Class='py-2 pl-2 pr-10  table-toolbar-custom1' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+        @if(!dataFetched)
+        {
+            
+        }
+        else
+        {
+            @if(!showReport)
+            {
+                <MudTable Class='table-style-1' T='CollectionModel' Items='billingListReport'
+                    Breakpoint="Breakpoint.Xs" FixedHeader FixedFooter CustomFooter Bordered Dense
+                    RowsPerPage='30' Elevation='1' Height='calc(100vh - 235px)'>
+                    <ToolBarContent>
+                        <MudSpacer/>
+                        <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' 
+                        TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
+                            <MudMenuItem OnClick='(() => ShowReport() )'  >
+                                <div class='d-flex align-center gap-2 '>
+                                    <MudIcon Icon='@Icons.Material.Filled.PictureAsPdf' Size='Size.Small' Color='Color.Dark' />
+                                    <MudText Typo='Typo.body2' Color='Color.Dark'>Report</MudText>
+                                </div>
+                            </MudMenuItem>
+                        </MudMenu>
+                    </ToolBarContent>
+                    <ColGroup>
+                        <col />
+                        <col />
+                        <col style="width:1%" />
+                        <col style="width:1%"/>
+                        <col style="width:1%"/>
+                        <col style="width:1%"/>
+                        <col style="width:1%"/>
+                        <col style="width:1%"/>
+                    </ColGroup>
+                    <HeaderContent>
+                        <MudTh Class='customheader-6'>Project Name</MudTh>
+                        <MudTh Class='customheader-6 text-center'>Contract</MudTh>
+                        <MudTh Class='customheader-6 text-center'>To Date</MudTh>
+                        <MudTh Class='customheader-6'>Previous</MudTh>
+                        <MudTh Class='customheader-6'>Present</MudTh>
+                        <MudTh Class='customheader-6'>Amount</MudTh>
+                        <MudTh Class='customheader-6'>To Date</MudTh>
+                        <MudTh Class='customheader-6'>License</MudTh>
+                        <MudTh Class='customheader-6'>Total amount billed(as of Date)</MudTh>
+                        <MudTh Class='customheader-6'>Total payments(Collected)</MudTh>
+                        <MudTh Class='customheader-6'>Uncollected</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.ChargeName</MudTd>
+                        <MudTd>@context.ContractAmount.ToString("N2")</MudTd>
+                        <MudTd>@context.ToDatePercentage.ToString("N3")</MudTd>
+                        <MudTd>@context.PrevPercentage.ToString("N2")</MudTd>
+                        <MudTd>@context.PresPercentage.ToString("N2")</MudTd>
+                        <MudTd>@context.PresentAmount.ToString("N2")</MudTd>
+                        <MudTd>@context.ToDateAmount.ToString("N2")</MudTd>
+                        <MudTd>@context.License</MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No records found</MudText>
+                    </NoRecordsContent>
+                </MudTable>
+            } else {
+                <iframe class='rpt-container-listview__iframe-scaled' src='@PDFReport' style="height:100vh"/>
+            }
+        }
+    </MudContainer>
+</div>
+
+@code
+{
+    private List<CollectionModel> billingListReport = new();
+    private bool dataFetched = false, openSideFilter = false , showReport = false;
+    private string PDFReport = string.Empty;
+    protected override async Task OnInitializedAsync()
+    {
+        billingListReport = await CollectionServices.CollectionReportList(new FilterParameter(), GlobalClass.token);
+        billingListReport.ForEach( b => 
+        {
+            b.TransactionDate = DateTime.Now;
+            b.ToDatePercentage = (b.ToDateAmount * 100) / b.ContractAmount;
+            b.PrevNetAmount = b.ToDateAmount - b.PresentAmount;
+            b.PrevPercentage = (b.PrevNetAmount * 100) / b.ContractAmount;
+            b.PresPercentage = (b.PresentAmount * 100) / b.ContractAmount;
+        });
+        await getReport();
+        dataFetched = true;
+    }
+    private void ShowReport()
+    {
+        showReport = !showReport;
+        StateHasChanged();
+    }
+    private async Task getReport()
+    {
+        PDFReport = await CollectionServices.GetBillingReport(billingListReport);
+    }
+    @* private decimal ToDatePercenatage(CollectionModel collection)
+    {
+        return GlobalClassList.collectionList
+                .Where( c => c.ChargeId == collection.ChargeId && 
+                             c.ChargeCategoryId == collection.ChargeCategoryId && 
+                             c.CustomerId == collection.CustomerId)
+                .Sum( c => c.Percentage);
+    }
+    private decimal PreviousPercent(CollectionModel collection)
+    {
+        return GlobalClassList.collectionList
+                .Where( c => c.ChargeId == collection.ChargeId && 
+                             c.ChargeCategoryId == collection.ChargeCategoryId && 
+                             c.CustomerId == collection.CustomerId &&
+                             c.TransactionDate.GetValueOrDefault().Date != DateTime.Now.Date)
+                .Sum( c => c.Percentage);
+    }
+    private decimal PresentPercentage(CollectionModel collection)
+    {
+        return  GlobalClassList.collectionList
+                .Where( c => c.ChargeId == collection.ChargeId && 
+                             c.ChargeCategoryId == collection.ChargeCategoryId && 
+                             c.CustomerId == collection.CustomerId &&   
+                             c.TransactionDate.GetValueOrDefault().Date == DateTime.Now.Date)
+                .Sum( c => c.Percentage);
+    }
+    private decimal PresentNet(CollectionModel collection)
+    {
+        return  GlobalClassList.collectionList
+                .Where( c => c.ChargeId == collection.ChargeId && 
+                             c.ChargeCategoryId == collection.ChargeCategoryId && 
+                             c.CustomerId == collection.CustomerId &&   
+                             c.TransactionDate.GetValueOrDefault().Date == DateTime.Now.Date)
+                .Sum( c => c.NetAmount);
+    }
+    private decimal ToDateNetAmount(CollectionModel collection)
+    {
+        return  GlobalClassList.collectionList
+                .Where( c => c.ChargeId == collection.ChargeId && 
+                             c.ChargeCategoryId == collection.ChargeCategoryId && 
+                             c.CustomerId == collection.CustomerId)
+                .Sum( c => c.NetAmount);
+    }*@
+} 

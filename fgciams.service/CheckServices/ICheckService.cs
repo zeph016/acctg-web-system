@@ -12,5 +12,6 @@ namespace fgciams.service.CheckServices
         Task<CheckModel> UpdateCheck(CheckModel check,string token);
         Task<string> GetCheckReport(CheckModel model);
         Task<List<CheckAuditTrailModel>> GetAudiTrail(long ID, string token);
+        Task<int> CheckListRowCount(FilterParameter param, string token);
     }
 }

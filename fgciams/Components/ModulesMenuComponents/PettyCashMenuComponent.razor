@@ -1,0 +1,143 @@
+@inject ISnackbar SnackbarService
+
+<MudMenuItem OnClick='PreviewPettyCash'>
+<div class='d-flex align-center gap-2'>
+        <MudIcon Icon='@Icons.Material.Filled.Preview' Size='Size.Small' Color='Color.Dark'/>
+        <MudText Typo='Typo.body2'>View</MudText>
+    </div>
+</MudMenuItem>
+@if(PettyCashModel.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCG)
+{
+    <MudMenuItem OnClick='EditPettyCash'>
+        <a class='d-flex align-center gap-2 '>
+            <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' Color='Color.Dark'/>
+            <MudText Typo='Typo.body2'>Edit</MudText>
+        </a>
+    </MudMenuItem>
+}
+@if(PettyCashModel.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCG || PettyCashModel.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCA ||
+PettyCashModel.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCR)
+{
+    if(PettyCashModel.StatusEnumCategoryId != Enums.AccountingStatusEnumCategory.PCA && 
+    PettyCashModel.StatusEnumCategoryId != Enums.AccountingStatusEnumCategory.PCR)
+    {
+        <MudMenuItem OnClick='(() => Prompt(Enums.ActionMode.Approve))'>
+            <div class='d-flex align-center gap-2 '>
+                <MudIcon Icon='@Icons.Material.Filled.CheckCircle' Size='Size.Small' />
+                <MudText Typo='Typo.body2'>Approve</MudText>
+            </div>
+        </MudMenuItem>
+    }
+    
+    @if(PettyCashModel.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCA)
+    {
+        <MudMenuItem OnClick='(() => Prompt(Enums.ActionMode.Receive))'>
+            <div class='d-flex align-center gap-2 '>
+                <MudIcon Icon='@Icons.Material.Filled.GetApp' Size='Size.Small' />
+                <MudText Typo='Typo.body2'>Receive</MudText>
+            </div>
+        </MudMenuItem>
+    }
+    if(PettyCashModel.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCR)
+    {
+        if(Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Void))
+        {
+            <MudMenuItem OnClick='(() => Prompt(Enums.ActionMode.Void))'>
+                <div class='d-flex align-center gap-2 '>
+                    <MudIcon Icon='@Icons.Material.Filled.Outbound' Size='Size.Small' />
+                    <MudText Typo='Typo.body2'>Approved (Void)</MudText>
+                </div>
+            </MudMenuItem>
+        }
+    }
+    if(PettyCashModel.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCA)
+    {
+        if(Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Void))
+        {
+            <MudMenuItem OnClick='(() => Prompt(Enums.ActionMode.Void))'>
+                <a class='d-flex align-center gap-2 '>
+                    <MudIcon Icon='@Icons.Material.Filled.CancelPresentation' Size='Size.Small' />
+                    <MudText Typo='Typo.body2'>Generated (Void)</MudText>
+                </a>
+            </MudMenuItem>
+            }
+    }
+}
+<MudMenuItem OnClick='ViewAuditTrail'>
+    <a class='d-flex align-center gap-2 '>
+        <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' />
+        <MudText Typo='Typo.body2'>Audit Trail</MudText>
+    </a>
+</MudMenuItem>
+@if(PettyCashModel.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.PCG)
+{
+    <MudMenuItem OnClick='(() => Prompt(Enums.ActionMode.Cancel))'>
+        <div class='d-flex align-center gap-2 '>
+            <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small' />
+            <MudText Typo='Typo.body2'>Cancel</MudText>
+        </div>
+    </MudMenuItem>
+}
+<MudMenuItem OnClick='ShowReport'>
+    <div class='d-flex align-center gap-2 '>
+        <MudIcon Icon='@Icons.Material.Filled.PictureAsPdf' Size='Size.Small' />
+        <MudText Typo='Typo.body2'>@(PettyCashModel.ShowReport ? "Close" : "Show") Report</MudText>
+    </div>
+</MudMenuItem>
+
+@code
+{
+    [Parameter] public PettyCashModel PettyCashModel { get; set; } = new();
+    [Parameter] public EventCallback PreviewClick { get; set; }
+    [Parameter] public EventCallback EditPettyCashClick { get; set; }
+    [Parameter] public EventCallback<Enums.ActionMode> StatusClick { get; set; }
+    [Parameter] public EventCallback AuditTrailClick { get; set; }
+    [Parameter] public EventCallback ShowReportClick { get; set; }
+    [Parameter] public string ModuleName { get; set; } = string.Empty;
+
+    private async Task PreviewPettyCash() => await isAllowed(PreviewClick, Enums.AISModuleFunctions.View);
+    private async Task ViewAuditTrail() =>  await isAllowed(AuditTrailClick, Enums.AISModuleFunctions.View);
+    private async Task ShowReport() => await isAllowed(ShowReportClick, Enums.AISModuleFunctions.View);
+
+    private async Task EditPettyCash()
+    {
+        if(Common.Privileges.isAllowEdit(PettyCashModel))
+            await EditPettyCashClick.InvokeAsync();
+        else
+            Extensions.ShowAlert("Account has been restricted to edit other petty cash", Variant.Filled, SnackbarService, Severity.Error);
+    }
+    private async Task Prompt(Enums.ActionMode mode)
+    {
+        if(mode == Enums.ActionMode.Void)
+            await isAllowed(StatusClick, mode ,Enums.AISModuleFunctions.Void);
+        else
+            await isAllowed(StatusClick, mode ,Enums.AISModuleFunctions.ChangeStatus);
+    }
+
+    private async Task isAllowed(EventCallback callback, Enums.AISModuleFunctions function)
+    {
+        if(function == Enums.AISModuleFunctions.View)
+        {
+            if(Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.View) || 
+            Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.ViewDepartment) || 
+            Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.ViewOwn))
+                await callback.InvokeAsync();
+            else
+                Extensions.ShowAlert(String.Format("Account has been restricted to {0} {1}.",function.ToString().ToLower(), ModuleName), Variant.Filled, SnackbarService, Severity.Error);
+        } else {
+            if(Common.Privileges.isPrivilegeFunction(function))
+                await callback.InvokeAsync();
+            else
+                Extensions.ShowAlert(String.Format("Account has been restricted to {0} {1}.",function.ToString().ToLower(), ModuleName), Variant.Filled, SnackbarService, Severity.Error);
+        }
+    }
+    private async Task isAllowed(EventCallback<Enums.ActionMode> callback,Enums.ActionMode mode, Enums.AISModuleFunctions function)
+    {
+        if(Common.Privileges.isPrivilegeFunction(function))
+            await callback.InvokeAsync(mode);
+        else
+            Extensions.ShowAlert(String.Format("Account has been restricted to {0} {1}.",Extensions.GetEnumDescription(function).ToLower(), ModuleName), Variant.Filled, SnackbarService, Severity.Error);
+    } 
+
+    
+}

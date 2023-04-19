@@ -2,8 +2,9 @@
 
 @inject IBankService bankService
 @inject IDialogService dialogService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject ApplicationState AppState
+@inject IAccessLevelService accessLevelService
 
 <div class='page-cont'>
   <div class='drawer-right'>
@@ -46,7 +47,7 @@
             <MudTooltip Text="Refresh Table">
             <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='( async ()=> await LoadBanks() )' ></MudIconButton>
             </MudTooltip>
-            <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
+            <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
               TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
               <MudMenuItem OnClick='(() => BankDialog(new BankModel(), Enums.ActionMode.Create))'>
                     <div class='d-flex align-center gap-2 '>
@@ -68,11 +69,10 @@
         </ColGroup>
         <HeaderContent>
             <MudTh Class='customheader-1'>Bank</MudTh>
-            <MudTh Class='customheader-1'> </MudTh>
+            <MudTh Class='customheader-1'>Short Name</MudTh>
             <MudTh Class='customheader-1'>Branch</MudTh>
             <MudTh Class='customheader-1'>Account No.</MudTh>
             <MudTh Class='customheader-1 text-center'>Currency</MudTh>
-            <MudTh Class='customheader-1 text-center'>Beg. Balance</MudTh>
             <MudTh Class='customheader-1 text-center pa-2'>Contact</MudTh>
             <MudTh Class='customheader-1 text-center pa-2'>Action</MudTh>
         </HeaderContent>
@@ -82,14 +82,13 @@
             <MudTd DataLabel="Branch">@context.BankBranch</MudTd>
             <MudTd DataLabel="AccountNo.">@context.AccountNo</MudTd>
             <MudTd Class='text-center' DataLabel="Currency">@Extensions.GetEnumDescription(context.CurrencyId)</MudTd>
-            <MudTd Class='text-right' DataLabel="Beg.Balance"> @context.BeginningBalance.ToString("N2") </MudTd>
             <MudTd Class='text-center pa-2' DataLabel='Contact'>
               <MudToggleIconButton @bind-Toggled='context.subTable'
                 Icon="@Icons.Material.Filled.ExpandMore" Color="Color.Dark" Title="Show" Size='Size.Small' ToggledSize='Size.Small'
                 ToggledIcon="@Icons.Material.Filled.ExpandLess" ToggledColor="@Color.Info" ToggledTitle="Collapse"/>
             </MudTd>
             <MudTd Class='text-center pa-2'>
-              <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
+              <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
                 TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' >
                  <MudMenuItem OnClick='(()=> BankDialog(context, Enums.ActionMode.Update))'>
                    <div class='d-flex align-center gap-2'>
@@ -145,6 +144,7 @@
     while (GlobalClass.currentUserAccount == null || GlobalClassList.banks == null)
       await Task.Delay(1);
     await AppState.UpdateMainLayoutComponent(true);
+    await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.Bank);
     BankHub();
     CompletedFetch();
   }
@@ -160,6 +160,14 @@
   }
   private async Task BankDialog(BankModel selectedBank, Enums.ActionMode action)
   {
+    Enums.AISModuleFunctions function = action == Enums.ActionMode.Update? Enums.AISModuleFunctions.Edit : Enums.AISModuleFunctions.Add;
+    if (!Common.Privileges.isPrivilegeFunction(function))
+    {
+      string act = action == Enums.ActionMode.Update ? "edit" : "add";
+      Extensions.ShowAlert(String.Format("Account has been restricted to {0} bank.", act), Variant.Filled, SnackbarService, Severity.Error);
+      return;
+    }
+
     var parameters = new DialogParameters();
     GlobalClass.bank = selectedBank;
     string dialogTitle = GlobalClass.bank.Id != 0 ? "Edit Bank Details" : "Add Bank";
@@ -175,15 +183,15 @@
     if(!resultDialog.Canceled)
     {
       if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Create)
-        Extensions.ShowAlert("Bank successfully added.", Variant.Filled,snackbarService,Severity.Success);
+        Extensions.ShowAlert("Bank successfully saved.", Variant.Filled,SnackbarService,Severity.Success);
       else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Update)
-        Extensions.ShowAlert("Bank successfully updated.", Variant.Filled,snackbarService,Severity.Info);
+        Extensions.ShowAlert("Bank successfully updated.", Variant.Filled,SnackbarService,Severity.Info);
       else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Deactivate)
-         Extensions.ShowAlert("Bank has been deactivated.", Variant.Filled,snackbarService,Severity.Warning);
+         Extensions.ShowAlert("Bank has been deactivated.", Variant.Filled,SnackbarService,Severity.Warning);
       GlobalClassList.banks = GlobalClassList.banks.Where(x=>x.IsActive == true).ToList();
     }
     else if (resultDialog.Canceled)
-      Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
+      Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
   }
 
   private bool FilterItems(BankModel items)

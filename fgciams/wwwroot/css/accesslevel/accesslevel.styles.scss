@@ -1,0 +1,110 @@
+@use "../components/flexgridmods/flexgridmods.styles.css";
+@use "../components/animations/animation.styles.css";
+
+.accesslevel-page {
+    @extend .fade-in;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    &__container {
+        height: 100%;
+        overflow: hidden;
+    }
+    &__container-info {
+        margin: 8px 0px;
+        height: 300px max(600px);
+    }
+    &__grid {
+        display: grid; 
+        grid-template-columns: 0.8fr 0.8fr 0.7fr 1fr; 
+        grid-template-rows: 55px 1fr 1fr 30px; 
+        gap: 0px 0px; 
+        grid-template-areas: 
+          "algrid-header algrid-header algrid-header algrid-header"
+          "algrid-parent algrid-module algrid-function algrid-info"
+          "algrid-parent algrid-module algrid-function algrid-notes"
+          "algrid-footer algrid-footer algrid-footer algrid-footer";    
+        height: calc(100vh - 105px);
+
+        .algrid-header { grid-area: algrid-header; }
+        .algrid-parent { grid-area: algrid-parent; }
+        .algrid-module { grid-area: algrid-module; }
+        .algrid-function { grid-area: algrid-function; }
+        .algrid-info { grid-area: algrid-info; }
+        .algrid-notes { grid-area: algrid-notes; }
+        .algrid-footer { grid-area: algrid-footer; }
+
+        .algrid-header { padding: 4px 8px; }
+        .algrid-parent,.algrid-module,.algrid-function,.algrid-notes {
+            @extend .fade-in;
+            padding: 4px 4px 14px 4px;
+        }
+        .algrid-info {
+            padding: 4px;
+        }
+        .algrid-header {
+            @extend .dflex-row;
+            // border-bottom: solid thin lightgray;
+            gap: 8px;
+        }
+        .algrid-parent,.algrid-module,.algrid-function { overflow: hidden; }
+    }
+    &__subheader {
+        @extend .dflex-row;
+        border-bottom: solid thin lightgray;
+        justify-content: space-between;
+        padding: 4px 8px;
+    }
+    &__label {
+        font-size: 10px;
+        font-weight: bold;
+        color: #858585;
+    }
+    &__list-container {
+        height: 100%;
+        overflow: auto;
+        .mud-avatar {
+            height: 35px !important;
+            width: 35px !important;
+        }
+    }
+    .mud-list-item:hover {
+        cursor: pointer;
+        // background-color: #f9f9f9;
+    }
+    .mud-list-item:focus  {
+        @extend .al-item-selected;
+        cursor: pointer;
+    }
+    
+    .al-item-selected {
+        background-color: #8758a9 !important;
+        color: #ffffff !important;
+        .mud-icon-root { color: #ffffff !important; }
+        .mud-avatar { border-color: #ffffff !important; }
+    }
+    .mud-list {
+        padding-bottom: 24px !important;
+    }
+    &__module-container {
+        @extend .dflex-row;
+        p { 
+            font-size: 12px; 
+            margin-left: 8px;
+        }
+        .module-selected-icon {
+            @extend .fadeToRight-15px;
+            position: relative;
+            margin-right: 15px;
+            transform: translateX(15px);
+            height: 15px !important;
+            width: 15px !important;
+        }
+    }
+    &__module-about-info {
+        padding: 4px 8px;
+        p { 
+            font-size: 14px;
+            font-family: "R-Flex Regular";
+        }
+    }
+}

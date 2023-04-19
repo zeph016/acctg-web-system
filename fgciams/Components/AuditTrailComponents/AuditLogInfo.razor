@@ -19,6 +19,14 @@ else
     {
         <RFPAuditComponent RequestForPayment='RequestForPayment' ReturnEventClick='Return' />
     }
+    @if(IsVoucher)
+    {
+        <VoucherAuditComponent Voucher='Voucher' ReturnEventClick='Return' />
+    }
+    @if(IsCheckWriter)
+    {
+        <CheckWriterAuditComponent Check='Check' ReturnEventClick='Return' />
+    }
 }
 
 
@@ -26,30 +34,18 @@ else
     [Parameter] public bool IsPettyCash { get; set; }
     [Parameter] public bool IsLiquidation { get; set; }
     [Parameter] public bool IsRFP { get; set; }
+    [Parameter] public bool IsVoucher { get; set; }
+    [Parameter] public bool IsCheckWriter { get; set; }
     [Parameter] public EventCallback ReturnEventClick { get; set; }
     [Parameter] public PettyCashModel PettyCash { get; set; } = new();
     [Parameter] public LiquidationModel Liquidation { get; set; } = new();
     [Parameter] public RequestForPaymentModel RequestForPayment { get; set; } = new();
+    [Parameter] public VoucherModel Voucher { get; set; } = new();
+    [Parameter] public CheckModel Check { get; set; } = new();
     [Parameter] public bool DataFetched { get; set; }
 
-    private bool isExpanded = true;
-
-    public override async Task SetParametersAsync(ParameterView parameters)
-    {
-        await base.SetParametersAsync(parameters);
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        
-    }
-    private async Task CopyTextToClipboard(string stringToCopy)
-    {
-        await Extensions.CopyTextToClipboard(stringToCopy, SnackbarService, JSRuntime);
-    }
-
-    protected async Task Return()
-    {
-        await ReturnEventClick.InvokeAsync();
-    }
+    public override async Task SetParametersAsync(ParameterView parameters) => await base.SetParametersAsync(parameters);
+    private async Task CopyTextToClipboard(string stringToCopy) => await Extensions.CopyTextToClipboard(stringToCopy, SnackbarService, JSRuntime);
+    protected async Task Return() => await ReturnEventClick.InvokeAsync();
+    
 }

@@ -1,0 +1,24 @@
+@inherits EmployeeCardTheadComponentBase
+
+@if(IsSelected)
+{
+    <div class='employee-card'>
+        <MudAvatar Class='avatar-20px' Image='@(Employee.Picture.Count() > 0 ? 
+            $"data:image/png;base64, {Convert.ToBase64String(@Employee.Picture)}":"images/fglogo/fgci1-gs.png")' Size='Size.Small' />
+        <small>@Employee.EmployeeName</small>
+    </div>
+}
+else if(IsResult)
+{
+    <div class='employee-card-result'>
+        <MudAvatar Image='@(Employee.Picture.Count() > 0 ? 
+            $"data:image/png;base64, {Convert.ToBase64String(@Employee.Picture)}":"images/fglogo/fgci1-gs.png")' Size='Size.Small'/>
+        <div class='employee-card-result__sub-container'>
+            <small >
+                <strong>@Employee.EmployeeName</strong>
+            </small>
+            <small>@Employee.Designation</small>
+        </div>
+    </div>
+}
+

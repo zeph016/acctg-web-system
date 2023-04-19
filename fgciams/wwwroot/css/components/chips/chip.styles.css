@@ -20,6 +20,10 @@
   min-width: 100px;
 }
 
+.mud-chip.mud-chip-size-small.h-notif {
+  height: 13.6px !important;
+}
+
 .custom-chip1 {
   display: inline-block;
   padding: 0 25px;
@@ -85,4 +89,71 @@
   letter-spacing: 0.01071em;
   padding: 0 8px;
   white-space: nowrap;
+}
+
+.sidebar-chip {
+  font-weight: bold;
+  min-width: 120px;
+  text-transform: uppercase;
+}
+.sidebar-chip span {
+  font-size: 12px;
+}
+
+.mud-chip {
+  transition: all 0.5s ease !important;
+}
+
+.two-box > div, .four-box > div {
+  background-color: #ffffff;
+  border-bottom: solid thin black;
+  border-right: solid thin black;
+}
+
+.two-box {
+  border-top: solid thin black;
+  border-left: solid thin black;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas: "box-left box-right";
+}
+.two-box .box-left {
+  grid-area: box-left;
+}
+.two-box .box-right {
+  grid-area: box-right;
+}
+.two-box .box-left, .two-box .box-right {
+  height: 20px;
+  width: 15px;
+}
+
+.four-box {
+  border-top: solid thin black;
+  border-left: solid thin black;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas: "box-left box-center-left box-center-right box-right";
+}
+.four-box .box-left {
+  grid-area: box-left;
+}
+.four-box .box-center-left {
+  grid-area: box-center-left;
+}
+.four-box .box-center-right {
+  grid-area: box-center-right;
+}
+.four-box .box-right {
+  grid-area: box-right;
+}
+.four-box .box-left, .four-box .box-right, .four-box .box-center-left, .four-box .box-center-right {
+  height: 20px;
+  width: 15px;
 }/*# sourceMappingURL=chip.styles.css.map */

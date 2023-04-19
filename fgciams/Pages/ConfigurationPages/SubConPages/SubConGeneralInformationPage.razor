@@ -3,8 +3,9 @@
 
 @inject ISubConGeneralInformationService subConGeneralInformationService
 @inject IDialogService dialogService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject ApplicationState AppState
+@inject IAccessLevelService accessLevelService
 
 <div class='page-cont'>
   <div class='drawer-right'>
@@ -47,7 +48,7 @@
           <MudTooltip Text="Refresh Table">
               <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='(()=>{searchTerm = "";})' ></MudIconButton>
           </MudTooltip>
-          <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
+          <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
           TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
             <MudMenuItem OnClick='(() => SubConGenInfoDialog(new SubConGeneralInformationModel(), Enums.ActionMode.Create))'>
               <div class='d-flex align-center gap-2 '>
@@ -68,7 +69,11 @@
           <col style='width:20px;'/>
         </ColGroup>
         <HeaderContent>
-            <MudTh Class='customheader-1'>Subcon Name</MudTh>
+            <MudTh Class='customheader-1'>
+              <MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<SubConGeneralInformationModel, object>(x=>x.EmployeeName)">
+                  Subcon Name
+              </MudTableSortLabel>
+            </MudTh>
             <MudTh Class='customheader-1'>Company</MudTh>
             <MudTh Class='customheader-1'>Position</MudTh>
             <MudTh Class='customheader-1 text-center'>Age</MudTh>
@@ -104,7 +109,7 @@
             </MudText>
           </MudTd>
           <MudTd Class='text-center pa-2' DataLabel='Actions'>
-              <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
+              <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
               TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
                   <MudMenuItem OnClick='(() => SubConGenInfoDialog(context, Enums.ActionMode.Update))'>
                       <div class='d-flex align-center gap-2 '>
@@ -135,6 +140,7 @@
     GlobalClass.pageTitle = "Configuration - SUBCON GENERAL INFO";
     while (GlobalClass.currentUserAccount == null || GlobalClassList.subConGeneralInformations == null)
       await Task.Delay(1);
+    await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.Subcon);
     await AppState.UpdateMainLayoutComponent(true);
     SubConPositionHub();
     CompletedFetch();
@@ -148,6 +154,13 @@
 
   private async Task SubConGenInfoDialog(SubConGeneralInformationModel subcongeninfo, Enums.ActionMode action)
   {
+    Enums.AISModuleFunctions function = action == Enums.ActionMode.Update? Enums.AISModuleFunctions.Edit : Enums.AISModuleFunctions.Add;
+    if (!Common.Privileges.isPrivilegeFunction(function))
+    {
+        string act = action == Enums.ActionMode.Update ? "edit" : "add";
+        Extensions.ShowAlert(String.Format("Account has been restricted to {0} subcon general information.", act), Variant.Filled, SnackbarService, Severity.Error);
+        return;
+    }
     var parameters = new DialogParameters();
     GlobalClass.subConGeneralInformation = subcongeninfo;
     string dialogTitle = GlobalClass.subConGeneralInformation.Id != 0 ? "Edit SubCon General Info" : "Add SubCon General Info";
@@ -163,16 +176,16 @@
     if (!resultDialog.Canceled)
     {
       if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Create)
-        Extensions.ShowAlert("Subcontractor General Info successfully added.", Variant.Filled,snackbarService,Severity.Success);
+        Extensions.ShowAlert("Subcontractor General Info successfully saved.", Variant.Filled,SnackbarService,Severity.Success);
       else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Update)
-        Extensions.ShowAlert("Subcontractor General Info succefully updated.", Variant.Filled,snackbarService,Severity.Info);
+        Extensions.ShowAlert("Subcontractor General Info succefully updated.", Variant.Filled,SnackbarService,Severity.Info);
       else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Deactivate)
-        Extensions.ShowAlert("Subcontractor General has been deactivated.", Variant.Filled,snackbarService,Severity.Warning);
+        Extensions.ShowAlert("Subcontractor General has been deactivated.", Variant.Filled,SnackbarService,Severity.Warning);
       GlobalClassList.subConGeneralInformations = GlobalClassList.subConGeneralInformations.Where(x => x.IsActive == true).ToList();
     } else if (resultDialog.Canceled)
-      Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
+      Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
   }
-  async Task OpenEditDialog(SubConGeneralInformationModel genInfo)
+  private async Task OpenEditDialog(SubConGeneralInformationModel genInfo)
   {
     GlobalClass.subConGeneralInformation = genInfo;
     Console.WriteLine(genInfo.IsActive);

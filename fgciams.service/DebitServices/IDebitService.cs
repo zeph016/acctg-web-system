@@ -9,5 +9,6 @@ namespace fgciams.service.DebitServices
         Task<DebitModel> SaveDebit(DebitModel debit, string token);
         Task<DebitModel> UpdateDebit(DebitModel debit, string token);
         Task<List<DebitAuditTrailModel>> DebitAuditTrail(long ID, string token);
+        Task<int> DebitListRowCount(FilterParameter param, string token);
     }
 }

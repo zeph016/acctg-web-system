@@ -2,24 +2,25 @@
 @page "/billing/list/{controlNumber}"
 
 @inject IGlobalService globalService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject IJSRuntime JSRuntime
 @inject IDialogService dialogService
 @inject ICollectionService collectionService
 @inject NavigationManager navigationManager
+@inject IAccessLevelService accessLevelService
 
 <div class='page-cont'>
     <div class='drawer-right-min'>
-        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
-            <FilterComponent OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
-                FilterClick='FilterTable' ResetTableClick='ReloadTable' filterParameter='filterParameter'
-                contentVisible='openSideFilter' moduleName="collection-list-billing"/>
+        <MudDrawer Class='pa-1' Open='false' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+                <MudTooltip Text='Filter' Arrow Placement='Placement.Left'>
+                    <MudIconButton OnClick='(() => openFilter = !openFilter)' Icon='@Icons.Material.Filled.FilterList' arial-label='Close Filter' Size='Size.Small' />
+                </MudTooltip>
         </MudDrawer>
     </div>
     <MudContainer Class='py-2 pl-2 pr-10  table-toolbar-custom1' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
         @if(!dataFetched)
         {
-            
+            <SkeletonPageList />
         }
         else
         {
@@ -37,7 +38,7 @@
                         <MudIconButton Class='@(isLoading ? "mudbtnico-rotate":"")' OnClick='ReloadTable' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" 
                             Color='@(isLoading ? Color.Info : Color.Default)'/>
                     </MudTooltip>
-                    <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' ActivationEvent="MouseEvent.MouseOver"
+                    <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' 
                         TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
                         <MudMenuItem OnClick='(() => OpenCollectionDialog(new CollectionModel(),Enums.ActionMode.Create))'>
                             <div class='d-flex align-center gap-2 '>
@@ -45,13 +46,24 @@
                                 <MudText Typo='Typo.body2'>Add</MudText>
                             </div>
                         </MudMenuItem>
-                        <MudMenuItem OnClick="(() => openSideFilter = !openSideFilter)"  >
+                        <MudMenuItem OnClick="(() => openFilter = !openFilter)"  >
                             <div class='d-flex align-center gap-2 '>
                                 <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
                                 <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
                             </div>
                         </MudMenuItem>
+                        <MudMenuItem OnClick='(() => navigationManager.NavigateTo("billing/report") )'  >
+                            <div class='d-flex align-center gap-2 '>
+                                <MudIcon Icon='@Icons.Material.Filled.PictureAsPdf' Size='Size.Small' Color='Color.Dark' />
+                                <MudText Typo='Typo.body2' Color='Color.Dark'>Report</MudText>
+                            </div>
+                        </MudMenuItem>
                     </MudMenu>
+                    @if(openFilter)
+                    {
+                        <PopoverFilterMainComponent IsOpen='openFilter' CloseFilter='(() => openFilter = !openFilter)' IsMainFilter='true' IsModuleList='true'
+                            ModuleName='collection-list-billing' ApplyFilter='FilterTable' ResetTableData='ReloadTable'/>
+                    }
                 </ToolBarContent>
                 <ColGroup>
                     <col style="width:1%" />
@@ -61,6 +73,7 @@
                     <col style="width:1%" />
                     <col style="width:1%"/>
                     <col style='width:50px' />
+                    <col style="width:1%" />
                     <col style="width:110px" />
                     <col style="width:50px" />
                 </ColGroup>
@@ -92,6 +105,7 @@
                     <MudTh Class='customheader-6 text-center'>Expense</MudTh>
                     <MudTh Class='customheader-6 text-center'>Category</MudTh>
                     <MudTh Class='customheader-6'>Misc</MudTh>
+                    <MudTh Class='@(isPinnedAmt ? "th-sticky-action customheader-6 text-right":"customheader-6 text-right")'>Percentage</MudTh>
                     <MudTh Class='@(isPinnedAmt ? "th-sticky-amt customheader-6 text-right":"customheader-6 text-right")'>
                         <MudTooltip Text='Pin amount column' Arrow Placement='Placement.Top'>
                             <MudIconButton Class='ico-15x15' OnClick='(() => isPinnedAmt = !isPinnedAmt)' Color='@(isPinnedAmt ? Color.Info:Color.Dark)' 
@@ -107,7 +121,7 @@
                 <RowTemplate>
                     <MudTd Class='@(isPinnedCtrlNo ? "col-sticky-left":"")' DataLabel='Control No.'>
                         <div class='d-flex align-center justify-center'>
-                            <MudChip Class='mudchip-tbl' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, snackbarService, JSRuntime))' Variant='Variant.Outlined'
+                            <MudChip Class='mudchip-tbl' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, SnackbarService, JSRuntime))' Variant='Variant.Outlined'
                                 Color='Color.Error' Size='Size.Small'>
                                 @(!string.IsNullOrWhiteSpace(context.ControlNumber) ? context.ControlNumber : "None")
                             </MudChip>
@@ -146,6 +160,7 @@
                             Icon="@Icons.Material.Filled.ExpandMore" Color="@Color.Tertiary" Title="Expand "
                             ToggledIcon="@Icons.Material.Filled.ExpandLess" ToggledColor="@Color.Info" ToggledTitle="Collapse"/>
                     </MudTd>
+                    <MudTh Class='customheader-6'>@context.Percentage.ToString("N2") %</MudTh>
                     <MudTd Class='@(isPinnedAmt ? "col-sticky-amt":"")' DataLabel='Amount'>
                         <div class='tooltipw100'>
                             <MudTooltip Class='flex-1' Text='@(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + context.NetAmount.ToString("N2"))' 
@@ -163,26 +178,14 @@
                         </div>
                     </MudTd>
                     <MudTd Class='@(isPinnedAmt ? "col-sticky-action text-center":"text-center")' DataLabel='Actions'>
-                        <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
+                        <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
                             TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
-                            <MudMenuItem OnClick='(() => OpenCollectionDialog(context,Enums.ActionMode.Update))'>
-                                <div class='d-flex align-center gap-2 '>
-                                    <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small'/>
-                                    <MudText Typo='Typo.body2'>Edit</MudText>
-                                </div>
-                            </MudMenuItem>
-                            <MudMenuItem OnClick="(() => CancelDeposit(context))">
-                                <div class='d-flex align-center gap-2'>
-                                    <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small' Color='Color.Dark' />
-                                    <MudText Typo='Typo.body2' Color='Color.Dark'>Cancel</MudText>
-                                </div>
-                            </MudMenuItem>
-                            <MudMenuItem OnClick="(() => GoToAuditTrail(context))">
-                                <div class='d-flex align-center gap-2 '>
-                                    <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' />
-                                    <MudText Typo='Typo.body2'>Audit Trail</MudText>
-                                </div>
-                            </MudMenuItem>
+                            <BillingMenuComponent
+                                ModuleName='billing'
+                                OpenDialogClick='((Enums.ActionMode mode) => OpenCollectionDialog(context,mode))'
+                                CancelClick='(() => CancelDeposit(context))'
+                                AuditTrailClick='(() => GoToAuditTrail(context))'
+                            />
                         </MudMenu>
                     </MudTd>
                 </RowTemplate>
@@ -235,7 +238,7 @@
 @code
 {
     [Parameter] public string controlNumber { get; set; } = string.Empty;
-    private bool dataFetched, isLoading = true, toggleSidebar = true, openSideFilter, isPinnedCtrlNo = true, isPinnedAmt = true;
+    private bool dataFetched, isLoading = true, toggleSidebar = true, openFilter, isPinnedCtrlNo = true, isPinnedAmt = true;
     private int totalItems;
     private string searchTerm = string.Empty;
     private Project currentProject = new();
@@ -269,10 +272,19 @@
             filterParameter.ControlNumber = controlNumber;
         }
         filterParameter.IsBilling = true;
-        StateHasChanged();
+        await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.BillingList);
     }
     private async Task OpenCollectionDialog(CollectionModel collection, Enums.ActionMode actionMode)
     {
+        if(collection.Id == 0)
+        {
+            if (!Common.Privileges.IsPrivilegeModule(Enums.AISModules.BillingEntry))
+            {
+                string action = actionMode == Enums.ActionMode.Update ? "edit" : "create";
+                Extensions.ShowAlert(String.Format("Account has been restricted to {0} billing.", action), Variant.Filled, SnackbarService, Severity.Error);
+                return;
+            }
+        }
         var parameters = new DialogParameters();
         GlobalClass.collection = collection;
         string dialogTitle = GlobalClass.collection.Id != 0 ? "Edit Billing" : "Add Billing";
@@ -282,10 +294,10 @@
         parameters.Add("dialogTitle", dialogTitle);
         parameters.Add("buttonText", buttonText);
         parameters.Add("currentAction", actionMode);
-        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.Small, FullWidth = true, NoHeader = false, DisableBackdropClick = false };
-        var resultDialog = await dialogService.Show<Shared.Dialogs.CollectionDialogs.BillingDialiog>("", parameters, options).Result;
+        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.Large, FullWidth = true, NoHeader = false, DisableBackdropClick = false };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.CollectionDialogs.BillingDialog>("", parameters, options).Result;
         if (resultDialog.Canceled)
-            Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
+            Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
         await tableVariable.ReloadServerData();
     }
 
@@ -359,7 +371,7 @@
             collection.Activity = "Cancel Billing";
             collection.IsVoid = true;
             var collectionUpdate = await collectionService.UpdateCollection(collection,GlobalClass.token);
-            Extensions.ShowAlert("Billing successfully cancelled.",Variant.Filled,snackbarService,Severity.Success);
+            Extensions.ShowAlert("Billing Cancelled.",Variant.Filled,SnackbarService,Severity.Normal);
         }
         await tableVariable.ReloadServerData();
     }

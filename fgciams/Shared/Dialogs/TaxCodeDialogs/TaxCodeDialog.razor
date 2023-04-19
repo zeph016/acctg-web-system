@@ -1,5 +1,5 @@
 @inject ITaxCodeService taxCodeService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject IDialogService dialogService
 
 <MudDialog Class="customdialog2">
@@ -78,13 +78,18 @@
   {
     if (!GlobalClass.taxCode.IsActive)
     {
+      if(!Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Delete))
+      {
+          Extensions.ShowAlert("Account has been restricted to deactivate tax code.", Variant.Filled, SnackbarService, Severity.Error);
+          return;
+      }
       currentAction = Enums.ActionMode.Deactivate;
       await PromptMessage();
     }
     else if (ValidateEntries())
       await PromptMessage();
     else
-      Extensions.ShowAlert("Cannot create Tax Code, Incomplete fields.__arg3", Variant.Filled, snackbarService, Severity.Error);
+      Extensions.ShowAlert("Cannot create Tax Code, Incomplete fields.__arg3", Variant.Filled, SnackbarService, Severity.Error);
   }
   private bool ValidateEntries()
   {
@@ -94,8 +99,8 @@
       valid = false;
     } else reqDesc = false;
     if(GlobalClass.taxCode.TaxRate == 0) {
-      reqTax = true;
-      valid = false;
+      reqTax = false;
+      valid = true;
     } else reqTax = false;
     if(string.IsNullOrEmpty(GlobalClass.taxCode.ATCInd)) {
       reqATCInd = true;

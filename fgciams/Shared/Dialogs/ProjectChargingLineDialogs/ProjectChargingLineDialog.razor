@@ -1,5 +1,5 @@
  @inject IProjectChargingLineService projectChargingLineService
- @inject ISnackbar snackbar
+ @inject ISnackbar SnackbarService
  @inject IDialogService dialogService
 
  <MudDialog Class="customdialog2">
@@ -77,6 +77,11 @@
   {
     if(!GlobalClass.projectChargingLine.IsActive)
     {
+      if(!Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Delete))
+      {
+        Extensions.ShowAlert("Account has been restricted to deactivate Project Charging Line.", Variant.Filled, SnackbarService, Severity.Error);
+        return;
+      }
       currentAction = Enums.ActionMode.Deactivate;
       await PromptMessage();
     }
@@ -85,7 +90,7 @@
     else
       Extensions.ShowAlert("Cannot " 
         + (currentAction == Enums.ActionMode.Create ? "add" : (currentAction == Enums.ActionMode.Update ? "update" : "")) 
-        + " Project Charging Line, Incomplete fields.", Variant.Filled, snackbar, Severity.Error);
+        + " Project Charging Line, Incomplete fields.", Variant.Filled, SnackbarService, Severity.Error);
   }
   private bool ValidateEntries()
   {
@@ -123,7 +128,7 @@
               await GlobalVariable.AMSHubConnection.InvokeAsync("SaveProjectChargingLine",GlobalClass.projectChargingLine);
         }
         catch (SystemException ex) {
-          Extensions.ShowAlert(ex.Message, Variant.Filled, snackbar, Severity.Error);
+          Extensions.ShowAlert(ex.Message, Variant.Filled, SnackbarService, Severity.Error);
         }
       }
       else if (currentAction == Enums.ActionMode.Deactivate)

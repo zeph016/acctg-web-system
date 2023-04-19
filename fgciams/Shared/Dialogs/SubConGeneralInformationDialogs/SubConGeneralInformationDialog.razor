@@ -1,7 +1,7 @@
 @inject ISubConGeneralInformationService subConGeneralInformationService
 @inject ISubContractorPositionService subConPositionService
 @inject ISubContractorCompanyService subConCompanyService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject IDialogService dialogService
 @inject IGlobalService globalService
 
@@ -96,7 +96,7 @@
               </MudItem>
               <MudItem xs='6'>
                 <MudText Class='font12 color-sec'>Position</MudText>
-                <BlazoredTypeahead SearchMethod=LoadPosition @bind-Value='position' Debounce="500" placeholder='Position'>
+                <BlazoredTypeahead SearchMethod=LoadPosition MinimumLength='3' @bind-Value='position' Debounce="300" placeholder='Position'>
                   <SelectedTemplate>
                     @if(context.Id != 0) {
                       @context.PositionName
@@ -115,7 +115,7 @@
               </MudItem>
               <MudItem xs='6'>
                 <MudText Class='font12 color-sec'>Company</MudText>
-                <BlazoredTypeahead SearchMethod=LoadCompany @bind-Value='company' Debounce="500" placeholder='Company'>
+                <BlazoredTypeahead SearchMethod=LoadCompany @bind-Value='company' Debounce="300" placeholder='Company'>
                   <SelectedTemplate>
                     @if(context.Id != 0){
                       @context.CompanyName
@@ -151,7 +151,7 @@
                 <MudItem xs=8>
                   <MudText Class='font12'>Sub Con Project</MudText>
                   <BlazoredTypeahead SearchMethod=SearchSubconProject ValueChanged="((Project subProj)=>SelectedSubconProject(subProj))" ValueExpression='(()=>subconProject)' Value="subconProject"
-                    Context='project' Debounce="500" DisableClear placeholder='SUB CON Project'>
+                    Context='project' Debounce="300" MinimumLength='3' DisableClear placeholder='SUB CON Project'>
                     <SelectedTemplate>
                         @if (project.ProjectId != 0) {
                             <MudText Class='font12'>@project.ProjectName</MudText>
@@ -179,7 +179,7 @@
                 <MudItem xs=8>
                   <MudText Class='font12'>Scope of Work</MudText>
                   <BlazoredTypeahead SearchMethod=LoadSOW ValueChanged="((ScopeOfWorkModel SOW)=>SelectedScopeOfWork(SOW))" ValueExpression='(()=>scopeOfWork)' Value="scopeOfWork"
-                      Context='sow' Debounce="500" DisableClear placeholder='Scope of Work'>
+                      Context='sow' Debounce="300" DisableClear placeholder='Scope of Work'>
                       <SelectedTemplate>
                           @if (sow.Id != 0) {
                               <MudText Class='font12'>@sow.ScopeName</MudText>
@@ -230,7 +230,7 @@
                       </div>
                     </MudTd>
                     <MudTd Class='text-center pa-2'>
-                        <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                        <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
                         TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
                             <MudMenuItem OnClick="(()=>EditSubCon(context))">
                                 <div class='d-flex align-center gap-2'>
@@ -260,6 +260,7 @@
      {
        <MudCheckBox @bind-Checked='@GlobalClass.subConGeneralInformation.IsActive' Label='Active' Size='Size.Small' Color='Color.Dark' />
      }
+     <MudCheckBox @bind-Checked='@GlobalClass.subConGeneralInformation.IsDefaultCompany' Label='Default Company' Size='Size.Small' Color='Color.Primary' />
      </div>      
     <MudSpacer />
     <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text' Size='Size.Small' DisableElevation>Cancel</MudButton>
@@ -313,6 +314,11 @@
   {
     if (!GlobalClass.subConGeneralInformation.IsActive)
     {
+      if (!Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Delete))
+      {
+        Extensions.ShowAlert("Account has been restricted to deactivate subcon general information.", Variant.Filled, SnackbarService,Severity.Error);
+        return;
+      }
       currentAction = Enums.ActionMode.Deactivate;
       await PromptMessage();
     }
@@ -321,7 +327,7 @@
     else 
       Extensions.ShowAlert("Cannot " 
       + (currentAction == Enums.ActionMode.Create ? "add" : (currentAction == Enums.ActionMode.Update ? "update" : "")) 
-      + " Sub Con general info, Incomplete fields.", Variant.Filled, snackbarService, Severity.Error);
+      + " Sub Con general info, Incomplete fields.", Variant.Filled, SnackbarService, Severity.Error);
   }
 
   private void MapExistingPosition()
@@ -416,7 +422,7 @@
           MudDialog.Close(DialogResult.Ok(currentAction));
         }
         catch (System.Exception ex) {
-          Extensions.ShowAlert(ex.Message, Variant.Filled, snackbarService, Severity.Error);
+          Extensions.ShowAlert(ex.Message, Variant.Filled, SnackbarService, Severity.Error);
         }
       }
       else if (currentAction == Enums.ActionMode.Deactivate)
@@ -464,10 +470,10 @@
       if(subConAction == Enums.ActionMode.Create)
       {
         await subConGeneralInformationService.AddSubConProjects(GlobalClass.subContractProject,GlobalClass.token);
-        Extensions.ShowAlert("Sub contractor project successfully saved.",Variant.Filled,snackbarService,Severity.Success);
+        Extensions.ShowAlert("Sub contractor project successfully saved.",Variant.Filled,SnackbarService,Severity.Success);
       } else {
         await subConGeneralInformationService.UpdateSubConProjects(GlobalClass.subContractProject,GlobalClass.token);
-        Extensions.ShowAlert("Sub contractor project successfully updated.",Variant.Filled,snackbarService,Severity.Success);
+        Extensions.ShowAlert("Sub contractor project successfully updated.",Variant.Filled,SnackbarService,Severity.Success);
       }
             Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(GlobalClass.subContractProject,Newtonsoft.Json.Formatting.Indented));
       await LoadSubconProjects();
@@ -486,23 +492,28 @@
   {
     GlobalClass.subContractProject = subconProj;
     subConAction = Enums.ActionMode.Update;
-    scopeOfWork =  (await LoadSOW(subconProj.ScopeOfWork)).FirstOrDefault()?? new();
+    scopeOfWork =  (await LoadSOWId(subconProj.ScopeOfWorkId)).FirstOrDefault()?? new();
     subconProject = (await SearchSubconProject(subconProj.ProjectName)).FirstOrDefault()?? new();
+  }
+  async Task<IEnumerable<ScopeOfWorkModel>> LoadSOWId(long id)
+  {
+    var SOW = await Task.Run(() => GlobalClassList.scopeOfWork.Where(x => x.Id == id));
+    return SOW;
   }
   private bool isValidSubConProject()
   {
     if(GlobalClass.subContractProject.ProjectId == 0) {
-      Extensions.ShowAlert("Project is required.",Variant.Filled,snackbarService,Severity.Error);
+      Extensions.ShowAlert("Project is required.",Variant.Filled,SnackbarService,Severity.Error);
       return false;
     }
     if(GlobalClass.subContractProject.ScopeOfWorkId == 0)
     {
-      Extensions.ShowAlert("Scope of Work is required.",Variant.Filled,snackbarService,Severity.Error);
+      Extensions.ShowAlert("Scope of Work is required.",Variant.Filled,SnackbarService,Severity.Error);
       return false;
     }
     if(GlobalClass.subContractProject.ContractAmount <= 0)
     {
-      Extensions.ShowAlert("Amuount should be greater than zero.",Variant.Filled,snackbarService,Severity.Error);
+      Extensions.ShowAlert("Amuount should be greater than zero.",Variant.Filled,SnackbarService,Severity.Error);
       return false;
     }
     return true;
@@ -531,7 +542,7 @@
       if (!resultDialog.Canceled) 
       {   
         await subConGeneralInformationService.UpdateSubConProjects(sub,GlobalClass.token);
-        Extensions.ShowAlert("Sub contractor successfully removed.",Variant.Filled,snackbarService,Severity.Success);
+        Extensions.ShowAlert("Sub contractor removed.",Variant.Filled,SnackbarService,Severity.Normal);
       }
       await LoadSubconProjects();
   }

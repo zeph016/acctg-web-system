@@ -3,30 +3,27 @@
 @inject ICheckService checkService
 @inject NavigationManager navigationManager
 @inject IDialogService dialogService
-@inject ISnackbar snackBarService
+@inject ISnackbar SnackbarService
+@inject IAccessLevelService accessLevelService
 
 <div class='page-cont'>
     <div class='drawer-right-min'>
-        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
-            <FilterComponent OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
-                FilterClick='FilterTable' ResetTableClick='ReloadTable'
-                contentVisible='openSideFilter' moduleName="check-list" />
-          
+        <MudDrawer Class='pa-1' Open='false' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <MudTooltip Text='Filter' Arrow Placement='Placement.Left'>
+                <MudIconButton OnClick='(() => openFilter = !openFilter)' Icon='@Icons.Material.Filled.FilterList' arial-label='Close Filter' Size='Size.Small' />
+            </MudTooltip>
         </MudDrawer>
     </div>
     <MudContainer Class='py-2 pl-2 pr-10  table-toolbar-custom1' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
         @if(!dataFetched)
         {
-            <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
-                <MudSkeleton SkeletonType='SkeletonType.Text' Height='100px' Animation='Animation.Wave' />
-                <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='71vh' Animation='Animation.Wave' />
-            </MudPaper>
+          <SkeletonPageList />
         }
         else
         {
             <MudTable Class='table-style-1 ' ServerData='new Func<TableState, Task<TableData<CheckModel>>>(LoadCheck)'
                 Breakpoint="Breakpoint.Sm" Hover FixedHeader FixedFooter Bordered Dense Loading='isLoading'
-                RowsPerPage='15' @ref='tableVariable'>
+                @ref='tableVariable'>
                 <ToolBarContent>
                     <MudText Typo='Typo.caption'>
                         @GlobalClassList.listOfChecks.Count() 
@@ -38,21 +35,26 @@
                         <MudIconButton Class='@(isLoading ? "mudbtnico-rotate":"")' OnClick='ReloadTable' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" 
                             Color='@(isLoading ? Color.Info : Color.Default)'/>
                         </MudTooltip>
-                    <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' ActivationEvent="MouseEvent.MouseOver"
+                    <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' 
                         TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
                          <MudMenuItem OnClick='(() => AddCheck())'>
                             <div class='d-flex align-center gap-2 '>
                                 <MudIcon Icon='@Icons.Material.Filled.Add' Size='Size.Small' Color='Color.Dark' />
-                                <MudText Typo='Typo.body2' Color='Color.Dark'>Create Check</MudText>
+                                <MudText Typo='Typo.body2' Color='Color.Dark'>New Check</MudText>
                             </div>
                         </MudMenuItem>
-                        <MudMenuItem OnClick="(() => openSideFilter = !openSideFilter)"  >
+                        <MudMenuItem OnClick="(() => openFilter = !openFilter)"  >
                             <div class='d-flex align-center gap-2 '>
                                 <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
                                 <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
                             </div>
                         </MudMenuItem>
                     </MudMenu>
+                    @if(openFilter)
+                    {
+                        <PopoverFilterMainComponent IsOpen='openFilter' CloseFilter='(() => openFilter = !openFilter)' IsMainFilter='true' IsModuleList='true'
+                            ModuleName='check-list' ApplyFilter='FilterTable' ResetTableData='ReloadTable'/>
+                    }
                 </ToolBarContent>
                 <ColGroup>
                     <col style='width:1%;' />
@@ -61,8 +63,9 @@
                     <col />
                     <col style='width:1%;' />
                     <col style='width:1%;' />
-                    <col style='width:115px' />
-                    <col style="width:50px" />
+                    <col style='width:1%;' />
+                    <col style='width: 110px' />
+                    <col style='width: 50px' />
                 </ColGroup>
                 <HeaderContent>
                     <MudTh Class='customheader-6'>
@@ -102,7 +105,7 @@
                             Amount
                         </MudTableSortLabel>
                     </MudTh>
-                    <MudTh Class='@(isPinnedAmt ? "th-sticky-action customheader-6":"customheader-6")'>Actions</MudTh>
+                    <MudTh Class='@(isPinnedAmt ? "th-sticky-action customheader-6 text-center":"customheader-6 text-center")'>Actions</MudTh>
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd DataLabel='Control Number'>
@@ -161,81 +164,35 @@
                         </div>
                     </MudTd>
                     <MudTd Class='@(isPinnedAmt ? "col-sticky-amt":"")' DataLabel='Amount'>
-                        <div class='tooltipw100'>
+                        <div class='checklist-amt-container'>
+                            <small class='@(context.Amount > 0 ? "font-bold color-green":"font-bold color-red")'>
+                                @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                            </small>
+                            <MudSpacer />
                             <MudTooltip Class='flex-1' Text='@(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + context.Amount.ToString("N2"))' 
                                 Arrow Placement='Placement.Top' Color='Color.Success'>
-                                <div class='amount-container'>
-                                    <small class='@(context.Amount > 0 ? "font-bold color-green":"font-bold color-red")'>
-                                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
-                                    </small>
-                                    <MudSpacer />
-                                    <small class='@(context.Amount > 0 ? "txt-green":"txt-red")'>
-                                        @context.Amount.ToString("N2")
-                                    </small>
-                                </div>
+                                <small class='@(context.Amount > 0 ? "txt-green":"txt-red")'>
+                                    @context.Amount.ToString("N2")
+                                </small>
                             </MudTooltip>
                         </div>
                     </MudTd>
                     <MudTd Class='@(isPinnedAmt ? "col-sticky-action text-center":"text-center")' DataLabel='Actions'>
-                        <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent="MouseEvent.MouseOver"
+                        <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' 
                             TransformOrigin='Origin.TopRight' Dense Size='Size.Small'>
-                            @if(GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.AccountingAdmin || 
-                                GlobalClass.currentUserAccount.AccessLevel == Enums.AccountingAccessLevel.Administrator)
-                            {
-                                if(context.AccountingStatusId != AccountingStatusId(Enums.AccountingStatusEnumCategory.CC))
-                                {
-                                    @if(context.AccountingStatusId == AccountingStatusId(Enums.AccountingStatusEnumCategory.CI))
-                                    {
-                                    <MudMenuItem OnClick="(()=>EditCheck(context))">
-                                        <div class='d-flex align-center gap-2 '>
-                                            <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' Color='Color.Dark' />
-                                            <MudText Typo='Typo.body2' Color='Color.Dark'>Edit</MudText>
-                                        </div>
-                                    </MudMenuItem>
-                                    }
-                                    @if(context.AccountingStatusId != AccountingStatusId(Enums.AccountingStatusEnumCategory.CCLRD)  && 
-                                    context.AccountingStatusId != AccountingStatusId(Enums.AccountingStatusEnumCategory.CR))
-                                    {
-                                        <MudMenuItem OnClick="(() => UpdateStatus(context,Enums.AccountingStatusEnumCategory.CR,Enums.ActionMode.Release))">
-                                            <div class='d-flex align-center gap-2 '>
-                                                <MudIcon Icon='fa-solid fa-check-double' Size='Size.Small' Color='Color.Dark'/>
-                                                <MudText Typo='Typo.body2' Color='Color.Dark'>Release</MudText>
-                                            </div>
-                                        </MudMenuItem>
-                                    }
-                                    @if(context.AccountingStatusId != AccountingStatusId(Enums.AccountingStatusEnumCategory.CR) && 
-                                    context.AccountingStatusId == AccountingStatusId(Enums.AccountingStatusEnumCategory.CCLRD))
-                                    {
-                                        <MudMenuItem OnClick="(()=>UpdateStatus(context,Enums.AccountingStatusEnumCategory.CCLRD,Enums.ActionMode.Clear))">
-                                            <div class='d-flex align-center gap-2 '>
-                                                <MudIcon Icon='@Icons.Material.Filled.ClearAll' Size='Size.Small' Color='Color.Dark' />
-                                                <MudText Typo='Typo.body2' Color='Color.Dark'>Clear Check</MudText>
-                                            </div>
-                                        </MudMenuItem>
-                                    }
-                                    @if(context.AccountingStatusId != AccountingStatusId(Enums.AccountingStatusEnumCategory.CR))
-                                    {
-                                    <MudMenuItem OnClick="(() => UpdateStatus(context,Enums.AccountingStatusEnumCategory.CC,Enums.ActionMode.Cancel))">
-                                        <div class='d-flex align-center gap-2 '>
-                                            <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small' Color='Color.Dark' />
-                                            <MudText Typo='Typo.body2' Color='Color.Dark'>Cancel</MudText>
-                                        </div>
-                                    </MudMenuItem>
-                                    }
-                                }
-                            }
-                            <MudMenuItem OnClick="(() => GoToAuditTrail(context))">
-                                <div class='d-flex align-center gap-2 '>
-                                    <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' Color='Color.Dark'/>
-                                    <MudText Typo='Typo.body2' Color='Color.Dark'>Audit Trail</MudText>
-                                </div>
-                            </MudMenuItem>
-                            <MudMenuItem OnClick="(() => context.showReport = ShowReport(context.showReport,context))">
-                                <div class='d-flex align-center gap-2 '>
-                                    <MudIcon Icon='@Icons.Material.Filled.PictureAsPdf' Size='Size.Small' Color='Color.Dark'/>
-                                    <MudText Typo='Typo.body2' Color='Color.Dark'>Show Report</MudText>
-                                </div>
-                            </MudMenuItem>
+                            <CheckMenuComponent
+                                ModuleName="check"
+                                CheckModel="context"
+                                PreviewClick="(() => PreviewCheck(context))"
+                                EditCheckClick="(()=>EditCheck(context))"
+                                AccountingStatusCC ="AccountingStatusId(Enums.AccountingStatusEnumCategory.CC)"
+                                AccountingStatusCI="AccountingStatusId(Enums.AccountingStatusEnumCategory.CI)"
+                                AccountingStatusCCLRD="AccountingStatusId(Enums.AccountingStatusEnumCategory.CCLRD)"
+                                AccountingStatusCR="AccountingStatusId(Enums.AccountingStatusEnumCategory.CR)"
+                                UpdateStatusCheckClick="((args) => UpdateStatus(context,(Enums.AccountingStatusEnumCategory)args.Item1, (Enums.ActionMode)args.Item2))"
+                                AuditTrailClick="(()=> GoToAuditTrail(context))"
+                                ShowReportClick="(() => context.showReport = ShowReport(context.showReport,context))"
+                            />
                         </MudMenu>
                     </MudTd>
                 </RowTemplate>
@@ -244,35 +201,40 @@
                 </NoRecordsContent>
                 <ChildRowContent>
                     <MudTr>
-                        <td colspan="6">
-                            <div class='transition-05s-ease overflow-hidden' style='@(context.showReport || context.isShowChild ? "max-height:700px" : "max-height:0px")'> 
-                                <div class='d-flex align-center pa-2 bgc-f2f2f2'>
-                                    <MudSpacer />
-                                    <MudButton Class='btn-ios-d font12' OnClick='(() => context.showReport = ShowReport(context.showReport, context))' EndIcon="@Icons.Rounded.Close" Size='Size.Small' >
-                                        Close Report
-                                    </MudButton>
-                                </div>
-                                <div class='d-flex align-stretch justify-center default-report-container'>
-                                    @if(context.showReport)
-                                    {
-                                        @if (string.IsNullOrWhiteSpace(PDFContent))
-                                        {
-                                            <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
-                                                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-                                            </MudOverlay>
-                                        }
-                                        else
-                                        {
-                                            <iframe src='@PDFContent' />
-                                        }
-                                    }
+                        <td colspan="9">
+                            <div class='rpt-container-trtd @(context.showReport ? "max-height4kpx":"max-height0px")'>
+                                <div class='rpt-container-listview'>
+                                    <MudCard Class='rpt-container-listview__document-cont px-2' Elevation='1'>
+                                        <div class='rpt-container-listview__iframe-cont'>
+                                            @if (context.showReport)
+                                            {
+                                                @if (string.IsNullOrWhiteSpace(PDFContent))
+                                                {
+                                                    <MudProgressCircular Color="Color.Primary" Indeterminate Size='Size.Large' />
+                                                }
+                                                else
+                                                {
+                                                    <iframe class='rpt-container-listview__iframe-scaled' src='@PDFContent' />
+                                                }
+                                                <ReportControls 
+                                                    IsCloseOnly='true'
+                                                    ConfirmStr='Close Report'
+                                                    BackEventClick='(() => context.showReport = !context.showReport)'/>
+                                            }
+                                        </div>
+                                    </MudCard>
                                 </div>
                             </div>
                         </td>
                     </MudTr>
                 </ChildRowContent>
                 <PagerContent>
-                    <MudTablePager PageSizeOptions='@GlobalVariable.pageSize' />
+                    <FooterPaginationComponent
+                        FilterParameter='filterParameter'
+                        NextAndPreviousPage='( async (args)=> await NextAndPreviousPage((bool) args.Item1, (bool) args.Item2))'
+                        OnPageSizeChanged='( async (int s)=> await PageSizeChanged(s) )'
+                        TotalRow='TotalRow'                     />
+                    @* <MudTablePager PageSizeOptions='@GlobalVariable.pageSize' /> *@
                 </PagerContent>
             </MudTable>
         }
@@ -281,7 +243,7 @@
 
 @code
 {
-    private bool dataFetched, openSideFilter, isLoading = true, isPinnedCtrlNo = true, isPinnedAmt = true;
+    private bool dataFetched, openFilter, isLoading = true, isPinnedCtrlNo = true, isPinnedAmt = true;
     private string searchTerm = string.Empty;
     private string PDFContent  = default!;
     private IEnumerable<CheckModel>? pageData;
@@ -294,12 +256,14 @@
     private IEnumerable<AccountingStatusModel> hasAccountingStatus {get; set;} = new HashSet<AccountingStatusModel>();
     private BankModel selectedBanks = new();
     private IEnumerable<BankModel> hasBanks {get; set;} = new HashSet<BankModel>();
+    private int TotalRow = 0;
     protected override async Task OnInitializedAsync()
     {
         GlobalClass.pageTitle = "Check List";
         while (GlobalClass.currentUserAccount == null || GlobalClassList.listOfChecks == null)
             await Task.Delay(1);
-        //clearing entry after save
+        await CheckListRowCount();
+        await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.CheckWriterList);
         CheckWriter.currentActionMode = Enums.ActionMode.Create;
         SignalR();
         CompletedFetch();
@@ -308,6 +272,14 @@
     {
         dataFetched = true;
         StateHasChanged();
+    }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if(firstRender)
+        {
+            filterParameter.PageSize = 15;
+            filterParameter.PageNo = 0;
+        }
     }
     private async Task CheckReport(CheckModel check)
     {
@@ -353,14 +325,11 @@
             check.StatusId = (long?)status;
             check.StatusDate = GlobalClass.checkModel.StatusDate;
             await UpdateCheckStatus(check);
-            Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(check,Newtonsoft.Json.Formatting.Indented));
-            Extensions.ShowAlert("Check updated successfully.",Variant.Filled,snackBarService,Severity.Success);
+            Extensions.ShowAlert("Check successfully updated.",Variant.Filled,SnackbarService,Severity.Success);
         }
     }
-    private async Task UpdateCheckStatus(CheckModel check)
-    {
-        await checkService.UpdateCheckStatus(check,GlobalClass.token);
-    }
+    private async Task UpdateCheckStatus(CheckModel check) =>  await checkService.UpdateCheckStatus(check,GlobalClass.token);
+    
     public static string GetAcctgStatusColor(long acctgStatusId)
     {
         var acctgStatus = new AccountingStatusModel();
@@ -380,6 +349,7 @@
     private async Task<TableData<CheckModel>> LoadCheck(TableState tableState)
     {
         isLoading = true;
+        filterParameter.CheckCategoryId = Enums.CheckCategory.Check;
         IEnumerable<CheckModel> data = await checkService.LoadCheck(filterParameter, GlobalClass.token);
         switch (tableState.SortLabel)
         {
@@ -401,7 +371,7 @@
         }
         await Task.Delay(3);
         GlobalClassList.listOfChecks = data.ToList();
-        pageData = GlobalClassList.listOfChecks.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize).ToArray();
+        pageData = GlobalClassList.listOfChecks.Skip(tableState.Page * GlobalVariable.PageSize).Take(GlobalVariable.PageSize).ToArray();
         var total = GlobalClassList.listOfChecks.Count();
         isLoading = !isLoading;
         return new TableData<CheckModel>()
@@ -412,9 +382,14 @@
     }
     private void AddCheck()
     {
-        GlobalClass.checkModel = new();
-        navigationManager.NavigateTo("/check/create");
-        CheckWriter.currentActionMode = Enums.ActionMode.Create;
+        if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.CheckWriteEntry))
+        {
+            GlobalClass.checkModel = new();
+            navigationManager.NavigateTo("/check/create");
+            CheckWriter.currentActionMode = Enums.ActionMode.Create;
+        } else {
+            Extensions.ShowAlert("Account has been restricted to create check.", Variant.Filled, SnackbarService, Severity.Error);
+        }
     }
     private void SignalR()
     {
@@ -485,12 +460,16 @@
     private async Task FilterTable()
     {
         filterParameter = GlobalVariable.filterParameter;
-        filterParameter.AccountingAccessLevel = GlobalClass.currentUserAccount.AccessLevel;
+        filterParameter.PageSize = GlobalVariable.PageSize;
+        filterParameter.PageNo = 0;
         await tableVariable.ReloadServerData();
     }
     private async Task ReloadTable()
     {
+        await CheckListRowCount();
         filterParameter = new();
+        filterParameter.PageSize = GlobalVariable.PageSize;
+        filterParameter.PageNo = 0;
         await tableVariable.ReloadServerData();
     }
     private bool EnableClearButton()
@@ -510,12 +489,12 @@
       if(filterParameter.IsBank)
         return true;
       return false;
-  }
-  private void GoToAuditTrail(CheckModel check)
-  {
-    GlobalClass.checkModel = check;
-    navigationManager.NavigateTo("/check/trail");
-  }
+    }
+    private void GoToAuditTrail(CheckModel check)
+    {
+        GlobalClass.checkModel = check;
+        navigationManager.NavigateTo("/check/trail");
+    }
     private long AccountingStatusId(Enums.AccountingStatusEnumCategory id)
     {
         return GlobalClassList.accountingStatusList
@@ -529,5 +508,59 @@
             .Where( acctg => accountingStatusID == acctg.Id)
             .Select( acctg => acctg.StatusName)
             .FirstOrDefault()?? string.Empty;
+    }
+    private async Task NextAndPreviousPage(bool next, bool skipNext)
+    {
+      if(skipNext)
+      {
+        if(next)
+        {
+          if(GlobalVariable.LastPage != 0)
+            filterParameter.PageNo = GlobalVariable.LastPage;
+          else
+            filterParameter.PageNo++;
+        }
+        else 
+          filterParameter.PageNo = 0;
+      } else {
+        if(next)
+          filterParameter.PageNo++;
+        else 
+          filterParameter.PageNo--;
+      }
+      await tableVariable.ReloadServerData();
+    }
+    private async Task CheckListRowCount()
+    {
+      int count = TotalRow = await checkService.CheckListRowCount(new FilterParameter(){ isActive = true, PageSize = 2000000 , PageNo =0, CheckCategoryId = Enums.CheckCategory.Check },GlobalClass.token);
+      if(count % GlobalVariable.PageSize == 0)
+        GlobalVariable.LastPage = (Convert.ToInt32(Math.Floor(Convert.ToDecimal(count) / Convert.ToDecimal(GlobalVariable.PageSize)))) - 1;
+      else
+        GlobalVariable.LastPage = Convert.ToInt32(Math.Floor(Convert.ToDecimal(count) / Convert.ToDecimal(GlobalVariable.PageSize)));
+    }
+    private async Task PageSizeChanged(int s)
+    {
+      filterParameter.PageSize = GlobalVariable.PageSize = s; 
+      await tableVariable.ReloadServerData();
+      await CheckListRowCount();
+    }
+    private async Task PreviewCheck(CheckModel check)
+    {
+        var parameters = new DialogParameters()
+        {
+            { "DialogTitle", "Check" },
+            { "Check", check },
+            { "CancelText", "Close" },
+            { "IconString", @Icons.Material.Filled.CreditScore }
+        };
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = false,
+            NoHeader = true,
+            DisableBackdropClick = false
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.PreviewInformationDialogs.Check.PreviewCheckDialog>(string.Empty, parameters, options).Result;    
     }
 }

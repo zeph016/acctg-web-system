@@ -1,0 +1,286 @@
+@inject IAccessLevelService accessLevelService
+
+@if(dataFetched)
+{
+    <MudNavMenu>
+        @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.Dashboard))
+        {
+            <MudNavLink Href='/dashboard' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">
+                <MudText Class='fweight500 fontpad-t-2px' Typo='Typo.body2'>DASHBOARD</MudText>
+            </MudNavLink>    
+        }
+        @if(isAllowPettyCash())
+        {
+            <MudNavGroup Title='PETTY CASH' Icon='fa-solid fa-coins' HideExpandIcon>
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.PettyCashEntry))
+                {
+                <MudNavLink Href='/petty-cash' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck">PETTY CASH ENTRY</MudNavLink>
+                }
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.PettyCashList))
+                {
+                <MudNavLink Href='/petty-cash/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >PETTY CASH LIST</MudNavLink>
+                }
+            </MudNavGroup>
+        }
+        @if(isAllowLiquidation())
+        {
+            <MudNavGroup Title='LIQUIDATION' Icon='@Icons.Material.Filled.ReceiptLong' HideExpandIcon>
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.LiquidationEntry))
+                {
+                <MudNavLink Href='/liquidation' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck">LIQUIDATION ENTRY</MudNavLink>
+                }
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.LiquidationList))
+                {
+                <MudNavLink Href='/liquidation/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList">LIQUIDATION LIST</MudNavLink>
+                }
+            </MudNavGroup>
+        }
+        @if(isAllowRFP())
+        {
+            <MudNavGroup Title='REQUEST FOR PAYMENT' Icon='@Icons.Material.Filled.Payments' HideExpandIcon>
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.RequestForPaymentEntry))
+                {
+                <MudNavLink Href='/request-payment/create' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck">RFP ENTRY</MudNavLink>
+                }
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.RequesitForPaymentList))
+                {
+                <MudNavLink Href='/request-payment/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList">RFP LIST</MudNavLink>
+                }
+            </MudNavGroup>
+        }
+        @if(isAllowVoucher())
+        {
+            <MudNavGroup Title='VOUCHER' Icon='fa-solid fa-receipt' HideExpandIcon>
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.VoucherEntry))
+                {
+                <MudNavLink Href='/voucher' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck">VOUCHER ENTRY</MudNavLink>
+                }
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.VoucherList))
+                {
+                <MudNavLink Href='/voucher/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >VOUCHER LIST</MudNavLink>
+                }
+            </MudNavGroup>
+        }
+        @if(isAllowCheckWriter())
+        {
+            <MudNavGroup Title='CHECK WRITER' Icon='@Icons.Material.Filled.CreditScore' HideExpandIcon>
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.CheckWriteEntry))
+                {
+                <MudNavLink Href='/check/create' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck">CHECK ENTRY</MudNavLink>
+                }
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.CheckWriterList))
+                {
+                <MudNavLink Href='/check/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList">CHECK LIST</MudNavLink>
+                }
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.DirectDepositEntry))
+                {
+                <MudNavLink Href='/direct-deposit/create' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck">DIRECT DEPOSIT ENTRY</MudNavLink>
+                }
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.DirectDepositList))
+                {
+                <MudNavLink Href='/direct-deposit/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList">DIRECT DEPOSIT LIST</MudNavLink>
+                }
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.DebitEntry))
+                {
+                <MudNavLink Href='/debit/create' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck">DEBIT ENTRY</MudNavLink>
+                }
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.DebitList))
+                {
+                <MudNavLink Href='/debit/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList">DEBIT LIST</MudNavLink>
+                }
+            </MudNavGroup>
+        }
+        @if(isAllowRouting())
+        {
+            <MudNavGroup Title='VOUCHER ROUTE' Icon='fa-solid fa-route' HideExpandIcon>
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.VoucherRoute))
+                {
+                <MudNavLink Href='/voucher/route/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Route">VOUCHER ROUTING</MudNavLink>
+                }
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.BatchEntry))
+                {
+                <MudNavLink Href='/voucher/batch' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck">BATCH ENTRY</MudNavLink>
+                }
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.BatchList))
+                {
+                <MudNavLink Href='/voucher/batch/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >BATCH LIST</MudNavLink>
+                }
+            </MudNavGroup>
+        }
+        @if(isAllowCollection())
+        {
+        <MudNavGroup Title='COLLECTIONS' Icon='icon-stack1' HideExpandIcon>
+            @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.CollectionList))
+            {
+            <MudNavLink Href='/collection/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList">COLLECTIONS</MudNavLink>
+            }
+            @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.BillingList))
+            {
+            <MudNavLink Href='/billing/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList">BILLINGS</MudNavLink>
+            }
+            @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.BankDepositList))
+            {
+            <MudNavLink Href='/bank-deposit/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList">BANK DEPOSITS</MudNavLink>
+            }
+        </MudNavGroup>
+        }
+        @if(isAllowLegders())
+        {
+            <MudNavGroup Title='LEDGERS' Icon='icon-book' HideExpandIcon>
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.ARLedger))
+                {
+                <MudNavLink Href='/ar-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >AR LEDGER</MudNavLink>
+                }
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.APLedger))
+                {
+                <MudNavLink Href='/ap-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >AP LEDGER</MudNavLink>
+                }
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.BankLedger))
+                {
+                <MudNavLink Href='/bank-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >BANK LEDGER</MudNavLink>
+                }
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.SubconLedger))
+                {
+                <MudNavLink Href='/subcon-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >SUB-CON LEDGER</MudNavLink>
+                }
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.SubconARLedger))
+                {
+                <MudNavLink Href='/subcon-ar-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >SUB-CON AR LEDGER</MudNavLink>
+                }
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.SubconAPLedger))
+                {
+                <MudNavLink Href='/subcon-ap-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >SUB-CON AP LEDGER</MudNavLink>
+                }
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.ORListing))
+                {
+                <MudNavLink Href='/or/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >OR LISTING</MudNavLink>
+                }
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.ProjectLedger))
+                {
+                <MudNavLink Href='/project-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >PROJECT LEDGER</MudNavLink>
+                }
+                @if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.Journal))
+                {
+                <MudNavLink Href='/journal' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >JOURNAL</MudNavLink>
+                }
+            </MudNavGroup>
+        }
+        @if(GlobalClass.currentUserAccount.AccessLevel != Enums.AISUserAccessLevel.NonAccountingAdmin &&
+            GlobalClass.currentUserAccount.AccessLevel != Enums.AISUserAccessLevel.NonAccountingRequestor && 
+            GlobalClass.currentUserAccount.AccessLevel != Enums.AISUserAccessLevel.NonAccountingViewer)
+        {
+            <MudNavGroup Title='REPORT' Icon='@Icons.Material.Filled.PictureAsPdf' HideExpandIcon>
+                <MudNavLink Href='/reports/voucher' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck">Voucher</MudNavLink>
+                @* <MudNavLink Href='/reports/soa' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.AccountBalanceWallet">SOA</MudNavLink> *@
+            </MudNavGroup>
+        }
+    </MudNavMenu>
+    <MudSpacer />
+    @if(GlobalClass.currentUserAccount.AccessLevel == Enums.AISUserAccessLevel.Administrator)      
+    {     
+    <MudNavMenu Class='pb-2'>
+        <MudNavLink Class='pb-2' OnClick='NavigateToConfig' Match='NavLinkMatch.All' Icon='@Icons.Material.Filled.Settings'>
+            <MudText Class='fweight500 fontpad-t-2px' Typo='Typo.body2'>SETTINGS</MudText>
+        </MudNavLink>
+        @* <div class='d-flex align-center justify-center'>
+            <MudIcon Class='fa-solid fa-calculator fa-icon-center' OnClick='(() => navigationManager.NavigateTo($"/test"))'  Size='Size.Medium' />
+        </div> *@
+    </MudNavMenu>
+    }
+}
+
+@code
+{
+    [Parameter] public EventCallback NavigateTo { get; set; }
+    private bool dataFetched;
+    protected override void OnInitialized()
+    {
+        SignalRAccessLevel();
+        SignalRAllowedFunctions();
+        //await Common.Privileges.InitializedClass(accessLevelService);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        Task t = Common.Privileges.InitializedClass(accessLevelService);
+        await t;
+        if(t.Status == TaskStatus.RanToCompletion)
+            CompletedFetch();
+    }
+
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+    private async Task NavigateToConfig() => await NavigateTo.InvokeAsync();
+    
+    //For Parent Menu
+    private bool isAllowPettyCash()
+    {
+        return Common.Privileges.IsPrivilegeModule(Enums.AISModules.PettyCashEntry) || Common.Privileges.IsPrivilegeModule(Enums.AISModules.PettyCashList);
+    }
+    private bool isAllowLiquidation()
+    {
+        return Common.Privileges.IsPrivilegeModule(Enums.AISModules.LiquidationEntry) || Common.Privileges.IsPrivilegeModule(Enums.AISModules.LiquidationList);
+    }
+    private bool isAllowRFP()
+    {
+        return Common.Privileges.IsPrivilegeModule(Enums.AISModules.RequestForPaymentEntry) || Common.Privileges.IsPrivilegeModule(Enums.AISModules.RequesitForPaymentList);
+    }
+    private bool isAllowVoucher()
+    {
+        return Common.Privileges.IsPrivilegeModule(Enums.AISModules.VoucherEntry) || Common.Privileges.IsPrivilegeModule(Enums.AISModules.VoucherList);
+    }
+    private bool isAllowCheckWriter()
+    {
+        return  Common.Privileges.IsPrivilegeModule(Enums.AISModules.CheckWriteEntry) || Common.Privileges.IsPrivilegeModule(Enums.AISModules.CheckWriterList) ||
+                Common.Privileges.IsPrivilegeModule(Enums.AISModules.DirectDepositEntry) || Common.Privileges.IsPrivilegeModule(Enums.AISModules.DirectDepositList) ||
+                Common.Privileges.IsPrivilegeModule(Enums.AISModules.DebitEntry) || Common.Privileges.IsPrivilegeModule(Enums.AISModules.DebitList);
+    }
+    private bool isAllowRouting()
+    {
+        return  Common.Privileges.IsPrivilegeModule(Enums.AISModules.VoucherRoute) || Common.Privileges.IsPrivilegeModule(Enums.AISModules.BatchEntry) ||
+                Common.Privileges.IsPrivilegeModule(Enums.AISModules.BatchList);
+    }
+    private bool isAllowCollection()
+    {
+        return  Common.Privileges.IsPrivilegeModule(Enums.AISModules.CollectionList) || Common.Privileges.IsPrivilegeModule(Enums.AISModules.BillingEntry) ||
+                Common.Privileges.IsPrivilegeModule(Enums.AISModules.BillingList);
+    }
+    private bool isAllowLegders()
+    {
+        return  Common.Privileges.IsPrivilegeModule(Enums.AISModules.ARLedger) || Common.Privileges.IsPrivilegeModule(Enums.AISModules.APLedger) ||
+                Common.Privileges.IsPrivilegeModule(Enums.AISModules.BankLedger) || Common.Privileges.IsPrivilegeModule(Enums.AISModules.SubconLedger) ||
+                Common.Privileges.IsPrivilegeModule(Enums.AISModules.SubconARLedger) || Common.Privileges.IsPrivilegeModule(Enums.AISModules.SubconAPLedger) ||
+                Common.Privileges.IsPrivilegeModule(Enums.AISModules.ORListing) || Common.Privileges.IsPrivilegeModule(Enums.AISModules.ProjectLedger) ||
+                Common.Privileges.IsPrivilegeModule(Enums.AISModules.Journal);
+    }
+    public void SignalRAccessLevel()
+    {
+        if(GlobalVariable.AMSHubConnection != null)
+        {
+            GlobalVariable.AMSHubConnection.On<int>("GetAccessLevel", async (accessLevel) => 
+            {
+                if(GlobalClass.currentUserAccount.AccessLevel == (Enums.AISUserAccessLevel)accessLevel)
+                {
+                    await Common.Privileges.InitializedClass(accessLevelService, (Enums.AISUserAccessLevel)accessLevel);
+                    StateHasChanged();
+                }
+            });
+        }
+    }
+    public void SignalRAllowedFunctions()
+    {
+        if(GlobalVariable.AMSHubConnection != null)
+        {
+            GlobalVariable.AMSHubConnection.On<int,int>("GetAccessLevelFunction", async (accessLevel,module) => 
+            {
+                if(GlobalClass.currentUserAccount.AccessLevel == (Enums.AISUserAccessLevel)accessLevel)
+                {
+                await Common.Privileges.GetAllowedFunctions(accessLevelService, (Enums.AISModules)module, (Enums.AISUserAccessLevel)accessLevel);
+                StateHasChanged();
+                }
+            });
+        }
+    }
+}

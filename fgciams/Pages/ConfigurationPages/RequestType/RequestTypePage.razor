@@ -2,8 +2,9 @@
 
 @inject IRequestTypeService requestTypeService
 @inject IDialogService dialogService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject ApplicationState AppState
+@inject IAccessLevelService accessLevelService
 
 <div class='page-cont'>
   <div class='drawer-right'>
@@ -46,7 +47,7 @@
             <MudTooltip Text="Refresh Table">
                 <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='(()=>{searchTerm = "";})' ></MudIconButton>
             </MudTooltip>
-            <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
+            <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
               TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
                   <MudMenuItem OnClick='(() => RequestTypeDialog(new RequestTypeModel(), Enums.ActionMode.Create))'>
                       <div class='d-flex align-center gap-2 '>
@@ -71,7 +72,7 @@
               <MudTd DataLabel="ShortcutName">@context.Remarks</MudTd>
               <MudTd class="text-center pa-2">
                 <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft'
-                  TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' ActivationEvent='MouseEvent.MouseOver'>
+                  TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' >
                   <MudMenuItem OnClick='(() => RequestTypeDialog(context, Enums.ActionMode.Update))'>
                     <div class='d-flex align-center gap-2 '>
                       <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' />
@@ -101,6 +102,7 @@
     while (GlobalClass.currentUserAccount == null || GlobalClassList.requestTypes == null)
       await Task.Delay(1);
     await AppState.UpdateMainLayoutComponent(true);
+    await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.RequestTypes);
     RequestTypeHub();
     CompletedFetch();
   }
@@ -113,6 +115,13 @@
 
   private async Task RequestTypeDialog(RequestTypeModel requestType, Enums.ActionMode action)
   {
+    Enums.AISModuleFunctions function = action == Enums.ActionMode.Update? Enums.AISModuleFunctions.Edit : Enums.AISModuleFunctions.Add;
+    if (!Common.Privileges.isPrivilegeFunction(function))
+    {
+      string act = action == Enums.ActionMode.Update ? "edit" : "add";
+      Extensions.ShowAlert(String.Format("Account has been restricted to {0} Request Type.", act), Variant.Filled, SnackbarService, Severity.Error);
+      return;
+    }
     var parameters = new DialogParameters();
     GlobalClass.requestType = requestType;
     string dialogTitle = GlobalClass.requestType.Id != 0 ? "Edit Status" : "Add Status";
@@ -127,14 +136,15 @@
     if (!resultDialog.Canceled)
     {
       if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Create)
-        Extensions.ShowAlert("Request Type successfully added.", Variant.Filled,snackbarService,Severity.Success);
+        Extensions.ShowAlert("Request Type successfully saved.", Variant.Filled,SnackbarService,Severity.Success);
       else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Update)
-        Extensions.ShowAlert("Request Type successfully updated.", Variant.Filled,snackbarService,Severity.Info);
+        Extensions.ShowAlert("Request Type successfully updated.", Variant.Filled,SnackbarService,Severity.Info);
       else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Deactivate)
-        Extensions.ShowAlert("Request Type has been deactivated.", Variant.Filled,snackbarService,Severity.Warning);
+        Extensions.ShowAlert("Request Type has been deactivated.", Variant.Filled,SnackbarService,Severity.Warning);
       GlobalClassList.requestTypes = GlobalClassList.requestTypes.Where(x => x.IsActive == true).ToList();
-    } else if (resultDialog.Canceled)
-      Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
+    } 
+    else if (resultDialog.Canceled)
+      Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
   }
 
   private bool FilterItems(RequestTypeModel items)

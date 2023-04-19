@@ -625,19 +625,19 @@
 
 @media (pointer: coarse) {
   .ql-bubble.ql-toolbar button:hover:not(.ql-active),
-.ql-bubble .ql-toolbar button:hover:not(.ql-active) {
+  .ql-bubble .ql-toolbar button:hover:not(.ql-active) {
     color: #ccc;
   }
   .ql-bubble.ql-toolbar button:hover:not(.ql-active) .ql-fill,
-.ql-bubble .ql-toolbar button:hover:not(.ql-active) .ql-fill,
-.ql-bubble.ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill,
-.ql-bubble .ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill {
+  .ql-bubble .ql-toolbar button:hover:not(.ql-active) .ql-fill,
+  .ql-bubble.ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill,
+  .ql-bubble .ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill {
     fill: #ccc;
   }
   .ql-bubble.ql-toolbar button:hover:not(.ql-active) .ql-stroke,
-.ql-bubble .ql-toolbar button:hover:not(.ql-active) .ql-stroke,
-.ql-bubble.ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter,
-.ql-bubble .ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter {
+  .ql-bubble .ql-toolbar button:hover:not(.ql-active) .ql-stroke,
+  .ql-bubble.ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter,
+  .ql-bubble .ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter {
     stroke: #ccc;
   }
 }

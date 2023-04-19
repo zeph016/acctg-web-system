@@ -23,6 +23,7 @@ namespace fgciams.domain.clsBIR
         public string PayorTIN { get; set; } = string.Empty;
         public VoucherModel Voucher { get; set; } = new();
         public List<VoucherDetailModel> VoucherDetails = new();
+        public DateTime? VoucherDate { get; set; } = DateTime.Now;
         public string PreparedBy 
         {     
             get
@@ -33,5 +34,10 @@ namespace fgciams.domain.clsBIR
         }
         public string Personnel {get;set;}  = string.Empty;
         public string PersonnelTin {get;set;} = string.Empty;
+        public string DV {get;set;}  = string.Empty;
+        public string EWTText {get;set;} = string.Empty;
+
+        public string Expenses { get; set;} = string.Empty;
+        public bool ShowExpense { get; set; } = true;
     }
 }

@@ -3,7 +3,7 @@
         ValueChanged='( (SubContractorProjectModel sop)=> OnChanged(sop) )'
         SearchFunc="@( (String search) => LoadSubConProjectsSOW(search,ListOfSubcontractorProject) )"
         ToStringFunc='@(result => result == null? null : IsLabor ? result.SubContractorName : result.ScopeOfWork)'
-        ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info" AdornmentIcon='null' IconSize='0'>
+        ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info" AdornmentIcon='null' IconSize='0' ReadOnly='@IsReadOnly'>
 <ItemTemplate Context="sow">                            
     <MudText>
         <MudTooltip Class='wspace-breakword'>
@@ -35,6 +35,7 @@
     [Parameter] public SubContractorProjectModel ScopeOfWork { get; set; } = new();
     [Parameter] public List<SubContractorProjectModel> ListOfSubcontractorProject { get; set; } = new();
     [Parameter] public bool IsLabor { get; set; }
+    [Parameter] public bool IsReadOnly { get; set; }
     private void OnChanged(SubContractorProjectModel sop)
     {
         OnSOWValueChanged.InvokeAsync(sop); 

@@ -3,158 +3,96 @@
 @inject NavigationManager NavigationManager
 @inject IVoucherService VoucherService
 @inject IGlobalService GlobalService
+@inject IJSRuntime JSRuntime
 
 <div class='page-cont'>
     <MudContainer Class='overflow-hidden pa-2' Fixed='false' MaxWidth='MaxWidth.Large'>
         @if (!dataFetched)
         {
-            <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
-                <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='calc(100vh - 135px)' Animation='Animation.Wave' />
-            </MudPaper>
+          <SkeletonPageList />
         }
         else
         {
-            <MudGrid Spacing='1'>
-                <MudItem xs=9>
-                    <MudPaper Class='overflow-hidden' Height='calc(100vh - 105px)'>
-                        <div class='d-flex align-center pa-2 gap-2 bgc-F4F5FB'>
-                            <MudIcon Icon="@Icons.Material.Filled.Timeline" Size='Size.Small' />
-                            <MudText Class='wspace-nowrap font-bold txt-uppercase' Typo="Typo.body2">Audit Trail</MudText>
-                            <hr class='horizline2'>
+            <MudContainer Fixed='false' MaxWidth='MaxWidth.Large'>
+                <MudPaper Elevation='0'>
+                    <div class='audit-trail-grid'>
+                        <div id='atrail-content-vou' class='audit-trail-content'>
+                            <AuditLogTimeline IsVoucher='true' VoucherAuditTrail='@currentTrail' 
+                                ModuleName='Voucher'/>
                         </div>
-                        <MudDivider />
-                        <div class='rounded-br rounded-bl overflow-auto pa-2 mx-2' style='height:calc(100vh - 150px)'>
-                            <AuditTrailTimeLine auditMode=@Enums.AuditTrailMode.VoucherTrail VoucherAuditTrail=@currentTrail />
+                        <div class='audit-trail-sidebar'>
+                            <MudPaper>
+                                <AuditLogInfo IsVoucher='true' Voucher='@currVoucher' DataFetched='@dataFetched'
+                                    ReturnEventClick='BackToVoucherList' />
+                            </MudPaper>
+                            @if(scrollBarExists)
+                            {
+                                <div class='atrail-scrollbtn-cont'>
+                                    <MudButton Class='@(!isToBottom ? "btn-ios-d font12":"btn-ios-d font12 mudbtn-rotate-180")' OnClick='(() => ScrollJS(isToBottom = !isToBottom, "atrail-contentid-pc"))'
+                                        StartIcon='@Icons.Material.Filled.ArrowDownward' Size='Size.Small' Variant='Variant.Filled' Color='Color.Secondary'
+                                        Style='@(!isToBottom ? "max-width: 150px;":"")' Disabled='!scrollBarExists'>
+                                        @ScrollButtonStr
+                                    </MudButton>
+                                </div>
+                            }
                         </div>
-                    </MudPaper>
-                </MudItem>
-                <MudItem Class='d-flex flex-column gap-2' xs=3>
-                    <MudPaper Class='overflow-hidden'>
-                        <div class='d-flex align-center pa-2 gap-2 bgc-F4F5FB'>
-                            <MudIcon Icon="@Icons.Material.Filled.CommentBank" Size="Size.Small" />
-                            <MudText Class='wspace-nowrap font-bold txt-uppercase' Typo="Typo.body2">Voucher Details</MudText>
-                            <hr class='horizline2'>
-                        </div>
-                        <MudDivider />
-                        <MudGrid Class='mt-2' Spacing='1'>
-                            <MudItem Class='px-4' xs=6>
-                                <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>Control Number:</MudText>
-                                <MudText Class='txt-uppercase wspace-nowrap font-bold font14 pa-1' Color='Color.Error'>@GlobalClass.voucher.ControlNumber</MudText>
-                            </MudItem>
-                            <MudItem Class='px-4 gap-2' xs=6>
-                                <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>Date:</MudText>
-                                <MudChip Class='chip-radius-5 txt-uppercase font-bold font10' Icon='@Icons.Material.Filled.CalendarMonth' Color='Color.Default' Size='Size.Small'>
-                                    @GlobalClass.voucher.VoucherDate.ToShortDateString()
-                                </MudChip>
-                            </MudItem>
-                            <MudItem xs=12>
-                                <MudDivider />
-                                <div class='px-2'>
-                                    <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>Payee:</MudText>
-                                    <div class='d-flex align-center pa-1 gap-2'>
-                                        <MudIcon Icon='@Icons.Material.Filled.Person' Size='Size.Small' />
-                                        <MudText Class='txt-uppercase font12'> @GlobalClass.voucher.PayeeName</MudText>
-                                    </div>
-                                </div>
-                            </MudItem>
-                            <MudItem xs=12>
-                                <MudDivider />
-                                <div class='px-2'>
-                                    <MudText Class='txt-uppercase wspace-nowrap font10 font-bold'>Remarks:</MudText>
-                                    <div class='d-flex align-center pa-1 gap-2'>
-                                        <MudIcon Icon='@Icons.Material.Filled.Description' Size='Size.Small' />
-                                        <MudText Class='txt-uppercase font12'> @GlobalClass.voucher.Remarks</MudText>
-                                    </div>
-                                </div>
-                            </MudItem>
-                            <MudItem Class='d-flex flex-column' xs=12>
-                                <MudDivider />
-                                <div class='d-flex align-center pa-2 gap-2 bgc-F4F5FB'>
-                                    <MudIcon Class='ml-2' Icon="@Icons.Material.Filled.Badge" Size="Size.Small" />
-                                    <MudText Class='txt-uppercase wspace-nowrap font-bold' Typo='Typo.body2'>Signatories</MudText>
-                                    <hr class='horizline2'>
-                                </div>
-                                <MudDivider />
-                                <div class='d-flex flex-column pa-2 gap-2'>
-                                    <div class="d-flex align-center gap-2">
-                                        <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(preparedByImg)}")' />
-                                        <MudDivider />
-                                        <div class="gap-2">
-                                            <MudText Class='wspace-nowrap' Typo="Typo.subtitle2">@GlobalClass.voucher.PreparedByName</MudText>
-                                            <MudText Typo="Typo.caption">Requested by</MudText>
-                                        </div>
-                                    </div>
-                                    <div class='d-flex align-center gap-2'>
-                                        <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(verifiedImg)}")' />
-                                        <MudDivider />
-                                        <div class="gap-2">
-                                            <MudText Class='wspace-nowrap' Typo="Typo.subtitle2">@GlobalClass.voucher.VerifiedByName</MudText>
-                                            <MudText Typo="Typo.caption">Approved by</MudText>
-                                        </div>
-                                    </div>
-                                    <div class='d-flex align-center gap-2'>
-                                        <MudAvatar Size="Size.Medium" Image='@($"data:image/png;base64, {Convert.ToBase64String(approverImg)}")' />
-                                        <MudDivider />
-                                        <div class="gap-2">
-                                            <MudText Class='wspace-nowrap' Typo="Typo.subtitle2">@GlobalClass.voucher.ApprovedByName</MudText>
-                                            <MudText Typo="Typo.caption">Approved by</MudText>
-                                        </div>
-                                    </div>
-                                </div>
-                            </MudItem>
-                        </MudGrid>
-                    </MudPaper>
-                    <div class='d-flex align-center justify-end pa-2'>
-                        <MudButton Class='btn-ios-d pa-1 font12' OnClick="(() => BackToRFPList())" Size="Size.Small" Variant='Variant.Filled' Color='Color.Error' DisableElevation>
-                            Return
-                        </MudButton>
                     </div>
-                </MudItem>
-            </MudGrid>
+                </MudPaper>
+            </MudContainer>
        }
     </MudContainer>
 </div>
 
 @code{
-    private bool dataFetched {get;set;}
-    private byte[] preparedByImg = new byte[]{}, verifiedImg = new byte[]{}, approverImg = new byte[]{};
+    private bool dataFetched, scrollBarExists, isToBottom;
     private List<VoucherAuditTrailModel> currentTrail = new();
+    private VoucherModel currVoucher= new();
 
+    private string ScrollButtonStr = "To Bottom";
+    
     protected override async Task OnInitializedAsync()
     {
-        if(GlobalClass.voucher != null)
+        GlobalClass.pageTitle = "Voucher Audit Trail";
+        if(GlobalClass.voucher.Id == 0)
+            BackToVoucherList();
+        else
         {
-            try{
-                GlobalClass.pageTitle = "REQUEST FOR PAYMENT AUDIT TRAIL";
-                currentTrail = await VoucherService.VoucherAuditTrail(GlobalClass.voucher.Id,GlobalClass.token);
-                preparedByImg = await GetEmployeeDetails(GlobalClass.voucher.PreparedById);
-                verifiedImg = await GetEmployeeDetails(GlobalClass.voucher.VerifiedById);
-                approverImg = await GetEmployeeDetails(GlobalClass.voucher.ApprovedById);
+            Task t = LoadAuditTrail();
+            await t;
+            if (t.Status == TaskStatus.RanToCompletion)
                 CompletedFetch();
-            }catch(NullReferenceException ee){
-                //Do nothing
-                throw ee;
-            }
         }
-        else{
-             NavigationManager.NavigateTo($"/voucher/list");
-        }
+        if(GlobalClass.voucher.Id !=0)
+            scrollBarExists = await JSRuntime.InvokeAsync<bool>("CheckScrollbar", "atrail-contentid-pc");
     }
-    private async Task<byte[]> GetEmployeeDetails(long employeeId)
-    {
-        var employeeDetail = await GlobalService.GetEmployeeById(employeeId, GlobalClass.token);
-        return employeeDetail.Picture;
-    }
-  
-    private void BackToRFPList()
-    {
-        NavigationManager.NavigateTo("/voucher/list");
-    }
+
     private void CompletedFetch()
     {
         dataFetched = true;
         StateHasChanged();
     }
+    private void BackToVoucherList() =>  NavigationManager.NavigateTo("/voucher/list");
+
+    private async Task ScrollJS(bool boolValue, string elementId)
+    {
+        if(boolValue)
+        {
+            await JSRuntime.InvokeVoidAsync("ScrollToBottom", elementId);
+            ScrollButtonStr = "To Top";
+        }
+        else if(!boolValue)
+        {
+            await JSRuntime.InvokeVoidAsync("ScrollToTop", elementId);
+            ScrollButtonStr = "To Bottom";
+        }
+    }
+
+    private async Task LoadAuditTrail()
+    {
+        currentTrail = await VoucherService.VoucherAuditTrail(GlobalClass.voucher.Id,GlobalClass.token);
+        currVoucher = GlobalClass.voucher;
+        var latestAuditTrail = currentTrail.Last();
+    }
 }
 
-
+ 

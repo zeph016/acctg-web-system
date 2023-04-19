@@ -77,5 +77,14 @@ namespace fgciams.service.DebitServices
                 throw ee;
             }
         }
+        public async Task<int> DebitListRowCount(FilterParameter param, string token)
+        {
+          int count = 0;
+          _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+          HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("debit-list/count",param);
+          if (responseMessage.IsSuccessStatusCode)
+              count = await responseMessage.Content.ReadAsAsync<int>();
+          return count;
+        }
     }
 }

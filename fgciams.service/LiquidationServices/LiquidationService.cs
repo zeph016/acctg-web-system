@@ -239,6 +239,25 @@ namespace fgciams.service.LiquidationServices
 
         #endregion
 
+        public async Task<int> LiquidationListRowCount(FilterParameter param, string token)
+        {
+          int count = 0;
+          _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+          HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("liquidation/list/count",param);
+          if (responseMessage.IsSuccessStatusCode)
+              count = await responseMessage.Content.ReadAsAsync<int>();
+          return count;
+        }
+        public async Task<byte[]> LiquidationReportGetExcel(LiquidationModel model, string token)
+        {
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+          HttpResponseMessage responseMessage = await _client.PostAsJsonAsync(_configuration["ReportServer"] + "ams-liquidation/GetLiquidationExcelReport",model);
+          if(responseMessage.IsSuccessStatusCode)
+            return await responseMessage.Content.ReadAsByteArrayAsync();
+          else
+            return new byte[]{};
+        }
+
         #endregion
     }
 }

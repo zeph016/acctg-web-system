@@ -11,7 +11,6 @@ public class CollectionExpenseModel
         public Int64 ExpenseId { get; set; }
         [Required(ErrorMessage = "Required*")]
         public string ExpenseName { get; set; } = string.Empty;
-        [Range(1, int.MaxValue, ErrorMessage = "Required*")]
         public decimal Amount { get; set; }
         public string Remarks { get; set; } = string.Empty;
         public ExpenseLineModel rowExpenseLine{get;set;} = new();

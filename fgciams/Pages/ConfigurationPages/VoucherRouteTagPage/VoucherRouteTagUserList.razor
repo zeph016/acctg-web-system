@@ -2,8 +2,9 @@
 
 @inject IVoucherRouteTagUserService voucherRouteTagUserService
 @inject IDialogService dialogService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject ApplicationState AppState
+@inject IAccessLevelService accessLevelService
 
 <div class='page-cont'>
     <div class='drawer-right'>
@@ -55,7 +56,7 @@
                             </MudBadge>
                         }
                     </MudTooltip>
-                    @* <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                    @* <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
                         TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
                         <MudMenuItem>
                             <div class='d-flex align-center gap-2 '>
@@ -112,7 +113,7 @@
                             </div>
                         </MudTd>
                         <MudTd Class='text-center pa-2'>
-                            <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent="MouseEvent.MouseOver"
+                            <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' 
                             TransformOrigin='Origin.TopRight' Dense Size='Size.Small'>
                                 <MudMenuItem>
                                     <div class='d-flex align-center gap-4'>
@@ -165,6 +166,7 @@
     {
         GlobalClass.pageTitle = "Configuration - VOUCHER TAGS";
         await LoadUserRoutes();
+        await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.VoucherTag);
         await AppState.UpdateMainLayoutComponent(true);
         CompletedFetch();
         SignalR();
@@ -200,6 +202,11 @@
     }
     private async Task TagsCheckChanged(VoucherRouteTagUserModel tagModel, bool b, Enums.RouteTag tag)
     {
+        if(!Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Edit))
+        {
+            Extensions.ShowAlert("Account has been restricted to change tags.", Variant.Filled, SnackbarService, Severity.Error);
+            return;
+        }
         loadTable = false;
         List<string> tags = tagModel.VoucherRouteTags.Split(", ").ToList();
         tagModel.RouteTagId = tag;

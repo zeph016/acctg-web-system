@@ -29,35 +29,41 @@
 @inject ITaxCodeService taxCodeService
 @inject IGlobalService GlobalService
 @inject IConfiguration config
-@inject ISnackbar Snackbar
 @inject ICheckService checkService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IScopeOfWorkService scopeOfWorkService
 @inject ICollectionService collectionService
 @inject IVoucherService voucherService
-
+@inject IRequestForPaymentService requrestForPaymentService
+@inject ICustomerService customerService
+@inject ISnackbar SnackbarService
 @inject ApplicationState AppState
 @implements IDisposable
 
-<MudThemeProvider/>
+<MudThemeProvider @ref="@_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode"/>
 <MudDialogProvider/>
 <MudSnackbarProvider/>
 
-<MudLayout>
-    <MudAppBar Class='topbar' Fixed='true' Elevation='0' Dense='true'>
+<MudLayout  @onclick='RefreshPopUps'>
+    <MudAppBar Class='topbar' Fixed='true' Elevation='0' Dense>
         <AuthorizeView>
             <Authorized>
-                <MudText Class='topbar__tbxpagetitle' Style='@updateStyleStr' >@GlobalClass.pageTitle</MudText>
+                <MudText Class='topbar__tbxpagetitle' Style='@updateStyleStr'> @GlobalClass.pageTitle</MudText>
                 <MudSpacer/>
-                <MudBadge Content='0' Origin='Origin.TopLeft' Color='Color.Error' Overlap='true' style='@drawerStyleStr'>
-                    <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Default" Size='Size.Small'/>
+                <MudTooltip Text='@(!_isDarkMode ? "Dark Mode" : "Light Mode")' Arrow Placement='Placement.Top'>
+                    <MudIconButton OnClick='ToggleTheme' Icon='@(!_isDarkMode ? Icons.Material.Filled.DarkMode : Icons.Material.Filled.LightMode)' 
+                        Size='Size.Small'/>
+                </MudTooltip>
+                <MudBadge Class='zindex-1' Content='@ApplicationState.Notifications.Where(x=>x.IsSeen == false).Count()' Color="Color.Error" Overlap Visible>
+                    <MudIconButton OnClick="OpenNotification" 
+                        Icon="@(!ApplicationState.IsNotificationSilent ? Icons.Material.Filled.Notifications : Icons.Material.Filled.NotificationsOff)"  Color="Color.Default" Size='Size.Small'/>
                 </MudBadge>
                 <div class='usercp'>
                     <MudExpansionPanels Class='usercp__expansionpanel-header' DisableBorders='userCPborderVal' Elevation='userCPElevationVal'> 
-                        <MudExpansionPanel Class='usercp__expansionpanel' IsExpandedChanged='ToggleUserCP' Style='@userCPExpPanelStyleStr'>
+                        <MudExpansionPanel Class='usercp__expansionpanel' IsExpandedChanged='ToggleUserCP'>
                             <TitleContent>
                                 <div class='d-flex usercp__infocontainer' style='@userCPInfoStyleStr'>
-                                    @if(!dataFetched) 
+                                    @if(GlobalClass.currentUserAccount == null) 
                                     {
                                         <MudSkeleton class='usercp__skeletonavatar' SkeletonType='SkeletonType.Circle' Animation='Animation.Wave' Height='40px' Width='40px'/>
                                         <div>
@@ -75,85 +81,41 @@
                                 </div>
                             </TitleContent>
                             <ChildContent>
-                                <div><hr class='horizline'></div>
-                                <MudContainer Class='d-flex usercp__btncontainer' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
-                                    <MudButton Class='usercp__btnsettings' Href='/configurations' Variant='Variant.Text' StartIcon='@Icons.Material.Filled.Settings' Size='Size.Medium'>Settings</MudButton>
+                                <MudDivider />
+                                <div Class='d-flex usercp__btncontainer py-2'>
+                                    <MudButton Class='usercp__btnsettings' Href='/configurations' Variant='Variant.Text' StartIcon='@Icons.Material.Filled.Settings' Size='Size.Small' Disabled='@IsDisabledSettings()'>Settings</MudButton>
                                     <MudSpacer/>
-                                    <MudButton Class='usercp__btntohub' OnClick='() => LogOut(false)' Variant='Variant.Text' StartIcon='@Icons.Material.Filled.ExitToApp' Size='Size.Medium'>Back to Hub</MudButton>
-                                </MudContainer>
-                                <div><hr class='horizline'></div>
-                                <MudButton Class='usercp__btnlogout' OnClick='() => LogOut(true)' Variant='Variant.Filled' StartIcon='@Icons.Material.Filled.Logout' Color='Color.Error'>Log Out</MudButton>
+                                    <MudButton Class='usercp__btntohub' OnClick='() => LogOut(false)' Variant='Variant.Text' StartIcon='@Icons.Material.Filled.ExitToApp' Size='Size.Small'>Back to Hub</MudButton>
+                                </div>
+                                <MudDivider />
+                                <div class='py-2'>
+                                    <MudButton Class='usercp__btnlogout' OnClick='() => LogOut(true)' Variant='Variant.Filled' StartIcon='@Icons.Material.Filled.Logout' Color='Color.Error' DisableElevation>
+                                        Log Out
+                                    </MudButton>
+                                </div>
+                                
                             </ChildContent>
                         </MudExpansionPanel>
+                        <MudPopover Open="@_isNotificationOpen"  AnchorOrigin='Origin.BottomRight' TransformOrigin='Origin.TopRight' OverflowBehavior='OverflowBehavior.FlipAlways'
+                            Paper='false'>
+                            <CascadingValue Value='@ApplicationState'>
+                                <NotificationListComponent NotificationListModel='GlobalClassList.notificationList' NotificationClick='OpenNotification'
+                                    CallbackStateHasChanged='(() => StateHasChanged())'/>
+                            </CascadingValue>
+                        </MudPopover>
                     </MudExpansionPanels>
                 </div>
             </Authorized>
         </AuthorizeView>
     </MudAppBar>
-    <MudDrawer Class='main-drawer' @bind-Open="_drawerOpen" Fixed='true' Elevation='0' Variant='@DrawerVariant.Mini' OpenMiniOnHover='false'>
+    <MudDrawer Class='main-drawer' @bind-Open="_drawerOpen" Fixed Elevation='0' Variant='@DrawerVariant.Mini'>
         <MudDrawerHeader Class='drawer-header'>
             <MudIconButton OnClick="@((e) => DrawerToggle())" Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" />
             <MudText Class='drawer-header__header-text text-center'>ACCOUNTING INTEGRATED</MudText>
         </MudDrawerHeader>
         <AuthorizeView>
             <Authorized>
-                <MudNavMenu>
-                    <MudNavLink Href='/dashboard' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">
-                        <MudText Class='fweight500 fontpad-t-2px' Typo='Typo.body2'>DASHBOARD</MudText>
-                    </MudNavLink>    
-                    <MudNavGroup Title='PETTY CASH' Icon='fa-solid fa-coins' HideExpandIcon style='@HidePettyCash'>
-                        <MudNavLink Href='/petty-cash' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck" style='@HideEntry'>PETTY CASH ENTRY</MudNavLink>
-                        <MudNavLink Href='/petty-cash/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >PETTY CASH LIST</MudNavLink>
-                    </MudNavGroup>
-                    <MudNavGroup Title='LIQUIDATION' Icon='@Icons.Material.Filled.ReceiptLong' HideExpandIcon style='@HideLiquidation'>
-                        <MudNavLink Href='/liquidation' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck" style='@HideEntry'>LIQUIDATION ENTRY</MudNavLink>
-                        <MudNavLink Href='/liquidation/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList">LIQUIDATION LIST</MudNavLink>
-                    </MudNavGroup>
-                    <MudNavGroup Title='REQUEST FOR PAYMENT' Icon='@Icons.Material.Filled.Payments' HideExpandIcon style='@HideRFP'>
-                        <MudNavLink Href='/request-payment/create' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck"style='@HideEntry'>RFP ENTRY</MudNavLink>
-                        <MudNavLink Href='/request-payment/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList">RFP LIST</MudNavLink>
-                    </MudNavGroup>
-                    <MudNavGroup Title='VOUCHER' Icon='fa-solid fa-receipt' HideExpandIcon style='@HideVoucher'>
-                        <MudNavLink Href='/voucher' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck" style='@HideEntry'>VOUCHER ENTRY</MudNavLink>
-                        <MudNavLink Href='/voucher/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >VOUCHER LIST</MudNavLink>
-                </MudNavGroup>
-                    <MudNavGroup Title='CHECK WRITER' Icon='@Icons.Material.Filled.CreditScore' HideExpandIcon style='@HideVoucher'>
-                        <MudNavLink Href='/check/create' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck" style='@HideEntry'>CHECK ENTRY</MudNavLink>
-                        <MudNavLink Href='/check/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" style='@HideEntry'>CHECK LIST</MudNavLink>
-                        <MudNavLink Href='/debit/create' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck" style='@HideEntry'>DEBIT ENTRY</MudNavLink>
-                        <MudNavLink Href='/debit/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" style='@HideEntry'>DEBIT LIST</MudNavLink>
-                    </MudNavGroup>
-                    <MudNavGroup Title='VOUCHER ROUTE' Icon='fa-solid fa-route' HideExpandIcon style='@HideVoucher'>
-                        <MudNavLink Href='/voucher/route/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Route" style='@HideEntry'>VOUCHER ROUTING</MudNavLink>
-                        <MudNavLink Href='/voucher/batch' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryAddCheck">BATCH ENTRY</MudNavLink>
-                        <MudNavLink Href='/voucher/batch/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >BATCH LIST</MudNavLink>
-                    </MudNavGroup>
-                    <MudNavGroup Title='COLLECTIONS' Icon='icon-stack1' HideExpandIcon style='@HideVoucher'>
-                        <MudNavLink Href='/collection/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList">COLLECTIONS</MudNavLink>
-                        <MudNavLink Href='/billing/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList">BILLINGS</MudNavLink>
-                        <MudNavLink Href='/bank-deposit/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList">BANK DEPOSITS</MudNavLink>
-                    </MudNavGroup>
-                    <MudNavGroup Title='LEDGERS' Icon='icon-book' HideExpandIcon style='@HideVoucher'>
-                        <MudNavLink Href='/ar-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >AR LEDGER</MudNavLink>
-                        <MudNavLink Href='/ap-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >AP LEDGER</MudNavLink>
-                        <MudNavLink Href='/bank-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >BANK LEDGER</MudNavLink>
-                        <MudNavLink Href='/subcon-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >SUB-CON LEDGER</MudNavLink>
-                        <MudNavLink Href='/subcon-ar-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >SUB-CON AR LEDGER</MudNavLink>
-                        <MudNavLink Href='/subcon-ap-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >SUB-CON AP LEDGER</MudNavLink>
-                        <MudNavLink Href='/or/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >OR LISTING</MudNavLink>
-                        <MudNavLink Href='/project-ledger/list' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >PROJECT LEDGER</MudNavLink>
-                        <MudNavLink Href='/journal' Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList" >JOURNAL</MudNavLink>
-                    </MudNavGroup>
-                </MudNavMenu>
-                <MudSpacer />           
-                <MudNavMenu Class='pb-2'>
-                    <MudNavLink Class='pb-2' OnClick='NavigateToConfig' Match='NavLinkMatch.All' Icon='@Icons.Material.Filled.Settings'>
-                        <MudText Class='fweight500 fontpad-t-2px' Typo='Typo.body2'>SETTINGS</MudText>
-                    </MudNavLink>
-                    @* <div class='d-flex align-center justify-center'>
-                        <MudIcon Class='fa-solid fa-calculator fa-icon-center' OnClick='(() => navigationManager.NavigateTo($"/test"))'  Size='Size.Medium' />
-                    </div> *@
-                </MudNavMenu>
+                <MainLayoutMenuComponent NavigateTo='NavigateToConfig'/>
             </Authorized>
            <NotAuthorized>
                     <MudNavMenu Class='pb-2'>
@@ -165,18 +127,13 @@
         </AuthorizeView>
     </MudDrawer>
     <MudMainContent>
-        @* <MudContainer Class='main-body' Fixed='true'>
-            @Body@
-        </MudContainer> *@
         <div class='main-body overflow-hidden'>
-            @* <CascadingValue Value=UpdateLayout> *@
-                @Body
-            @* </CascadingValue> *@
+            @Body
         </div>
     </MudMainContent>
-    <MudAppBar Class='footerbar' Fixed='true' Elevation='0' Dense='true' Bottom='true'>
+    <MudAppBar Class='footerbar' Fixed Elevation='0' Dense Bottom>
         <MudText>
-            v1.0.0.1-testbuild-01192023
+            v1.0.0.1-testbuild-04152023-1
         </MudText>
         <MudIconButton Class='footerbar__btn-hardreload' OnClick='RefreshPage' Icon='@Icons.Material.Filled.Refresh' aria-label='Refresh Page'>
         </MudIconButton>
@@ -188,20 +145,22 @@
         </MudIconButton>
     </MudAppBar>
 </MudLayout>
+@* <NotificationDetector /> *@
 
 @code {
     #region Properties
     private HubConnection signalHubConnection = default!;
     private string? systemIconSource = $"images/icons/budget.png", drawerStyleStr = "display: none;", 
-    userCPExpPanelStyleStr = "background-color: #fafafa;", userCPInfoStyleStr = "width: 250px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;",
-    currentUrl, HideRFP = "", HideLiquidation="", HideVoucher = "", HideConfiguration = "", HidePettyCash = "", HideEntry;
+    userCPExpPanelStyleStr = "background-color: #fafafa;", userCPInfoStyleStr = "width: 250px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;";
     private bool _drawerOpen, _isFullScreen, _hideExpandDrawerIcon, dataFetched, showLoadingOverlay = true, 
-    userCPOpen, userCPborderVal, isConfigPage;
+    userCPOpen, userCPborderVal = true, isConfigPage;
     private int userCPElevationVal = 0;
     ElementReference timeElement;
-    EventCallback UpdateLayout => EventCallback.Factory.Create(this, UpdateAlert);
     string updateStyleStr = string.Empty;
     FilterParameter filterParameter = new FilterParameter();
+    public AppStoreState ApplicationState = new();
+    private bool _isNotificationOpen = false, _isDarkMode;
+    private MudThemeProvider _mudThemeProvider = new();
     #endregion
 
     public override async Task SetParametersAsync(ParameterView parameters)
@@ -218,21 +177,35 @@
         }
         await base.SetParametersAsync(parameters);
     }
+
     protected override async Task OnInitializedAsync()
     {
         if (GlobalClass.currentUserAccount != null)
         {
-            await LoadServerTime();
-            await LoadGlobalLists();
-            CheckAccessLevel();
-            navigationManager.LocationChanged += OnLocationChanged;
-            AppState.OnChange += StateHasChanged;
+            Task t = Task.WhenAll(LoadServerTime(),LoadGlobalLists(),GetNotificationFromStorage());
+            await t;
+            if (t.Status == TaskStatus.RanToCompletion)
+            {
+                NotificationSignalR();
+                ApplicationState.OnChange += StateHasChanged;
+                AppState.OnChange += StateHasChanged;
+                navigationManager.LocationChanged += OnLocationChanged;
+                CompletedFetch();
+            }
         }
-        Console.WriteLine("Initialized MainLayout");
-        CompletedFetch();
+    }
+    private async Task GetNotificationFromStorage()
+    {
+        ApplicationState.IsNotificationSilent = await Extensions.CheckNotificationSetting(localStorageService);
+        var notifications = await Extensions.GetNotifications(localStorageService);
+        if (notifications != null && notifications.Count() != 0)
+            ApplicationState.Notifications = notifications;
+        else
+            await Extensions.SetNotificationsLocalStorage(localStorageService, new());
+         StateHasChanged();
     }
 
-    void CompletedFetch()
+    private void CompletedFetch()
     {
         dataFetched = true;
         showLoadingOverlay = false;
@@ -246,116 +219,46 @@
         LoadPayees(), LoadPayeeCategories(), LoadChargingLines(),
         LoadSubContractors(), LoadSubConGenInfos(), LoadSubConPositions(), LoadNotRFPLiquidation(),
         LoadExpenseLine(), LoadAccountLineGroup(),LoadAccountType(),LoadAccountLineType(),SignalRHubConnection(),LoadCheck(),
-        LoadTerms(),LoadMunicipalityCities(),LoadTaxCode(),LoadScopeOfWorkList(),LoadCollections());
+        LoadTerms(),LoadMunicipalityCities(),LoadTaxCode(),LoadScopeOfWorkList(),LoadCollections(),
+        LoadChargings(),LoadCustomerTypes());
         await t;
+        await LoadPayeesVoucher();
     }
-    private async Task LoadScopeOfWorkList()
-    {
-        GlobalClassList.scopeOfWork = await scopeOfWorkService.LoadScopeOfWork(GlobalClass.token);
-    }
-    async Task LoadMunicipalityCities()
-    {
-        GlobalClassList.muniCityList = await  muniCityService.LoadMuniCity(GlobalClass.token);
-    }
-    async Task LoadTaxCode()
-    {
-        GlobalClassList.taxCodes = await taxCodeService.LoadTaxCode(new FilterParameter(){isActive=true},GlobalClass.token);
-    }
-    private async Task LoadCheck()
-    {
-      GlobalClassList.listOfChecks = await checkService.LoadCheck(new FilterParameter(){isActive=true}, GlobalClass.token);
-    }
-    private async Task LoadAccountType()
-    {
-        GlobalClassList.listOfAccountTypes = await accountTypeService.LoadAccountType(GlobalClass.token);
-    }
-    private async Task LoadAcctgStatusList()
-    {
-        GlobalClassList.accountingStatusList = await accountingStatusService.LoadAccountingStatusList(GlobalClass.token);
-    }
-
-    private async Task LoadDivisionList()
-    {
-        GlobalClassList.divisionList = await divisionService.LoadDivisionList(GlobalClass.token);
-    }
-
-    private async Task LoadPaymentModes()
-    {
-        GlobalClassList.modeOfPaymentList = await modeOfPaymentService.LoadModeOfPaymentList(GlobalClass.token);
-    }
-
+    private async Task LoadChargings() =>  GlobalClassList.projectList = (await LoadCharging("")).ToList();
+    private async Task LoadRequesteForPayments() =>  GlobalClassList.requestForPaymentsList = await  requrestForPaymentService.LoadRequestPayment(new FilterParameter(),GlobalClass.token);
+    private async Task LoadScopeOfWorkList() =>  GlobalClassList.scopeOfWork = await scopeOfWorkService.LoadScopeOfWork(GlobalClass.token);
+    private async Task LoadMunicipalityCities() => GlobalClassList.muniCityList = await muniCityService.LoadMuniCity(GlobalClass.token);
+    private async Task LoadTaxCode() => GlobalClassList.taxCodes = await taxCodeService.LoadTaxCode(new FilterParameter(){isActive=true},GlobalClass.token);
+    private async Task LoadCheck() => GlobalClassList.listOfChecks = await checkService.LoadCheck(new FilterParameter(){isActive=true, PageNo = 0, PageSize = 15, CheckCategoryId = Enums.CheckCategory.Check}, GlobalClass.token);
+    private async Task LoadAccountType() => GlobalClassList.listOfAccountTypes = await accountTypeService.LoadAccountType(GlobalClass.token);
+    private async Task LoadAcctgStatusList() => GlobalClassList.accountingStatusList = await accountingStatusService.LoadAccountingStatusList(GlobalClass.token);
+    private async Task LoadDivisionList() => GlobalClassList.divisionList = await divisionService.LoadDivisionList(GlobalClass.token);
+    private async Task LoadPaymentModes() => GlobalClassList.modeOfPaymentList = await modeOfPaymentService.LoadModeOfPaymentList(GlobalClass.token);
+    private async Task LoadBanks() => GlobalClassList.banks = await bankService.LoadBanks(GlobalClass.token);
+    private async Task LoadRequestTypes() => GlobalClassList.requestTypes = await requestTypeService.LoadRequestType(GlobalClass.token);
+    private async Task LoadPayees() => GlobalClassList.payeeList = await payeeService.LoadPayee(GlobalClass.token);
+    private async Task LoadPayeesVoucher() => GlobalClassList.voucherPayeeList = await GlobalService.LoadPayees(new FilterParameter(){IsPayee=true,PayeeName="",isActive=false, IsAll = true},GlobalClass.token);
+    private async Task LoadPayeeCategories() => GlobalClassList.payeeCategoryList = await payeeCategoryService.LoadListOfPayeeCategory(GlobalClass.token);
+    private async Task LoadChargingLines() => GlobalClassList.projectChargingLines = await projectChargingService.LoadProjectChargingLine(GlobalClass.token);
+    private async Task LoadSubContractors() => GlobalClassList.subContractorCompanies = await subContractorCompanyService.LoadSubContractorCompany(GlobalClass.token);
+    private async Task LoadExpenseLine() => GlobalClassList.expenseLineList = await expenseLineService.LoadExpenseLine(GlobalClass.token);
+    private async Task LoadSubConGenInfos() => GlobalClassList.subConGeneralInformations = await subConGeneralInformationService.LoadSubConGenInfo(GlobalClass.token);
+    private async Task LoadSubConPositions() => GlobalClassList.subContractorPositions = await subConPositionService.LoadSubContractorPosition(GlobalClass.token);
+    private async Task LoadNotRFPLiquidation() => GlobalClassList.LiquidationNotInRFP = await liquidationService.LiquidationNotRFP(GlobalClass.token);
+    private async Task LoadAccountLineGroup() => GlobalClassList.accountLineGroups = await accountLineService.LoadAccountLineGroup(GlobalClass.token);
+    private async Task LoadAccountLineType() => GlobalClassList.accountLineTypes = await accountLineTypeService.LoadAccountLineType(GlobalClass.token);
+    private async Task LoadCollections() => GlobalClassList.collectionList = await collectionService.GetCollections(filterParameter,GlobalClass.token);
+    private async Task LoadVouchers() => GlobalClassList.Vouchers = await voucherService.LoadVouchers(filterParameter, GlobalClass.token);
+    private async Task LoadCustomerTypes() => GlobalClassList.customerTypeList = await customerService.LaodCustomerTypes(GlobalClass.token);
     private async Task LoadBillingDocs()
     {
         GlobalClassList.billingDocumentList = await billingDocumentService.LoadListOfBillingDocuments(GlobalClass.token);
         GlobalClassList.billingDocumentList = GlobalClassList.billingDocumentList.OrderBy(x=>x.Id).ToList();
     }
-
-    private async Task LoadBanks()
-    {
-        GlobalClassList.banks = await bankService.LoadBanks(GlobalClass.token);
-    }
-
-    private async Task LoadRequestTypes()
-    {
-      GlobalClassList.requestTypes = await requestTypeService.LoadRequestType(GlobalClass.token);
-    }
-
-    private async Task LoadPayees()
-    {
-        GlobalClassList.payeeList = await payeeService.LoadPayee(GlobalClass.token);
-    }
-
-    private async Task LoadPayeeCategories()
-    {
-        GlobalClassList.payeeCategoryList = await payeeCategoryService.LoadListOfPayeeCategory(GlobalClass.token);
-    }
-
-    private async Task LoadChargingLines()
-    {
-        GlobalClassList.projectChargingLines = await projectChargingService.LoadProjectChargingLine(GlobalClass.token);
-    }
-
-    private async Task LoadSubContractors()
-    {
-        GlobalClassList.subContractorCompanies = await subContractorCompanyService.LoadSubContractorCompany(GlobalClass.token);
-    }
-    private async Task LoadExpenseLine()
-    {
-        GlobalClassList.expenseLineList = await expenseLineService.LoadExpenseLine(GlobalClass.token);
-    }
-    private async Task LoadSubConGenInfos()
-    {
-        GlobalClassList.subConGeneralInformations = await subConGeneralInformationService.LoadSubConGenInfo(GlobalClass.token);
-    }
-
-    private async Task LoadSubConPositions()
-    {
-        GlobalClassList.subContractorPositions = await subConPositionService.LoadSubContractorPosition(GlobalClass.token);
-    }
-    private async Task LoadNotRFPLiquidation()
-    {
-      GlobalClassList.LiquidationNotInRFP = await liquidationService.LiquidationNotRFP(GlobalClass.token);
-    }
-    private async Task LoadAccountLineGroup()
-    {
-      GlobalClassList.accountLineGroups = await accountLineService.LoadAccountLineGroup(GlobalClass.token);
-    }
-    private async Task LoadAccountLineType()
-    {
-      GlobalClassList.accountLineTypes = await accountLineTypeService.LoadAccountLineType(GlobalClass.token);
-    }
     private async Task LoadTerms()
     {
       GlobalClassList.termsOfPayments = await termsOfPaymentService.LoadTermsOfPayment(GlobalClass.token);
       GlobalClassList.termsOfPayments = GlobalClassList.termsOfPayments.OrderBy(x => x.Id).ToList();
-    }
-    private async Task LoadCollections()
-    {
-        GlobalClassList.collectionList = await collectionService.GetCollections(filterParameter,GlobalClass.token);
-    }
-    private async Task LoadVouchers()
-    {
-        GlobalClassList.Vouchers = await voucherService.LoadVouchers(filterParameter, GlobalClass.token);
     }
     private async Task SignalRHubConnection()
     {
@@ -367,7 +270,7 @@
       }
       catch (System.Exception ex)
       {
-         Extensions.ShowAlert(ex.Message, Variant.Filled, Snackbar, Severity.Error);
+         Extensions.ShowAlert(ex.Message, Variant.Filled, SnackbarService, Severity.Error);
       }
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -411,7 +314,6 @@
         _drawerOpen = !_drawerOpen;
         GlobalVariable.hideExpandIcon = !GlobalVariable.hideExpandIcon;
     }
-
     private async void RefreshPage()
     {
         await jsRuntimeService.InvokeVoidAsync("HardReload");
@@ -442,20 +344,14 @@
         }
     }
 
-    private void DisableLinks()
-    {
-        drawerStyleStr = "display: none;";
-    }
-    private void EnableLinks()
-    {
-        drawerStyleStr = "display: block;";
-    }
+    private void DisableLinks() => drawerStyleStr = "display: none;";
+    private void EnableLinks() => drawerStyleStr = "display: block;";
     private void NavigateToPage(string location)
     {
         navigationManager.NavigateTo($"{location}");
     }
 
-    private async void NavigateToConfig()
+    private void NavigateToConfig()
     {
         _drawerOpen = false;
         isConfigPage = true;
@@ -466,37 +362,6 @@
     {
         Console.WriteLine(pageTitle);
         GlobalClass.pageTitle = pageTitle;
-    }
-    private void CheckAccessLevel()
-    {
-      switch(GlobalClass.currentUserAccount.AccessLevel)
-      {
-        case Enums.AccountingAccessLevel.AccountingRequestor :
-        case Enums.AccountingAccessLevel.OthersRequestor :
-
-          HideConfiguration = "display: none";
-          HideVoucher = "display: none";
-
-        break;
-
-        case Enums.AccountingAccessLevel.AccountingViewer :
-        case Enums.AccountingAccessLevel.OthersViewer :
-
-          HideEntry = "display : none";
-          HideConfiguration = "display : none";
-
-        break;
-        
-        case Enums.AccountingAccessLevel.AccountingIssuer :
-
-          HideConfiguration = "display : none";
-
-        break;
-
-        default :
-        HideConfiguration = "";
-        break;
-      }
     }
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
@@ -510,6 +375,7 @@
     {
         navigationManager.LocationChanged -= OnLocationChanged;
         AppState.OnChange -= StateHasChanged;
+        ApplicationState.OnChange -= StateHasChanged;
     }
     private async Task OpenVATDialog()
     {
@@ -525,9 +391,9 @@
         if (!resultDialog.Canceled)
         {
             if ((int)resultDialog.Data == 0)
-                Extensions.ShowAlert("VAT successfully added.", Variant.Filled, Snackbar, Severity.Success);
+                Extensions.ShowAlert("VAT successfully saved.", Variant.Filled, SnackbarService, Severity.Success);
             else if ((int)resultDialog.Data == 1)
-                Extensions.ShowAlert("VAT updated successfully.", Variant.Filled, Snackbar ,Severity.Info);
+                Extensions.ShowAlert("VAT successfully udated.", Variant.Filled, SnackbarService, Severity.Info);
         }
     }
 
@@ -535,13 +401,15 @@
     {
         Console.WriteLine("Invoked");
         if (AppState.IsDirty)
-        {
             updateStyleStr = "background-color: inherit";
-        }
         else
-        {
             updateStyleStr = "";
-        }
+    }
+
+    public void UpdateDrawerStatus()
+    {
+        Console.WriteLine("Invoked");
+        _drawerOpen = AppState.DrawerState;
     }
 
     private async Task LoadServerTime()
@@ -550,6 +418,130 @@
         if (result != null)
             GlobalVariable.ServerTime = result.Value;
         else
-            Extensions.ShowAlertV2("Cannot get server time. Please check connections", Variant.Filled,Snackbar,Severity.Warning,Icons.Material.Filled.Cancel,Defaults.Classes.Position.BottomCenter);
+            Extensions.ShowAlertV2("Cannot get server time. Please check connections", Variant.Filled,SnackbarService,Severity.Warning,Icons.Material.Filled.Cancel,Defaults.Classes.Position.BottomCenter);
+    }
+    private async Task<IEnumerable<Project>> LoadCharging(string chargingName)
+    {
+      var filterParameter = new FilterParameter()
+      {
+        IsProject = true,
+        ProjectName = chargingName,
+        IsId = false,
+        IsAll = true
+      };
+      var charging = await GlobalService.LoadChargeProjectLine(filterParameter, GlobalClass.token);
+      return charging;
+    }
+    private void OpenNotification()
+    {
+        _isNotificationOpen = !_isNotificationOpen;
+        StateHasChanged();
+    }
+    private void NotificationSignalR()
+    {
+        if(GlobalVariable.AMSHubConnection != null)
+        {
+            GlobalVariable.AMSHubConnection.On<NotificationModel>("ApproveNotification", async (notification) => 
+            {
+                
+                Console.WriteLine(ApplicationState.TemporaryEmployeeList.Count());
+                if(GlobalClass.currentUserAccount.AccessLevel == Enums.AISUserAccessLevel.Administrator) 
+                {
+                    Task t = ShowNotificationCard(notification);
+                    await t;
+                    if (t.Status == TaskStatus.RanToCompletion)
+                        StateHasChanged();
+                } 
+                else if (GlobalClass.currentUserAccount.EmployeeId == Convert.ToInt64(notification.ApproverId) 
+                || GlobalClass.currentUserAccount.EmployeeId == Convert.ToInt64(notification.PreparedById))
+                {
+                    Task t = ShowNotificationCard(notification);
+                    await t;
+                    if (t.Status == TaskStatus.RanToCompletion)
+                        StateHasChanged();
+                }
+               StateHasChanged();
+            });
+        }
+    }
+
+    private async Task<UserAccount> GetSenderAccount(long employeeId)
+    {
+        var result =  ApplicationState.TemporaryEmployeeList.Where(x => x.EmployeeId == employeeId).FirstOrDefault();
+        if (result != null)
+            return result;
+        else
+        {
+            result = await GlobalService.GetEmployeeById(employeeId, GlobalClass.token);
+            if (result != null)
+            {
+                ApplicationState.TemporaryEmployeeList.Add(result);
+                await ApplicationState.UpdateStoreState();
+                return result;
+            }
+            else
+                return new();
+        }
+    }
+    private int NotificationsNumberNotSeen()
+    {
+        return ApplicationState.Notifications.Where( n => n.IsSeen == false).ToList().Count;
+    }
+    private bool IsDisabledSettings()
+    {
+        if(GlobalClass.currentUserAccount.AccessLevel == Enums.AISUserAccessLevel.NonAccountingAdmin ||
+        GlobalClass.currentUserAccount.AccessLevel == Enums.AISUserAccessLevel.NonAccountingRequestor || 
+        GlobalClass.currentUserAccount.AccessLevel == Enums.AISUserAccessLevel.NonAccountingViewer)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private async Task PlayAudioFile()
+    {
+        ApplicationState.IsNotificationSilent = await Extensions.CheckNotificationSetting(localStorageService);
+        if (!ApplicationState.IsNotificationSilent)
+            await jsRuntimeService.InvokeVoidAsync("PlayAudioFile", "/notificationSound/notification-audio1.wav");
+    }
+
+    private void RefreshPopUps()
+    {
+        _isNotificationOpen = false;
+    }
+
+    private async Task ShowNotificationCard(NotificationModel notification)
+    {
+        Task<UserAccount> GetSenderTask = GetSenderAccount(notification.SenderId);
+        await GetSenderTask;
+        if (GetSenderTask.Status == TaskStatus.RanToCompletion)
+        {
+            Task AddNotifTask = AddNotification(notification);
+            await AddNotifTask;
+            if (AddNotifTask.Status == TaskStatus.RanToCompletion)
+            {
+                await PlayAudioFile();
+                Extensions.ShowNotificationSnackbar(SnackbarService,notification,navigationManager,localStorageService, GetSenderTask.Result);
+            }
+        }
+    }
+
+    private async Task AddNotification(NotificationModel notification)
+    {
+        var notificationList = await Extensions.GetNotifications(localStorageService);
+        notificationList.Add(notification);
+        ApplicationState.Notifications = notificationList;
+        await ApplicationState.UpdateStoreState();
+        await Extensions.SetNotificationsLocalStorage(localStorageService, notificationList);
+    }
+    public void NotifyChange()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ToggleTheme()
+    {
+        _isDarkMode = !_isDarkMode;
+        await Extensions.SetDarkMode(localStorageService, _isDarkMode);
     }
 }

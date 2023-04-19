@@ -1,0 +1,95 @@
+@inject ISnackbar SnackbarService
+
+<MudMenuItem OnClick='PreviewCheck'>
+    <div class='d-flex align-center gap-2'>
+        <MudIcon Icon='@Icons.Material.Filled.Preview' Size='Size.Small' Color='Color.Dark'/>
+        <MudText Typo='Typo.body2'>View</MudText>
+    </div>
+</MudMenuItem>
+ @if(CheckModel.AccountingStatusId != AccountingStatusCC)
+    { 
+        @if(CheckModel.AccountingStatusId == AccountingStatusCI)
+        {
+            <MudMenuItem OnClick="EditCheck">
+                <div class='d-flex align-center gap-2 '>
+                <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' Color='Color.Dark' />
+                <MudText Typo='Typo.body2' Color='Color.Dark'>Edit</MudText>
+                </div>
+            </MudMenuItem>
+        }
+      
+     }
+ @if(CheckModel.AccountingStatusId != AccountingStatusCCLRD  &&  CheckModel.AccountingStatusId != AccountingStatusCR)
+    {
+        <MudMenuItem OnClick="(() => UpdateStatusCheck(Enums.AccountingStatusEnumCategory.CR,Enums.ActionMode.Release))">
+            <div class='d-flex align-center gap-2 '>
+                <MudIcon Icon='fa-solid fa-check-double' Size='Size.Small' Color='Color.Dark'/>
+                <MudText Typo='Typo.body2' Color='Color.Dark'>Release</MudText>
+            </div>
+        </MudMenuItem>
+    }
+ @if(CheckModel.AccountingStatusId == AccountingStatusCR)
+    {
+        <MudMenuItem OnClick="(()=>UpdateStatusCheck(Enums.AccountingStatusEnumCategory.CCLRD,Enums.ActionMode.Clear))">
+            <div class='d-flex align-center gap-2 '>
+                <MudIcon Icon='@Icons.Material.Filled.ClearAll' Size='Size.Small' Color='Color.Dark' />
+                <MudText Typo='Typo.body2' Color='Color.Dark'>Clear Check</MudText>
+            </div>
+        </MudMenuItem>
+    }
+@if(CheckModel.AccountingStatusId != AccountingStatusCR)
+    {
+        <MudMenuItem OnClick="(() => UpdateStatusCheck(Enums.AccountingStatusEnumCategory.CC,Enums.ActionMode.Cancel))">
+            <div class='d-flex align-center gap-2 '>
+                <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small' Color='Color.Dark' />
+                <MudText Typo='Typo.body2' Color='Color.Dark'>Cancel</MudText>
+            </div>
+        </MudMenuItem>
+    }
+<MudMenuItem OnClick='ViewAuditTrail'>
+    <a class='d-flex align-center gap-2 '>
+        <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' />
+        <MudText Typo='Typo.body2'>Audit Trail</MudText>
+    </a>
+</MudMenuItem>
+<MudMenuItem OnClick='ShowReport'>
+        <div class='d-flex align-center gap-2 '>
+            <MudIcon Icon='@Icons.Material.Filled.PictureAsPdf' Size='Size.Small' Color='Color.Dark'/>
+            <MudText Typo='Typo.body2' Color='Color.Dark'>Show Report</MudText>
+        </div>
+</MudMenuItem>
+
+@code{
+    [Parameter] public CheckModel CheckModel {get;set;} = new();
+    [Parameter] public string ModuleName { get; set; } = string.Empty;
+    [Parameter] public EventCallback EditCheckClick {get; set;}
+    [Parameter] public EventCallback  PreviewClick { get; set; }
+    [Parameter] public EventCallback<(Enums.AccountingStatusEnumCategory,Enums.ActionMode)> UpdateStatusCheckClick {get; set;} 
+    [Parameter] public Int64 AccountingStatusCC {get; set;}
+    [Parameter] public Int64 AccountingStatusCI {get;set;}
+    [Parameter] public Int64 AccountingStatusCCLRD {get;set;}
+    [Parameter] public Int64 AccountingStatusCR {get; set;}
+    [Parameter] public EventCallback AuditTrailClick {get;set;} 
+    [Parameter] public EventCallback ShowReportClick {get;set;}
+
+    private async Task isAllowed(EventCallback<(Enums.AccountingStatusEnumCategory,Enums.ActionMode)> callback, 
+    Enums.AccountingStatusEnumCategory status,Enums.ActionMode mode)
+    {
+        if (Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.ChangeStatus))
+            await callback.InvokeAsync((status,mode));
+        else
+            Extensions.ShowAlert("Account has been restricted to change check status", Variant.Filled, SnackbarService, Severity.Error);
+    }
+    private async Task isAllowed(EventCallback callback, Enums.AISModuleFunctions function)
+    {
+        if(Common.Privileges.isPrivilegeFunction(function))
+            await callback.InvokeAsync();
+        else
+            Extensions.ShowAlert(String.Format("Account has been restricted to {0} {1}.",function.ToString().ToLower(), ModuleName), Variant.Filled, SnackbarService, Severity.Error);
+    }
+    private async Task EditCheck() => await isAllowed(EditCheckClick, Enums.AISModuleFunctions.Edit);
+    private async Task UpdateStatusCheck(Enums.AccountingStatusEnumCategory status,Enums.ActionMode mode) => await isAllowed(UpdateStatusCheckClick,status, mode);
+    private async Task ViewAuditTrail() => await isAllowed(AuditTrailClick,Enums.AISModuleFunctions.View);
+    private async Task ShowReport() => await isAllowed(ShowReportClick, Enums.AISModuleFunctions.View);
+    private async Task PreviewCheck() => await isAllowed(PreviewClick, Enums.AISModuleFunctions.View);
+}

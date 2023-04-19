@@ -1,0 +1,48 @@
+@inject ISnackbar SnackbarService
+
+<MudMenuItem OnClick='(() => OpenCollectionDialog(Enums.ActionMode.Update))'>
+    <div class='d-flex align-center gap-2 '>
+        <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small'/>
+        <MudText Typo='Typo.body2'>Edit</MudText>
+    </div>
+</MudMenuItem>
+<MudMenuItem OnClick="CancelDeposit">
+    <div class='d-flex align-center gap-2'>
+        <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small' Color='Color.Dark' />
+        <MudText Typo='Typo.body2' Color='Color.Dark'>Cancel</MudText>
+    </div>
+</MudMenuItem>
+<MudMenuItem OnClick="GoToAuditTrail">
+    <div class='d-flex align-center gap-2 '>
+        <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' />
+        <MudText Typo='Typo.body2'>Audit Trail</MudText>
+    </div>
+</MudMenuItem>
+
+@code
+{
+    [Parameter] public string ModuleName { get; set; } = string.Empty;
+    [Parameter] public EventCallback<Enums.ActionMode> OpenDialogClick { get; set; }
+    [Parameter] public EventCallback CancelClick { get; set; }
+    [Parameter] public EventCallback AuditTrailClick { get; set; }
+
+    private async Task OpenCollectionDialog(Enums.ActionMode action) => await isAllowed(OpenDialogClick, action , Enums.AISModuleFunctions.Edit);
+    private async Task CancelDeposit() => await isAllowed(CancelClick, Enums.AISModuleFunctions.ChangeStatus);
+    
+    private async Task GoToAuditTrail() => await isAllowed(AuditTrailClick, Enums.AISModuleFunctions.View);
+    
+    private async Task isAllowed(EventCallback callback, Enums.AISModuleFunctions function)
+    {
+        if(Common.Privileges.isPrivilegeFunction(function))
+            await callback.InvokeAsync();
+        else
+            Extensions.ShowAlert(String.Format("Account has been restricted to {0} {1}.",Extensions.GetEnumDescription(function).ToLower(), ModuleName), Variant.Filled, SnackbarService, Severity.Error);
+    }
+    private async Task isAllowed(EventCallback<Enums.ActionMode> callback,Enums.ActionMode mode, Enums.AISModuleFunctions function)
+    {
+        if(Common.Privileges.isPrivilegeFunction(function))
+            await callback.InvokeAsync(mode);
+        else
+            Extensions.ShowAlert(String.Format("Account has been restricted to {0} {1}.",Extensions.GetEnumDescription(function).ToLower(), ModuleName), Variant.Filled, SnackbarService, Severity.Error);
+    }
+}

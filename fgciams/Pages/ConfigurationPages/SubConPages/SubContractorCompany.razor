@@ -2,8 +2,9 @@
 
 @inject ISubContractorCompanyService subContractorCompanyService
 @inject IDialogService dialogService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject ApplicationState AppState
+@inject IAccessLevelService accessLevelService
 
 <div class='page-cont'>
   <div class='drawer-right'>
@@ -46,7 +47,7 @@
                     <MudTooltip Text="Refresh Table">
                         <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='(()=>{searchTerm = "";})' ></MudIconButton>
                     </MudTooltip>               
-                <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent='MouseEvent.MouseOver'
+                <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
                   TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
                     <MudMenuItem OnClick='(() => SubConCompDialog(new SubContractorCompanyModel(), Enums.ActionMode.Create))'>
                         <div class='d-flex align-center gap-2 '>
@@ -74,7 +75,7 @@
                   <MudTd DataLabel="Remarks">@context.Remarks</MudTd>
                   <MudTd class="text-center pa-2">
                     <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft'
-                      TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' ActivationEvent='MouseEvent.MouseOver'>
+                      TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' >
                           <MudMenuItem OnClick='(() => SubConCompDialog(context, Enums.ActionMode.Update))'>
                               <div class='d-flex align-center gap-2 '>
                                 <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' />
@@ -103,6 +104,7 @@
     GlobalClass.pageTitle = "CONFIGURATION - SUBCON COMPANY";
     while (GlobalClass.currentUserAccount == null || GlobalClassList.subContractorCompanies == null)
       await Task.Delay(1);
+    await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.Subcon);
     await AppState.UpdateMainLayoutComponent(true);
     SubConCompanyHub();
     CompletedFetch();
@@ -116,6 +118,13 @@
 
   private async Task SubConCompDialog(SubContractorCompanyModel subconcomp, Enums.ActionMode action)
   {
+    Enums.AISModuleFunctions function = action == Enums.ActionMode.Update? Enums.AISModuleFunctions.Edit : Enums.AISModuleFunctions.Add;
+    if (!Common.Privileges.isPrivilegeFunction(function))
+    {
+        string act = action == Enums.ActionMode.Update ? "edit" : "add";
+        Extensions.ShowAlert(String.Format("Account has been restricted to {0} subcon company.", act), Variant.Filled, SnackbarService, Severity.Error);
+        return;
+    }
     var parameters = new DialogParameters();
     GlobalClass.subContractorCompany = subconcomp;
     string dialogTitle = GlobalClass.subContractorCompany.Id != 0 ? "Edit SubCon Company" : "Add SubCon Company";
@@ -130,14 +139,14 @@
     if (!resultDialog.Canceled)
     {
       if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Create)
-        Extensions.ShowAlert("Subcontractor Company succcessfully added.", Variant.Filled,snackbarService,Severity.Success);
+        Extensions.ShowAlert("Subcontractor Company succcessfully saved.", Variant.Filled,SnackbarService,Severity.Success);
       else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Update)
-        Extensions.ShowAlert("Subcontractor Company successfully updated.", Variant.Filled,snackbarService,Severity.Info);
+        Extensions.ShowAlert("Subcontractor Company successfully updated.", Variant.Filled,SnackbarService,Severity.Info);
       else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Deactivate)
-        Extensions.ShowAlert("Subcontractor Company has been deactivated.", Variant.Filled,snackbarService,Severity.Warning);
+        Extensions.ShowAlert("Subcontractor Company has been deactivated.", Variant.Filled,SnackbarService,Severity.Warning);
       GlobalClassList.subContractorCompanies = GlobalClassList.subContractorCompanies.Where(x => x.IsActive == true).ToList();
     } else if (resultDialog.Canceled)
-        Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
+        Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
   }
 
   private bool FilterItems(SubContractorCompanyModel items)

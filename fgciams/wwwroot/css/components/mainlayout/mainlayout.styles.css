@@ -46,7 +46,7 @@ main {
     justify-content: space-between;
   }
   .top-row ::deep a,
-.top-row ::deep .btn-link {
+  .top-row ::deep .btn-link {
     margin-left: 0;
   }
 }
@@ -57,12 +57,10 @@ main {
   .sidebar {
     width: 250px;
     height: 100vh;
-    position: -webkit-sticky;
     position: sticky;
     top: 0;
   }
   .top-row {
-    position: -webkit-sticky;
     position: sticky;
     top: 0;
     z-index: 1;
@@ -73,7 +71,7 @@ main {
     width: 0;
   }
   .top-row,
-article {
+  article {
     padding-left: 2rem !important;
     padding-right: 1.5rem !important;
   }
@@ -139,4 +137,35 @@ article {
   width: 30px;
   margin-bottom: 0.5rem;
   filter: invert(100%);
+}
+
+.topbar .mud-toolbar,
+.footerbar .mud-toolbar {
+  padding: 0px 16px;
+}
+
+.topbar .mud-toolbar {
+  height: 55px !important;
+}
+.topbar__tbxpagetitle {
+  color: #7d7d7d;
+  font-family: "Theramin", sans-serif !important;
+  font-size: 1.5rem !important;
+  text-transform: uppercase !important;
+}
+
+.footerbar {
+  color: unset !important;
+  height: 32px;
+}
+.footerbar .mud-typography {
+  font-size: 12px;
+}
+.footerbar__btn-hardreload, .footerbar__btn-fullscreen {
+  margin: 0px 0px 0px 5px !important;
+  padding: 0px !important;
+}
+
+.mud-appbar {
+  background-color: unset !important;
 }/*# sourceMappingURL=mainlayout.styles.css.map */

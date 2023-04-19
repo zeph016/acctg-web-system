@@ -1,0 +1,90 @@
+@inject ISnackbar SnackbarService
+
+<MudMenuItem OnClick='PreviewCollection'>
+<div class='d-flex align-center gap-2'>
+        <MudIcon Icon='@Icons.Material.Filled.Preview' Size='Size.Small' Color='Color.Dark'/>
+        <MudText Typo='Typo.body2'>View</MudText>
+    </div>
+</MudMenuItem>
+@if(AccountingStatusModel.StatusEnumCategoryId != Enums.AccountingStatusEnumCategory.CLA
+&& AccountingStatusModel.StatusEnumCategoryId != Enums.AccountingStatusEnumCategory.CLC && !CollectonModel.isDeposit)
+{
+<MudMenuItem OnClick='(() => OpenCollectionDialog(Enums.ActionMode.Update))'>
+    <div class='d-flex align-center gap-2 '>
+        <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' Color='Color.Dark' />
+        <MudText Typo='Typo.body2' Color='Color.Dark'>Edit</MudText>
+    </div>
+</MudMenuItem>
+<MudMenuItem OnClick='(() => Prompt(Enums.ActionMode.Approve))'>
+    <div class='d-flex align-center gap-2 '>
+        <MudIcon Icon='@Icons.Material.Filled.CheckCircle' Size='Size.Small' Color='Color.Dark' />
+        <MudText Typo='Typo.body2' Color='Color.Dark'>Approve</MudText>
+    </div>
+</MudMenuItem>
+}
+@if(AccountingStatusModel.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.CLA && !CollectonModel.isDeposit)
+{
+<MudMenuItem OnClick='(() => Prompt(Enums.ActionMode.Void))'>
+    <div class='d-flex align-center gap-2 '>
+        <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' Color='Color.Dark' />
+        <MudText Typo='Typo.body2' Color='Color.Dark'>Generate (Void)</MudText>
+    </div>
+</MudMenuItem>
+}
+@if(!CollectonModel.isDeposit && AccountingStatusModel.StatusEnumCategoryId != Enums.AccountingStatusEnumCategory.CLA)
+{
+<MudMenuItem OnClick="CancelDeposit">
+        <div class='d-flex align-center gap-2 menu-grow-anim'>
+            <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small' Color='Color.Dark' />
+            <MudText Typo='Typo.body2' Color='Color.Dark'>Cancel</MudText>
+        </div>
+</MudMenuItem>
+}
+<MudMenuItem OnClick='SingleDeposit'>
+    <div class='d-flex align-center gap-2 '>
+        <MudIcon Icon='@Icons.Material.Filled.AccountBalance' Size='Size.Small' Color='Color.Dark'/>
+        <MudText Typo='Typo.body2' Color='Color.Dark'>@(CollectonModel.isDeposit == true? "View":"Deposit")</MudText>
+    </div>
+</MudMenuItem>
+<MudMenuItem OnClick="GoToAuditTrail">
+    <div class='d-flex align-center gap-2 '>
+        <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' Color='Color.Dark' />
+        <MudText Typo='Typo.body2' Color='Color.Dark'>Audit Trail</MudText>
+    </div>
+</MudMenuItem>
+
+@code
+{
+    [Parameter] public string ModuleName { get; set; } = string.Empty;
+    [Parameter] public CollectionModel CollectonModel { get; set; } = new();
+    [Parameter] public AccountingStatusModel AccountingStatusModel { get; set;} = new();
+    [Parameter] public EventCallback<Enums.ActionMode> OpenDialogClick { get; set; }
+    [Parameter] public EventCallback<Enums.ActionMode> PromptClick { get; set; }
+    [Parameter] public EventCallback CancelClick { get; set; }
+    [Parameter] public EventCallback SingleDepositClick { get; set; }
+    [Parameter] public EventCallback AuditTrailClick { get; set; }
+    [Parameter] public EventCallback PreviewClick { get; set; }
+
+    private async Task OpenCollectionDialog(Enums.ActionMode action) => await isAllowed(OpenDialogClick, action , Enums.AISModuleFunctions.Edit);
+    private async Task Prompt(Enums.ActionMode action) => await isAllowed(PromptClick, action, Enums.AISModuleFunctions.ChangeStatus);
+    private async Task CancelDeposit() => await isAllowed(CancelClick, Enums.AISModuleFunctions.ChangeStatus);
+    private async Task SingleDeposit() =>  await isAllowed(SingleDepositClick, Enums.AISModuleFunctions.Deposit);
+    private async Task GoToAuditTrail() => await isAllowed(AuditTrailClick, Enums.AISModuleFunctions.View);
+    private async Task PreviewCollection() => await isAllowed(PreviewClick, Enums.AISModuleFunctions.View);
+    
+    
+    private async Task isAllowed(EventCallback callback, Enums.AISModuleFunctions function)
+    {
+        if(Common.Privileges.isPrivilegeFunction(function))
+            await callback.InvokeAsync();
+        else
+            Extensions.ShowAlert(String.Format("Account has been restricted to {0} {1}.",Extensions.GetEnumDescription(function).ToLower(), ModuleName), Variant.Filled, SnackbarService, Severity.Error);
+    }
+    private async Task isAllowed(EventCallback<Enums.ActionMode> callback,Enums.ActionMode mode, Enums.AISModuleFunctions function)
+    {
+        if(Common.Privileges.isPrivilegeFunction(function))
+            await callback.InvokeAsync(mode);
+        else
+            Extensions.ShowAlert(String.Format("Account has been restricted to {0} {1}.",Extensions.GetEnumDescription(function).ToLower(), ModuleName), Variant.Filled, SnackbarService, Severity.Error);
+    }
+}

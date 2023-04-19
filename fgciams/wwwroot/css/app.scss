@@ -9,7 +9,6 @@
 
 @import url("./components/mainlayout/mainlayout.styles.css");
 @import url("./components/navmenu/navmenu.styles.css");
-@import url("./components/appbar/appbar.css");
 @import url("./components//pageconts/pages.styles.css");
 @import url("./components/usercp/usercp.styles.css");
 @import url("./components/dialogs/dialog.styles.css");
@@ -40,6 +39,12 @@
 @import url("./components/filtercomponents/filtercomponents.styles.css");
 @import url("./components/signatories/signatories.styles.css");
 @import url("./components/autocompletebox/autocompletebox.css");
+@import url("./components/tables/native-html-table.styles.css");
+@import url("./components/notification/notification.styles.css");
+@import url("./components/footerpagination/footerpaginations.styles.css");
+@import url("./components/voucher/voucher-card.styles.css");
+@import url("./components/mudtabmods/mudtabmods.styles.css");
+@import url("./components/font-calls/font-calls.style.css");
 @import url("./pettycash/pettycash-entry.styles.css");
 @import url("./voucher/voucher-entry.styles.css");
 @import url("./requestpayment/requestpayment.css");
@@ -53,6 +58,7 @@
 @import url("./debit/debit.styles.css");
 @import url("./journal/journal.styles.css");
 @import url("./audittrails/audit-trails.css");
+@import url("./accesslevel/accesslevel.styles.css");
 
 @font-face {
   font-family: "Theramin";
@@ -75,17 +81,30 @@
     url("../fonts/roboto/roboto-v30-latin-regular.ttf") format("truetype"),
     url("../fonts/roboto/roboto-v30-latin-regular.svg#Roboto") format("svg");
 }
-
 @font-face {
   font-family: "R-Flex Regular";
   src: url("../fonts/rflex/RFlexRegular.woff2") format("woff2");
 }
-
 @font-face {
   font-family: "R-Flex Bold";
   src: url("../fonts/rflex/RFlex-Bold.woff2") format("woff2");
 }
-
+@font-face {
+  font-family: "SF-Pro";
+  src: url("../fonts/sfpro/SF-Pro.woff2") format("woff2");
+}
+@font-face {
+  font-family: "SF-Pro-Display Regular";
+  src: url("../fonts/sfpro/SF-Pro-Display-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "SF-Pro-Display Semibold-Italic";
+  src: url("../fonts/sfpro/SF-Pro-Display-SemiboldItalic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "SF-Pro-Display-Bold";
+  src: url("../fonts/sfpro/SF-Pro-Display-Bold.woff2") format("woff2");
+}
 @font-face {
   font-family: "icomoon";
   src: url("../assets/icomoon/fonts/icomoon.eot");
@@ -260,18 +279,21 @@ a,
 
 .page-cont {
   @extend .fade-in;
-  // background-image: linear-gradient(#f8f9fe, #ffffff);
-  // background-image: linear-gradient(#4d43522d, #ffffff);
+  &__background {
+    background-color: #607d8b21 !important;
+    background-image: url(../images/fgbgimg.png);
+    background-repeat: no-repeat;
+    background-position: right bottom;
+    background-size: contain;
+    height: 100%; 
+  }
   background: #ffffff;
   background-image: url(../images/fgbgimg.png);
   background-image: url(../images/fgbgimg.png),
     linear-gradient(#4d43522d, #ffffff);
-  // background-image: url(../images/fgbgimg.png),
-  //   linear-gradient(#4d43520c, #ffffff);
   background-repeat: no-repeat;
   background-position: right bottom;
   background-size: contain;
-  // padding-top: 10px;
   height: 100%;
 }
 
@@ -294,6 +316,50 @@ a,
 }
 
 .td-amount-container {
-  display: flex;
   align-items: center;
+  display: flex;
+  font-weight: bold;
+  gap: 4px;
 }
+
+.mud-alert-filled-normal {
+  background-color: #151823 !important;
+}
+
+// .mud-alert-filled-info {
+//   background-color: #4277ff !important;
+// }
+
+.mud-button-filled-info {
+  background-color: #4277ff !important;
+}
+.mud-button-filled-success {
+  background-color: #388e3c !important;
+}
+
+
+.chkbox-sm {
+  .mud-checkbox {
+    p {
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .mud-button-root {
+      padding: 6px !important;
+    }
+  }
+}
+
+
+.overlay-option-1 {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  flex-direction: column;
+  padding: 4px;
+  p { 
+    font-family: "R-Flex Bold"; 
+  }
+}
+
+.zindex-1 { z-index: 1; }

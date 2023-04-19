@@ -13,5 +13,6 @@ namespace fgciams.service.PettyCashServices
         Task<PettyCashModel> GetPettyCash(Int64 Id, string token);
         Task<string> GetPettyCashReport(PettyCashModel pettyCash);
         Task<List<PettyCashAuditTrail>> GetPettyCashAuditTrail(Int64 Id, string token);
+        Task<int> PettyCashListRowCount(FilterParameter param, string token);
     }
 }

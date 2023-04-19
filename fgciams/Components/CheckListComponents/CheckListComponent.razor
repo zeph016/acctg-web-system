@@ -1,9 +1,7 @@
 @inject ICheckService checkService
 @inject NavigationManager navigationManager
 @inject IDialogService dialogService
-@inject ISnackbar snackBarService
-@inject ApplicationState AppState
-@implements IDisposable
+@inject ISnackbar SnackbarService
 
 
 <MudContainer Class='py-4 bgc-4d43521a' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
@@ -134,7 +132,6 @@
         while (GlobalClass.currentUserAccount == null || GlobalClassList.listOfChecks == null)
             await Task.Delay(1);
         GlobalClass.checkModel = new();
-        AppState.OnChange += StateHasChanged;
         CompletedFetch();
     }
     private void CompletedFetch()
@@ -169,7 +166,7 @@
             check.StatusName = status.ToString();
             check.AccountingStatusId = (int) status;
             await UpdateCheckStatus(check);
-            Extensions.ShowAlert("Check updated successfully.",Variant.Filled,snackBarService,Severity.Success);
+            Extensions.ShowAlert("Check successfully updated.",Variant.Filled,SnackbarService,Severity.Success);
         }
     }
     private async Task UpdateCheckStatus(CheckModel check)
@@ -184,7 +181,12 @@
     }
     private async Task<TableData<CheckModel>> LoadCheck(TableState tableState)
     {
-        IEnumerable<CheckModel> data = await checkService.LoadCheck(new FilterParameter(){isActive =true}, GlobalClass.token);
+        IEnumerable<CheckModel> data = await checkService.LoadCheck(new FilterParameter()
+            {
+                isActive =true,
+                PageNo = 0,
+                PageSize = 100
+            }, GlobalClass.token);
         switch (tableState.SortLabel)
         {
             case "SortControlNumber":
@@ -218,9 +220,5 @@
             TotalItems = total,
             Items = pageData
         };
-    }  
-    void IDisposable.Dispose()
-    {
-        AppState.OnChange -= StateHasChanged;
-    }  
+    }
 }

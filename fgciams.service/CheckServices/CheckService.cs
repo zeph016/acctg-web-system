@@ -113,5 +113,14 @@ namespace fgciams.service.CheckServices
                   throw ee;
             }
         }
+        public async Task<int> CheckListRowCount(FilterParameter param, string token)
+        {
+          int count = 0;
+          client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+          HttpResponseMessage responseMessage = await client.PostAsJsonAsync("check-list/count",param);
+          if (responseMessage.IsSuccessStatusCode)
+              count = await responseMessage.Content.ReadAsAsync<int>();
+          return count;
+        }
     }
 }

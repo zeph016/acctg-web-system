@@ -4,6 +4,8 @@
     <small>Misc:</small>
   </div>
   <div class="amtinfo-cont2">
+    <MudCheckBox Class='chkbox20px' @bind-Checked='@GlobalClass.voucher.IsPosted' Size='Size.Small' Dense Color='Color.Dark'
+        Label='Posted' />
     <MudCheckBox Class='chkbox20px' @bind-Checked='@withSubLedger' ReadOnly Size='Size.Small' Dense Color='Color.Dark'
         Label='Sub Ledger' />
   </div>
@@ -140,7 +142,9 @@
 
     protected override void OnInitialized()
     {
-        if(GlobalClass.voucher.Id == 0)
+        if(GlobalClass.voucher.VoucherRouteTags.All( tag => tag.Id == 0) && GlobalClass.voucher.Id != 0)
+            GlobalClass.voucher.VoucherRouteTags.Clear();
+        if(GlobalClass.voucher.VoucherRouteTags.Count <= 0)
             GlobalClass.voucher.VoucherRouteTags.Add(NoneTag());
         DisplayRouteTags();
     }

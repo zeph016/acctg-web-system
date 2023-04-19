@@ -1,0 +1,117 @@
+@inherits PreviewCheckDialogBase
+
+<div class='custom-dialog2'>
+    <div class='custom-dialog2__title'>
+        <MudIcon Icon='@IconString' Size='Size.Medium' />
+        <p>@DialogTitle</p>
+        <MudSpacer />
+        <MudChip OnClick='(() => CopyTextToClipboard(Check.ControlNumber))' Label Variant='Variant.Filled'>
+            <small>@Check.ControlNumber</small>
+        </MudChip>
+    </div>
+    <div class='custom-dialog2__content'>
+        @if (!dataFetched)
+        {
+            <div class='circular-progress-cont'>
+                <MudProgressCircular Indeterminate Size='Size.Medium' Color='Color.Primary' />
+            </div>
+        }
+        else
+        {
+            <div class='line-bg-lightpurple' />
+            <div class='line-bg-maincolor' />
+            <MudPaper Class='checkdialog-view' Square>
+                <div class="checkdialog-view__grid">
+                    <div class="chkd-headerleft">
+                        <MudChip Label Size='Size.Small' Color='Color.Error' Variant='Variant.Outlined'>
+                            <p class="chkd-headerleft__lbl-chip check-no">Check No.</p>
+                            @Check.CheckNo
+                        </MudChip>
+                        <MudChip Label Size='Size.Small' Color='Color.Dark' Variant='Variant.Outlined'>
+                            <p class="chkd-headerleft__lbl-chip issued-date">Issued</p>
+                            @Convert.ToDateTime(Check.IssuedDate).ToString("MM-dd-yyyy")
+                        </MudChip>
+                        <MudTooltip Text='@(Check.StatusId != 1 ? "Cannot modify Check, Check Status":"Modify Check")' Arrow Placement='Placement.Top'>
+                            <MudIconButton Class='circular-ico-24 chkmod-btn' OnClick='(() => EditCheck(Check))' Icon="@Icons.Material.Filled.Edit" aria-label="Edit" Size='Size.Small' 
+                                Variant='Variant.Filled' Color='Color.Tertiary' Disabled='@(Check.StatusId != 1 ? true:false)'/>
+                        </MudTooltip>
+                    </div>
+                    <div class="chkd-lbldate">
+                        <p class='checkdialog-view__lbl lbl-date '>Date:</p>
+                    </div>
+                    <div class="chkd-date">
+                        <div class='two-box'>
+                            <div class='box-left'></div>
+                            <div class='box-right'></div>
+                        </div>
+                        <div class='two-box'>
+                            <div class='box-left'></div>
+                            <div class='box-right'></div>
+                        </div>
+                        <div class="four-box">
+                            <div class="box-left"></div>
+                            <div class="box-center-left"></div>
+                            <div class="box-center-right"></div>
+                            <div class="box-right"></div>
+                        </div>
+                        <p class='date-text'>@Convert.ToDateTime(Check.CheckDate).ToString("MM-dd-yyyy")</p>
+                    </div>
+                    <div class="chkd-lblpayee">
+                        <p class='checkdialog-view__lbl'>pay to the order of</p>
+                    </div>
+                    <div class="chkd-payee">
+                        <div class='border-bottom dflex-col-start-end'>
+                            <p class='checkdialog-view__txt'>@Check.PayeeName</p>
+                        </div>
+                    </div>
+                    <div class="chkd-amtno">
+                        ₱<p class='checkdialog-view__txt'>@Math.Round(Check.Amount, 2).ToString("N2")</p>
+                    </div>
+                    <div class="chkd-lblpeso">
+                        <p class='checkdialog-view__lbl'>Pesos</p>
+                    </div>
+                    <div class="chkd-amtwords">
+                        <div class='border-bottom jcenter'>
+                            <p class='checkdialog-view__txt'>@Common.AmountToWords.DecimalToWords(Check.Amount)</p>
+                        </div>
+                    </div>
+                    <div class="chkd-footer">
+                        <div class='chkd-footer__miss-info'>
+                            <div>
+                                <MudChip Label Size='Size.Small' Color='Color.Info' Variant='Variant.Outlined'>@Check.CheckCategory</MudChip>
+                                <MudChip Label Size='Size.Small' Variant='Variant.Outlined' Style='@Extensions.BorderColor(Check.AccountingStatusId)' >
+                                    <p style='@Extensions.FontColor(Check.AccountingStatusId)'>@AccountingStatusName(Check.AccountingStatusId)</p>
+                                </MudChip>
+                                <MudChip OnClick='(() => isViewVouchers = !isViewVouchers)' Label Size='Size.Small' Color='Color.Info' Variant='Variant.Filled'>
+                                    <p>Vouchers (@Check.CheckVouchers.Count())</p> 
+                                    <MudIcon Icon='@Icons.Material.Filled.ArrowRight' Size='Size.Small' />
+                                    <MudPopover Open='@isViewVouchers' Fixed OverflowBehavior='OverflowBehavior.FlipAlways'
+                                        AnchorOrigin='Origin.CenterRight' TransformOrigin='Origin.CenterLeft'>
+                                        <CascadingValue Value='@ApplicationState'>
+                                            <ListVoucherCard ClosePopup='(() => isViewVouchers = !isViewVouchers)'/>
+                                        </CascadingValue>
+                                    </MudPopover>
+                                </MudChip>
+                            </div>
+                            <div>
+                                <p class='chkd-footer__lbl-placeholder'>BANK</p>
+                                <p class='chkd-footer__lbl-note'>Note: This is not representative of the printed format. Viewing purposes only.</p>
+                            </div>
+                        </div>
+                        <MudSpacer />
+                        <MudPaper Class='pa-2 bgc-e7f2fb min-width200px'>
+                            <MudText Class='font10 font-bold'>Prepared By:</MudText>
+                            <SignatoriesComponent employeeId='@Check.PreparedById' avatarSize='Size.Medium' />
+                        </MudPaper>
+                    </div>
+                </div>
+            </MudPaper>
+        }
+    </div>
+    <div class='custom-dialog2__actions'>
+        <MudSpacer />
+        <MudButton OnClick='Cancel' Size='Size.Small' Variant='Variant.Text' DisableElevation >
+            @CancelText
+        </MudButton>
+    </div>
+</div>

@@ -1,0 +1,55 @@
+<div class="d-flex flex-column pa-2">
+    <strong>Transactions</strong>
+    <div class="d-flex flex-row">
+        <small>Project</small> 
+        <MudSpacer/>
+        <small class="text-right">@ProjectName</small>
+    </div>
+    <div class="d-flex flex-row">
+        <small>Contract Amount</small> 
+        <MudSpacer/>
+        <small class="text-right">@ContractAmount.ToString("N")</small>
+    </div>
+    <div class="d-flex flex-row">
+        <small>To Date Net Amount</small> 
+        <MudSpacer/>
+        <small class="text-right">@TransactionsList.Sum( t => t.NetAmount).ToString("N2")</small>
+    </div>
+    <div class="d-flex flex-row">
+        <small>To Date Percentage</small> 
+        <MudSpacer/>
+        <small class="text-right">@TransactionsList.Sum( t => t.Percentage).ToString("N2") %</small>
+    </div>
+</div>
+<MudTable Class='small-toolbar-gutter2' Items='TransactionsList' Context='transaction' Breakpoint='Breakpoint.Xs'
+    FixedHeader FixedFooter Bordered Dense Elevation='0'>
+    <ColGroup>
+        <col />
+        <col />
+        <col />
+    </ColGroup>
+    <HeaderContent>
+        <MudTh class="customheader-6">Control No.</MudTh>
+        <MudTh class="customheader-6">Percentage</MudTh>
+        <MudTh class="customheader-6">Net Amount</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>
+            <MudChip Class='mudchip-tbl' Size='Size.Small' Variant='Variant.Outlined' Color='Color.Error'>
+                @transaction.ControlNumber
+            </MudChip>
+            <MudChip Class='mudchip-tbl' Icon='@Icons.Material.Filled.CalendarMonth' 
+                Variant='Variant.Outlined' Color='Color.Dark' Size='Size.Small'>
+                @Convert.ToDateTime(transaction.TransactionDate).ToShortDateString()
+                </MudChip>
+        </MudTd>
+        <MudTd class="text-right">@transaction.Percentage.ToString("N2") %</MudTd>
+        <MudTd class="text-right">@transaction.NetAmount.ToString("N2")</MudTd>
+    </RowTemplate>
+</MudTable>
+@code
+{
+    [Parameter] public List<CollectionModel> TransactionsList { get; set; } = new();
+    [Parameter] public decimal ContractAmount { get; set; } = 0.00m;
+    [Parameter] public string ProjectName { get; set; } = string.Empty;
+}

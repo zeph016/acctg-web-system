@@ -13,7 +13,7 @@ namespace fgciams.domain.clsExpenseLine
         public string ExpenseName { get; set; }= string.Empty;
         public string ExpenseNameFormat { get 
         {
-                return (ExpenseName.Length > 30 ? ExpenseName.Substring(0,30)+"...":ExpenseName);
+            return (ExpenseName.Length > 30 ? ExpenseName.Substring(0,30)+"...":ExpenseName);
         } set{} }
         public bool IsActive { get; set; }
         public string Remarks { get; set; }= string.Empty;

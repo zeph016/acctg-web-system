@@ -1,0 +1,480 @@
+@page "/direct-deposit/list"
+
+@inject ICheckService checkService
+@inject NavigationManager navigationManager
+@inject IDialogService dialogService
+@inject ISnackbar SnackbarService
+@inject IAccessLevelService accessLevelService
+
+<div class='page-cont'>
+    <div class='drawer-right-min'>
+        <MudDrawer Class='pa-1' Open='false' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <MudTooltip Text='Filter' Arrow Placement='Placement.Left'>
+                <MudIconButton OnClick='(() => openFilter = !openFilter)' Icon='@Icons.Material.Filled.FilterList' arial-label='Close Filter' Size='Size.Small' />
+            </MudTooltip>
+        </MudDrawer>
+    </div>
+    <MudContainer Class='py-2 pl-2 pr-10  table-toolbar-custom1' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+        @if(!dataFetched)
+        {
+            <SkeletonPageList />
+        }
+        else
+        {
+            <MudTable Class='table-style-1 ' ServerData='new Func<TableState, Task<TableData<CheckModel>>>(LoadCheck)'
+                Breakpoint="Breakpoint.Sm" Hover FixedHeader FixedFooter Bordered Dense Loading='isLoading'
+                @ref='tableVariable'>
+                <ToolBarContent>
+                    <MudText Typo='Typo.caption'>
+                        @GlobalClassList.listOfChecks.Count() 
+                        @(GlobalClassList.listOfChecks.Count() == 1 ? "item" : "items") 
+                        in total
+                    </MudText>
+                    <MudSpacer/>
+                    <MudTooltip Text="Refresh Table" Arrow Placement='Placement.Top'>
+                        <MudIconButton Class='@(isLoading ? "mudbtnico-rotate":"")' OnClick='ReloadTable' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" 
+                            Color='@(isLoading ? Color.Info : Color.Default)'/>
+                        </MudTooltip>
+                    <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' 
+                        TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
+                         <MudMenuItem OnClick='(() => AddDirectDeposit())'>
+                            <div class='d-flex align-center gap-2 '>
+                                <MudIcon Icon='@Icons.Material.Filled.Add' Size='Size.Small' Color='Color.Dark' />
+                                <MudText Typo='Typo.body2' Color='Color.Dark'>New Direct Deposit</MudText>
+                            </div>
+                        </MudMenuItem>
+                        <MudMenuItem OnClick="(() => openFilter = !openFilter)"  >
+                            <div class='d-flex align-center gap-2 '>
+                                <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
+                                <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
+                            </div>
+                        </MudMenuItem>
+                    </MudMenu>
+                    @if(openFilter)
+                    {
+                        <PopoverFilterMainComponent IsOpen='openFilter' CloseFilter='(() => openFilter = !openFilter)' IsMainFilter='true' IsModuleList='true'
+                            ModuleName='check-list' ApplyFilter='FilterTable' ResetTableData='ReloadTable'/>
+                    }
+                </ToolBarContent>
+                <ColGroup>
+                    <col style='width:1%;' />
+                    <col style='width:1%;' />
+                    <col />
+                    <col />
+                    <col />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh Class='customheader-6'>
+                        <MudTableSortLabel SortLabel='SortControlNumber' T='CheckModel' 
+                                InitialDirection="SortDirection.Descending">
+                                Control No.
+                        </MudTableSortLabel>
+                    </MudTh>
+                    <MudTh Class='@(isPinnedCtrlNo ? "th-sticky-left customheader-6":"customheader-6")'>
+                        <div class='d-flex align-center justify-space-around gap-2'>
+                            <MudTableSortLabel SortLabel='SortDate' T='CheckModel' 
+                                InitialDirection="SortDirection.None">
+                                Deposit Date
+                            </MudTableSortLabel>
+                            <MudTableSortLabel SortLabel='SortDateIssued' T='CheckModel'
+                                InitialDirection="SortDirection.None">
+                                Issued
+                            </MudTableSortLabel>
+                        </div>
+                    </MudTh>
+                    <MudTh Class='customheader-6'>Payee</MudTh>
+                    <MudTh Class='customheader-6'>Bank</MudTh>
+                    <MudTh Class='@(isPinnedAmt ? "th-sticky-amt customheader-6 text-right":"customheader-6 text-right")'>
+                        <MudTooltip Text='Pin amount column' Arrow Placement='Placement.Top'>
+                            <MudIconButton Class='ico-15x15' OnClick='(() => isPinnedAmt = !isPinnedAmt)' Color='@(isPinnedAmt ? Color.Info:Color.Dark)' 
+                                Icon='@Icons.Material.Filled.PushPin' Size='Size.Small'/>
+                        </MudTooltip>
+                        <MudTableSortLabel SortLabel='SortAmount' T='CheckModel'
+                            InitialDirection="SortDirection.Descending">
+                            Amount
+                        </MudTableSortLabel>
+                    </MudTh>
+                    <MudTh Class='@(isPinnedAmt ? "th-sticky-action customheader-6 text-center":"customheader-6 text-center")'>Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel='Control Number'>
+                        <MudChip Class='mudchip-tbl' 
+                            Variant='Variant.Outlined' Color='Color.Error' Size='Size.Small'>
+                        @context.ControlNumber
+                        </MudChip>
+                    </MudTd>
+                    <MudTd Class='@(isPinnedCtrlNo ? "col-sticky-left":"")' DataLabel='Control No.'>
+                        <div class='d-flex align-center justify-start gap-2'>
+                            <MudChip Class='mudchip-tbl' Icon='@Icons.Material.Filled.CalendarMonth' Variant='Variant.Outlined' Color='Color.Dark' Size='Size.Small'>
+                                @(context.CheckDate?.ToShortDateString())
+                            </MudChip>
+                            <MudChip Class='mudchip-tbl' Icon='@Icons.Material.Filled.CalendarMonth' Variant='Variant.Outlined' Color='Color.Dark' Size='Size.Small'>
+                                @(!string.IsNullOrWhiteSpace(context.IssuedDate?.ToShortDateString()) ? context.IssuedDate?.ToShortDateString():"none")
+                            </MudChip> 
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel='Payee Name'>
+                        <div class='dynamic-div-1'>
+                            <small>@context.PayeeName</small>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel='Bank Name'>
+                        <div class='dynamic-div-1'>
+                            <small>@context.BankName</small>
+                        </div>
+                    </MudTd>
+                    <MudTd Class='@(isPinnedAmt ? "col-sticky-amt":"")' DataLabel='Amount'>
+                        <div class='tooltipw100'>
+                            <MudTooltip Class='flex-1' Text='@(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + context.Amount.ToString("N2"))' 
+                                Arrow Placement='Placement.Top' Color='Color.Success'>
+                                <div class='amount-container'>
+                                    <small class='@(context.Amount > 0 ? "font-bold color-green":"font-bold color-red")'>
+                                        @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
+                                    </small>
+                                    <MudSpacer />
+                                    <small class='@(context.Amount > 0 ? "txt-green":"txt-red")'>
+                                        @context.Amount.ToString("N2")
+                                    </small>
+                                </div>
+                            </MudTooltip>
+                        </div>
+                    </MudTd>
+                    <MudTd Class='@(isPinnedAmt ? "col-sticky-action text-center":"text-center")' DataLabel='Actions'>
+                        <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' 
+                            TransformOrigin='Origin.TopRight' Dense Size='Size.Small'>
+                            <DirectDepositMenuComponent
+                                ModuleName ="direct deposit"
+                                CheckModel ="context"
+                                EditDirectDepositClick="(()=>EditDirectDeposit(context))"
+                                AuditTrailClick="(() => GoToAuditTrail(context))"
+                                ShowReportClick="(() => context.showReport = ShowReport(context.showReport,context))"
+                            />
+                            @* <MudMenuItem OnClick="(()=>EditDirectDeposit(context))">
+                                <div class='d-flex align-center gap-2 '>
+                                    <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' Color='Color.Dark' />
+                                    <MudText Typo='Typo.body2' Color='Color.Dark'>Edit</MudText>
+                                </div>
+                            </MudMenuItem>
+                            <MudMenuItem OnClick="(() => GoToAuditTrail(context))">
+                                <div class='d-flex align-center gap-2 '>
+                                    <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' Color='Color.Dark'/>
+                                    <MudText Typo='Typo.body2' Color='Color.Dark'>Audit Trail</MudText>
+                                </div>
+                            </MudMenuItem>
+                            <MudMenuItem OnClick="(() => context.showReport = ShowReport(context.showReport,context))">
+                                <div class='d-flex align-center gap-2 '>
+                                    <MudIcon Icon='@Icons.Material.Filled.PictureAsPdf' Size='Size.Small' Color='Color.Dark'/>
+                                    <MudText Typo='Typo.body2' Color='Color.Dark'>Show Report</MudText>
+                                </div>
+                            </MudMenuItem> *@
+                        </MudMenu>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Class='txt-uppercase font-bold font12' Color='Color.Error'>No records found</MudText>
+                </NoRecordsContent>
+                <ChildRowContent>
+                    <MudTr>
+                        <td colspan="9">
+                            <div class='transition-05s-ease overflow-hidden' style='@(context.showReport || context.isShowChild ? "max-height:700px" : "max-height:0px")'> 
+                                <div class='d-flex align-center pa-2 bgc-f2f2f2'>
+                                    <MudSpacer />
+                                    <MudButton Class='btn-ios-d font12' OnClick='(() => context.showReport = ShowReport(context.showReport, context))' EndIcon="@Icons.Rounded.Close" Size='Size.Small' >
+                                        Close Report
+                                    </MudButton>
+                                </div>
+                                <div class='d-flex align-stretch justify-center default-report-container'>
+                                    @if(context.showReport)
+                                    {
+                                        @if (string.IsNullOrWhiteSpace(PDFContent))
+                                        {
+                                            <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
+                                                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                                            </MudOverlay>
+                                        }
+                                        else
+                                        {
+                                            <iframe src='@PDFContent' />
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </td>
+                    </MudTr>
+                </ChildRowContent>
+                <PagerContent>
+                    <FooterPaginationComponent
+                        FilterParameter='filterParameter'
+                        NextAndPreviousPage='( async (args)=> await NextAndPreviousPage((bool) args.Item1, (bool) args.Item2))'
+                        OnPageSizeChanged='( async (int s)=> { filterParameter.PageSize = GlobalVariable.PageSize = s; await tableVariable.ReloadServerData(); } )'
+                    />
+                    @* <MudTablePager PageSizeOptions='@GlobalVariable.pageSize' /> *@
+                </PagerContent>
+            </MudTable>
+        }
+    </MudContainer>
+</div>
+
+@code
+{
+    private bool dataFetched, openFilter, isLoading = true, isPinnedCtrlNo = true, isPinnedAmt = true;
+    private string searchTerm = string.Empty;
+    private string PDFContent  = default!;
+    private IEnumerable<CheckModel>? pageData;
+    private MudTable<CheckModel> tableVariable = new MudTable<CheckModel>();
+    private FilterParameter filterParameter = new();
+    private DateRange dateRangeFilter = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
+    private UserAccount requestor  = new();
+    private Project project = new();
+    private AccountingStatusModel selectedStatus = new();
+    private IEnumerable<AccountingStatusModel> hasAccountingStatus {get; set;} = new HashSet<AccountingStatusModel>();
+    private BankModel selectedBanks = new();
+    private IEnumerable<BankModel> hasBanks {get; set;} = new HashSet<BankModel>();
+    protected override async Task OnInitializedAsync()
+    {
+        GlobalClass.pageTitle = "Direct Depost List";
+        while (GlobalClass.currentUserAccount == null || GlobalClassList.listOfChecks == null)
+            await Task.Delay(1);
+            await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.DirectDepositList);
+        //clearing entry after save
+        CheckWriter.currentActionMode = Enums.ActionMode.Create;
+        SignalR();
+        CompletedFetch();
+    }
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if(firstRender)
+        {
+        filterParameter.PageSize = 15;
+        filterParameter.PageNo = 0;
+        }
+    }
+    private async Task CheckReport(CheckModel check)
+    {
+        PDFContent = await checkService.GetCheckReport(check);
+        StateHasChanged();
+    }
+    private bool FilterItems(CheckModel check)
+    {
+        if (string.IsNullOrEmpty(searchTerm))
+            return true;
+        if (check.CheckNo.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase))
+            return true;
+        return false;
+    }
+    private void EditDirectDeposit(CheckModel model)
+    {
+        GlobalClass.checkModel = model;
+        navigationManager.NavigateTo($"/direct-deposit/create");
+        DirectDeposit.currentActionMode = Enums.ActionMode.Update;
+    }
+    private async Task UpdateCheckStatus(CheckModel check)
+    {
+        await checkService.UpdateCheckStatus(check,GlobalClass.token);
+    }
+    public static string GetAcctgStatusColor(long acctgStatusId)
+    {
+        var acctgStatus = new AccountingStatusModel();
+        acctgStatus = GlobalClassList.accountingStatusList.Where(x => (int)x.StatusEnumCategoryId == acctgStatusId).FirstOrDefault();
+        return "background-color:" + acctgStatus?.StatusColor;
+    }
+    private bool ShowReport(bool isShow, CheckModel check)
+    {
+        check.AmountInWords = Common.AmountToWords.DecimalToWords(check.Amount);
+        Task.Run(()=> CheckReport(check));
+        GlobalClassList.listOfChecks.ForEach(model => {
+            if(model.Id != check.Id)
+                model.showReport = false;
+        });
+        return isShow = !isShow;
+    }
+    private async Task<TableData<CheckModel>> LoadCheck(TableState tableState)
+    {
+        isLoading = true;
+        filterParameter.CheckCategoryId = Enums.CheckCategory.DirectDeposit;
+        IEnumerable<CheckModel> data = await checkService.LoadCheck(filterParameter, GlobalClass.token);
+        switch (tableState.SortLabel)
+        {
+            case "SortControlNumber":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.ControlNumber);
+                break;
+             case "SortCheckNo":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.CheckNo);
+                break;
+            case "SortDate":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.CheckDate);
+                break;
+            case "SortDateIssued":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.IssuedDate);
+                break;
+            case "SortAmount":
+                data = data.OrderByDirection(tableState.SortDirection, x=>x.Amount);
+                break;
+        }
+        await Task.Delay(3);
+        GlobalClassList.listOfChecks = data.ToList();
+        pageData = GlobalClassList.listOfChecks.Skip(tableState.Page * GlobalVariable.PageSize).Take(GlobalVariable.PageSize).ToArray();
+        var total = GlobalClassList.listOfChecks.Count();
+        isLoading = !isLoading;
+        return new TableData<CheckModel>()
+        {
+            TotalItems = total,
+            Items = pageData
+        };
+    }
+    private void AddDirectDeposit()
+    {
+        if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.DirectDepositEntry))
+        {
+            GlobalClass.checkModel = new();
+            navigationManager.NavigateTo("/direct-deposit/create");
+            DirectDeposit.currentActionMode = Enums.ActionMode.Create;
+        } else {
+            Extensions.ShowAlert("Account has been restricted to create direct deposit.", Variant.Filled, SnackbarService, Severity.Error);
+        }
+    }
+    private void SignalR()
+    {
+        try
+        {
+            if(GlobalVariable.AMSHubConnection != null)
+                GlobalVariable.AMSHubConnection.On<CheckModel>("SaveCheck",(checkModel) => 
+                {
+                    tableVariable.ReloadServerData();
+                    StateHasChanged();
+                });
+        }catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            throw;
+        }
+    }
+    private string AccountingStatus(List<string> selectedStatus)
+    {
+        var status = "";
+        foreach (var item in hasAccountingStatus)
+        {
+        status = string.Join(", ", hasAccountingStatus.Select(x => x.StatusName));      
+        }
+        return $"{status}";
+    }
+    private string Banks(List<string> selectedBanks)
+    {
+        var status = "";
+        foreach (var item in hasBanks)
+        {
+        status = string.Join(", ", hasBanks.Select(x => x.BankName));      
+        }
+        return $"{status}";
+    }
+    private async void LookUp(Enums.LookUpType type, string lookFor)
+    {
+        var parameters = new DialogParameters();
+        string dialogTitle = string.Empty;
+        string searchPlaceholderText = string.Empty;
+        dialogTitle = lookFor+" Look Up";
+        searchPlaceholderText = lookFor;
+        parameters.Add("lookUpType", type);
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("buttonText", "Select");
+        parameters.Add("searchPlaceholderText", searchPlaceholderText);
+        parameters.Add("color", Color.Success);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            NoHeader = false,
+            DisableBackdropClick = false
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.LookUpDialog.GlobalGenericLookup>(dialogTitle, parameters, options).Result;
+        if (!resultDialog.Canceled) {
+            if(type == Enums.LookUpType.Employee)
+                requestor = (UserAccount) resultDialog.Data;
+            else if (type == Enums.LookUpType.Project)
+                project = (Project) resultDialog.Data;
+            filterParameter.RequestorId = requestor.EmployeeId;
+            filterParameter.PayeeId = project.ProjectId;
+            filterParameter.PayeeCategoryId = project.ProjectCategoryId;
+        }
+        StateHasChanged();
+    }
+    private async Task FilterTable()
+    {
+        filterParameter = GlobalVariable.filterParameter;
+        filterParameter.PageSize = GlobalVariable.PageSize;
+        filterParameter.PageNo = 0;
+        await tableVariable.ReloadServerData();
+    }
+    private async Task ReloadTable()
+    {
+        filterParameter = new();
+        filterParameter.PageSize = GlobalVariable.PageSize;
+        filterParameter.PageNo = 0;
+        await tableVariable.ReloadServerData();
+    }
+    private bool EnableClearButton()
+    {
+      if(filterParameter.IsCheckNumber)
+        return true;
+      if(filterParameter.IsControlNumber) 
+        return true;
+      if(filterParameter.IsAccountingStatus)
+        return true;
+      if(filterParameter.IsDate)
+        return true;
+      if(filterParameter.IsRequestor)
+        return true;
+      if(filterParameter.IsPayee)
+        return true;
+      if(filterParameter.IsBank)
+        return true;
+      return false;
+  }
+  private void GoToAuditTrail(CheckModel check)
+  {
+    GlobalClass.checkModel = check;
+    navigationManager.NavigateTo("/check/trail");
+  }
+    private long AccountingStatusId(Enums.AccountingStatusEnumCategory id)
+    {
+        return GlobalClassList.accountingStatusList
+            .Where( acctg => id == acctg.StatusEnumCategoryId)
+            .Select( acctg => acctg.Id)
+            .FirstOrDefault();
+    }
+    private string AccountingStatusName(long accountingStatusID)
+    {
+        return GlobalClassList.accountingStatusList
+            .Where( acctg => accountingStatusID == acctg.Id)
+            .Select( acctg => acctg.StatusName)
+            .FirstOrDefault()?? string.Empty;
+    }
+    private async Task NextAndPreviousPage(bool next, bool skipNext)
+    {
+      if(skipNext)
+      {
+        if(next)
+        {
+          //Waiting for row count to be calculated
+          @* double lastPage = Math.Floor(Convert.ToDouble(GlobalVariable.LastPage) / Convert.ToDouble(GlobalVariable.PageSize));
+          int remainder = ((Convert.ToDouble(GlobalVariable.LastPage)) % Convert.ToDouble(GlobalVariable.PageSize)) <= 0? 0 : 1;
+          filterParameter.PageNo = Convert.ToInt32(lastPage+ remainder);//Last Page *@
+          filterParameter.PageNo++;
+        }
+        else 
+          filterParameter.PageNo = 0;
+      } else {
+        if(next)
+          filterParameter.PageNo++;
+        else 
+          filterParameter.PageNo--;
+      }
+      await tableVariable.ReloadServerData();
+    }
+}

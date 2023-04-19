@@ -28,8 +28,9 @@
                     </div>
                     <div class='blzrthead-disabled-minheight15'>
                         <BlazoredTypeahead Disabled='@(!filterParameter.IsCharged)' SearchMethod='LoadCharging' Context='project' 
-                            Debounce='500' MaximumSuggestions='5' Placeholder='Project/Charging' DisableClear
+                            Debounce="300" MaximumSuggestions='5' Placeholder='Project/Charging' DisableClear
                             Value="currentProject" ValueExpression="(()=>currentProject)"
+                            MinimumLength='3'
                             ValueChanged="((Project p)=>OnProjectValueChanged(p))">
                             <SelectedTemplate>
                                 <small class='blzsmallpayproj-220px ml-2 pt-1'>@currentProject.ProjectName</small>
@@ -64,7 +65,9 @@
                             ValueChanged="((BankModel b)=> OnBankSelected(b))" 
                             Value="bank" 
                             ValueExpression="(()=>bank)"
-                            Debounce='500' MaximumSuggestions='5' aria-placeholder="Charge to" EnableDropDown DisableClear>
+                            Debounce="300" MaximumSuggestions='5' 
+                            MinimumLength='3'
+                            aria-placeholder="Charge to" EnableDropDown DisableClear>
                             <SelectedTemplate>
                                 <div class='d-flex flex-column'>
                                     <small class='blzsmallpayproj-170px ml-2 pt-1'>@bank.ShortcutName | @bank.AccountNo</small>
@@ -98,7 +101,7 @@
                             ValueChanged="((SubContractorProjectModel p)=> OnContractorValueChanged(p))" 
                             Value="currentContractor" 
                             ValueExpression="(()=>currentContractor)"
-                            Debounce='500' MaximumSuggestions='5' aria-placeholder="Charge to" DisableClear>
+                            Debounce="300" MaximumSuggestions='5' MinimumLength='3' aria-placeholder="Charge to" DisableClear>
                             <SelectedTemplate>
                                 <small class='blzsmallpayproj-220px ml-2 pt-1'>@projectContractor.SubContractorName</small>
                             </SelectedTemplate>
@@ -127,7 +130,7 @@
                             ValueChanged="((SubContractorProjectModel p)=> OnScopeOfWorkValueChanged(p))" 
                             Value="currentScopeOfWork" 
                             ValueExpression="(()=>currentScopeOfWork)"
-                            Debounce='500' MaximumSuggestions='5' aria-placeholder="Charge to" DisableClear EnableDropDown>
+                            Debounce="300" MaximumSuggestions='5' aria-placeholder="Charge to" DisableClear EnableDropDown>
                             <SelectedTemplate>
                                 <small class='blzsmallpayproj-170px ml-2 pt-1'>@currentScopeOfWork.ScopeOfWork</small>
                             </SelectedTemplate>
@@ -226,7 +229,7 @@
                                 ValueChanged="((ExpenseLineModel exp)=> OnExpenseLineValueChanged(exp))" 
                                 Value="currentExpLine" 
                                 ValueExpression="(()=>currentExpLine)"
-                                Debounce='500' MaximumSuggestions='99' aria-placeholder="Charge to" EnableDropDown DisableClear>
+                                Debounce="300" MaximumSuggestions='99' aria-placeholder="Charge to" EnableDropDown DisableClear>
                                 <SelectedTemplate>
                                     <small class='blzsmallpayproj-170px ml-2 pt-1'>@exp.ExpenseName</small>
                                 </SelectedTemplate>
@@ -386,7 +389,7 @@
         
     }
 
-     private void OnContractorValueChanged(SubContractorProjectModel contractor)
+    private void OnContractorValueChanged(SubContractorProjectModel contractor)
     {
         currentScopeOfWork = new();
         ListOfSubLedgers = new();

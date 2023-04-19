@@ -1,4 +1,4 @@
-<MudAutocomplete Class='h-w-division' T='DivisionModel' Variant="Variant.Outlined" Margin='Margin.Dense'
+<MudAutocomplete Class='h-w-division' T='DivisionModel' Variant="Variant.Outlined" style="width: 40px;" Margin='Margin.Dense'
         Value='Division' 
         ValueChanged='( (DivisionModel division)=> OnChanged(division) )'
         SearchFunc="@LoadDivision"
@@ -8,7 +8,7 @@
     <MudText>
         <MudTooltip Class='wspace-breakword'>
             @* Drop down *@
-            <small>@selDiv.divisionName | @selDiv.divisionName</small>
+            <small>@selDiv.divisionName | @selDiv.shortcutName</small>
         </MudTooltip>
     </MudText>
 </ItemTemplate>

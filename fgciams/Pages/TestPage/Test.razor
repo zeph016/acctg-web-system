@@ -7,6 +7,8 @@
     <MudContainer Class='d-flex flex-column pa-2 gap-2' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
         @* <h1>Test page</h1> *@
         <MudDatePicker  @bind-Date="_year" OpenTo="OpenTo.Year" FixMonth="@DateTime.Today.Month" FixDay="@DateTime.Today.Day" DateFormat="yyyy" DisableToolbar />
+        <input type='text' @bind-value='teststr'/>
+        <button @onclick='TestButton'>Test</button>
     </MudContainer>
 </div>
 
@@ -15,6 +17,7 @@
     private DateTime? _year = DateTime.Today;
     private bool dataFetched;
     private string PDFContent = default!;
+    private string teststr = string.Empty;
     protected override async Task OnInitializedAsync()
     {
         while (GlobalClass.currentUserAccount == null)
@@ -25,6 +28,14 @@
     {
         dataFetched = true;
         Task.Run(StateHasChanged);
+    }
+
+    private void TestButton()
+    {
+        string trimmedStr = teststr.Trim();
+        teststr = String.Concat(teststr.Where(x=> !Char.IsWhiteSpace(x)));
+        Console.WriteLine(trimmedStr);
+        Console.WriteLine(teststr);
     }
 
 }

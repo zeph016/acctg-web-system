@@ -1,0 +1,120 @@
+@inject ICustomerService CustomerService
+@inject ISnackbar SnackbarService
+@inject IDialogService dialogService
+
+<MudDialog Class='customdialog2'>
+    <TitleContent>
+        <div class='d-flex align-center'>
+            @if (GlobalClass.customerType.Id != 0)
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" />
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-3" />
+            }
+            <MudText Class='txt-uppercase' Typo='Typo.h6'>@dialogTitle</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudPaper Class='pa-2' Elevation='0'>
+            <MudGrid Class='pa-2' Spacing='1'>
+                <MudItem xs='12'>
+                    <MudSelect @bind-Value="GlobalClass.customerType.CustomerTypeName" Placeholder="Customer Type" HelperText='Required*' Margin='Margin.Dense'
+                        AnchorOrigin="Origin.BottomCenter">
+                        @foreach (Enums.CustomerType type in Enum.GetValues(typeof(Enums.CustomerType)))
+                        {
+                            <MudSelectItem Value="@GetEnumInt(type)">@Extensions.GetEnumDescription(type)</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs='12' sm='12'>
+                    <MudTextField @bind-Value='@GlobalClass.customerType.CustomerSubTypeName' Label='Customer Sub Type'
+                        ErrorText="Required*" HelperText="Required*" Margin='Margin.Dense' />
+                </MudItem>
+                <MudItem xs='12' sm='12'>
+                    <MudTextField @bind-Value='@GlobalClass.customerType.CustomerSubTypeShortcut'
+                        Label='Sub Type Shortcut' ErrorText="Required*" HelperText="Required*" Margin='Margin.Dense' />
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Class='btn-ios-d font12' OnClick="Cancel" Variant='Variant.Text' Size='Size.Small' DisableElevation>
+            Cancel</MudButton>
+        <MudButton Class='btn-ios-d font12' OnClick="Submit" Variant='Variant.Filled' Color='@color' Size='Size.Small'
+            DisableElevation>
+            @buttonText
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter] public MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public Color color { get; set; }
+    [Parameter] public string dialogTitle { get; set; } = string.Empty;
+    [Parameter] public string buttonText { get; set; } = string.Empty;
+    [Parameter] public Enums.ActionMode currentAction { get; set; }
+    private bool isReadOnly = false;
+    protected override async Task OnInitializedAsync()
+    {
+        if (GlobalClass.customerType.Id == 0)
+        {
+            isReadOnly = true;
+        }
+        await Task.Delay(1);
+    }
+    void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private async Task Submit()
+    {
+        await Prompt();
+    }
+    private async Task Prompt()
+    {
+        var parameters = new DialogParameters();
+        string contentText = " Customer Type";
+        string dialogTitle = currentAction.ToString();
+        parameters.Add("contentText", contentText);
+        parameters.Add("dialogTitle", dialogTitle);
+        parameters.Add("actionMode", currentAction);
+        var options = new DialogOptions()
+        {
+            CloseButton = false,
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true,
+            NoHeader =
+        false,
+            DisableBackdropClick = true
+        };
+        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters,
+        options).Result;
+        if (!resultDialog.Canceled)
+        {
+            try
+            {
+                if (currentAction == Enums.ActionMode.Create)
+                {
+                    GlobalClass.customerType = await CustomerService.AddCustomerType(GlobalClass.customerType, GlobalClass.token);
+                    GlobalClassList.customerTypeList.Add(GlobalClass.customerType);
+                }
+                else
+                {
+                    GlobalClass.customerType = await CustomerService.UpdateCustomerType(GlobalClass.customerType, GlobalClass.token);
+                }
+                MudDialog.Close(DialogResult.Ok(currentAction));
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Extensions.ShowAlert(ex.Message, Variant.Filled, SnackbarService, Severity.Info);
+            }
+        }
+    }
+    private String GetEnumInt(Enums.CustomerType type)
+    {
+        return ( (int) type).ToString();
+    }
+}

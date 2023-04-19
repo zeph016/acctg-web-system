@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using fgciams.domain.clsUserAccount;
-using fgciams.domain.clsAccountingStatus;
 using fgciams.domain.clsRequest;
 using fgciams.domain.clsModeOfPayment;
-using fgciams.domain.clsEmployee;
 using fgciams.domain.clsDivision;
 using fgciams.domain.clsBank;
 using fgciams.domain.clsProjectChargingLine;
@@ -16,20 +12,13 @@ using fgciams.domain.clsSubContractorPosition;
 using fgciams.domain.clsSubConGeneralInformation;
 using fgciams.domain.clsBillingDocument;
 using fgciams.domain.clsPayee;
-using fgciams.domain.clsEnums;
 using fgciams.domain.clsRFPBillingDocuments;
-using fgciams.domain.clsProject;
-using fgciams.domain.clsLiquidation;
-using fgciams.domain.clsPettyCash;
 using fgciams.domain.clsPettyCashAuditTrail;
 using fgciams.domain.clsExpenseLine;
 using fgciams.domain.clsRequestForPaymentAuditTrail;
 using fgciams.domain.clsAccountingPOBilling;
-using fgciams.domain.clsVoucher;
 using fgciams.domain.clsAccountType;
 using fgciams.domain.clsAccountingLine;
-using Microsoft.AspNetCore.SignalR.Client;
-using fgciams.domain.clsCheck;
 using fgciams.domain.clsVoucherRouteBatch;
 using fgciams.domain.clsTaxCode;
 using fgciams.domain.clsSupplier;
@@ -38,12 +27,11 @@ using fgciams.domain.clsMuniCity;
 using fgciams.domain.clsBIR;
 using fgciams.domain.clsScopeOfWork;
 using fgciams.domain.clsSubContractProject;
-using fgciams.domain.clsCollection;
 using fgciams.domain.clsBankDeposit;
-using fgciams.domain.clsFilterParameter;
 using fgciams.domain.clsCheckLedger;
-using fgciams.domain.clsDebit;
 using fgciams.domain.clsVoucherRouteTag;
+using fgciams.domain.clsAccessLevel;
+using fgciams.domain.clsCustomer;
 
 namespace fgciams.Common
 {
@@ -69,6 +57,7 @@ namespace fgciams.Common
         public static SubContractorPositionModel subContractorPosition {get; set;} = default!;
         public static SubConGeneralInformationModel subConGeneralInformation {get; set; } = default!;
         public static PettyCashModel pettyCash { get; set; } = new();
+        public static PettyCashModel pettyCashForPrint { get; set; } = new();
         public static LiquidationModel liquidation {get; set;} = default!;
         public static ExpenseLineModel expenseLine {get; set;} = default!;
         public static LiquidationModel forPrintingOrSaveLiquidation {get; set;} = default!;
@@ -95,6 +84,10 @@ namespace fgciams.Common
         public static CollectionModel collection {get;set;} = new();
         public static BankDepositModel bankDeposit {get;set;} = new();
         public static DebitModel debit {get;set;} = new();
+        public static ModuleAssigmentModel moduleAssignment {get;set;} = new();
+        public static FunctionAssigmentModel functionAssignment {get;set;} = new();
+        public static CustomerTypeModel customerType { get;set; } = new();
+        public static CustomerModel customer { get;set; } = new();
     }
     public static class GlobalClassList
     {
@@ -113,7 +106,7 @@ namespace fgciams.Common
         public static List<BillingDocumentModel> billingDocumentList {get;set;} = default!;
         public static List<PayeeModel> payeeList {get;set;} = default!;
         public static List<RequestForPaymentModel> requestForPaymentsList {get; set;} = default!;
-        public static List<PettyCashModel> pettyCashList {get;set;} = default!;
+        public static List<PettyCashModel> pettyCashList {get;set;} = new();
         public static List<LiquidationModel> liquidations {get; set;} = default!;
         public static List<LiquidationDetailModel> liquidationDetails {get; set;} = default!;
         public static List<PettyCashModel> liquidationPettyCash {get; set;} = default!;
@@ -157,6 +150,13 @@ namespace fgciams.Common
         public static List<VoucherDetailModel> journalList {get;set;} = new();
         public static List<VoucherDetailModel> subconARList {get;set;} = new();
         public static List<VoucherDetailModel> subconAPList {get;set;} = new();
+        public static List<VoucherDetailModel> voucherDetailList {get;set;} = new();
+        public static List<ModuleAssigmentModel> moduleAssignmentList {get;set;} = new();
+        public static List<FunctionAssigmentModel> functionAssignmentList {get;set;} = new();
+        public static List<NotificationModel> notificationList {get;set;} = new();
+        public static List<CustomerTypeModel> customerTypeList { get;set; } = new();
+        public static List<CustomerModel> customerList { get;set; } = new();
+        public static List<Project> voucherPayeeList = new();
     }
     public static class GlobalVariable
     {
@@ -167,6 +167,12 @@ namespace fgciams.Common
         public static int[] pageSize = new int[] { 15, 30, 45, 60, 75, 90, 100 };
         public static DateTime ServerTime { get; set; } = default!;
         public static string PromptRemarks { get; set; } = string.Empty;
+        public static bool DrawerOpen { get; set; }
+        public static CultureInfo CulturePh = CultureInfo.GetCultureInfo("en-PH");
+        public static int LastPage { get; set; } = 0;
+        public static int PageSize { get; set; } = 15;
+        public static Enums.FileType FileType { get; set; } = Enums.FileType.PDF;
+        public static bool FileDownloading { get; set; } = false;
 
     }
 }

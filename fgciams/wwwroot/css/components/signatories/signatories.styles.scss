@@ -1,8 +1,19 @@
 @use "../animations/animation.styles.css";
+@use "../flexgridmods/flexgridmods.styles.css";
 
 .signatory-card-1 {
     padding: 8px;
     background-color: #e7f2fb !important;
     min-width: 200px;
     animation: fadein 1s 1;
+}
+
+.signatory-entry-container {
+    @extend .dflex-col;
+    padding: 8px;
+    gap: 8px;
+    &__signatory-cont {
+        @extend .dflex-row;
+        gap: 8px;
+    }
 }

@@ -1,5 +1,5 @@
 @inject IPayeeCategoryService payeeCategoryServices
-@inject ISnackbar snackBar
+@inject ISnackbar SnackbarService
 @inject IDialogService dialogService
 
 <MudDialog Class="customdialog2">
@@ -68,13 +68,18 @@
     {
         if(!GlobalClass.payeeCategory.IsActive)
         {
+            if(!Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Delete))
+            {
+               Extensions.ShowAlert("Account has been restricted to deactivate payee category.", Variant.Filled, SnackbarService, Severity.Error);
+                return;
+            }
             currentAction = Enums.ActionMode.Deactivate;
             await Prompt();
         }
         else if (IsValidated())
             await Prompt();
          else 
-            Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" payee category"+GlobalVariable.errorPromptText,Variant.Filled,snackBar,Severity.Error);
+            Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" payee category"+GlobalVariable.errorPromptText,Variant.Filled,SnackbarService,Severity.Error);
     }
     private async Task Prompt()
     {
@@ -99,7 +104,7 @@
                 if(GlobalVariable.AMSHubConnection != null)
                     await GlobalVariable.AMSHubConnection.InvokeAsync("SavePayeeCategory",GlobalClass.payeeCategory);
             } catch (Exception ex) {
-                Extensions.ShowAlert(ex.Message,Variant.Filled,snackBar,Severity.Info);
+                Extensions.ShowAlert(ex.Message,Variant.Filled,SnackbarService,Severity.Info);
             }
         }
         else if (currentAction == Enums.ActionMode.Deactivate)

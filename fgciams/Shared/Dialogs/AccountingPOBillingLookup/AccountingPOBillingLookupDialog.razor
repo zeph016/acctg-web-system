@@ -10,7 +10,7 @@
     <DialogContent>
         <div Class='customdialog__content-container'>
             <BlazoredTypeahead SearchMethod=LoadPOBilling 
-            @bind-Value='poBilling' Debounce="500" placeholder='Payee' >
+            @bind-Value='poBilling' Debounce="300" placeholder='Payee' MinimumLength='3'>
               <SelectedTemplate>
               @context.ControlNumber | @context.Supplier
               </SelectedTemplate>

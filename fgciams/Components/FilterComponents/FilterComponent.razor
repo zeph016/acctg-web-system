@@ -34,8 +34,15 @@
                         <small>Requestor</small>
                     </div>
                     <div class='blzrthead-disabled-minheight15'>
-                        <BlazoredTypeahead SearchMethod='LoadEmployee' Disabled='@(!filterParameter.IsRequestor)' Context='reqby'
-                            Debounce='500' placeholder='Requestor' Value='requestor' ValueExpression='(() => requestor)'
+                        <AutoCompleteEmployeeSearch 
+                            Disabled='@(!filterParameter.IsRequestor)'
+                            UserAccountModel='requestor'
+                            OnEmployeeDataChanged='( (UserAccount account) => {
+                                requestor = account;
+                                filterParameter.RequestorId = requestor.EmployeeId;
+                            })'/>
+                        @* <BlazoredTypeahead SearchMethod='LoadEmployee' Disabled='@(!filterParameter.IsRequestor)' Context='reqby'
+                            Debounce='300' placeholder='Requestor' Value='requestor' ValueExpression='(() => requestor)'
                             ValueChanged='((UserAccount userAccount) =>
                             {
                                 requestor = userAccount;
@@ -56,7 +63,7 @@
                                     </div>
                                 </div>
                             </ResultTemplate>
-                        </BlazoredTypeahead>
+                        </BlazoredTypeahead> *@
                     </div>
                 </MudItem>
             } else if(moduleName.Contains("liquidation-list", StringComparison.InvariantCultureIgnoreCase))
@@ -73,8 +80,15 @@
                         <small>Prepared by</small>
                     </div>
                     <div class='blzrthead-disabled-minheight15'>
-                        <BlazoredTypeahead SearchMethod='LoadEmployee' Disabled='@(!filterParameter.IsPreparedBy)' Context='reqby'
-                            Debounce='500' placeholder='Requestor' Value='requestor' ValueExpression='(() => requestor)'
+                        <AutoCompleteEmployeeSearch 
+                            Disabled='@(!filterParameter.IsPreparedBy)'
+                            UserAccountModel='requestor'
+                            OnEmployeeDataChanged='( (UserAccount account) => {
+                                requestor = account;
+                                filterParameter.PreparedById = requestor.EmployeeId;
+                            })'/>
+                        @* <BlazoredTypeahead SearchMethod='LoadEmployee' Disabled='@(!filterParameter.IsPreparedBy)' Context='reqby'
+                            Debounce='300' placeholder='Requestor' Value='requestor' ValueExpression='(() => requestor)'
                             ValueChanged='((UserAccount userAccount) =>
                             {
                                 requestor = userAccount;
@@ -95,88 +109,114 @@
                                     </div>
                                 </div>
                             </ResultTemplate>
-                        </BlazoredTypeahead>
+                        </BlazoredTypeahead> *@
                     </div>
                 </MudItem>
             }
             @if(!moduleName.Contains("liquidation-list", StringComparison.InvariantCultureIgnoreCase) &&
                 !moduleName.Contains("debit-list", StringComparison.InvariantCultureIgnoreCase))
             {
-            <MudItem class='d-flex align-center justify-center' xs=2>
-                @if (moduleName.Contains("or-list", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    <MudCheckBox CheckedChanged='( (bool b)=> 
-                    { 
-                        currentProject = new();
-                        filterParameter.IsProject = !filterParameter.IsProject;
-                    })' Checked='filterParameter.IsProject' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
-                }
-                else
-                {
-                     <MudCheckBox CheckedChanged='( (bool b)=> 
-                    { 
-                        project = new();
-                        filterParameter.IsPayee = !filterParameter.IsPayee;
-                    })' Checked='filterParameter.IsPayee' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
-                }
-            </MudItem>
-            <MudItem Class='pr-3' xs=10>
-                <div class='@(moduleName.Contains("check-list", StringComparison.InvariantCultureIgnoreCase) ? "blzrtheadfilter-lbl-req":
-                    (moduleName.Contains("voucherroute-list", StringComparison.InvariantCultureIgnoreCase) ? "blzrtheadfilter-lbl-req":
-                    (moduleName.Contains("collection-list", StringComparison.InvariantCultureIgnoreCase) ? "blzrtheadfilter-lbl-req":
-                    (moduleName.Contains("or-list", StringComparison.InvariantCultureIgnoreCase) ? "blzrtheadfilter-lbl-req":"blztheadfilter-lbl-payproj")))) 
-                    @(!filterParameter.IsPayee ? "color-gray":"")'>
-                    <small>Project/Payee</small>
-                </div>
-                <div class='blzrthead-disabled-minheight15'>
+                <MudItem class='d-flex align-center justify-center' xs=2>
                     @if (moduleName.Contains("or-list", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        <BlazoredTypeahead SearchMethod='LoadCharging' Context='proj' 
-                            ValueChanged="((Project p)=> OnProjectSelected(p))" 
-                            Value="currentProject" 
-                            ValueExpression="(()=>currentProject)"
-                            Debounce='500' MaximumSuggestions='5' aria-placeholder="Charge to" Disabled='!filterParameter.IsProject'>
-                            <SelectedTemplate>
-                                <small class='blzsmallpayproj-170px ml-2 pt-1'>@currentProject.ProjectName</small>
-                            </SelectedTemplate>
-                            <ResultTemplate>
-                                <div class='d-flex flex-column'>
-                                    <small class='font-bold'>@proj.ProjectName</small>
-                                    <small>@proj.Location</small>
-                                    <small>@Extensions.ProjectReference(proj)</small>
-                                </div>
-                            </ResultTemplate>
-                        </BlazoredTypeahead>
+                        <MudCheckBox CheckedChanged='( (bool b)=> 
+                        { 
+                            currentProject = new();
+                            filterParameter.IsProject = !filterParameter.IsProject;
+                        })' Checked='filterParameter.IsProject' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
                     }
                     else
                     {
-                        <BlazoredTypeahead SearchMethod='LoadProject' Disabled='@(filterParameter.IsPayee ? !filterParameter.IsPayee:!filterParameter.IsProject)' Context='proj'
-                            Debounce="500" placeholder='Project / Charge to' Value='project' ValueExpression='(() => project)'
-                            ValueChanged='((Project selProject) => 
-                            {
-                                project = selProject;
-                                filterParameter.PayeeId = project.ProjectId;
-                                filterParameter.PayeeCategoryId = project.ProjectCategoryId;
-                            })'>
-                            <SelectedTemplate>
-                                <small class='blzsmallpayproj-170px ml-2 pt-1'>@project.ProjectName</small>
-                            </SelectedTemplate>
-                            <ResultTemplate>
-                                <div class='d-flex flex-column'>
-                                    <small class='font-bold'>@project.ProjectName</small>
-                                    <small>@project.Location</small>
-                                    <small>@Extensions.ProjectReference(project)</small>
-                                </div>
-                            </ResultTemplate>
-                        </BlazoredTypeahead>
-                    }   
-                </div>
-            </MudItem>
+                        <MudCheckBox CheckedChanged='( (bool b)=> 
+                        { 
+                            project = new();
+                            filterParameter.IsPayee = !filterParameter.IsPayee;
+                        })' Checked='filterParameter.IsPayee' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                    }
+                </MudItem>
+                <MudItem Class='pr-3' xs=10>
+                    <div class='@(moduleName.Contains("check-list", StringComparison.InvariantCultureIgnoreCase) ? "blzrtheadfilter-lbl-req":
+                        (moduleName.Contains("voucherroute-list", StringComparison.InvariantCultureIgnoreCase) ? "blzrtheadfilter-lbl-req":
+                        (moduleName.Contains("collection-list", StringComparison.InvariantCultureIgnoreCase) ? "blzrtheadfilter-lbl-req":
+                        (moduleName.Contains("or-list", StringComparison.InvariantCultureIgnoreCase) ? "blzrtheadfilter-lbl-req":"blztheadfilter-lbl-payproj")))) 
+                        @(!filterParameter.IsPayee ? "color-gray":"")' style='@(moduleName is "voucherroute-list" or "check-list" ? "top:52px" : "top:102px");'>
+                        <small>Project/Payee</small>
+                    </div>
+                    <div class='blzrthead-disabled-minheight15'>
+                        @if (moduleName.Contains("or-list", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            <AutoCompleteProjectSearch
+                                ProjectModel='currentProject'
+                                Disabled='!filterParameter.IsProject'
+                                OnProjectValueChanged='( (Project proj)=> {
+                                    currentProject = proj;
+                                    filterParameter.ProjectName = proj.ProjectName;
+                                    filterParameter.ProjectId = proj.ProjectId;
+                                    filterParameter.ProjectCategoryId = proj.ProjectCategoryId;
+                                })'
+                            />
+                            @* <BlazoredTypeahead SearchMethod='LoadCharging' Context='proj' 
+                                ValueChanged="((Project p)=> OnProjectSelected(p))" 
+                                Value="currentProject" 
+                                ValueExpression="(()=>currentProject)"
+                                Debounce='300' MaximumSuggestions='5' aria-placeholder="Charge to" Disabled='!filterParameter.IsProject'>
+                                <SelectedTemplate>
+                                    <small class='blzsmallpayproj-170px ml-2 pt-1'>@currentProject.ProjectName</small>
+                                </SelectedTemplate>
+                                <ResultTemplate>
+                                    <div class='d-flex flex-column'>
+                                        <small class='font-bold'>@proj.ProjectName</small>
+                                        <small>@proj.Location</small>
+                                        <small>@Extensions.ProjectReference(proj)</small>
+                                    </div>
+                                </ResultTemplate>
+                            </BlazoredTypeahead> *@
+                        }
+                        else
+                        {
+                            <AutoCompleteProjectSearch
+                                ProjectModel='project'
+                                IsFilter='true'
+                                Disabled='@(filterParameter.IsPayee ? !filterParameter.IsPayee:!filterParameter.IsProject)'
+                                OnProjectValueChanged='( (Project proj)=> {
+                                    project = proj;
+                                    filterParameter.PayeeId = proj.ProjectId;
+                                    filterParameter.PayeeCategoryId = proj.ProjectCategoryId;
+                                })'/>
+                            @* <BlazoredTypeahead SearchMethod='LoadProject' Disabled='@(filterParameter.IsPayee ? !filterParameter.IsPayee:!filterParameter.IsProject)' Context='proj'
+                                Debounce="300" placeholder='Project / Charge to' Value='project' ValueExpression='(() => project)'
+                                ValueChanged='((Project selProject) => 
+                                {
+                                    project = selProject;
+                                    filterParameter.PayeeId = project.ProjectId;
+                                    filterParameter.PayeeCategoryId = project.ProjectCategoryId;
+                                })'>
+                                <SelectedTemplate>
+                                    <small class='blzsmallpayproj-170px ml-2 pt-1'>@project.ProjectName</small>
+                                </SelectedTemplate>
+                                <ResultTemplate>
+                                    <div class='d-flex flex-column'>
+                                        <small class='font-bold'>@project.ProjectName</small>
+                                        <small>@project.Location</small>
+                                        <small>@Extensions.ProjectReference(project)</small>
+                                    </div>
+                                </ResultTemplate>
+                            </BlazoredTypeahead> *@
+                        }   
+                    </div>
+                </MudItem>
             }
             <MudItem Class='d-flex align-center justify-center' xs=2>
                 <MudCheckBox CheckedChanged='( (bool b)=> 
                     { 
-                        filterParameter.ControlNumber = string.Empty;
+                        if(moduleName.Contains("voucherroute-list", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            if(b)
+                                filterParameter.ControlNumber = "V-23-";
+                            else
+                                filterParameter.ControlNumber = string.Empty;
+                        } else 
+                            filterParameter.ControlNumber = string.Empty;
                         filterParameter.IsControlNumber = !filterParameter.IsControlNumber;
                     })' Checked='filterParameter.IsControlNumber' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
             </MudItem>
@@ -184,6 +224,20 @@
                 <MudTextField Class='txtfield-75 mr-2' @bind-Value='filterParameter.ControlNumber' Label='Control Number' Placeholder='Control Number' Immediate
                     Clearable Disabled="@(!filterParameter.IsControlNumber)" Variant='Variant.Outlined' Margin='Margin.Dense'/>
             </MudItem>
+            @if(moduleName.Contains("voucher-list", StringComparison.InvariantCultureIgnoreCase))
+            {
+                <MudItem Class='d-flex align-center justify-center' xs=2>
+                    <MudCheckBox CheckedChanged='( (bool b)=> 
+                        { 
+                            filterParameter.RFPControlNumber = string.Empty;
+                            filterParameter.IsRFPControlNumber = !filterParameter.IsRFPControlNumber;
+                        })' Checked='filterParameter.IsRFPControlNumber' Dense Size='Size.Small' Color='Color.Info' UnCheckedColor='Color.Dark' />
+                </MudItem>
+                <MudItem xs=10>
+                    <MudTextField Class='txtfield-75 mr-2' @bind-Value='filterParameter.RFPControlNumber' Label='RFP Control Number' Placeholder='RFP Control Number' Immediate
+                        Clearable Disabled="@(!filterParameter.IsRFPControlNumber)" Variant='Variant.Outlined' Margin='Margin.Dense'/>
+                </MudItem>
+            }
             @if(moduleName.Contains("liquidation-list", StringComparison.InvariantCultureIgnoreCase))
             {
                 <MudItem class='d-flex align-center justify-center' xs=2>
@@ -475,7 +529,7 @@
     [Parameter] public bool openSideFilter { get; set; }
     [Parameter] public string moduleName { get; set; } = string.Empty;
     [Parameter] public bool contentVisible { get; set; }
-    private bool dataFetched = true;
+    [Parameter] public Enums.LookUpType LookUpType { get; set; } = new();
     private DateRange dateRangeFilter = new DateRange(DateTime.Now.Date, DateTime.Now.Date), 
         datePeriodRange = new DateRange(DateTime.Now.Date, DateTime.Now.Date),
         dateDepositRange = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
@@ -535,7 +589,6 @@
 
     private void CompletedFetch()
     {
-        dataFetched = true;
         StateHasChanged();
     }
     protected async Task OpenFilter()
@@ -577,7 +630,7 @@
       var charging = await GlobalService.LoadChargeProjectLine(filterParameter, GlobalClass.token);
       return charging;
     }
-     private string SelectedRFPDetails(List<string> selectedDetail)
+    private string SelectedRFPDetails(List<string> selectedDetail)
     {
       var RFP = "";
       foreach (var item in hasRFPDetail)
@@ -655,10 +708,7 @@
         if (dateRangeName == dateDepositRange)
             dateDepositRange = new DateRange(DateTime.Now.AddDays(-1).Date, DateTime.Now.Date);
     }
-    private void SubmitDatePicker(MudDateRangePicker dateRangePickerName)
-    {
-        dateRangePickerName.Close(true);
-    }
+    private void SubmitDatePicker(MudDateRangePicker dateRangePickerName) => dateRangePickerName.Close(true);
     private void CancelDatePicker(MudDateRangePicker dateRangePickerName)
     {
         dateRangePickerName.Close(false);

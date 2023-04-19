@@ -1,6 +1,7 @@
 @inject IRequestTypeService requestTypeService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject IDialogService dialogService
+@inject IAccessLevelService accessLevelService
 
 <MudDialog Class="customdialog2">
   <TitleContent>
@@ -66,6 +67,11 @@
   {
     if(!GlobalClass.requestType.IsActive)
     {
+      if(!Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Delete))
+      {
+          Extensions.ShowAlert("Account has been restricted to deactivate request type.", Variant.Filled, SnackbarService, Severity.Error);
+          return;
+      }
       currentAction = Enums.ActionMode.Deactivate;
       await PromptMessage();
     }
@@ -74,7 +80,7 @@
     else
       Extensions.ShowAlert("Cannot " 
       + (currentAction == Enums.ActionMode.Create ? "add" : (currentAction == Enums.ActionMode.Update ? "update" : "")) 
-      + " Request Type, Incomplete fields.", Variant.Filled, snackbarService, Severity.Error);
+      + " Request Type, Incomplete fields.", Variant.Filled, SnackbarService, Severity.Error);
   }
   private bool ValidateEntries()
   {
@@ -111,7 +117,7 @@
             MudDialog.Close(DialogResult.Ok(currentAction));
           }
           catch (System.Exception ex) {
-            Extensions.ShowAlert(ex.Message, Variant.Filled, snackbarService, Severity.Error);
+            Extensions.ShowAlert(ex.Message, Variant.Filled, SnackbarService, Severity.Error);
           }
         }
         else if (currentAction == Enums.ActionMode.Deactivate)

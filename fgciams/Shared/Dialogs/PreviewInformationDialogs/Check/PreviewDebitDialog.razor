@@ -1,0 +1,71 @@
+@inherits PreviewDebitDialogBase
+
+<div class='custom-dialog2'>
+    <div class='custom-dialog2__title'>
+        <MudIcon Icon='@IconString' Size='Size.Medium' />
+        <p>@DialogTitle</p>
+        <MudSpacer />
+        <MudChip OnClick='(() => CopyTextToClipboard(Debit.ControlNumber))' Label Variant='Variant.Filled'>
+            <small>@Debit.ControlNumber</small>
+        </MudChip>
+    </div>
+    <div class='custom-dialog2__content'>
+        @if (!dataFetched)
+        {
+            <div class='circular-progress-cont'>
+                <MudProgressCircular Indeterminate Size='Size.Medium' Color='Color.Primary' />
+            </div>
+        }
+        else
+        {
+            <MudPaper Class='debitdialog-view'>
+                   <div class='debitdialog-view__grid'>
+                        <div class="debitv-lblbank">
+                            <p class='debitdialog-view__lbl'>Bank:</p>
+                        </div>
+                        <div class="debitv-bank">
+                            <p class='debitdialog-view__txt'>@Debit.BankName</p>
+                        </div>
+                        <div class="debitv-controls">
+                            <MudTooltip Text='@(Debit.IsActive != true ? "Cannot modify Debit, Check Status":"Modify Debit")' Arrow Placement='Placement.Top'>
+                                <MudIconButton Class='circular-ico-24 chkmod-btn' OnClick='(() => EditDebit(Debit))' Icon="@Icons.Material.Filled.Edit" aria-label="Edit" Size='Size.Small' 
+                                    Variant='Variant.Filled' Color='Color.Tertiary' Disabled='@(Debit.IsActive != true ? true:false)'/>
+                            </MudTooltip>
+                        </div>
+                        <div class="debitv-lbldate">
+                            <p class='debitdialog-view__lbl'>Date:</p>
+                        </div>
+                        <div class="debitv-date">
+                            <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Variant='Variant.Outlined' 
+                            Icon='@Icons.Material.Filled.CalendarMonth'>
+                             @Convert.ToDateTime(Debit.DebitDate).ToShortDateString()
+                            </MudChip>
+                        </div>
+                        <div class="debitv-lblamt">
+                            <p class='debitdialog-view__lbl'>Amount:</p>
+                        </div>
+                        <div class="debitv-amt">
+                            <MudChip OnClick='(() => CopyTextToClipboard(Debit.Amount.ToString("N2")))' Class='cursor-pointer' Variant='Variant.Text' 
+                                Size='Size.Small' Color='@(Debit.Amount > 0 ? Color.Success:Color.Error)'>
+                                <p class='debitdialog-view__txt font-bold @(Debit.Amount > 0 ? "color-green":"color-red")'>
+                                    @("₱" + @Debit.Amount.ToString("N2"))
+                                </p>
+                            </MudChip>
+                        </div>
+                        <div class="debitv-lblrem">
+                            <p class='debitdialog-view__lbl'>Remarks:</p>
+                        </div>
+                        <div class="debitv-rem">
+                            <p class='debitdialog-view__txt'>@Debit.Remarks</p>
+                        </div>
+                   </div>
+            </MudPaper>
+        }
+    </div>
+    <div class='custom-dialog2__actions'>
+        <MudSpacer />
+        <MudButton OnClick='Cancel' Size='Size.Small' Variant='Variant.Text' DisableElevation >
+            @CancelText
+        </MudButton>
+    </div>
+</div>

@@ -1,7 +1,7 @@
 @inject IAccountingStatusService accountingStatusService
 @inject IDialogService dialogService
 @inject NavigationManager NavigationManager
-@inject ISnackbar snackbar
+@inject ISnackbar SnackbarService
 
 <MudDialog Class="customdialog2">
     <TitleContent>
@@ -31,14 +31,6 @@
                 <MudItem Class='d-flex align-center' xs='2'>
                     <div class='smallColorBox text-left' style='@($"background-color:{GlobalClass.acctgStatus.StatusColor};")' />
                 </MudItem>
-                @* <MudItem xs='10'>
-                    <MudTextField @bind-Value="@GlobalClass.acctgStatus.StatusIcon" HelperText="Required*" class="mud-grid-item mud-grid-item-xs-9" Label="Icon" Variant="Variant.Text"
-                        Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.InsertEmoticon" OnAdornmentClick="(() => ShowIcons())" Error=@notValidStatusIcon ErrorText="Required*" 
-                        Margin='Margin.Dense' />
-                </MudItem>
-                <MudItem Class='d-flex align-center justify-center' xs='2'>
-                    <MudIcon Icon="@GlobalClass.selectedIcon" Color="Color.Primary" Size='Size.Medium' />
-                </MudItem> *@
                 <MudItem xs='12'>
                     <MudSelect Label="Category" @bind-Value="GlobalClass.acctgStatus.StatusEnumCategoryId" AnchorOrigin="Origin.BottomCenter">
                         @foreach (var items in SortedCategory())
@@ -97,18 +89,21 @@
     {
         if(!GlobalClass.acctgStatus.IsActive)
         {
+            if(!Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Delete))
+            {
+                Extensions.ShowAlert("Account has been restricted to deactivate account type.", Variant.Filled, SnackbarService, Severity.Error);
+                return;
+            }
             currentAction = Enums.ActionMode.Deactivate;
             await Prompt();
         }
         else if (IsValidated())
             await Prompt();
         else
-            Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" accounting status"+GlobalVariable.errorPromptText,Variant.Filled,snackbar,Severity.Error);
+            Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" accounting status"+GlobalVariable.errorPromptText,Variant.Filled,SnackbarService,Severity.Error);
     }
-    private void UpdateSelectedColor(MudColor colorValue)
-    {
-        GlobalClass.acctgStatus.StatusColor = colorValue.ToString();
-    }
+    private void UpdateSelectedColor(MudColor colorValue) => GlobalClass.acctgStatus.StatusColor = colorValue.ToString();
+    
     private async Task ShowIcons()
     {
         var parameters = new DialogParameters();
@@ -144,7 +139,7 @@
                     await GlobalVariable.AMSHubConnection.InvokeAsync("SaveAccountingStatus",GlobalClass.acctgStatus);
                 MudDialog.Close(DialogResult.Ok(currentAction));
             } catch(System.Exception ex) {
-                Extensions.ShowAlert(ex.Message, Variant.Filled, snackbar, Severity.Error);
+                Extensions.ShowAlert(ex.Message, Variant.Filled, SnackbarService, Severity.Error);
             }
         }
         else if (currentAction == Enums.ActionMode.Deactivate)

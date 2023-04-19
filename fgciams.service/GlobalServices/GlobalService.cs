@@ -171,7 +171,7 @@ namespace fgciams.service.GlobalServices
             try
             {
                 _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("accounting-global/payor-list ", filterParameter);
+                HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("accounting-global/payor-list", filterParameter);
                 responseMessage.EnsureSuccessStatusCode();
 
                 return await responseMessage.Content.ReadAsAsync<List<Project>>();
@@ -229,6 +229,53 @@ namespace fgciams.service.GlobalServices
             }
             catch (Exception)
             {
+                throw;
+            }
+        }
+        public async Task<CollectionModel> GetProjectContract(long projectID, string token)
+        {
+            try
+            {
+                var contract = new CollectionModel();
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                HttpResponseMessage responseMessage = await _client.GetAsync("accounting-global/project/"+projectID);
+                if (responseMessage.IsSuccessStatusCode)
+                    contract = await responseMessage.Content.ReadAsAsync<CollectionModel>();
+                return contract;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        public async Task<decimal> GetProjectPreviousPercentage(long projectID, string token)
+        {
+            try
+            {
+                var previousPercent = 0.00m;
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                HttpResponseMessage responseMessage = await _client.GetAsync("collection/prev-percentage/"+projectID);
+                if (responseMessage.IsSuccessStatusCode)
+                    previousPercent = await responseMessage.Content.ReadAsAsync<decimal>();
+                return previousPercent;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        public async Task<PayeeModel> GetPayee(long Id, string token)
+        {
+            try{
+                var p = new PayeeModel();
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                HttpResponseMessage responseMessage = await _client.GetAsync("payee/"+Id);
+                if(responseMessage.IsSuccessStatusCode)
+                    p = await responseMessage.Content.ReadAsAsync<PayeeModel>();
+                return p;
+            } catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
                 throw;
             }
         }

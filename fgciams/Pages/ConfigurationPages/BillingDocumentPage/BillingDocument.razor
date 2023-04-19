@@ -2,8 +2,9 @@
 
 @inject IBillingDocumentService billingDocumentService
 @inject IDialogService dialogService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject ApplicationState AppState
+@inject IAccessLevelService accessLevelService
 
 <div class='page-cont'>
     <div class='drawer-right'>
@@ -46,7 +47,7 @@
                     <MudTooltip Text="Refresh Table">
                         <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='(()=>{searchTerm = "";})' ></MudIconButton>
                     </MudTooltip>
-                    <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                    <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
                         TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
                         <MudMenuItem OnClick='(() => BillingDocDialog(new BillingDocumentModel(), Enums.ActionMode.Create))'>
                             <div class='d-flex align-center gap-2 '>
@@ -71,7 +72,7 @@
                     <MudTd DataLabel="Billing Remarks">@context.Remarks</MudTd>
                     <MudTd Class='text-center pa-2'>
                         <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft'
-                        TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' ActivationEvent='MouseEvent.MouseOver'>
+                        TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' >
                             <MudMenuItem OnClick='(()=> BillingDocDialog(context, Enums.ActionMode.Update))'>
                                 <div class='d-flex align-center gap-2 '>
                                     <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' />
@@ -98,6 +99,7 @@
         while (GlobalClass.currentUserAccount == null || GlobalClassList.billingDocumentList == null)
             await Task.Delay(1);
         await AppState.UpdateMainLayoutComponent(true);
+        await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.BillingDocument);
         BillingDocsHub();
         CompletedFetch();
     }
@@ -110,6 +112,14 @@
 
     private async Task BillingDocDialog(BillingDocumentModel selectedBillDoc, Enums.ActionMode action)
     {
+        Enums.AISModuleFunctions function = action == Enums.ActionMode.Update? Enums.AISModuleFunctions.Edit : Enums.AISModuleFunctions.Add;
+        if (!Common.Privileges.isPrivilegeFunction(function))
+        {
+           string act = action == Enums.ActionMode.Update ? "edit" : "add";
+           Extensions.ShowAlert(String.Format("Account has been restricted to {0} Billing Document.", act), Variant.Filled, SnackbarService, Severity.Error);
+            return;
+        }
+
         var parameters = new DialogParameters();
         GlobalClass.billingDoc = selectedBillDoc;
         string dialogTitle = GlobalClass.billingDoc.Id != 0 ? "Edit Billing Document" : "Add Billing Document";
@@ -124,14 +134,14 @@
         if (!resultDialog.Canceled)
         {
             if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Create)
-                Extensions.ShowAlert("Billing Document successfully addded.", Variant.Filled,snackbarService,Severity.Success);
+                Extensions.ShowAlert("Billing Document successfully saved.", Variant.Filled,SnackbarService,Severity.Success);
             else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Update)
-                Extensions.ShowAlert("Billing Document successfully updated.", Variant.Filled,snackbarService,Severity.Info);
+                Extensions.ShowAlert("Billing Document successfully updated.", Variant.Filled,SnackbarService,Severity.Info);
             else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Deactivate)
-                Extensions.ShowAlert("Billing Document has been deactivated.", Variant.Filled,snackbarService,Severity.Warning);
+                Extensions.ShowAlert("Billing Document has been deactivated.", Variant.Filled,SnackbarService,Severity.Warning);
             GlobalClassList.billingDocumentList = GlobalClassList.billingDocumentList.Where(x => x.IsActive == true).ToList();
         } else if (resultDialog.Canceled)
-            Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
+            Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
     }
 
     private bool FilterItems(BillingDocumentModel items)

@@ -1,0 +1,64 @@
+@inject IExpenseLineService ExpenseLineService
+
+
+@if(!dataFetched)
+{
+    <MudSkeleton Animation='Animation.Wave' Width='100px' Height='20px' />
+}
+else
+{
+    <BlazoredTypeahead SearchMethod='LoadExpense' Debounce='300' placeholder='Expense'
+        Value='@expenseLineModel' ValueExpression='(() => expenseLineModel)'
+        ValueChanged='(async (ExpenseLineModel model) => { 
+            expenseLineModel = model;
+            await SelectedExpense(model); 
+        })'>
+        <SelectedTemplate>
+            <small class='wspace-nowrap'>@expenseLineModel.ExpenseName</small>
+        </SelectedTemplate>
+        <ResultTemplate>
+            @context.ExpenseName
+        </ResultTemplate>
+    </BlazoredTypeahead>
+}
+
+@code {
+    [Parameter] public EventCallback<ExpenseLineModel> OnSelectedExpenseValue { get; set; }
+    [Parameter] public long ExpenseId { get; set; }
+    private bool dataFetched;
+    private ExpenseLineModel expenseLineModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        while (GlobalClassList.expenseLineList.Count() == 0)
+            await Task.Delay(1);
+        if(ExpenseId != 0)
+            expenseLineModel = LoadExpenseLine();
+        CompletedFetch();
+    }
+
+    private void CompletedFetch()
+    {
+        dataFetched = true;
+        StateHasChanged();
+    }
+    private ExpenseLineModel LoadExpenseLine()
+    {
+        var result = GlobalClassList.expenseLineList.Where(x=>x.Id == ExpenseId).FirstOrDefault();
+        if (result != null )
+            return result;
+        else
+            return new();
+    }
+    private async Task<IEnumerable<ExpenseLineModel>> LoadExpense(string expenseLine)
+    {
+        var response = await ExpenseLineService.LoadExpenseLine(GlobalClass.token);
+        return response.Where(x=>x.ExpenseName.Contains(expenseLine, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+
+    private async Task SelectedExpense(ExpenseLineModel model)
+    {
+        if(model != null)
+            await OnSelectedExpenseValue.InvokeAsync(model);
+    }
+}

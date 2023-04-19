@@ -2,23 +2,22 @@
 
 @inject IVoucherRouteBatchService voucherRouteBatchService
 @inject NavigationManager navigationManager
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject IJSRuntime JSRuntime
+@inject IAccessLevelService accessLevelService
 
 <div class='page-cont'>
   <div class='drawer-right-min'>
-    <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
-      <CtrlNumberOnlyFilter OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
-        FilterClick='FilterTable' ResetTableClick='ReloadTable'
-        contentVisible='openSideFilter' moduleName="voucherbatchroute-list"/>
+    <MudDrawer Class='pa-1' Open='false' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+        <MudTooltip  Text='Filter' Arrow Placement='Placement.Left'>
+            <MudIconButton OnClick='(() => openFilter = !openFilter)' Icon='@Icons.Material.Filled.FilterList' arial-label='Close Filter' Size='Size.Small' />
+        </MudTooltip>
     </MudDrawer>
   </div>
   <MudContainer Class='py-2 pl-2 pr-10  table-toolbar-custom1' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
     @if (!dataFetched)
     {
-      <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
-        <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='calc(100vh - 135px)' Animation='Animation.Wave' />
-      </MudPaper>
+      <SkeletonPageList />
     }
     else
     {
@@ -35,15 +34,26 @@
                <MudIconButton Class='@(isLoading ? "mudbtnico-rotate":"")' OnClick='ReloadTable' Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" 
                   Color='@(isLoading ? Color.Info : Color.Default)'/>
             </MudTooltip>
-            <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' ActivationEvent='MouseEvent.MouseOver'
+            <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' 
                 TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
-                  <MudMenuItem OnClick='(()=> navigationManager.NavigateTo($"/voucher/batch"))'>
+                  <MudMenuItem OnClick='(()=> CreateBatch() )'>
                     <div class='d-flex align-center gap-2 '>
                         <MudIcon Icon='@Icons.Material.Filled.Add' Size='Size.Small' Color='Color.Dark'/>
-                        <MudText Typo='Typo.body2' Color='Color.Dark'>Add</MudText>
+                        <MudText Typo='Typo.body2' Color='Color.Dark'>New Batch</MudText>
                     </div>
+                  </MudMenuItem>
+                  <MudMenuItem OnClick="(() => openFilter = !openFilter)"  >
+                      <div class='d-flex align-center gap-2 '>
+                          <MudIcon Icon='@Icons.Material.Filled.FilterList' Size='Size.Small' Color='Color.Dark' />
+                          <MudText Typo='Typo.body2' Color='Color.Dark'>Filter</MudText>
+                      </div>
                   </MudMenuItem>        
             </MudMenu>
+            @if(openFilter)
+            {
+              <PopoverFilterMainComponent IsOpen='openFilter' CloseFilter='(() => openFilter = !openFilter)' IsMainFilter='true' IsLedgerList='false' IsCtrlNo='true'
+                ModuleName='voucherbatchroute-list' ApplyFilter='FilterTable' ResetTableData='ReloadTable'/>
+            }
         </ToolBarContent>
         <ColGroup>
           <col style="width: 1%" />
@@ -77,7 +87,7 @@
         <RowTemplate>
             <MudTd Class='@(isPinnedCtrlNo ? "col-sticky-left":"")' DataLabel="Control No.">
               <div class='d-flex align-center'>
-                 <MudChip Class='mudchip-tbl' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, snackbarService, JSRuntime))' Variant='Variant.Outlined'
+                 <MudChip Class='mudchip-tbl' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, SnackbarService, JSRuntime))' Variant='Variant.Outlined'
                     Color='Color.Error' Size='Size.Small'>
                   @context.ControlNumber
                 </MudChip>
@@ -99,9 +109,15 @@
               </div>
             </MudTd>
             <MudTd Class='text-center'>
-              <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
+              <MudMenu Class='mudbtnico-rotate-90' Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' 
                   TransformOrigin='Origin.TopRight' Dense Size='Size.Small'>
-                <MudMenuItem OnClick='(()=> EditView(context))'>
+                  <VoucherBatchMenuComponent
+                    EditClick='(()=> EditView(context))'
+                    NavigateClick='(()=> NavigateAuditrail(context))'
+                    ShowReportClick='(()=> context.ShowReport = ShowReport(context.ShowReport, context))'
+                    ModuleName='batch'
+                  />
+                @* <MudMenuItem OnClick='(()=> EditView(context))'>
                   <a class='d-flex align-center gap-2 '>
                     <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' Color='Color.Dark'/>
                     <MudText Typo='Typo.body2' Color='Color.Dark'>Edit</MudText>
@@ -118,7 +134,7 @@
                     <MudIcon Icon='@Icons.Material.Filled.PictureAsPdf' Size='Size.Small' Color='Color.Dark'/>
                     <MudText Typo='Typo.body2' Color='Color.Dark'>Show Report</MudText>
                   </a>
-                </MudMenuItem>
+                </MudMenuItem> *@
               </MudMenu>
             </MudTd>
         </RowTemplate>
@@ -155,7 +171,12 @@
           </MudTr>
           </ChildRowContent>
         <PagerContent>
-            <MudTablePager PageSizeOptions='@GlobalVariable.pageSize' />
+            <FooterPaginationComponent
+              FilterParameter='filterParameter'
+              NextAndPreviousPage='( async (args)=> await NextAndPreviousPage((bool) args.Item1, (bool) args.Item2))'
+              OnPageSizeChanged='( async (int s)=> { filterParameter.PageSize = GlobalVariable.PageSize = s; await tableVariable.ReloadServerData(); } )'
+            />
+            @* <MudTablePager PageSizeOptions='@GlobalVariable.pageSize' /> *@
         </PagerContent>
       </MudTable>
     }
@@ -163,7 +184,7 @@
 </div>
 
 @code{
-  private bool dataFetched, openSideFilter, isLoading, isPinnedCtrlNo = true;
+  private bool dataFetched, openFilter, isLoading, isPinnedCtrlNo = true;
   private FilterParameter filterParameter = new();
   private IEnumerable<VoucherRouteBatchModel> pageData = new List<VoucherRouteBatchModel>();
   private MudTable<VoucherRouteBatchModel> tableVariable = new MudTable<VoucherRouteBatchModel>();
@@ -173,15 +194,23 @@
     GlobalClass.pageTitle = "voucher batch list";
     while(GlobalClass.currentUserAccount == null)
       await Task.Delay(1);
-
+    await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.BatchEntry);
     GlobalClassList.VoucherBatches = new();
     CompletedFetch();
-    SignalR();
+    //SignalR();
   }
   void CompletedFetch()
   {
     dataFetched = true;
     Task.Run(StateHasChanged);
+  }
+  protected override void OnAfterRender(bool firstRender)
+  {
+    if(firstRender)
+    {
+      filterParameter.PageSize = 15;
+      filterParameter.PageNo = 0;
+    }
   }
   private void EditView(VoucherRouteBatchModel voucherRoute)
   {
@@ -245,5 +274,36 @@
           Console.WriteLine(ex.Message);
           throw;
       }
+  }
+  private async Task NextAndPreviousPage(bool next, bool skipNext)
+  {
+    if(skipNext)
+    {
+      if(next)
+      {
+        //Waiting for row count to be calculated
+        @* double lastPage = Math.Floor(Convert.ToDouble(GlobalVariable.LastPage) / Convert.ToDouble(GlobalVariable.PageSize));
+        int remainder = ((Convert.ToDouble(GlobalVariable.LastPage)) % Convert.ToDouble(GlobalVariable.PageSize)) <= 0? 0 : 1;
+        filterParameter.PageNo = Convert.ToInt32(lastPage+ remainder);//Last Page *@
+        filterParameter.PageNo++;
+      }
+      else 
+        filterParameter.PageNo = 0;
+    } else {
+      if(next)
+        filterParameter.PageNo++;
+      else 
+        filterParameter.PageNo--;
+    }
+    await tableVariable.ReloadServerData();
+  }
+  private void CreateBatch()
+  {
+    if(Common.Privileges.IsPrivilegeModule(Enums.AISModules.BatchEntry))
+    {
+        navigationManager.NavigateTo($"/voucher/batch");
+    } else {
+        Extensions.ShowAlert("Account has been restricted to create batch.", Variant.Filled, SnackbarService, Severity.Error);
+    }
   }
 }

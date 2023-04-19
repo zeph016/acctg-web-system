@@ -56,6 +56,6 @@ namespace fgciams.domain.clsUserAccount
         //public Enums.AccessLevel AccessLevel { get; set; }
         public System.Net.HttpStatusCode httpResponse { get; set; }
         public string httpResponseMesg { get; set; } = string.Empty;
-         public Enums.AccountingAccessLevel AccessLevel { get; set; }    
+        public Enums.AISUserAccessLevel AccessLevel { get; set; }    
     }
 }

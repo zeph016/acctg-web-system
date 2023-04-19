@@ -1,0 +1,36 @@
+@inherits ListVoucherCardBase
+
+
+<div class="voucher-card-list">
+    <div class='voucher-card-list__grid'>
+        <div class="vlist-title">
+            <p>Voucher List</p> 
+            <MudSpacer />
+            <small>copy all</small>
+            <MudIconButton OnClick='CopyAllVoucherNo' Icon='@Icons.Material.Filled.CopyAll' Size='Size.Small'/>
+        </div>
+        <div class="vlist-content">
+            @foreach (var item in ApplicationState.CheckVoucherList)
+            {
+                <VoucherCard CheckVoucher='@item' />
+            }
+        </div>
+        <div class="vlist-amount">
+            <p class='voucher-card-list__lbl'>Total Amount:</p> 
+            <MudSpacer />
+            <p class='voucher-card-list__amt 
+                @(Math.Round(ApplicationState.CheckVoucherList.Sum(x => x.Amount),2) > 0 ? "color-green":"color-red")'
+                @onclick='(() => CopyTextToClipboard("₱" + Math.Round(ApplicationState.CheckVoucherList.Sum(x => x.Amount),2).ToString("N2")))'>
+                ₱@Math.Round(ApplicationState.CheckVoucherList.Sum(x => x.Amount),2).ToString("N2")
+            </p>
+        </div>
+        <div class="vlist-footer">
+            <div class='action-buttons'>
+                <MudSpacer />
+                <MudButton OnClick='Close' Size='Size.Small' DisableElevation>
+                    Close
+                </MudButton>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,6 +1,36 @@
+@use "../flexgridmods/flexgridmods.styles.css";
+
 .ddavatar {
   align-items: center;
   display: flex;
   gap: 1rem;
   width: 215px;
+}
+
+
+.avatar20px {
+  height: 20px !important;
+  width: 20px !important;
+}
+
+.employee-card, .project-card, 
+.employee-card-result {
+  @extend .dflex-row;
+  gap: 8px;
+}
+
+.project-card-result {
+  @extend .dflex-col;
+}
+.employee-card, .employee-card-result
+.project-card {
+  color: black;
+  gap: 8px;
+}
+
+.project-card-result {
+  &__sub-container {
+    @extend .dflex-col;
+    gap: 8px;
+  }
 }

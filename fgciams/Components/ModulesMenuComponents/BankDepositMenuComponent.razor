@@ -1,0 +1,38 @@
+@inject ISnackbar SnackbarService
+
+<MudMenuItem OnClick="(() => GetBankDepositDetails(Enums.ActionMode.Cancel))">
+    <div class='d-flex align-center gap-2'>
+        <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small' Color='Color.Dark' />
+        <MudText Typo='Typo.body2' Color='Color.Dark'>Cancel</MudText>
+    </div>
+</MudMenuItem>
+<MudMenuItem OnClick="ShowCollections">
+    <div class='d-flex align-center gap-2'>
+        <MudIcon Icon='@Icons.Material.Filled.ViewList' Size='Size.Small' Color='Color.Dark' />
+        <MudText Typo='Typo.body2' Color='Color.Dark'>View Collections</MudText>
+    </div>
+</MudMenuItem>
+
+@code
+{
+    [Parameter] public string ModuleName { get; set; } = string.Empty;
+    [Parameter] public EventCallback<Enums.ActionMode> CancelClick { get; set; }
+    [Parameter] public EventCallback ShowCollectionClick { get; set; }
+
+    private async Task GetBankDepositDetails(Enums.ActionMode action) => await isAllowed(CancelClick, action , Enums.AISModuleFunctions.Cancel);
+    private async Task ShowCollections() =>  await isAllowed(ShowCollectionClick, Enums.AISModuleFunctions.View);
+    private async Task isAllowed(EventCallback callback, Enums.AISModuleFunctions function)
+    {
+        if(Common.Privileges.isPrivilegeFunction(function))
+            await callback.InvokeAsync();
+        else
+            Extensions.ShowAlert(String.Format("Account has been restricted to {0} {1}.",Extensions.GetEnumDescription(function).ToLower(), ModuleName), Variant.Filled, SnackbarService, Severity.Error);
+    }
+    private async Task isAllowed(EventCallback<Enums.ActionMode> callback,Enums.ActionMode mode, Enums.AISModuleFunctions function)
+    {
+        if(Common.Privileges.isPrivilegeFunction(function))
+            await callback.InvokeAsync(mode);
+        else
+            Extensions.ShowAlert(String.Format("Account has been restricted to {0} {1}.",Extensions.GetEnumDescription(function).ToLower(), ModuleName), Variant.Filled, SnackbarService, Severity.Error);
+    }
+}

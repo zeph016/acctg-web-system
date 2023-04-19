@@ -12,20 +12,23 @@
 
     public override async Task SetParametersAsync(ParameterView parameters)
     {
-        
+
         await base.SetParametersAsync(parameters);
     }
     protected override void OnInitialized()
     {
-        if (urlTo.Contains("pc-create", StringComparison.InvariantCultureIgnoreCase))
-            navigationManager.NavigateTo($"/petty-cash");
-        if (urlTo.Contains("liq-create", StringComparison.InvariantCultureIgnoreCase))
-            navigationManager.NavigateTo($"/liquidation");
-        if (urlTo.Contains("rfp-create", StringComparison.InvariantCultureIgnoreCase))
-            navigationManager.NavigateTo($"/request-payment/create");
-        if (urlTo.Contains("voucher-create", StringComparison.InvariantCultureIgnoreCase))
-            navigationManager.NavigateTo($"/voucher");
-        if (urlTo.Contains("debit-create", StringComparison.InvariantCultureIgnoreCase))
-            navigationManager.NavigateTo($"/debit/create");
+        if (!String.IsNullOrEmpty(urlTo))
+        {
+            if (urlTo.Contains("pc-create", StringComparison.InvariantCultureIgnoreCase))
+                navigationManager.NavigateTo($"/petty-cash");
+            if (urlTo.Contains("liq-create", StringComparison.InvariantCultureIgnoreCase))
+                navigationManager.NavigateTo($"/liquidation");
+            if (urlTo.Contains("rfp-create", StringComparison.InvariantCultureIgnoreCase))
+                navigationManager.NavigateTo($"/request-payment/create");
+            if (urlTo.Contains("voucher-create", StringComparison.InvariantCultureIgnoreCase))
+                navigationManager.NavigateTo($"/voucher");
+            if (urlTo.Contains("debit-create", StringComparison.InvariantCultureIgnoreCase))
+                navigationManager.NavigateTo($"/debit/create");
+        }
     }
 }

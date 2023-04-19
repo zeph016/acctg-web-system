@@ -32,12 +32,12 @@ namespace fgciams.service.VoucherServices
         #region Methods
 
         #region Not in Voucher
-        public async Task<List<RequestForPaymentModel>> NotInVoucher(string token)
+        public async Task<List<RequestForPaymentModel>> NotInVoucher(FilterParameter param, string token)
         {
             try
             {
                 _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                HttpResponseMessage responseMessage = await _client.GetAsync("request-for-payment/list/not-in-voucher");
+                HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("request-for-payment/list/not-in-voucher",param);
                 responseMessage.EnsureSuccessStatusCode();
                 return await responseMessage.Content.ReadAsAsync<List<RequestForPaymentModel>>();
             }
@@ -115,10 +115,18 @@ namespace fgciams.service.VoucherServices
       }
     }
 
+    public async Task<string> GenerateLiquidationVoucherReport(VoucherModel voucher)
+    {
+      var pdfContent = "data:application/pdf;base64,";
+      HttpResponseMessage responseMessage = await _client.PostAsJsonAsync(_config["ReportServer"] + "ams-voucher/GetVoucherLiquidationReport", voucher);
+      if(responseMessage.IsSuccessStatusCode)
+        pdfContent += Convert.ToBase64String(await responseMessage.Content.ReadAsByteArrayAsync());
+      return pdfContent;
+    }
     public async Task<string> GenerateReport(VoucherModel voucher)
     {
       var pdfContent = "data:application/pdf;base64,";
-      HttpResponseMessage responseMessage = await _client.PostAsJsonAsync(_config["ReportServer"] + "/ams-voucher/GetVoucherReport", voucher);
+      HttpResponseMessage responseMessage = await _client.PostAsJsonAsync(_config["ReportServer"] + "ams-voucher/GetVoucherReport", voucher);
       if(responseMessage.IsSuccessStatusCode)
         pdfContent += Convert.ToBase64String(await responseMessage.Content.ReadAsByteArrayAsync());
       return pdfContent;
@@ -204,7 +212,78 @@ namespace fgciams.service.VoucherServices
               subcons = await responseMessage.Content.ReadAsAsync<List<VoucherDetailModel>>();
           return subcons;
         }
-
+        public async Task<List<VoucherDetailModel>> GetSubConAPProjects(FilterParameter param, string token)
+        {
+            List<VoucherDetailModel> subcons = new List<VoucherDetailModel>();
+          _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+          HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("/ledger/subcon-ap", param);
+          if (responseMessage.IsSuccessStatusCode)
+              subcons = await responseMessage.Content.ReadAsAsync<List<VoucherDetailModel>>();
+          return subcons;
+        }
+        public async Task<int> VoucherListRowCount(FilterParameter param, string token)
+        {
+          int count = 0;
+          _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+          HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("/voucher-list/count",param);
+          if (responseMessage.IsSuccessStatusCode)
+              count = await responseMessage.Content.ReadAsAsync<int>();
+          return count;
+        }
+        public async Task<VoucherModel> GetSignatories(long preparedById, string token)
+        {
+          var signatories = new VoucherModel();
+          _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+          HttpResponseMessage responseMessage = await _client.GetAsync("voucher/signatories/"+preparedById);
+          if(responseMessage.IsSuccessStatusCode)
+            signatories = await responseMessage.Content.ReadAsAsync<VoucherModel>();
+          return signatories;
+        }
+        public async Task<List<VoucherDetailModel>> VoucherDetailListForReport(FilterParameter param, string token)
+        {
+           List<VoucherDetailModel> vouchers = new List<VoucherDetailModel>();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("voucher-report/voucher-details", param);
+            if (responseMessage.IsSuccessStatusCode)
+                vouchers = await responseMessage.Content.ReadAsAsync<List<VoucherDetailModel>>();
+            return vouchers;
+        }
+        public async Task<string> GenerateNewVoucherReport(FilterParameter filterParameter,string token)
+        {
+          var pdfContent = "data:application/pdf;base64,";
+          _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+          HttpResponseMessage responseMessage = await _client.PostAsJsonAsync(_config["ReportServer"] + "ams-report-voucher/GetVoucherDetailReport", filterParameter);
+          if(responseMessage.IsSuccessStatusCode)
+            pdfContent += Convert.ToBase64String(await responseMessage.Content.ReadAsByteArrayAsync());
+          return pdfContent;
+        }
+        public async Task<string> GenerateVoucherSOA(List<VoucherDetailModel> details,string token)
+        {
+          var pdfContent = "data:application/pdf;base64,";
+          _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+          HttpResponseMessage responseMessage = await _client.PostAsJsonAsync(_config["ReportServer"] + "ams-report-voucher/GetVoucherSOAReport", details);
+          if(responseMessage.IsSuccessStatusCode)
+            pdfContent += Convert.ToBase64String(await responseMessage.Content.ReadAsByteArrayAsync());
+          return pdfContent;
+        }
+        public async Task<List<VoucherDetailModel>> VoucherDetailSOAList(FilterParameter param, string token)
+        {
+           List<VoucherDetailModel> vouchers = new List<VoucherDetailModel>();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            HttpResponseMessage responseMessage = await _client.PostAsJsonAsync("voucher-report/soa", param);
+            if (responseMessage.IsSuccessStatusCode)
+                vouchers = await responseMessage.Content.ReadAsAsync<List<VoucherDetailModel>>();
+            return vouchers;
+        }
+        public async Task<byte[]> VoucherReportGetExcel(FilterParameter param, string token)
+        {
+          _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+          HttpResponseMessage responseMessage = await _client.PostAsJsonAsync(_config["ReportServer"] + "ams-report-voucher/GetVoucherDetailReportEXCEL",param);
+          if(responseMessage.IsSuccessStatusCode)
+            return await responseMessage.Content.ReadAsByteArrayAsync();
+          else
+            return new byte[]{};
+        }
         #endregion
     }
 }

@@ -625,19 +625,19 @@
 
 @media (pointer: coarse) {
   .ql-snow.ql-toolbar button:hover:not(.ql-active),
-.ql-snow .ql-toolbar button:hover:not(.ql-active) {
+  .ql-snow .ql-toolbar button:hover:not(.ql-active) {
     color: #444;
   }
   .ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-fill,
-.ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-fill,
-.ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill,
-.ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill {
+  .ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-fill,
+  .ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill,
+  .ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill {
     fill: #444;
   }
   .ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke,
-.ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke,
-.ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter,
-.ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter {
+  .ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke,
+  .ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter,
+  .ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter {
     stroke: #444;
   }
 }

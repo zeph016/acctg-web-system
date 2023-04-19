@@ -48,6 +48,24 @@
                             Label>
                             @RequestForPaymentModel.AccountingStaus.ToUpper()
                         </MudChip>
+                        <MudChip OnClick='(() => isViewVouchers = !isViewVouchers)' Label Size='Size.Small' Color='Color.Info' Variant='Variant.Filled'>
+                            <p>Vouchers (@RequestForPaymentModel.vouchers.Count())</p> 
+                            <MudIcon Icon='@Icons.Material.Filled.ArrowRight' Size='Size.Small' />
+                            <MudPopover Open='@isViewVouchers' Fixed OverflowBehavior='OverflowBehavior.FlipAlways'
+                                AnchorOrigin='Origin.CenterRight' TransformOrigin='Origin.CenterLeft'>
+                                    <ListRFPVoucherCard ClosePopup='(() => isViewVouchers = !isViewVouchers)'
+                                        VoucherList='RequestForPaymentModel.vouchers'/>
+                            </MudPopover>
+                        </MudChip>
+                        <MudChip OnClick='(() => isViewChecks = !isViewChecks)' style="width:90px;" Label Size='Size.Small' Color='Color.Info' Variant='Variant.Filled'>
+                            <p>Checks (@RequestForPaymentModel.checks.Count())</p> 
+                            <MudIcon Icon='@Icons.Material.Filled.ArrowRight' Size='Size.Small' />
+                            <MudPopover Open='@isViewChecks' Fixed OverflowBehavior='OverflowBehavior.FlipAlways'
+                                AnchorOrigin='Origin.CenterRight' TransformOrigin='Origin.CenterLeft'>
+                                    <ListRFPChecksCard ClosePopup='(() => isViewChecks = !isViewChecks)'
+                                        CheckList='RequestForPaymentModel.checks'/>
+                            </MudPopover>
+                        </MudChip>
                     </div>
                     <div class="rfpgrid-datreq">
                         <MudChip Class='chip-radius-5 font-bold font10' Size='Size.Small' Variant='Variant.Outlined' 
@@ -158,7 +176,7 @@
                             <SignatoriesComponent employeeId='@RequestForPaymentModel.RecommendedById' avatarSize='Size.Medium' />
                         </MudPaper>
                         <MudPaper Class='pa-2 bgc-e7f2fb min-width200px'>
-                            <MudText Class='font10 font-bold'>Recommended By:</MudText>
+                            <MudText Class='font10 font-bold'>Approved By:</MudText>
                             <SignatoriesComponent employeeId='@RequestForPaymentModel.ApprovedById' avatarSize='Size.Medium' />
                         </MudPaper>
                     </div>
@@ -173,7 +191,7 @@
 </MudDialog>
 
 @code {
-    private bool dataFetched;
+    private bool dataFetched, isViewVouchers,isViewChecks;
     [CascadingParameter] MudDialogInstance MudDialog { get; set; } = new();
     [Parameter] public RequestForPaymentModel RequestForPaymentModel { get; set; } = new();
     [Parameter] public string DialogTitle { get; set; } = string.Empty;
@@ -201,10 +219,7 @@
         StateHasChanged();
     }
 
-    private async Task CopyTextToClipboard(string stringToCopy)
-    {
-        await Extensions.CopyTextToClipboard(stringToCopy, SnackbarService, JSRuntime);
-    }
+    private async Task CopyTextToClipboard(string stringToCopy) => await Extensions.CopyTextToClipboard(stringToCopy, SnackbarService, JSRuntime);
 
     private void EditRFP(RequestForPaymentModel model)
     {

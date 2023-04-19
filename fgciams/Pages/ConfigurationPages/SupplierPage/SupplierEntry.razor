@@ -1,11 +1,12 @@
 @page "/supplier/entry"
 
 @inject IDivisionService divisionService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject IDialogService dialogService
 @inject IMuniCityService muniCityService
 @inject ISupplierService supplierService
 @inject NavigationManager navigationManager
+@inject IAccessLevelService accessLevelService
 @attribute [Authorize]
 
 <div class='page-cont d-flex'>
@@ -70,7 +71,7 @@
                                     <MudItem xs='4'>
                                         <div style="padding-top:2px">
                                             <BlazoredTypeahead SearchMethod='LoadMuniCity' Context='mcitycontext' EnableDropDown DisableClear
-                                                @bind-Value='muniCity' Debounce='500' MaximumSuggestions='10' placeholder="City/Prov./Municipality">
+                                                @bind-Value='muniCity' Debounce="300" MaximumSuggestions='10' placeholder="City/Prov./Municipality">
                                                 <SelectedTemplate>
                                                     @mcitycontext.Name
                                                     @if (muniCity.Id != 0) {
@@ -109,7 +110,7 @@
                                         </MudSelect>
                                     </MudItem>
                                     <MudItem xs='1'>
-                                        <MudTextField @bind-Value='@GlobalClass.supplier.TaxRate' Margin="Margin.Dense" Label='Rate' ReadOnly=true
+                                        <MudTextField @bind-Value='@GlobalClass.supplier.TaxRate' Format="N2" Margin="Margin.Dense" Label='Rate' ReadOnly=true
                                         Variant='Variant.Outlined'/>
                                     </MudItem>
                                     <MudItem xs='6'>
@@ -131,7 +132,7 @@
                                     <MudItem xs='6'>
                                         <div style="padding-top:2px">
                                             <BlazoredTypeahead SearchMethod='( (string s)=> Extensions.SearchBank(s, true) )' Context='bankcontext' DisableClear EnableDropDown placeholder='Bank' 
-                                                @bind-Value='bank' Debounce='500' MaximumSuggestions='10'>
+                                                @bind-Value='bank' Debounce="300" MaximumSuggestions='10'>
                                                 <SelectedTemplate>
                                                     @bankcontext.BankName
                                                     @if (bank.Id != 0) {
@@ -147,7 +148,7 @@
                                                 </ResultTemplate>
                                             </BlazoredTypeahead>
                                         <MudText Class='d-flex align-center gap-2 mt-1 ml-2 font12'>
-                                                <MudText Class='font12 color-sec'>Bank</MudText>
+                                                <MudText Class='font12 color-sec'>Required*</MudText>
                                                 <ValidationMessage class='ml-2 font12' For="@(() => GlobalClass.supplier.BankId)"/>
                                             </MudText>
                                         </div>
@@ -296,6 +297,7 @@
         GlobalClass.pageTitle = "SUPPLIER ENTRY";
         while(GlobalClassList.termsOfPayments == null || GlobalClassList.taxCodes == null || GlobalClassList.banks == null)
             await Task.Delay(1);
+        await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.Supplier);
         if(GlobalClass.supplier != null) {
             if(GlobalClass.supplier.Id == 0)
                 New();
@@ -324,7 +326,7 @@
         currentAction = Enums.ActionMode.Create;
         GlobalClass.supplier = new SupplierModel();
         GlobalClass.supplier.DefaultTermId = 1;
-        taxCode = GlobalClassList.taxCodes.Where(x=>x.Id==1).FirstOrDefault()?? new();
+        taxCode = GlobalClassList.taxCodes.Where(x=>x.TaxRate==0).FirstOrDefault()?? new();
         muniCity = new MuniCityModel();
         bank = new BankModel();
     }
@@ -348,6 +350,12 @@
         _processing = true;
         if(!GlobalClass.supplier.IsActive)
         {
+            if (!Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Delete))
+            {
+                Extensions.ShowAlert("Account has been restricted to deactivate supplier.", Variant.Filled, SnackbarService,Severity.Error);
+                _processing = false;
+                return;
+            }
             MapProperties();
             currentAction = Enums.ActionMode.Deactivate;
             await Prompt();
@@ -364,7 +372,7 @@
                 await Prompt();
             }
             else
-                Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" supplier, Incomplete Fields."+GlobalVariable.errorPromptText,Variant.Filled,snackbarService,Severity.Error);
+                Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" supplier, Incomplete Fields."+GlobalVariable.errorPromptText,Variant.Filled,SnackbarService,Severity.Error);
         }
          _processing = false;
     }
@@ -391,25 +399,25 @@
            try {
                 if(currentAction == Enums.ActionMode.Create) {
                     GlobalClass.supplier = await supplierService.AddSupplier(GlobalClass.supplier, GlobalClass.token);
-                    Extensions.ShowAlert("Supplier successfully added.", Variant.Filled, snackbarService, Severity.Success);
+                    Extensions.ShowAlert("Supplier successfully saved.", Variant.Filled, SnackbarService, Severity.Success);
                 } else {
                     GlobalClass.supplier = await supplierService.UpdateSupplier(GlobalClass.supplier, GlobalClass.token);
                     if(currentAction == Enums.ActionMode.Deactivate)
                     {
-                        Extensions.ShowAlert("Supplier has been deactivated.", Variant.Filled,snackbarService,Severity.Warning);
+                        Extensions.ShowAlert("Supplier has been deactivated.", Variant.Filled,SnackbarService,Severity.Warning);
                         navigationManager.NavigateTo($"/supplier/list");
                     }   
                     else
-                        Extensions.ShowAlert("Supplier updated successfully.", Variant.Filled,snackbarService, Severity.Info);
+                        Extensions.ShowAlert("Supplier updated successfully.", Variant.Filled,SnackbarService, Severity.Info);
                     if(GlobalVariable.AMSHubConnection != null)
                         await GlobalVariable.AMSHubConnection.InvokeAsync("SaveSupplier",GlobalClass.supplier);
                 }
             }catch(Exception ex) {
-                Extensions.ShowAlert(ex.Message,Variant.Filled,snackbarService,Severity.Info);
+                Extensions.ShowAlert(ex.Message,Variant.Filled,SnackbarService,Severity.Info);
             }
             _processing = false;
         } else if (resultDialog.Canceled)
-            Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
+            Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
     }
     private async Task SaveContact()
     {
@@ -430,7 +438,7 @@
             }
         }
         else
-            Extensions.ShowAlert("Cannot add Contact, no supplier selected.",Variant.Filled,snackbarService,Severity.Error);
+            Extensions.ShowAlert("No supplier selected, cannot add contact.",Variant.Filled,SnackbarService,Severity.Error);
          _processing2 = false;
 
     }
@@ -469,25 +477,25 @@
            try {
                 if(currentAction == Enums.ActionMode.Create) {
                     await supplierService.SaveContact(supplierContactModel,GlobalClass.token);
-                    Extensions.ShowAlert("Contact successfully added.", Variant.Filled, snackbarService, Severity.Success);
+                    Extensions.ShowAlert("Contact successfully saved.", Variant.Filled, SnackbarService, Severity.Success);
                 } else {
                     await supplierService.UpdateContact(supplierContactModel,GlobalClass.token);
                     if(currentAction == Enums.ActionMode.Deactivate)
-                        Extensions.ShowAlert("Contact has been removed.", Variant.Filled,snackbarService, Severity.Warning);
+                        Extensions.ShowAlert("Contact has been removed.", Variant.Filled,SnackbarService, Severity.Warning);
                     else
-                        Extensions.ShowAlert("Contact updated successfully.", Variant.Filled,snackbarService, Severity.Info);
+                        Extensions.ShowAlert("Contact successfully updated.", Variant.Filled,SnackbarService, Severity.Info);
                 }
             await GetSupplierContacts();
             NewContact();
             }catch(Exception ex) {
-                Extensions.ShowAlert(ex.Message,Variant.Filled,snackbarService,Severity.Info);
+                Extensions.ShowAlert(ex.Message,Variant.Filled,SnackbarService,Severity.Info);
             }
             _processing2 = false;
             await AddContact(new SupplierContactModel());
         }
         else
         {
-            Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
+           Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
             _processing2 = false;
         }
     }

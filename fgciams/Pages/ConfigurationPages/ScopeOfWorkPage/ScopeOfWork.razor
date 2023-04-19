@@ -2,8 +2,9 @@
 
 @inject IScopeOfWorkService scopeOfWorkService
 @inject IDialogService dialogService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject ApplicationState AppState
+@inject IAccessLevelService accessLevelService
 
 <div class='page-cont'>
     <div class='drawer-right'>
@@ -46,7 +47,7 @@
                     <MudTooltip Text="Refresh Table">
                         <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='(()=>{searchTerm = "";})' ></MudIconButton>
                     </MudTooltip>
-                    <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                    <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
                         TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
                         <MudMenuItem OnClick='(() => ScopeOfWorkDialog(new ScopeOfWorkModel(), Enums.ActionMode.Create))'>
                             <div class='d-flex align-center gap-2 '>
@@ -71,7 +72,7 @@
                 <RowTemplate>
                         <MudTd DataLabel="Division Name">@context.ScopeName</MudTd>
                         <MudTd Class='text-center pa-2'>
-                            <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                            <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
                             TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
                                 <MudMenuItem OnClick='(() => ScopeOfWorkDialog(context, Enums.ActionMode.Update))'>
                                     <div class='d-flex align-center gap-2 '>
@@ -98,6 +99,7 @@
         GlobalClass.pageTitle = "Configuration - SCOPE OF WORK";
         while (GlobalClass.currentUserAccount == null || GlobalClassList.scopeOfWork == null)
             await Task.Delay(1);
+        await Common.Privileges.GetAllowedFunctions(accessLevelService, Enums.AISModules.Subcon);
         await AppState.UpdateMainLayoutComponent(true);
         CompletedFetch();
        // SignalR();
@@ -111,6 +113,13 @@
 
     private async Task ScopeOfWorkDialog(ScopeOfWorkModel sow, Enums.ActionMode action)
     {
+        Enums.AISModuleFunctions function = action == Enums.ActionMode.Update? Enums.AISModuleFunctions.Edit : Enums.AISModuleFunctions.Add;
+        if (!Common.Privileges.isPrivilegeFunction(function))
+        {
+            string act = action == Enums.ActionMode.Update ? "edit" : "add";
+            Extensions.ShowAlert(String.Format("Account has been restricted to {0} scope of work.", act), Variant.Filled, SnackbarService, Severity.Error);
+            return;
+        }
         var parameters = new DialogParameters();
         GlobalClass.scopeOfWork = sow;
         string dialogTitle = GlobalClass.scopeOfWork.Id != 0 ? "Edit Scope of Work" : "Add Scope of Work";
@@ -125,15 +134,15 @@
         if (!resultDialog.Canceled)
         {
             if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Create)
-                Extensions.ShowAlert("Scope of Work successfully added.", Variant.Filled, snackbarService, Severity.Success);
+                Extensions.ShowAlert("Scope of Work successfully saved.", Variant.Filled, SnackbarService, Severity.Success);
             else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Update)
-                Extensions.ShowAlert("Scope of Work updated successfully.", Variant.Filled, snackbarService, Severity.Info);
+                Extensions.ShowAlert("Scope of Work updated successfully.", Variant.Filled, SnackbarService, Severity.Info);
             else if ((Enums.ActionMode)resultDialog.Data == Enums.ActionMode.Deactivate)
-                Extensions.ShowAlert("Scope ofWork has been deactivated.", Variant.Filled, snackbarService, Severity.Info);
+                Extensions.ShowAlert("Scope ofWork has been deactivated.", Variant.Filled, SnackbarService, Severity.Info);
             else
                 await LoadScopeOfWorkList();
         } else if (resultDialog.Canceled)
-            Extensions.ShowAlert("Action Cancelled.", Variant.Filled,snackbarService,Severity.Normal);
+            Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
     }
     private bool FilterItems(ScopeOfWorkModel items)
     {
@@ -151,26 +160,6 @@
         if(!openSideFilter)
         visibility = "visibility-animation-hide";
     }
-    @* private void SignalR()
-    {
-        try
-        {
-            if(GlobalVariable.AMSHubConnection != null)
-                GlobalVariable.AMSHubConnection.On<DivisionModel>("SaveDivision",(divisionModel) => 
-                {
-                    GlobalClassList.divisionList.RemoveAll(division => division.Id == divisionModel.Id);
-                    if(divisionModel.IsActive == true)
-                        GlobalClassList.divisionList.Insert(0,divisionModel);
-                    StateHasChanged();
-                });
-        }catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-            throw;
-        }
-    } *@
-    private async Task LoadScopeOfWorkList()
-    {
-        GlobalClassList.scopeOfWork = await scopeOfWorkService.LoadScopeOfWork(GlobalClass.token);
-    }
+    
+    private async Task LoadScopeOfWorkList() => GlobalClassList.scopeOfWork = await scopeOfWorkService.LoadScopeOfWork(GlobalClass.token);
 }

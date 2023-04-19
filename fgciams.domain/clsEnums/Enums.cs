@@ -9,7 +9,7 @@ namespace fgciams.domain.clsEnums
 {
     public class Enums
     {
-      public enum ProjectCategory : byte
+        public enum ProjectCategory : byte
         {
             Project = 0,
             OtherDepartment = 1,
@@ -30,7 +30,9 @@ namespace fgciams.domain.clsEnums
             Payee = 16,
             ProjectChargingLine = 17,
             SubCon = 18,
-            Supplier = 19
+            Supplier = 19,
+            ProjectCustomer = 20,
+            Bank = 21
         }
         public enum AccountingRequestCategory : byte
         {
@@ -53,14 +55,14 @@ namespace fgciams.domain.clsEnums
             [Description("Female")]
             Female = 1
         }
-        public enum MRARType :byte
+        public enum MRARType : byte
         {
             [Description("None")]
             None = 0,
             [Description("MR")]
             MR = 1,
             [Description("AR")]
-            AR =2
+            AR = 2
         }
         public enum AccountingStatusEnumCategory : byte
         {
@@ -122,7 +124,7 @@ namespace fgciams.domain.clsEnums
             [Description("Labor")]
             Labor = 5
         }
-        public enum LookUpType :byte
+        public enum LookUpType : byte
         {
             [Description("Employee")]
             Employee = 0,
@@ -203,7 +205,6 @@ namespace fgciams.domain.clsEnums
             [Description("Others-Viewer")]
             OthersViewer = 6,
         }
-
         public enum AuditTrailMode
         {
             [Description("Petty Cash Audit Trail")]
@@ -300,6 +301,239 @@ namespace fgciams.domain.clsEnums
             [Description("C")]
             C = 3
         }
+        public enum CheckCategory
+        {
+            [Description("None")]
+            None = 0,
+            [Description("Check")]
+            Check = 1,
+            [Description("Direct-Deposit")]
+            DirectDeposit = 2
+        }
+        public enum AISUserAccessLevel
+        {
+            [Description("Administrator")]
+            Administrator = 0,
+            [Description("Accounting-Billing-Admin")]
+            AccountingBillingAdmin = 1,
+            [Description("Accounting-Billing-Encoder")]
+            AccountingBillingEncoder = 2,
+            [Description("Accounting-GovEben-Admin")]
+            AccountingGovEbenAdmin = 3,
+            [Description("Accounting-GovEben-Encoder")]
+            AccountingGovEbenEncoder = 4,
+            [Description("Accounting-Issuance-Admin")]
+            AccountingIssuanceAdmin = 5,
+            [Description("Accounting-Issuance-Encoder")]
+            AccountingIssuanceEncoder = 6,
+            [Description("Accounting-Disbursing-Admin")]
+            AccountingDisbursingAdmin = 7,
+            [Description("Accounting-Disbursing-Encoder")]
+            AccountingDisbursingEncoder = 8,
+            [Description("Accounting-Collection-Admin")]
+            AccountingCollectionAdmin = 9,
+            [Description("Accounting-Collection-Encoder")]
+            AccountingCollectionEncoder = 10,
+            [Description("Accounting-Payroll-Admin")]
+            AccountingPayrollAdmin = 11,
+            [Description("Accounting-Payroll-Encoder")]
+            AccountingPayrollEncoder = 12,
+            [Description("Accounting-Viewer")]
+            AccountingViewer = 13,
+            [Description("Non-Accounting - Admin")]
+            NonAccountingAdmin = 14,
+            [Description("Non-Accounting - Requestor")]
+            NonAccountingRequestor = 15,
+            [Description("Non-Accounting - Viewer")]
+            NonAccountingViewer = 16
+        }
+        public enum AISModules
+        {
+            [Description("Dashboard")]
+            Dashboard = 0,
+            [Description("Petty Cash Entry")]
+            PettyCashEntry = 1,
+            [Description("Petty Cash List")]
+            PettyCashList = 2,
+            [Description("Liquidation Entry")]
+            LiquidationEntry = 3,
+            [Description("Liquidation List")]
+            LiquidationList = 4,
+            [Description("Request For Payment Entry")]
+            RequestForPaymentEntry = 5,
+            [Description("Request For Payment List")]
+            RequesitForPaymentList = 6,
+            [Description("Voucher Entry")]
+            VoucherEntry = 7,
+            [Description("Voucher List")]
+            VoucherList = 8,
+            [Description("BIR")]
+            BIR = 9,
+            [Description("Voucher Route")]
+            VoucherRoute = 10,
+            [Description("Batch Entry")]
+            BatchEntry = 11,
+            [Description("Batch List")]
+            BatchList = 12,
+            [Description("Check Writer Entry")]
+            CheckWriteEntry = 13,
+            [Description("Check Writer List")]
+            CheckWriterList = 14,
+            [Description("Debit Entry")]
+            DebitEntry = 15,
+            [Description("Debit List")]
+            DebitList = 16,
+            [Description("Direct Deposit Entry")]
+            DirectDepositEntry = 17,
+            [Description("Direct Deposit List")]
+            DirectDepositList = 18,
+            [Description("Collection Entry")]
+            CollectionEntry = 19,
+            [Description("Collection List")]
+            CollectionList = 20,
+            [Description("Billing Entry")]
+            BillingEntry = 21,
+            [Description("Billing List")]
+            BillingList = 22,
+            [Description("Bank Deposit Entry")]
+            BankDepositEntry = 23,
+            [Description("Bank Deposit List")]
+            BankDepositList = 24,
+            [Description("Accounting Status")]
+            AccountingStatus = 25,
+            [Description("Bank")]
+            Bank = 26,
+            [Description("Billing Document")]
+            BillingDocument = 27,
+            [Description("Division")]
+            Division = 28,
+            [Description("Mode of Payment")]
+            ModeofPayment = 29,
+            [Description("Payee")]
+            Payee = 30,
+            [Description("Payee Category")]
+            PayeeCategory = 31,
+            [Description("Project Charging Line")]
+            ProjectChargingLine = 32,
+            [Description("Request Types")]
+            RequestTypes = 33,
+            [Description("Subcon")]
+            Subcon = 34,
+            [Description("Charts of Accounts")]
+            ChartsofAccounts = 35,
+            [Description("Supplier")]
+            Supplier = 36,
+            [Description("Voucher Tag")]
+            VoucherTag = 37,
+            [Description("AR Ledger")]
+            ARLedger = 38,
+            [Description("AP Ledger")]
+            APLedger = 39,
+            [Description("Bank Ledger")]
+            BankLedger = 40,
+            [Description("Sub-con Ledger")]
+            SubconLedger = 41,
+            [Description("Sub-con AR Ledger")]
+            SubconARLedger = 42,
+            [Description("Sub-con AP Ledger")]
+            SubconAPLedger = 43,
+            [Description("OR Listing")]
+            ORListing = 44,
+            [Description("Project Ledger")]
+            ProjectLedger = 45,
+            [Description("Journal")]
+            Journal = 46,
+            [Description("VAT")]
+            VAT = 47,
+            [Description("User Privilege")]
+            UserPrivilege = 48,
+        }
+        public enum AISModuleFunctions
+        {
+            [Description("None")]
+            None = 0,
+            [Description("Add")]
+            Add = 1,
+            [Description("Edit(All)")]
+            Edit = 2,
+            [Description("Delete")]
+            Delete = 3,
+            [Description("Cancel")]
+            Cancel = 4,
+            [Description("Void")]
+            Void = 5,
+            [Description("View(All)")]
+            View = 6,
+            [Description("Change Status")]
+            ChangeStatus = 7,
+            [Description("BIR")]
+            BIR = 8,
+            [Description("Deposit")]
+            Deposit = 9,
+            [Description("View(Department)")]
+            ViewDepartment = 10,
+            [Description("View(Own)")]
+            ViewOwn = 11,
+            [Description("Edit(Own)")]
+            EditOwn = 12,
+            [Description("Edit(Department)")]
+            EditDepartment = 13
+        }
+        public enum AISParentModules
+        {
+            [Description("Dashboard")]
+            Dashboard = 0,
+            [Description("Petty Cash")]
+            PettyCash = 1,
+            [Description("Liquidation")]
+            Liquidation = 2,
+            [Description("Request For Payment")]
+            RequestForPayment = 3,
+            [Description("Voucher")]
+            Voucher = 4,
+            [Description("Check Writer")]
+            CheckWriter = 5,
+            [Description("Voucher Route")]
+            VoucherRoute = 6,
+            [Description("Collections")]
+            Collections = 7,
+            [Description("Ledgers")]
+            Ledgers = 8,
+            [Description("Settings")]
+            Settings = 10
+        }
+        public enum StatusAction
+        {
+            Approve = 0,
+            Cancel = 1,
+            Generate = 2,
+            Receive = 2
+        }
+        public enum CustomerType : byte
+        {
+            [Description("Private")]
+            PrivateType = 1,
+            [Description("Semi Private")]
+            SemiPrivate = 2,
+            [Description("Government")]
+            Government = 3,
+        }
+        public enum FileType : byte
+        {
+            [Description("PDF")]
+            PDF = 1,
+            [Description("EXCEL")]
+            EXCEL = 2,
+        }
 
+        public enum NotificationViewType : byte
+        {
+            [Description("All")]
+            All = 0,
+            [Description("Read")]
+            Read = 1,
+            [Description("Unread")]
+            Unread = 2
+        }
     }
 }

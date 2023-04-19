@@ -25,6 +25,9 @@
 .mudchip-tbl-nw {
   @extend .chip-radius-5, .chiplbl;
 }
+.mud-chip.mud-chip-size-small.h-notif {
+  height: 13.6px !important;
+}
 
 .custom-chip1 {
   display: inline-block;
@@ -95,3 +98,56 @@
   padding: 0 8px;
   white-space: nowrap;
 }
+
+.sidebar-chip {
+  span { font-size: 12px; }
+  font-weight: bold;
+  min-width: 120px;
+  text-transform: uppercase;
+}
+
+.mud-chip { transition: all 0.5s ease !important; }
+
+.two-box > div, .four-box > div { 
+  background-color: #ffffff; 
+  border-bottom: solid thin black;
+  border-right: solid thin black;
+}
+.two-box { 
+  border-top: solid thin black;
+  border-left: solid thin black;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "box-left box-right";
+  .box-left { grid-area: box-left; }
+  .box-right { grid-area: box-right; }
+  .box-left, .box-right { 
+    height: 20px;
+    width: 15px;
+  }
+}
+.four-box {  
+  border-top: solid thin black;
+  border-left: solid thin black;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "box-left box-center-left box-center-right box-right";
+  .box-left { grid-area: box-left; }
+  .box-center-left { grid-area: box-center-left; }
+  .box-center-right { grid-area: box-center-right; }
+  .box-right { grid-area: box-right; }
+  .box-left, .box-right, .box-center-left, .box-center-right {
+    height: 20px;
+    width: 15px;
+  }
+}
+
+

@@ -19,8 +19,8 @@
                     <small>Project / Charging</small>
                 </div>
                 <div class='blzrthead-disabled-minheight15'>
-                    <BlazoredTypeahead SearchMethod='LoadCharging' Context='proj' DisableClear EnableDropDown
-                        Debounce="500" placeholder='Project / Charging' Value='project' ValueExpression='(() => project)'
+                    <BlazoredTypeahead SearchMethod='LoadCharging' Context='proj' DisableClear EnableDropDown MinimumLength='3'
+                        Debounce="300" placeholder='Project / Charging' Value='project' ValueExpression='(() => project)'
                         ValueChanged='((Project selProject) => 
                         {
                             project = selProject;

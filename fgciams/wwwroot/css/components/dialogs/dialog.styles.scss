@@ -1,22 +1,27 @@
 @use "../flexgridmods/flexgridmods.styles.css";
 @use "../animations/animation.styles.css";
 @use "../colors/colors.styles.css";
+@use "../buttonmods/buttonmods.styles.css";
 
 .customdialog,
 .customdialog-table-only {
   .mud-dialog-title {
+    @extend .button-m;
+    padding: 8px 16px !important;
     background-color: #542d6f !important;
     color: white;
-    .mud-typography {
-      font-family: "Theramin";
+    p {
+      font-family: "SF-Pro-Display Regular";
+    }
+    .mud-icon-root, .mud-button-root  { 
+      border-color: #ffffff;
+      color: #ffffff; 
     }
   }
   &__content-container {
     font-size: 1rem;
     padding: 10px 14px;
   }
-}
-.customdialog-table-only {
   .mud-dialog-content {
     overflow: hidden;
     padding: 0px !important;
@@ -55,7 +60,6 @@
 }
 .globalrfp-dialog-content {
   @extend .transition-1s-ease, .bgc-F3F5F7;
-  padding-right: 32px;
   overflow: hidden;
 }
 .pcview-dialog {
@@ -570,4 +574,281 @@
   justify-content: center;
   padding: 0px 8px 8px 8px;
   margin: 4px 4px 0px 4px;
+}
+
+.custom-dialog2 {
+  min-width: 340px;
+  &__title {
+    @extend .dflex-row;
+    border-radius: 4px 4px 0px 0px;
+    gap: 8px;
+    background-color: #542d6f;
+    padding: 16px 24px;
+    p {
+      font-family: "SF-Pro-Display Regular";
+      font-size: 20px;
+      color: #ffffff;
+    }
+    small {
+      font-family: "SF-Pro-Display Regular";
+      letter-spacing: 1px;
+      color: #ffffff;
+    }
+    .mud-icon-root { color: #ffffff; }
+  }
+  &__content {
+    padding: 12px 24px;
+  }
+  &__actions {
+    @extend .dflex-row, .button-m;
+    gap: 8px;
+    padding: 8px;
+  }
+  &__warning-txt {
+    margin-top: 8px;
+    font-size: 12px;
+    color: rgb(148, 148, 148);
+  }
+}
+
+.checkdialog-view {
+  background: #ffffff;
+  background-image: url(../../../images/fgbgimg.png),
+    linear-gradient(217deg, #B3DCCC00, #C9E6D4 70.71%),
+    linear-gradient(127deg, #C9E6D4, #F2F0D700  70.71%),
+    linear-gradient(336deg, #F2F0D700 , #EBD5AE 70.71%);
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: auto;
+  padding: 4px 12px;
+  &__grid {
+    @extend .fade-in;  
+    display: grid;
+    grid-template-columns: 42px 42px 1fr 55px 42px 158px;
+    grid-template-rows: auto;
+    gap: 0px 0px;
+    grid-auto-flow: row;
+    grid-template-areas:
+      "chkd-headerleft chkd-headerleft chkd-headerleft chkd-headerleft chkd-lbldate chkd-date"
+      "chkd-lblpayee chkd-lblpayee chkd-payee chkd-payee chkd-amtno chkd-amtno"
+      "chkd-lblpeso chkd-amtwords chkd-amtwords chkd-amtwords chkd-amtwords chkd-amtwords"
+      "chkd-footer chkd-footer chkd-footer chkd-footer chkd-footer chkd-footer";
+    min-width: 600px;
+    max-width: calc(100vw - 300px);
+    .chkd-headerleft { grid-area: chkd-headerleft; }
+    .chkd-lbldate { grid-area: chkd-lbldate; }
+    .chkd-date { grid-area: chkd-date; }
+    .chkd-lblpayee { grid-area: chkd-lblpayee; }
+    .chkd-payee { grid-area: chkd-payee; }
+    .chkd-amtno { grid-area: chkd-amtno; }
+    .chkd-lblpeso { grid-area: chkd-lblpeso; }
+    .chkd-amtwords { grid-area: chkd-amtwords; }
+    .chkd-footer { grid-area: chkd-footer; }
+
+    .chkd-headerleft, .chkd-lbldate, .chkd-date, .chkd-lblpayee, .chkd-payee, 
+    .chkd-amtno, .chkd-lblpeso, .chkd-amtwords, .chkd-footer {
+      @extend .dflex-row;
+      padding: 8px;
+    }
+    .chkd-lbldate, .chkd-date {
+      padding: 0px 8px;
+    }
+    .chkd-date { gap: 12px; }
+    .chkd-lblpayee, .chkd-payee, .chkd-amtno, .chkd-footer {
+      padding: 0px 5px 8px 8px;
+    }
+    .chkd-amtwords {
+      align-items: start;
+    }
+    .chkd-date { justify-content: center; }
+    .chkd-amtno {
+      gap: 4px;
+      text-align: center;
+      p { 
+        background-color: #ffffff; 
+        border: solid thin black; 
+        width: 100%; 
+        letter-spacing: 0.5px;
+      }
+    }
+    .chkd-headerleft {
+      .mud-chip { min-width: 100px; }
+      &__lbl-chip {
+        color: #656D68;
+        font-weight: unset;
+        text-transform: uppercase;
+        margin-bottom: 40px;
+        position: fixed;
+        font-size: 8px;
+      }
+      .check-no { margin-left: 2px; }
+      .issued-date { margin-left: 16px; }
+    }
+    .mud-chip-content { font-weight: bold; }
+    .chkd-footer {
+      &__misc-info > div { @extend .dflex-row; }
+      &__misc-info {
+        @extend .dflex-col;
+      }
+      &__lbl-note { font-size: 10px; }
+      &__lbl-placeholder { 
+        font-family: "R-Flex Bold";
+        font-style: italic;
+      }
+    }
+  }
+  &__lbl, &__txt { font-size: 12px; }
+  &__lbl { text-transform: uppercase; }
+  &__txt { font-weight: bold; }
+  .border-bottom { 
+    @extend .dflex-row;
+    border-bottom: solid thin black; 
+    height: 100%; 
+    width: 100%;
+  }
+
+  .date-text {
+    font-weight: bold;
+    letter-spacing: 7px;
+    margin-left: 6px;
+    position: fixed;
+  }
+  .lbl-date {
+    font-size: 10px
+  }
+
+  .chkmod-btn {
+    position: fixed;
+    right: 8px;
+    top: 100px;
+  }
+}
+
+.debitdialog-view {
+  @extend .bgc-F3F5F7;
+  padding: 6px 12px;
+  &__grid {
+    display: grid; 
+    grid-template-columns: 50px 1fr 1fr 50px; 
+    grid-template-rows: auto; 
+    gap: 0px 0px; 
+    grid-template-areas: 
+      "debitv-lblbank debitv-bank debitv-bank debitv-controls"
+      "debitv-lbldate debitv-date debitv-date debitv-date"
+      "debitv-lblamt debitv-amt debitv-amt debitv-amt"
+      "debitv-lblrem debitv-rem debitv-rem debitv-rem"; 
+    min-width: 500px;
+    .debitv-lblbank { grid-area: debitv-lblbank; }
+    .debitv-bank { grid-area: debitv-bank; }
+    .debitv-controls { grid-area: debitv-controls; }
+    .debitv-lbldate { grid-area: debitv-lbldate; }
+    .debitv-date { grid-area: debitv-date; }
+    .debitv-lblamt { grid-area: debitv-lblamt; }
+    .debitv-amt { grid-area: debitv-amt; }
+    .debitv-lblrem { grid-area: debitv-lblrem; }
+    .debitv-rem { grid-area: debitv-rem; }
+
+    .debitv-lblbank, .debitv-bank, .debitv-controls, .debitv-lbldate,
+    .debitv-lblamt, .debitv-amt, .debitv-lblrem, .debitv-rem {
+      @extend .dflex-row;
+    }
+    .debitv-controls {
+      gap: 4px;
+      justify-content: end;
+    }
+    .debitv-bank, .debitv-date, .debitv-amt, .debitv-rem {
+      border-bottom: solid thin lightgray;
+    }
+  }
+  &__lbl { @extend .pcview-dialog__label; }
+  &__txt { @extend .pcview-dialog__txt; }
+}
+
+.collectiondialog-view {
+  @extend .bgc-F3F5F7;
+  padding: 6px 12px;
+  max-width: 600px;
+  &__grid {
+    display: grid; 
+    grid-template-columns: 75px 1fr 1fr 55px 1fr 55px 1fr 1fr; 
+    grid-template-rows: auto auto auto auto auto auto auto minmax(50px,1fr) minmax(50px,1fr); 
+    gap: 4px; 
+    grid-template-areas: 
+      "coll-lblstatus coll-status coll-status  coll-status  coll-status  coll-status coll-controls coll-controls"
+      "coll-lbltransdate coll-transdate coll-transdate coll-lblcat coll-cat coll-cat coll-controls coll-controls"
+      "coll-lblcust coll-cust coll-cust coll-cust coll-cust coll-cust coll-cust coll-cust"
+      "coll-lblprojc coll-projc coll-projc coll-projc coll-projc coll-lblexp coll-exp coll-exp"
+      "coll-lblref coll-ref coll-ref coll-lblor coll-or coll-lbltype coll-type coll-type"
+      "coll-lblchkdate coll-chkdate coll-chkdate coll-lblcheckno coll-checkno coll-checkno coll-postdated coll-postdated"
+      "coll-lblgross coll-gross coll-gross coll-gross coll-lblnet coll-net coll-net coll-net"
+      "coll-lbldesc coll-desc coll-desc coll-desc coll-desc coll-desc coll-desc coll-desc"
+      "coll-lblrem coll-rem coll-rem coll-rem coll-rem coll-rem coll-rem coll-rem"; 
+    .coll-lbltransdate { grid-area: coll-lbltransdate; }
+    .coll-transdate { grid-area: coll-transdate; }
+    .coll-lblcat { grid-area: coll-lblcat; }
+    .coll-cat { grid-area: coll-cat; }
+    .coll-controls { grid-area: coll-controls; }
+    .coll-lblsatus { grid-area: coll-lblstatus; }
+    .coll-status { grid-area: coll-status; }
+    .coll-lblcust { grid-area: coll-lblcust; }
+    .coll-cust { grid-area: coll-cust; }
+    .coll-lblprojc { grid-area: coll-lblprojc; }
+    .coll-projc { grid-area: coll-projc; }
+    .coll-lblexp { grid-area: coll-lblexp; }
+    .coll-exp { grid-area: coll-exp; }
+    .coll-lblref { grid-area: coll-lblref; }
+    .coll-ref { grid-area: coll-ref; }
+    .coll-lblor { grid-area: coll-lblor; }
+    .coll-or { grid-area: coll-or; }
+    .coll-lbltype { grid-area: coll-lbltype; }
+    .coll-type { grid-area: coll-type; }
+    .coll-lblchkdate { grid-area: coll-lblchkdate; }
+    .coll-chkdate { grid-area: coll-chkdate; }
+    .coll-lblcheckno { grid-area: coll-lblcheckno; }
+    .coll-checkno { grid-area: coll-checkno; }
+    .coll-postdated { grid-area: coll-postdated; }
+    .coll-lblgross { grid-area: coll-lblgross; }
+    .coll-gross { grid-area: coll-gross; }
+    .coll-lblnet { grid-area: coll-lblnet; }
+    .coll-net { grid-area: coll-net; }
+    .coll-lbldesc { grid-area: coll-lbldesc; }
+    .coll-desc { grid-area: coll-desc; }
+    .coll-lblrem { grid-area: coll-lblrem; }
+    .coll-rem { grid-area: coll-rem; }
+
+    .coll-lblstatus, .coll-status,
+    .coll-lbltransdate, .coll-transdate, .coll-lblcat, .coll-cat,
+    .coll-lblcust, .coll-cust, .coll-lblprojc, .coll-projc, 
+    .coll-lblexp, .coll-exp, .coll-lblref, .coll-ref ,
+    .coll-lblor, .coll-or, .coll-lbltype, .coll-type,
+    .coll-lblchkdate, .coll-chkdate, .coll-lblcheckno, .coll-checkno,
+    .coll-lblgross, .coll-gross, .coll-lblnet, .coll-net,
+    .coll-controls { 
+      @extend .dflex-row; 
+    }
+
+    .coll-status,
+    .coll-transdate, .coll-cat, .coll-cust, .coll-projc,
+    .coll-exp, .coll-ref, .coll-or, .coll-type,
+    .coll-chkdate, .coll-checkno, .coll-gross, .coll-net {
+      border-bottom: solid thin lightgray;
+    }
+    .coll-controls {
+      gap: 4px;
+      justify-content: end;
+    }
+  }
+  &__lbl { @extend .pcview-dialog__label; }
+  &__txt { @extend .pcview-dialog__txt; }
+  .coll-textarea {
+    border-radius: 4px;
+    border: solid thin lightgray;
+    height: 100%;
+  }
+  .coll-desc, .coll-ref { padding: 4px 0px; }
+}
+
+.dialog-action {
+  @extend .dflex-row, .button-m;
+  gap: 8px;
 }

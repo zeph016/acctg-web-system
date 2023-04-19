@@ -1,0 +1,13 @@
+@inherits ActionsOverlayComponentBase
+
+<MudOverlay @bind-Visible="@IsOverlayVisible" DarkBackground="true">
+  <div class='circular-progress-cont'>
+    <MudPaper Width='160px'>
+      <div class='overlay-option-1'>
+        <MudIcon Class='side-to-side-anim-sm' Icon='@Icons.Material.Filled.Save' Size='Size.Large' Color='Color.Info' />
+        <MudProgressLinear Color='Color.Info' Value='@ProgressValue' Striped/>
+        <p>@actionString</p>
+      </div>
+    </MudPaper>
+  </div>
+</MudOverlay>

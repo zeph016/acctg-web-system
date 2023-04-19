@@ -1,0 +1,501 @@
+@page "/access-level"
+
+@inject IAccessLevelService AccessLevelService 
+@attribute [Authorize]
+
+<div class='page-cont'>
+    @if(!dataFetched)
+    {
+        <div class='pa-2'>
+            <SkeletonPageList />
+        </div>
+    }
+    else
+    {
+        <MudContainer Class='accesslevel-page' Fixed='false' MaxWidth='MaxWidth.ExtraExtraLarge'>
+            <MudPaper Class='accesslevel-page__container' Height='fit-content'>
+                <div class="accesslevel-page__grid">
+                    <div class="algrid-header">
+                        <MudGrid Spacing='1'>
+                            <MudItem xs=3>
+                                <MudSelect Value='currentAccessLevel' ValueChanged='( (Enums.AISUserAccessLevel access) => AccessValueChanged(access))'  Label="Access Level" Margin='Margin.Dense' Variant='Variant.Outlined'>
+                                    @foreach (Enums.AISUserAccessLevel item in Enum.GetValues(typeof(Enums.AISUserAccessLevel)))
+                                    {
+                                        <MudSelectItem Value="item">@(Extensions.GetEnumDescription(item).Replace("-"," "))</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs=5></MudItem>
+                            <MudItem xs=4>
+                                <MudTextField Value="searchTerm"  TextChanged='SearchModule' Immediate
+                                    AdornmentIcon='@Icons.Material.Filled.Search' Adornment='Adornment.Start' IconSize='Size.Small' 
+                                    Variant='Variant.Outlined' Placeholder='Search module...' Margin='Margin.Dense' Clearable />
+                            </MudItem>
+                        </MudGrid>
+                    </div>
+                    <div class="algrid-parent">
+                        <MudPaper Class='accesslevel-page__container'>
+                            <div class='accesslevel-page__subheader'>
+                                <p class='accesslevel-page__label'>Module Category</p>
+                            </div>
+                            @if(!string.IsNullOrWhiteSpace(searchTerm))
+                            {
+                                <div class='searching-container'>
+                                    <img class='searching-container__glass' src='/images/icons/magnifier.png' />
+                                    <p>Searching Module. . .</p>
+                                </div>
+                            }
+                            else
+                            {
+                                <MudList Class='accesslevel-page__list-container' Dense Clickable>
+                                    <MudDivider />
+                                    @foreach (var item in parentModules)
+                                    {
+                                        <div class='@(item.IsSelected ? "al-item-selected":"")'>
+                                            <MudListItem Avatar="" Dense='true' IconSize='Size.Small' OnClick='(() => DisplayRelatedModule(item))'>
+                                                <div class="accesslevel-page__module-container">
+                                                    <MudAvatar Variant='Variant.Outlined' Size='Size.Small'>
+                                                        <MudIcon Icon='@Extensions.GetParentDefaultIcons(item.ParentModule)' Size='Size.Small' />
+                                                    </MudAvatar>
+                                                    <p>@Extensions.GetEnumDescription(item.ParentModule)</p>
+                                                    <MudSpacer />
+                                                    @if(item.IsSelected)
+                                                    {
+                                                        <MudIcon Class='module-selected-icon' Icon='@Icons.Material.Filled.ArrowForwardIos' Size='Size.Small' Color='Color.Dark' />
+                                                    }
+                                                </div>
+                                            </MudListItem>
+                                        </div>
+                                        <MudDivider />
+                                    }
+                                </MudList>  
+                            }
+                        </MudPaper>
+                    </div>
+                    <div class="algrid-module">
+                        <MudPaper Class='accesslevel-page__container'>
+                            <div class='accesslevel-page__subheader'>
+                                <p class='accesslevel-page__label'>Module</p>
+                                <p class='accesslevel-page__label'>Grant Access</p>
+                            </div>
+                            <MudList Class='accesslevel-page__list-container' Dense Clickable>   
+                                <MudDivider />
+                                @foreach (ModuleModel module in Modules)
+                                {
+                                    <div class='@(module.IsSelected ? "al-item-selected":"")'>
+                                        <MudListItem OnClick='(()=> ModuleClicked(module.Module, module.isChecked, module) )' Dense='true' IconSize='Size.Small'>
+                                            <div class="accesslevel-page__module-container">
+                                                <MudAvatar Variant='Variant.Outlined' Size='Size.Small'>
+                                                    <MudIcon Icon='@AccessModuleIcon(module.Module)' Size='Size.Small' />
+                                                </MudAvatar>
+                                                <p>@Extensions.GetEnumDescription(module.Module)</p>
+                                                <MudSpacer/>
+                                                <MudCheckBox Class="justify-end" T='bool' Checked='module.isChecked' Dense UnCheckedColor='Color.Dark' Color='Color.Info'
+                                                    CheckedChanged='((bool b) => ModuleCheckChanged(b, module))' Size='Size.Small' />
+                                                @if(module.IsSelected)
+                                                {
+                                                    <MudIcon Class='module-selected-icon' Icon='@Icons.Material.Filled.ArrowForwardIos' Size='Size.Small' Color='Color.Dark' />
+                                                }
+                                            </div>
+                                        </MudListItem>
+                                    </div>
+                                     <MudDivider />
+                                }
+                            </MudList>
+                        </MudPaper>
+                    </div>
+                    <div class="algrid-function">
+                         <MudPaper Class='accesslevel-page__container'>
+                            <div class='accesslevel-page__subheader'>
+                                <p class='accesslevel-page__label'>Function</p>
+                                <p class='accesslevel-page__label'>Allow Action</p>
+                            </div>
+                            <MudList Class='accesslevel-page__list-container' Dense Clickable>
+                                <MudDivider />
+                                @if(Modules.Count() > 0 & Functions.Count() > 0)
+                                {
+                                    @foreach (ModuleFunctionsModel function in Functions)
+                                    {
+                                        <MudListItem Dense='true' IconSize='Size.Small'>
+                                            <div class="accesslevel-page__module-container">
+                                                 <MudAvatar Variant='Variant.Outlined' Size='Size.Small'>
+                                                    <MudIcon Icon='@FunctionIcon(function.Function)' Size='Size.Small' />
+                                                </MudAvatar>
+                                                <p>@Extensions.GetEnumDescription(function.Function)</p>
+                                                <MudSpacer/>
+                                                <MudCheckBox Class="justify-end" Checked='function.isChecked'   Dense UnCheckedColor='Color.Dark' Color='Color.Info'
+                                                CheckedChanged='((bool b) => FunctionClicked(function, b))' Disabled='isDisabledFunction' Size='Size.Small' />
+                                            </div>
+                                        </MudListItem>
+                                        <MudDivider />
+                                    }
+                                }
+                            </MudList>
+                        </MudPaper>
+                    </div>
+                    <div class="algrid-info">
+                        @* <MudPaper Class='accesslevel-page__container'>
+                            <div class='accesslevel-page__subheader'>
+                                <p class='accesslevel-page__label'>Info</p>
+                            </div>
+                            <div class='accesslevel-page__module-about-info'>
+                                <ul>
+                                    <li><p>@moduleName</p></li>
+                                </ul>
+                            </div>
+                        </MudPaper> *@
+                    </div>
+                    <div class='algrid-notes'>
+                        @* <MudPaper Class='accesslevel-page__container'>
+                            <div class='accesslevel-page__subheader'>
+                                <p class='accesslevel-page__label'>Reminders</p>
+                            </div>
+                        </MudPaper> *@
+                    </div>
+                    <div class="algrid-footer"></div>
+                </div>
+            </MudPaper>
+        </MudContainer>
+    }
+</div>
+
+@code
+{
+    private bool dataFetched , isModule, isDisabledFunction = true;
+    private string moduleName = "Please select a module";
+    private Enums.AISUserAccessLevel currentAccessLevel { get; set; } = Enums.AISUserAccessLevel.Administrator;
+    private List<ModuleModel> originalFunctionList = new();
+    private List<ModuleModel> Modules = new();
+    private List<ModuleFunctionsModel> Functions = new();
+    private List<ModuleParentModel> parentModules = new();
+    private List<ModuleModel> moduleList = new();
+    private ModuleParentModel selectedParentModel = new();
+    private string searchTerm = string.Empty;
+    protected override async Task OnInitializedAsync()
+    {
+        GlobalClass.pageTitle = "Configuration - User Privileges";
+        originalFunctionList = Modules;
+        Task t = Task.WhenAll(GetListOfModules(currentAccessLevel));
+        await t;
+        if(t.Status == TaskStatus.RanToCompletion)
+        {
+            GetListOfParentModules();
+            CompletedFetch();
+        }
+    }
+
+    private void CompletedFetch()
+    {
+         dataFetched = true;
+         StateHasChanged();
+    }
+    private async Task ModuleCheckChanged(bool isCheck, ModuleModel module)
+    {
+        module.isChecked = !module.isChecked;
+        moduleName = isCheck ? @Extensions.GetEnumDescription(module.Module) : "Please select a module";
+        isModule = isCheck;
+        isDisabledFunction = !isCheck;
+        Functions.ForEach( f => f.isChecked = false);
+        
+        //Set data for saving
+        GlobalClass.moduleAssignment.UserAccessLevelId = currentAccessLevel;
+        GlobalClass.moduleAssignment.ModuleId = module.Module;
+        GlobalClass.moduleAssignment.IsActive = isCheck;
+        if(isCheck)
+        {
+            await AddModule(module);
+        }
+        else
+        {
+            GlobalClass.moduleAssignment.Id = module.Id;
+            await UpdateModule();
+        }
+        SetFunctions();
+        await InvokeSignalRModules();
+        StateHasChanged();
+    }
+    private async Task ModuleClicked(Enums.AISModules module, bool b, ModuleModel selectedModule)
+    {
+        Modules.ForEach(x=>x.IsSelected = false);
+        selectedModule.IsSelected = true;
+        GlobalClass.moduleAssignment.UserAccessLevelId = currentAccessLevel;
+        GlobalClass.moduleAssignment.ModuleId = module;
+        GlobalClass.moduleAssignment.IsActive = b;
+        isDisabledFunction = !b;
+        moduleName = b ? @Extensions.GetEnumDescription(module) : "Module is not active or check";
+        isModule = b;
+        await GetFunctions(module);
+        StateHasChanged();
+    }
+    private async Task FunctionClicked(ModuleFunctionsModel function, bool b)
+    {
+        function.isChecked = !function.isChecked;
+        GlobalClass.functionAssignment.IsActive = b;
+        GlobalClass.functionAssignment.UserAccessLevelId = GlobalClass.moduleAssignment.UserAccessLevelId;
+        GlobalClass.functionAssignment.ModuleId = GlobalClass.moduleAssignment.ModuleId;
+        GlobalClass.functionAssignment.ModuleFunctionId = function.Function;
+        if(b) {
+            //When None is selected remove all func
+            await AddFunction(function);
+            if(function.Function == Enums.AISModuleFunctions.None)
+            {
+                Functions.Where( f => f.Function != Enums.AISModuleFunctions.None).ToList().ForEach( async (f) => 
+                {
+                    if(f.isChecked)
+                    {
+                        f.isChecked = false;
+                        GlobalClass.functionAssignment.IsActive = false;
+                        GlobalClass.functionAssignment.ModuleFunctionId = f.Function;
+                        GlobalClass.functionAssignment.UserAccessLevelId = GlobalClass.moduleAssignment.UserAccessLevelId;
+                        GlobalClass.functionAssignment.ModuleId = GlobalClass.moduleAssignment.ModuleId;
+                        GlobalClass.functionAssignment.Id = f.Id;
+                        await UpdateFunction();
+                    }
+                });
+            }
+        }
+        else
+        {
+            GlobalClass.functionAssignment.Id = function.Id;
+            await UpdateFunction();
+        }
+        await InvokeSignalRFunctions();
+    }
+    private void SetModule()
+    {
+        Modules.Clear();
+        foreach (var item in selectedParentModel.ModuleList)
+        {
+            item.isChecked = false;
+            Modules.Add(item);
+        }
+        Modules = Modules.OrderBy( m => m.ModuleName).ToList().DistinctBy( b => b.Module).ToList();
+    }
+
+    private void SetAllModule()
+    {
+        Modules.Clear();
+        Functions.Clear();
+        foreach (Enums.AISModules item in Enum.GetValues(typeof(Enums.AISModules)))
+        {
+            ModuleModel module = new();
+            module.Module = item;
+            module.ModuleName = Extensions.GetEnumDescription(item).ToLower();//for searching and sorting
+            module.isChecked = false;
+            Modules.Add(module);
+        }
+        Modules = Modules.OrderBy( m => m.ModuleName).ToList();
+        GlobalClassList.moduleAssignmentList.ForEach( modules => {
+            bool existed = Modules.Any( m => m.Module == modules.ModuleId);
+            if(existed)
+            {
+                (Modules.Where( m => m.Module == modules.ModuleId).FirstOrDefault()?? new()).Id = modules.Id;
+                (Modules.Where( m => m.Module == modules.ModuleId).FirstOrDefault()?? new()).isChecked = true;
+            }
+        });
+    }
+    private void SetFunctions()
+    {
+        Functions.Clear();
+        foreach (Enums.AISModuleFunctions item in Enum.GetValues(typeof(Enums.AISModuleFunctions)))
+        {
+            if(item == Enums.AISModuleFunctions.BIR && GlobalClass.moduleAssignment.ModuleId == Enums.AISModules.VoucherList)
+            {
+                ModuleFunctionsModel function = new();
+                function.Function = item;
+                function.isChecked = false;
+                function.FunctionName = Extensions.GetEnumDescription(item).ToLower();
+                Functions.Add(function);
+            }
+            if(item != Enums.AISModuleFunctions.BIR){
+                ModuleFunctionsModel function = new();
+                function.Function = item;
+                function.isChecked = false;
+                function.FunctionName = Extensions.GetEnumDescription(item).ToLower();
+                Functions.Add(function);
+            }
+        }
+        Functions = Functions.OrderBy( f => f.FunctionName).ToList();
+        if(GlobalClass.moduleAssignment.ModuleId != Enums.AISModules.CollectionList)
+            Functions.RemoveAll( func => func.Function == Enums.AISModuleFunctions.Deposit);
+    }   
+    private async Task AddModule(ModuleModel model)
+    {
+        var moduleAssignment = await AccessLevelService.AddModuleAssignment(GlobalClass.moduleAssignment, GlobalClass.token);
+        model.Id = moduleAssignment.Id;
+    }
+    private async Task UpdateModule()
+    {
+        GlobalClass.moduleAssignment.IsActive = false;
+        await AccessLevelService.UpdateModuleAssignment(GlobalClass.moduleAssignment, GlobalClass.token);
+    }
+    private async Task AddFunction(ModuleFunctionsModel function)
+    {
+        var func = await AccessLevelService.AddFunctionAssignment(GlobalClass.functionAssignment, GlobalClass.token);
+        function.Id = func.Id;
+    }
+    private async Task UpdateFunction()
+    {
+        GlobalClass.functionAssignment.IsActive = false;
+        await AccessLevelService.UpdateFunctionAssignment(GlobalClass.functionAssignment, GlobalClass.token);
+    }
+    private async Task GetListOfModules(Enums.AISUserAccessLevel access)
+    {
+        GlobalClassList.moduleAssignmentList = await AccessLevelService.GetActiveModules(access, GlobalClass.token);
+    }
+    private async Task GetListOfFunctions(Enums.AISModules module)
+    {
+        GlobalClassList.functionAssignmentList = await AccessLevelService.GetActiveFuctions(currentAccessLevel, module, GlobalClass.token);
+    }
+
+    private void GetListOfParentModules()
+    {
+        foreach (Enums.AISParentModules item in Enum.GetValues(typeof(Enums.AISParentModules)))
+        {
+            ModuleParentModel parentMod = new();
+            parentMod.Id = Convert.ToInt64(item);
+            parentMod.ParentModule = item;
+            var list = Extensions.GetRelatedModules(item);
+            foreach (var moduleItems in list)
+            {
+                ModuleModel module = new();
+                module.Module = moduleItems;
+                module.ModuleName = Extensions.GetEnumDescription(moduleItems).ToLower();//for searching and sorting
+                module.isChecked = false;
+                parentMod.ModuleList.Add(module);
+            }
+            parentModules.Add(parentMod);
+        }
+    }
+    private void DisplayFunctions()
+    {
+        SetFunctions();
+        GlobalClassList.functionAssignmentList.ForEach( function => {
+            bool existed = Functions.Any( f => f.Function == function.ModuleFunctionId);
+            if(existed)
+            {
+                (Functions.Where( f => f.Function == function.ModuleFunctionId).FirstOrDefault()?? new()).Id = function.Id;
+                (Functions.Where( f => f.Function == function.ModuleFunctionId).FirstOrDefault()?? new()).isChecked = true;
+            }
+        });
+        StateHasChanged();
+    }
+    private void DisplayModules()
+    {
+        SetModule();
+        @* GlobalClassList.moduleAssignmentList.ForEach( modules => {
+            bool existed = Modules.Any( m => m.Module == modules.ModuleId);
+            if(existed)
+            {
+                (Modules.Where( m => m.Module == modules.ModuleId).FirstOrDefault()?? new()).Id = modules.Id;
+                (Modules.Where( m => m.Module == modules.ModuleId).FirstOrDefault()?? new()).isChecked = true;
+            }
+        }); *@
+        GlobalClassList.moduleAssignmentList.ForEach( modules => {
+            bool existed = parentModules.Any( m => m.ModuleList.Any( m1 => m1.Module == modules.ModuleId));
+            if(existed)
+            {
+                (Modules.Where( m => m.Module == modules.ModuleId).FirstOrDefault()?? new()).Id = modules.Id;
+                (Modules.Where( m => m.Module == modules.ModuleId).FirstOrDefault()?? new()).isChecked = true;
+            }
+        });
+        StateHasChanged();
+    }
+    private async Task AccessValueChanged(Enums.AISUserAccessLevel access)
+    {
+        parentModules.ForEach(x=> 
+        { 
+            if(x.ParentModule == Enums.AISParentModules.Dashboard) 
+            { 
+                DisplayRelatedModule(x);
+                x.IsSelected = true; 
+            }
+            else x.IsSelected = false; 
+        });
+        currentAccessLevel = access;
+        await Task.Run( async () => await GetListOfModules(access)).ContinueWith( T => DisplayModules());
+    }
+    private async Task GetFunctions(Enums.AISModules module)
+    {
+        await Task.Run( async () => await GetListOfFunctions(module)).ContinueWith( T => DisplayFunctions());
+    }
+    private string AccessModuleIcon(Enums.AISModules module)
+    {
+        //c# 8 switch
+         return module switch
+         {
+            Enums.AISModules.Dashboard => Icons.Material.Filled.Dashboard,
+            //multiple cases
+            Enums.AISModules.PettyCashEntry or Enums.AISModules.LiquidationEntry or Enums.AISModules.RequestForPaymentEntry or 
+            Enums.AISModules.VoucherEntry or Enums.AISModules.BatchEntry or Enums.AISModules.CheckWriteEntry or Enums.AISModules.DebitEntry or 
+            Enums.AISModules.DirectDepositEntry or Enums.AISModules.CollectionEntry or Enums.AISModules.BillingEntry or 
+            Enums.AISModules.BankDepositEntry => Icons.Material.Filled.LibraryAddCheck,
+
+            Enums.AISModules.AccountingStatus => Icons.Material.Filled.FactCheck,
+            Enums.AISModules.Bank => Icons.Material.Filled.AccountBalance,
+            Enums.AISModules.BillingDocument => "fa-solid fa-receipt",
+            Enums.AISModules.Division => "fa-solid fa-bars-staggered",
+            Enums.AISModules.ModeofPayment => Icons.Material.Filled.Payment,
+            Enums.AISModules.Payee => "fa-solid fa-person",
+            Enums.AISModules.PayeeCategory => Icons.Material.Filled.Group,
+            Enums.AISModules.ProjectChargingLine => Icons.Material.Filled.CreditScore,
+            Enums.AISModules.RequestTypes => "fa-solid fa-clipboard-check",
+            Enums.AISModules.Subcon => "fa-solid fa-industry",
+            Enums.AISModules.ChartsofAccounts => Icons.Material.Filled.AddChart,
+            Enums.AISModules.Supplier => Icons.Material.Filled.Groups,
+            Enums.AISModules.VoucherTag => "fa-solid fa-user",
+            _ => Icons.Material.Filled.ViewList,//default:
+        };
+    }
+    private string FunctionIcon(Enums.AISModuleFunctions function)
+    {
+        return function switch
+        {
+            Enums.AISModuleFunctions.None => Icons.Material.Filled.BorderClear,
+            Enums.AISModuleFunctions.Add => Icons.Material.Filled.Add,
+            Enums.AISModuleFunctions.Edit => Icons.Material.Filled.EditNote,
+            Enums.AISModuleFunctions.Delete => Icons.Material.Filled.DeleteForever,
+            Enums.AISModuleFunctions.Cancel => Icons.Material.Filled.Cancel,
+            Enums.AISModuleFunctions.Void => Icons.Material.Filled.Outbound,
+            Enums.AISModuleFunctions.View =>Icons.Material.Filled.Preview,
+            Enums.AISModuleFunctions.ChangeStatus => Icons.Material.Filled.Spellcheck,
+            Enums.AISModuleFunctions.Deposit => Icons.Material.Filled.AccountBalance,
+            Enums.AISModuleFunctions.ViewDepartment => Icons.Material.Filled.Warehouse,
+            Enums.AISModuleFunctions.ViewOwn => Icons.Material.Filled.Person,
+            Enums.AISModuleFunctions.EditDepartment => Icons.Material.Filled.EditLocationAlt,
+            Enums.AISModuleFunctions.EditOwn => Icons.Material.Filled.Edit,
+            Enums.AISModuleFunctions.BIR => Icons.Material.Filled.DocumentScanner,
+            _ => string.Empty,
+        };
+    }
+    private void SearchModule(string s)
+    {
+        if(!string.IsNullOrWhiteSpace(s))
+            SetAllModule();
+        searchTerm = s;
+        if(String.IsNullOrEmpty(s))
+            Modules = originalFunctionList.OrderBy( m => m.ModuleName).ToList();
+        else 
+            Modules = Modules.Where( m => m.ModuleName.Contains(s, StringComparison.InvariantCultureIgnoreCase)).ToList();
+    }
+
+    private void DisplayRelatedModule(ModuleParentModel parentModel)
+    {
+        Functions.Clear();
+        Modules.Clear();
+        parentModules.ForEach(x=>x.IsSelected = false);
+        parentModel.IsSelected = true;
+        selectedParentModel = parentModel;
+        DisplayModules();
+    }
+    private async Task InvokeSignalRModules()
+    {
+        if(GlobalVariable.AMSHubConnection != null)
+            await GlobalVariable.AMSHubConnection.InvokeAsync("GetAccessLevel", Convert.ToInt64(currentAccessLevel));
+    }
+    private async Task InvokeSignalRFunctions()
+    {
+        if(GlobalVariable.AMSHubConnection != null)
+            await GlobalVariable.AMSHubConnection.InvokeAsync("GetAccessLevelFunction", Convert.ToInt32(currentAccessLevel),Convert.ToInt32(GlobalClass.moduleAssignment.ModuleId));
+    }
+}

@@ -1,0 +1,60 @@
+<div class='@Class popfilter @(isClose ? "to-top":"from-top") @(IsMainFilter ? "popover-list":"popover-dialog")'>
+    <MudPaper>
+        <div class="popfilter-container">
+            <div class="popfilter-header">
+                <MudIcon Icon='@Icons.Material.Filled.FilterAlt' Size='Size.Medium' />
+                <p class='popfilter-header__title'>Filter table</p>
+                <MudSpacer/>
+            </div>
+            @if (IsLookUp)
+            {
+                <PopoverFIlterGlobalTableComponent LookUpType='@LookUpType' CloseFilterComponent='@ClosePopover' ResetTableList='@ResetTable' Filter='@ApplyFilters' />
+            }
+            @if(IsModuleList)
+            {
+                <PopoverFilterComponent CloseFilterComponent='@ClosePopover' ResetTableList='@ResetTable' Filter='@ApplyFilters' 
+                    ModuleName='@ModuleName' />
+            }
+            else if(IsLedgerList)
+            {
+                <PopoverLedgerFilterComponent CloseLedgerComponent='@ClosePopover' ResetTableLedger='@ResetTable'
+                    ModuleName='@ModuleName' ApplyFilter='@ApplyFilters' />
+            }
+            else if(IsCtrlNo)
+            {
+                <PopoverFilterCtrlNoComponent CloseFilterComponent='@ClosePopover' ResetTableList='@ResetTable'
+                    ModuleName='@ModuleName' Filter='@ApplyFilters' />
+            }
+            else if(IsCharging)
+            {
+                <PopoverFilterChargingOnlyComponent CloseFilterComponent='@ClosePopover' ResetTableList='@ResetTable'
+                    ModuleName='@ModuleName' FilterClick='@ApplyFilters' />
+            }
+        </div>
+    </MudPaper>
+</div>
+
+@code {
+    [Parameter] public EventCallback CloseFilter { get; set; }
+    [Parameter] public EventCallback ApplyFilter { get; set; }
+    [Parameter] public EventCallback ResetTableData { get; set; }
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public bool IsMainFilter { get; set; }
+    [Parameter] public bool IsLedgerList { get; set; }
+    [Parameter] public bool IsModuleList { get; set; }
+    [Parameter] public bool IsCtrlNo { get; set; }
+    [Parameter] public bool IsCharging { get; set; }
+    [Parameter] public bool IsLookUp { get; set; }
+    [Parameter] public string ModuleName { get; set; } = string.Empty;
+    [Parameter] public Enums.LookUpType LookUpType { get; set; } = new();
+    [Parameter] public string Class { get; set; } = string.Empty;
+    private bool isClose = false;
+    private async Task ClosePopover() 
+    {
+        isClose = true;
+        await Task.Delay(250);
+        await CloseFilter.InvokeAsync();
+    } 
+    private async Task ResetTable() => await ResetTableData.InvokeAsync();
+    private async Task ApplyFilters() => await ApplyFilter.InvokeAsync();
+}

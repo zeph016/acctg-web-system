@@ -1,0 +1,105 @@
+@inject ISnackbar SnackbarService
+
+<MudMenuItem OnClick='PreviewLiquidation'>
+<div class='d-flex align-center gap-2'>
+        <MudIcon Icon='@Icons.Material.Filled.Preview' Size='Size.Small' Color='Color.Dark'/>
+        <MudText Typo='Typo.body2'>View</MudText>
+    </div>
+</MudMenuItem>
+
+@if(!EnableEditApproved){
+       <MudMenuItem OnClick='EditLiquidation'>
+        <a class='d-flex align-center gap-2 '>
+            <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' Color='Color.Dark'/>
+            <MudText Typo='Typo.body2'>Edit</MudText>
+        </a>
+    </MudMenuItem>
+    <MudMenuItem OnClick='ApproveLiquidation'>
+        <div class='d-flex align-center gap-2 '>
+            <MudIcon Icon='@Icons.Material.Filled.CheckCircle' Size='Size.Small'/>
+            <MudText Typo='Typo.body2'>Approve</MudText>
+        </div>
+    </MudMenuItem>
+    <MudMenuItem OnClick='CancelLiquidation'>
+        <div class='d-flex align-center gap-2 '>
+            <MudIcon Icon='@Icons.Material.Filled.Cancel' Size='Size.Small'/>
+            <MudText Typo='Typo.body2'>Cancel</MudText>
+        </div>
+    </MudMenuItem>
+}
+@if(AccountingStatus){
+    if(Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Void))
+    {
+        <MudMenuItem OnClick='VoidLiquidation'>
+            <a class='d-flex align-center gap-2 '>
+                <MudIcon Icon='@Icons.Material.Filled.CancelPresentation' Size='Size.Small'/>
+                <MudText Typo='Typo.body2'>Generated (Void)</MudText>
+            </a>
+        </MudMenuItem>  
+    }
+}
+<MudMenuItem OnClick='ViewAuditTrail'>
+    <a class='d-flex align-center gap-2 '>
+        <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' />
+        <MudText Typo='Typo.body2'>Audit Trail</MudText>
+    </a>
+</MudMenuItem>
+ <MudMenuItem OnClick='ShowReport'>
+    <div class='d-flex align-center gap-2 '>
+        <MudIcon Icon='@Icons.Material.Filled.PictureAsPdf' Size='Size.Small' />
+        <MudText Typo='Typo.body2'> @(LiquidationModel.ShowReport ? "Close" : "Show") Report</MudText>
+    </div>
+</MudMenuItem>
+@code
+{
+    [Parameter] public LiquidationModel LiquidationModel { get; set; } = new();
+    [Parameter] public EventCallback PreviewClick { get; set; }
+    [Parameter] public EventCallback EditLiquidationClick { get; set; }
+    [Parameter] public EventCallback ApproveLiquidationClick {get;set;}
+    [Parameter] public EventCallback VoidLiquidationClick {get;set;}
+    [Parameter] public bool EnableEditApproved {get;set;}
+    [Parameter] public EventCallback AuditTrailClick { get; set; }
+    [Parameter] public EventCallback CancelLiquidationClick {get; set;}
+    [Parameter] public EventCallback ShowReportClick { get; set; }
+    [Parameter] public string ModuleName { get; set; } = string.Empty;
+    [Parameter] public bool AccountingStatus {get; set;} 
+
+    private async Task ApproveLiquidation() => await isAllowed(ApproveLiquidationClick, Enums.AISModuleFunctions.ChangeStatus);
+    private async Task CancelLiquidation() => await isAllowed(CancelLiquidationClick, Enums.AISModuleFunctions.ChangeStatus);
+    private async Task VoidLiquidation() => await isAllowed(VoidLiquidationClick, Enums.AISModuleFunctions.Void);
+    private async Task ViewAuditTrail() => await isAllowed(AuditTrailClick,Enums.AISModuleFunctions.View);
+    private async Task ShowReport() => await isAllowed(ShowReportClick, Enums.AISModuleFunctions.View);
+    private async Task PreviewLiquidation() =>  await isAllowed(PreviewClick, Enums.AISModuleFunctions.View);
+    
+    private async Task isAllowed(EventCallback<Enums.ActionMode> callback, Enums.ActionMode mode, Enums.AISModuleFunctions function)
+    {
+        if(Common.Privileges.isPrivilegeFunction(function))
+            await callback.InvokeAsync(mode);
+        else
+            Extensions.ShowAlert(String.Format("Account has been restricted to {0} {1}.",Extensions.GetEnumDescription(function).ToLower(), ModuleName), Variant.Filled, SnackbarService, Severity.Error);
+    }
+    private async Task isAllowed(EventCallback callback, Enums.AISModuleFunctions function)
+    {
+        if(function == Enums.AISModuleFunctions.View)
+        {
+            if(Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.View) || 
+            Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.ViewDepartment) || 
+            Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.ViewOwn))
+                await callback.InvokeAsync();
+            else
+                Extensions.ShowAlert(String.Format("Account has been restricted to {0} {1}.",function.ToString().ToLower(), ModuleName), Variant.Filled, SnackbarService, Severity.Error);
+        } else {
+            if(Common.Privileges.isPrivilegeFunction(function))
+                await callback.InvokeAsync();
+            else
+                Extensions.ShowAlert(String.Format("Account has been restricted to {0} {1}.",function.ToString().ToLower(), ModuleName), Variant.Filled, SnackbarService, Severity.Error);
+        }
+    }
+   
+    private async Task EditLiquidation(){
+        if(Common.Privileges.isAllowEdit(LiquidationModel))
+            await EditLiquidationClick.InvokeAsync();
+        else
+            Extensions.ShowAlert("Account has been restricted to edit other liquidations", Variant.Filled, SnackbarService, Severity.Error);
+    }
+}

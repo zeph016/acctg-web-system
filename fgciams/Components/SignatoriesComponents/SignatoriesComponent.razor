@@ -53,7 +53,7 @@ else
 
 
 @code {
-    
+    [Parameter] public EventCallback<bool> CompletedFetch { get; set; }
     [Parameter] public bool isSingleLine { get; set; }
     [Parameter] public long employeeId { get; set; }
     [Parameter] public MudBlazor.Size avatarSize { get; set; }
@@ -68,14 +68,14 @@ else
             CompeletedFetch();
     }
 
-    void CompeletedFetch()
-    {
-        dataFetched = true;
-    }
-
+    private void CompeletedFetch() => dataFetched = true;
     private async Task GetEmployeeDetails()
     {
         var response = await globalService.GetEmployeeById(employeeId, GlobalClass.token);
-        employeeDetails = response;
+        if (response != null)
+        {
+            employeeDetails = response;
+            await CompletedFetch.InvokeAsync(true);
+        }
     }
 }

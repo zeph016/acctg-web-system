@@ -22,5 +22,8 @@ namespace fgciams.domain.clsPayee
         public Int64 PayeeCategoryId { get; set; }
         public string Remarks { get; set; } = string.Empty;
         public bool subTable { get; set; }
+        public Int64 TaxCodeId { get; set; }
+        public string TaxCodeName { get; set; } = string.Empty;
+        public decimal TaxRate { get; set; }
     }
 }

@@ -1,7 +1,7 @@
 @inject IVoucherRouteService routeService
 @inject NavigationManager navigationManager
 @inject IGlobalService globalService
-@inject ISnackbar snackBarService
+@inject ISnackbar SnackbarService
 @inject IDialogService dialogService
 
 <MudDialog Class='customdialog3'>
@@ -39,7 +39,7 @@
                     <div class="vroutedialog-location">
                         <p class='vroutedialog__lbl'>Location:</p>
                         <BlazoredTypeahead SearchMethod='LoadRoutes' DisableClear placeholder='Route to'
-                            @bind-Value='locationRoute' Debounce='500' MaximumSuggestions='5'>
+                            @bind-Value='locationRoute' Debounce="300" MaximumSuggestions='5'>
                             <SelectedTemplate>
                                 @if (locationRoute.ProjectId != 0) {
                                     <MudText Class='font12'>@context.ProjectName | @context.Location</MudText>
@@ -116,7 +116,7 @@
         {
             await Prompt();
         }else
-            Extensions.ShowAlert("Cannot route vouchers, location is required",Variant.Filled,snackBarService,Severity.Error);
+            Extensions.ShowAlert("Cannot route vouchers, location is required.",Variant.Filled,SnackbarService,Severity.Error);
     }
     private async Task SaveVoucherRoute()
     {
@@ -137,11 +137,7 @@
         var locations = await globalService.LoadLocationRoutes(filterParameter,GlobalClass.token);
         return locations;
     }
-    private async Task LocationRouteList()
-    {
-        locationRoutesList = await globalService.LoadLocationRoutes(new FilterParameter(){isActive=true},GlobalClass.token);
-
-    }
+   
     bool IsValidated()
     {
         ResetValidation();
@@ -152,10 +148,7 @@
         }
         return true;
     }
-    void ResetValidation()
-    {
-        notValidLocation = false;
-    }
+
     private async Task Prompt()
     {
         var parameters = new DialogParameters();
@@ -176,7 +169,7 @@
         if (!resultDialog.Canceled)
         {   
             await SaveVoucherRoute();
-            Extensions.ShowAlert("Voucher/s has been routed.",Variant.Filled,snackBarService,Severity.Info);
+            Extensions.ShowAlert("Voucher/s routed.",Variant.Filled,SnackbarService,Severity.Info);
             MudDialog.Cancel();
             GlobalClass.voucherRoute = new();
             GlobalClassList.selectedVoucherToRoute.Clear();
@@ -189,6 +182,8 @@
         SubmitDateRangePicker();
     }
 
+    private void ResetValidation() => notValidLocation = false;
     private void CancelDateRangePicker() => datePicker.Close(false);
     private void SubmitDateRangePicker() =>  datePicker.Close(true);
+    private async Task LocationRouteList() => locationRoutesList = await globalService.LoadLocationRoutes(new FilterParameter(){isActive=true},GlobalClass.token);
 }

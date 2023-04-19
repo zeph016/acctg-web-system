@@ -4,7 +4,7 @@
 @inject IDialogService dialogService
 @inject IBankService bankService
 @inject IDebitService debitService
-@inject ISnackbar snackBarService
+@inject ISnackbar SnackbarService
 @inject IGlobalService globalService
 @inject NavigationManager navigationManager
 
@@ -45,7 +45,7 @@
                             <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
                         </MudText>
                         <BlazoredTypeahead SearchMethod='( (string s)=> Extensions.SearchBank(s, false) )' ValueChanged="((BankModel bank)=>SelectedBank(bank))" ValueExpression='(()=>bank)' Value="bank"
-                            Context='selbank' Debounce="500" placeholder='BANK & ACCOUNT NO.'>
+                            Context='selbank' Debounce="300" placeholder='BANK & ACCOUNT NO.'>
                             <SelectedTemplate>
                                 <MudText Class='font12'>@selbank.ShortcutName</MudText>
                             </SelectedTemplate>
@@ -73,13 +73,13 @@
                             <MudText Typo='Typo.body2' Class='font-bold pl-2' Style='@(GlobalClass.debit.Amount > 0 ? "color:green":"color:red")'>
                                 @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
                             </MudText>
-                            <MudNumericField Class='txtfield-font14-no-margin txtfield-right' @bind-Value='GlobalClass.debit.Amount' Culture='CultureInfo.GetCultureInfo("en-PH")'
+                            <MudNumericField onclick='this.select()' Class='txtfield-font14-no-margin txtfield-right' @bind-Value='GlobalClass.debit.Amount' Culture='CultureInfo.GetCultureInfo("en-PH")'
                                 Format='N2' Variant='Variant.Text' HideSpinButtons Style='@(GlobalClass.debit.Amount > 0 ? "color:green":"color:red")'/>
                         </div>
                     </div>
                     <div class='debit-controlno'>
                         <MudText Class='wspace-nowrap txt-uppercase font-bold font10'>Control No:</MudText>
-                        <MudChip Class='chip-radius-5 txt-uppercase font-bold font12' Color='Color.Error' Size='Size.Medium' Variant='Variant.Outlined'>
+                        <MudChip Class='chip-radius-5 txt-uppercase font-bold font12 width100' Color='Color.Error' Size='Size.Medium' Variant='Variant.Outlined'>
                             @(GlobalClass.debit.Id == 0 ? "Auto":GlobalClass.debit.ControlNumber)
                         </MudChip>
                     </div>
@@ -104,7 +104,7 @@
                                     ValueChanged='( (UserAccount user)=> PreparedbyEmployee(user) )'
                                     ValueExpression='( ()=> preparedBy )'
                                     Value='preparedBy'
-                                    Debounce='500'>
+                                    Debounce="300">
                                     <SelectedTemplate>
                                         <small class='blzsmallreq-170px'>@preparedBy.EmployeeName</small>
                                     </SelectedTemplate>
@@ -233,28 +233,22 @@
             {
                 GlobalClass.debit.Activity = "Create debit";
                 returnedModel = await debitService.SaveDebit(GlobalClass.debit,GlobalClass.token);
-                Extensions.ShowAlert("Debit successfully added",Variant.Filled,snackBarService,Severity.Success);
+                Extensions.ShowAlert("Debit successfully saved.",Variant.Filled,SnackbarService,Severity.Success);
             }
             else
             {
                 GlobalClass.debit.Activity = "Update debit";
                 returnedModel = await debitService.UpdateDebit(GlobalClass.debit,GlobalClass.token);
-                Extensions.ShowAlert("Debit has been updated successfully",Variant.Filled,snackBarService,Severity.Success);
+                Extensions.ShowAlert("Debit successfully updated.",Variant.Filled,SnackbarService,Severity.Success);
             }
             if(GlobalVariable.AMSHubConnection != null)
                 await GlobalVariable.AMSHubConnection.InvokeAsync("SaveDebit",returnedModel);    
             navigationManager.NavigateTo($"/debit/list");
         }
         else
-            Extensions.ShowAlertV2("Action Cancelled.", Variant.Filled,snackBarService,Severity.Normal,Icons.Material.Filled.Cancel,Defaults.Classes.Position.BottomCenter);
+           Extensions.ShowAlertV2("Action cancelled.", Variant.Filled, SnackbarService, Severity.Normal, Icons.Material.Filled.Cancel, Defaults.Classes.Position.BottomCenter);
 
     }
-    private async Task OnValidSubmit()
-    {
-        await Prompt();
-    }
-    private void OnInvalidInput()
-    {
-        Extensions.ShowAlert("Please fill the required field", Variant.Filled, snackBarService, Severity.Error);
-    }
+    private async Task OnValidSubmit() => await Prompt();
+    private void OnInvalidInput() => Extensions.ShowAlert("Please fill the required field", Variant.Filled, SnackbarService, Severity.Error);
 }

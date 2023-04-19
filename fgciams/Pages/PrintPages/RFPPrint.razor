@@ -3,7 +3,7 @@
 @inject IRequestForPaymentService requestForPaymentService
 @inject NavigationManager navigationManager
 @inject IDialogService dialogService
-@inject ISnackbar snackBar
+@inject ISnackbar SnackbarService
 
 <div class='page-cont d-flex'>
     <div class='rpt-container'>
@@ -27,41 +27,6 @@
             BackEventClick='Back'
             PromptEventClick='Prompt'/>
     </div>
-    @* <div class='d-flex flex-1 pa-2'>
-        <MudCard Class='d-flex flex-column flex-1 pa-0' Elevation='1'>
-            <MudCardContent Class='d-flex align-stretch justify-center rounded pa-2 default-report-viewscreen bgc-f2f2f2'>
-                @if (string.IsNullOrWhiteSpace(pdfReport))
-                {
-                    <MudOverlay Visible='true' DarkBackground="false" AutoClose="true">
-                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-                    </MudOverlay>
-                }
-                else
-                {
-                    <iframe src="@pdfReport" />
-                }
-            </MudCardContent>
-            <MudCardActions Class='d-flex align-center pa-0 gap-2'>
-                <div class='flex-1 border-thin-right bgc-f2f2f2 height100'></div>
-                <div class='d-flex align-center pa-2 gap-2'>
-                    <MudButton Class='btn-ios-d font12' OnClick='(()=> Back())' Variant='Variant.Text' Size='Size.Small' DisableElevation>@(isSaved ? "RETURN" : "CANCEL")</MudButton>
-                    @if (_processing)
-                    {
-                        <MudButton Class='width100px font12' OnClick='(()=> SaveRFP())' Variant='Variant.Filled' Color='Color.Success' Size='Size.Small' Disabled=_processing DisableElevation>
-                            <MudProgressCircular Class="progsize-21" Size="Size.Small" Indeterminate="true"/>
-                            <MudText Class='font12 pl-2'>SAVING</MudText>
-                        </MudButton>
-                    }
-                    else
-                    {
-                        <MudButton Class='width100px font12' OnClick='(()=> SaveRFP())' Variant='Variant.Filled' Color='Color.Success' Size='Size.Small' Disabled=isSaved DisableElevation>
-                            <MudText Class='font12'>SAVE</MudText>
-                        </MudButton>
-                    }
-                </div>
-            </MudCardActions>
-        </MudCard>
-    </div> *@
 </div>
 
 
@@ -95,24 +60,52 @@
         var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
         if (!resultDialog.Canceled)
         {
+            GlobalClass.forPrintingOrSaveRFP.PreparedByPicture = null;
+            GlobalClass.forPrintingOrSaveRFP.ApprovedByPicture = null;
+            GlobalClass.forPrintingOrSaveRFP.RecommendedByPicture = null;
+            GlobalClass.forPrintingOrSaveRFP.RequestedByPicture = null;
+            //Avoid Error in report not accepting null
+            GlobalClass.forPrintingOrSaveRFP.PayeeDepartment = string.Empty;
+            GlobalClass.forPrintingOrSaveRFP.PayeeSection = string.Empty;
+            GlobalClass.forPrintingOrSaveRFP.PayeePosition = string.Empty;
             var SavedRFP = new RequestForPaymentModel();
             if (GlobalClass.forPrintingOrSaveRFP.Id == 0)
             {
                SavedRFP = await requestForPaymentService.AddRequestPayment(GlobalClass.forPrintingOrSaveRFP, GlobalClass.token);
-               Extensions.ShowAlert("Request for payment successfully added", Variant.Filled, snackBar,Severity.Success);
+               Extensions.ShowAlert("Request for payment successfully saved.", Variant.Filled, SnackbarService,Severity.Success);
                isSaved = true;
                _processing = false;
             }
             else
             {
                 SavedRFP = await requestForPaymentService.UpdateRequestPayment(GlobalClass.forPrintingOrSaveRFP, GlobalClass.token);
-                Extensions.ShowAlert("Request for payment successfully updated", Variant.Filled, snackBar,Severity.Success);
+                Extensions.ShowAlert("Request for payment successfully updated.", Variant.Filled, SnackbarService,Severity.Success);
                 isSaved = true;
                 _processing = false;
             }
             pdfReport = await requestForPaymentService.GenerateRFPReport(SavedRFP);
-            if(GlobalVariable.AMSHubConnection != null)
-                await GlobalVariable.AMSHubConnection.InvokeAsync("SaveRequestForPayment", SavedRFP);
+            if (GlobalVariable.AMSHubConnection != null)
+            {
+                if(GlobalClass.forPrintingOrSaveRFP.Id == 0) {
+                    await Task.Run( async ()=> await GlobalVariable.AMSHubConnection.InvokeAsync("SaveRequestForPayment", SavedRFP).
+                        ContinueWith( async(t) => 
+                        {   
+                            if(t.Status == TaskStatus.RanToCompletion) 
+                            {  
+                                NotificationModel notification = new();
+                                notification.SenderId = GlobalClass.currentUserAccount.EmployeeId;
+                                notification.StatusAction = Enums.ActionMode.Create;
+                                notification.ModuleName = "Request for Payment";
+                                notification.ControlNumber = SavedRFP.ControlNumber;
+                                notification.ApproverId = SavedRFP.ApprovedById;
+                                notification.DateNotify = DateTime.Now;
+                                await Extensions.SendNotification(notification); 
+                            }
+                        }));
+                } else {
+                    await GlobalVariable.AMSHubConnection.InvokeAsync("SaveRequestForPayment", SavedRFP);
+                }
+            } 
         }
         else
         {

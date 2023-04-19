@@ -4,7 +4,7 @@
 @inject IVoucherService voucherService
 @inject IExpenseLineService expenseLineService
 @inject IGlobalService globalService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject NavigationManager navigationManager
 @inject IVoucherService voucherService
 @inject IRequestForPaymentService requrestForPaymentService
@@ -46,7 +46,7 @@
                                 <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
                             </MudText>
                             <BlazoredTypeahead SearchMethod='LoadPayee' @ref='projectTypeahead' DisableClear placeholder='Search' Disabled=@isDisablePayee
-                                ValueExpression="@(()=>payee)" Value="payee" ValueChanged="@((Project p) => SelectedPayee(p) )" Debounce='500' class="cursor-progress">
+                                ValueExpression="@(()=>payee)" Value="payee" MinimumLength='3' ValueChanged="@((Project p) => SelectedPayee(p) )" Debounce="300" class="cursor-progress">
                                 <SelectedTemplate>
                                     <div class='overflow-hidden wspace-nowrap'>
                                         @if (payee.ProjectId != 0) {
@@ -72,28 +72,33 @@
                                     </div>
                                 </ResultTemplate>
                             </BlazoredTypeahead> 
-                            <MudText Class='d-flex wspace-nowrap font10 font-bold txt-uppercase'>
-                                Period:
-                                <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
-                            </MudText>
-                            <MudDateRangePicker Class='txtfield-font12-no-margin txtfield-right' @bind-DateRange='@voucherPeriod' @ref='@dateRangePeriod'
-                                IconSize='Size.Small' Margin='Margin.Dense' DisableToolbar>
-                                 <PickerActions>
-                                    <MudButton Class='btn-ios-d font12' OnClick='(() => DateRangeToday(new() , dateRangePeriod))' Size='Size.Small' DisableElevation>
-                                        Today
-                                    </MudButton>
-                                    <MudSpacer />
-                                    <MudButton Class='btn-ios-d font12' OnClick='(() => CancelDateRangePicker(new(), dateRangePeriod))' Size='Size.Small' DisableElevation>
-                                        Cancel
-                                    </MudButton>
-                                    <MudButton Class='btn-ios-d font12' OnClick='(() => SubmitDateRangePicker(new(), dateRangePeriod))' Size='Size.Small' DisableElevation Color='Color.Primary' Variant='Variant.Filled'>
-                                        Submit
-                                    </MudButton>
-                                </PickerActions>
-                            </MudDateRangePicker>
+                            <MudCheckBox Class='chkbox50px' Checked='GlobalClass.voucher.IsEWT' CheckedChanged='((bool b) => EWTCheckChanged(b))' UnCheckedColor='Color.Dark' Color='Color.Info'
+                                Size="Size.Small" Label='EWT' Dense/>
                         </div>
                         <div class="voucher-status d-flex align-center justify-space-around gap-2 overflow-hidden">
                             <div class='d-flex align-center gap-2 width40'>
+                                <MudText Class='d-flex wspace-nowrap font10 font-bold txt-uppercase'>
+                                    Period:
+                                    <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
+                                </MudText>
+                                <MudDateRangePicker Class='txtfield-font12-no-margin txtfield-right' @bind-DateRange='@voucherPeriod' @ref='@dateRangePeriod'
+                                    IconSize='Size.Small' Margin='Margin.Dense' DisableToolbar>
+                                    <PickerActions>
+                                        <MudButton Class='btn-ios-d font12' OnClick='(() => DateRangeToday(new() , dateRangePeriod))' Size='Size.Small' DisableElevation>
+                                            Today
+                                        </MudButton>
+                                        <MudSpacer />
+                                        <MudButton Class='btn-ios-d font12' OnClick='(() => CancelDateRangePicker(new(), dateRangePeriod))' Size='Size.Small' DisableElevation>
+                                            Cancel
+                                        </MudButton>
+                                        <MudButton Class='btn-ios-d font12' OnClick='(() => SubmitDateRangePicker(new(), dateRangePeriod))' Size='Size.Small' DisableElevation Color='Color.Primary' Variant='Variant.Filled'>
+                                            Submit
+                                        </MudButton>
+                                    </PickerActions>
+                                </MudDateRangePicker>
+                            </div>
+                            <MudDivider Vertical />
+                            <div class='d-flex align-center gap-2 width20'>
                                 <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>Date:</MudText>
                                 <MudDatePicker Class='txtfield-font12-no-margin txtfield-right' @bind-Date='voucherDate' IconSize='Size.Small'
                                     Margin='Margin.Dense' DisableToolbar ReadOnly MinDate='@Convert.ToDateTime(voucherDate).AddDays(-1)' MaxDate='@voucherDate'/>
@@ -104,8 +109,8 @@
                                 @(GlobalClass.voucher.Id == 0 ? "Auto":GlobalClass.voucher.ControlNumber)
                             </MudChip>
                         </div>
-                        <div class="voucher-rfp d-flex align-center gap-2 overflowx-auto overflowy-hidden">
-                            <div class='d-flex flex-1 overflow-hidden align-center pa-2 gap-2'>
+                        <div class="voucher-rfp">
+                            <div class='voucher-rfp__subcontainer'>
                                 <MudText Class='d-flex wspace-nowrap font10 font-bold txt-uppercase'>
                                     RFP:
                                     <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
@@ -131,6 +136,13 @@
                                         <small>₱</small>@(GlobalClass.voucher.VoucherRFP.Count() > 0 ? GlobalClass.voucher.RFPTotalAmountString:"0.00")
                                     </MudChip>
                                 </MudTooltip>
+                                <MudDivider Vertical FlexItem />
+                                <div class='d-flex align-center gap-2 width20'>
+                                    <MudText Class='d-flex wspace-nowrap txt-uppercase font-bold font10'>Previous Voucher:</MudText>
+                                    <MudDatePicker Class='txtfield-font12-no-margin txtfield-right' @bind-Date='GlobalClass.voucher.PrevVoucherDate' IconSize='Size.Small'
+                                        Margin='Margin.Dense' DisableToolbar/>
+                                </div>
+                                <MudDivider Vertical FlexItem />
                                 <MudTooltip Text='Previous Vouchers'>
                                     <MudIconButton Class='btn-ios-d font12' OnClick="(()=>ShowPreviousDialog())" Icon='@Icons.Material.Filled.History' Color="Color.Tertiary" Variant="Variant.Filled" Size="Size.Small" DisableElevation />
                                 </MudTooltip>
@@ -150,7 +162,7 @@
                                     <div class="vouentrydetail-body">
                                         <MudTable Class='table-style-1 mudtoolbar-bg-F4F5FB table-bottom-border sm-tbar-gutter' Items='GlobalClass.voucher.VoucherDetails'
                                             RowEditCommit='( (object model) => ComputeGrossIncome())' Loading='isVDetailLoading'
-                                            Bordered Dense Elevation='0' FixedHeader FixedFooter CustomFooter Hover Square Height='calc(100vh - 425px)'>
+                                            Bordered Dense Elevation='0' Virtualize FixedHeader FixedFooter CustomFooter Hover Square Height='calc(100vh - 425px)'>
                                             <ToolBarContent>
                                                 <div class='d-flex align-center gap-2'>
                                                     <MudText Class='txt-uppercase font-bold font12'>Voucher Detail :</MudText>
@@ -190,6 +202,10 @@
                                             </ToolBarContent>
                                             <ColGroup>
                                                 <col style='width:20px' />
+                                                @if(GlobalClass.voucher.VoucherDetails.Any( vDetails => vDetails.isLabor))
+                                                {
+                                                <col style='width:20px' />
+                                                }
                                                 <col />
                                                 <col />
                                                 <col />
@@ -203,23 +219,41 @@
                                             </ColGroup>
                                             <HeaderContent>
                                                 <MudTh Class='customheader-6'></MudTh>
+                                               
+                                                @if(GlobalClass.voucher.VoucherDetails.Any( vDetails => vDetails.isLabor ||  vDetails.RFPDetailType == Enums.RFPDetailTypeId.Labor 
+                                                || vDetails.ExpenseName.Contains("Labor")))
+                                                {
+                                                <MudTh Class='customheader-6'>
+                                                    <div class='d-flex flex-column align-items-center justify-content-center' style='margin-top:-10px;'>
+                                                        <div style='height:10px;'>Charge to</div>
+                                                        <div style='height:10px;'>Project</div>
+                                                    </div>
+                                                </MudTh>
+                                                }
                                                 <MudTh Class='customheader-6'>Expense</MudTh>
                                                 <MudTh Class='customheader-6'>Charge</MudTh>
-                                                <MudTh Class='customheader-6'>Division</MudTh>
+                                                <MudTh Class='customheader-6 text-center'>Division</MudTh>
                                                 <MudTh Class='customheader-6'>Sub Ledger</MudTh>
                                                 <MudTh Class='customheader-6'>SOW</MudTh>
                                                 <MudTh Class='customheader-6'>Description</MudTh>
-                                                <MudTh Class='customheader-6'>Invoice</MudTh>
+                                                <MudTh Class='customheader-6 max-width100px'>Invoice</MudTh>
                                                 <MudTh Class='customheader-6 text-center'>Exclude</MudTh>
                                                 <MudTh Class='customheader-6 text-center'>OR</MudTh>
                                                 <MudTh Class='customheader-6 text-right'>Amount</MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
                                                 <MudTd Class='pa-2 text-center' DataLabel='Action'>
-                                                    <MudTooltip Text='Remove Detail' Arror Placement='Placement.Bottom'>
+                                                    <MudTooltip Text='Remove Detail' Placement='Placement.Bottom'>
                                                         <MudIconButton OnClick='(() => RemoveRFP(context))' Icon='@Icons.Material.Filled.RemoveCircle' Color='Color.Error' Size='Size.Small' />
                                                     </MudTooltip>
                                                 </MudTd>
+                                                @if(GlobalClass.voucher.VoucherDetails.Any( vDetails => vDetails.isLabor ||  vDetails.RFPDetailType == Enums.RFPDetailTypeId.Labor 
+                                                || vDetails.ExpenseName.Contains("Labor")))
+                                                {
+                                                <MudTd Class='pa-2' DataLabel='Expense'>
+                                                    <MudCheckBox T='bool' @bind-Checked='@context.isLabor' Size='Size.Small' ReadOnly/>
+                                                </MudTd>
+                                                }
                                                 <MudTd Class='pa-2' DataLabel='Expense'>
                                                     <div class='dynamic-div-1'>
                                                         <small>@context.ExpenseName</small>
@@ -231,7 +265,7 @@
                                                     </div>
                                                 </MudTd>
                                                 <MudTd Class='pa-2' DataLabel='Devision'>
-                                                    <div class='dynamic-div-1'>
+                                                    <div class='dynamic-div-1 text-center'>
                                                         <small>@Extensions.DivisionShorcutName(context.DivisionId)</small>
                                                     </div>
                                                 </MudTd>
@@ -267,7 +301,7 @@
                                                     </div>
                                                 </MudTd>
                                                 <MudTd Class='pa-2' DataLabel='InvoiceNo'>
-                                                    <div class='dynamic-div-1'>
+                                                    <div class='dynamic-div-1 max-width100px'>
                                                         <small>@context.InvoiceNo</small>
                                                     </div>
                                                 </MudTd>
@@ -292,6 +326,13 @@
                                             </RowTemplate>
                                             <RowEditingTemplate>
                                                 <MudTd DataLabe='Action'></MudTd>
+                                                @if(GlobalClass.voucher.VoucherDetails.Any( vDetails => vDetails.RFPDetailType == Enums.RFPDetailTypeId.Labor || vDetails.isLabor
+                                                || vDetails.ExpenseName.Contains("Labor")))
+                                                {
+                                                <MudTd Class='pa-2' DataLabel='Expense'>
+                                                    <MudCheckBox T='bool' @bind-Checked='@context.isLabor' Size='Size.Small'/>
+                                                </MudTd>
+                                                }
                                                 <MudTd Class='pa-2' DataLabel='Expense'>
                                                     <div class='autocomplete'>
                                                         <AutoCompleteExpenseLineSearch
@@ -339,9 +380,10 @@
                                                                 IsLabor='true'
                                                                 ScopeOfWork='context.selSOW'
                                                                 ListOfSubcontractorProject='context.selSubConProjectSOWList'
-                                                                OnSOWValueChanged='( (SubContractorProjectModel SubConProject)=>
+                                                                OnSOWValueChanged='( async (SubContractorProjectModel SubConProject)=>
                                                                 {
-                                                                    SelectedSubLedger(SubConProject,context);
+                                                                    await SelectedSubLedger(SubConProject,context);
+                                                                    context.selSOW = SubConProject;
                                                                     context.selSubConProject = SubConProject;
                                                                     context.SubLedgerName = SubConProject.SubContractorName;
                                                                     context.SubLedgerId = SubConProject.SubContractorId;
@@ -352,6 +394,7 @@
                                                         <div class="autocomplete">
                                                             <AutoCompleteScopeOfWorkSearch
                                                                 ScopeOfWork='context.selSOW'
+                                                                IsReadOnly='true'
                                                                 ListOfSubcontractorProject='context.selSubConProjectSOWList'
                                                                 OnSOWValueChanged='( (SubContractorProjectModel sow)=>
                                                                 {
@@ -399,7 +442,7 @@
                                                     Margin='Margin.Dense' Variant='Variant.Outlined' />
                                                 </MudTd>
                                                 <MudTd Class='pa-2' DataLabel='Invoice'>
-                                                    <MudTextField Class='txtfield-overflow-ellipsis font12-txtfield' @bind-Value='context.InvoiceNo'
+                                                    <MudTextField style="width:100px;" Class='txtfield-overflow-ellipsis font12-txtfield max-width100px' @bind-Value='context.InvoiceNo'
                                                     Margin='Margin.Dense' Variant='Variant.Outlined' />
                                                 </MudTd>
                                                 <MudTd Class='pa-2 text-center' DataLabel='Action'>
@@ -425,13 +468,13 @@
                                                                 <MudText Class='font-bold font12' Color='Color.Error' >
                                                                     @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
                                                                 </MudText>
-                                                                <MudNumericField OnBlur='(()=>ComputeGrossIncome())' Class='txtfield-overflow-ellipsis txt-top-0 tfield-color-red txtfield-right font12-txtfield'
+                                                                <MudNumericField onclick='this.select();' OnBlur='(()=>ComputeGrossIncome())' Class='txtfield-overflow-ellipsis txt-top-0 tfield-color-red txtfield-right font12-txtfield'
                                                                 @bind-Value='context.Amount' Margin='Margin.None' Format='N2' HideSpinButtons Variant='Variant.Text' ></MudNumericField>
                                                             } else {
                                                                 <MudText Class='font-bold font12 color-green'>
                                                                     @Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso)
                                                                 </MudText>
-                                                                <MudNumericField OnBlur='(()=>ComputeGrossIncome())' Class='txtfield-overflow-ellipsis txt-top-0 tfield-color-green txtfield-right font12-txtfield'
+                                                                <MudNumericField onclick='this.select();' OnBlur='(()=>ComputeGrossIncome())' Class='txtfield-overflow-ellipsis txt-top-0 tfield-color-green txtfield-right font12-txtfield'
                                                                 @bind-Value='context.Amount' Margin='Margin.None' Format='N2' HideSpinButtons Variant='Variant.Text'></MudNumericField>
                                                             }
                                                         }
@@ -476,8 +519,8 @@
                                                 <MudAvatar Class='mb-1' Image='@($"data:image/png;base64, {Convert.ToBase64String(preparedBy.Picture)}")' Size='Size.Medium' />
                                             }
                                             <div class='d-flex flex-grow-1 flex-column blzrthead-disabled-minheight15'>
-                                                <BlazoredTypeahead @bind-Value='preparedBy' SearchMethod='LoadEmployee' DisableClear placeholder='Prepared By'
-                                                    Debounce='500' Disabled>
+                                                <BlazoredTypeahead @bind-Value='preparedBy' MinimumLength='3' SearchMethod='LoadEmployee' DisableClear placeholder='Prepared By'
+                                                    Debounce="300" Disabled>
                                                     <SelectedTemplate>
                                                         <div class='overflow-hidden wspace-nowrap'>
                                                             @if (context.EmployeeId != 0) {
@@ -510,7 +553,7 @@
                                             }
                                             <div class='d-flex flex-grow-1 flex-column'>
                                                 <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear
-                                                @bind-Value='verifiedBy' Debounce='500' placeholder="Verified By">
+                                                @bind-Value='verifiedBy' Debounce="300" MinimumLength='3' placeholder="Verified By">
                                                     <SelectedTemplate>
                                                         <div class='overflow-hidden wspace-nowrap'>
                                                             @if (verifiedBy.EmployeeId != 0) {
@@ -545,7 +588,7 @@
                                             }
                                             <div class='d-flex flex-grow-1 flex-column'>
                                                 <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear placeholder='Approved By'
-                                                @bind-Value='approvedBy' Debounce='500'>
+                                                @bind-Value='approvedBy' Debounce="300" MinimumLength='3'>
                                                     <SelectedTemplate>
                                                         <div class='overflow-hidden wspace-nowrap'>
                                                             @if (approvedBy.EmployeeId != 0) {
@@ -644,7 +687,7 @@
     private MudDateRangePicker dateRangePeriod = new MudDateRangePicker();
     private List<VoucherRouteTagModel> originalTagList = new();//holds the orignal tags of voucher 
     private AccountingStatusModel currentStatus = new AccountingStatusModel();
-        
+    public static bool IsRFPRequest = false;
     #endregion
 
     #region Methods
@@ -652,46 +695,61 @@
     protected override async Task OnInitializedAsync()
     {
         GlobalClass.pageTitle = "Voucher entry";
-        while (GlobalClass.currentUserAccount == null)
+        while (GlobalClass.currentUserAccount == null && GlobalClassList.voucherPayeeList == null)
             await Task.Delay(1);
 
-        Task t = Task.WhenAll(InitializedComponent(),LoadRequesteForPayments());
+        Task t = Task.WhenAll(InitializedComponent());
         await t;
         if (t.Status == TaskStatus.RanToCompletion)
             CompletedFetch();
         if(GlobalClass.voucher.VoucherDetails.Count > 0)
              isDisablePayee = false;
     }
-    private async Task LoadRequesteForPayments()
-    {
-        GlobalClassList.requestForPaymentsList = await  requrestForPaymentService.LoadRequestPayment(new FilterParameter(),GlobalClass.token);
-    }
     async Task InitializedComponent()
     {
         await Task.Delay(1);
         navigationManager.LocationChanged += OnLocationChanged;
-        if (GlobalClass.voucher == null || GlobalClass.voucher.Id == 0)
+        if(!IsRFPRequest)
         {
-            switch(GlobalClass.forPrintingOrSaveVoucher)
+            if (GlobalClass.voucher == null || GlobalClass.voucher.Id == 0)
             {
-                case null :
-                    GlobalClass.voucher = new VoucherModel();
-                    voucherDate = GlobalVariable.ServerTime;
-                    GlobalClass.voucher.PreparedByName = GlobalClass.currentUserAccount.EmployeeName;
-                    GlobalClass.voucher.PreparedById = GlobalClass.currentUserAccount.EmployeeId;
-                    preparedBy = GlobalClass.currentUserAccount;
-                    break;
-                default :
-                    await RemappedProperties();
-                    Console.WriteLine("remap");    
-                    break;
+                switch(GlobalClass.forPrintingOrSaveVoucher)
+                {
+                    case null :
+                        GlobalClass.voucher = new VoucherModel();
+                        voucherDate = DateTime.Now;
+                        PreparedByDefault();
+                        await DefaultSignatories();
+                        break;
+                    default :
+                        await RemappedProperties();
+                        Console.WriteLine("remap");    
+                        break;
+                }
             }
-        }
-        else
-        {
-            await DisplayOtherProperties();    
+            else
+            {
+                await DisplayOtherProperties();    
+            }
+        } else {
+            PreparedByDefault();
+            await AfterDialogClose();
         }
     } 
+    private async Task DefaultSignatories()
+    {
+        var signa = await voucherService.GetSignatories(GlobalClass.currentUserAccount.EmployeeId, GlobalClass.token);
+        verifiedBy = await globalService.GetEmployeeById(signa.VerifiedById,  GlobalClass.token);
+        approvedBy = await globalService.GetEmployeeById(signa.ApprovedById,  GlobalClass.token);
+        StateHasChanged();
+    }
+    private void PreparedByDefault()
+    {
+        GlobalClass.voucher.PreparedByName = GlobalClass.currentUserAccount.EmployeeName;
+        GlobalClass.voucher.PreparedById = GlobalClass.currentUserAccount.EmployeeId;
+        preparedBy = GlobalClass.currentUserAccount;
+        GlobalClass.voucher.Description = "Payment for";
+    }
 
     void CompletedFetch()
     {
@@ -704,6 +762,8 @@
     {
         GlobalClass.voucher.PeriodFrom = GlobalClass.forPrintingOrSaveVoucher.PeriodFrom;   
         GlobalClass.voucher.PeriodTo = GlobalClass.forPrintingOrSaveVoucher.PeriodTo;
+
+        voucherPeriod = new DateRange(GlobalClass.forPrintingOrSaveVoucher.PeriodFrom,GlobalClass.forPrintingOrSaveVoucher.PeriodTo);
 
         if(GlobalClass.voucher.PayeeId != 0)
         {
@@ -722,12 +782,15 @@
         GlobalClass.voucher.RFPTotalAmount = GlobalClass.voucher.VoucherRFP.Sum(x=>x.TotalAmount);
         GlobalClass.voucher.RFPTotalAmountString = GlobalClass.voucher.VoucherRFP.Sum(x=>x.TotalAmount).ToString("N2");
         ComputeGrossIncome();
+
+        voucherDate = GlobalClass.forPrintingOrSaveVoucher.VoucherDate;
     }
     #endregion
 
     #region Location Changed
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
+        IsRFPRequest = false;
         GlobalClass.voucher = new();
         preparedBy = GlobalClass.currentUserAccount;
         verifiedByImg = new byte[]{};
@@ -758,10 +821,10 @@
         else if(!ValidateAmount())
         {
             Extensions.ShowAlert("Gross amount should be lower than or equal to the voucher/s amount (P "+
-            GlobalClass.voucher.VoucherRFP.Sum(x=>x.TotalAmount).ToString("N2")+")", Variant.Filled, snackbarService, Severity.Error);
+            GlobalClass.voucher.VoucherRFP.Sum(x=>x.TotalAmount).ToString("N2")+")", Variant.Filled, SnackbarService, Severity.Error);
         }
         else
-            Extensions.ShowAlert("Cannot create voucher, Incomplete fields.", Variant.Filled, snackbarService, Severity.Error);
+            Extensions.ShowAlert("Cannot create voucher, Incomplete fields.", Variant.Filled, SnackbarService, Severity.Error);
         _processing = false;
     }
     #endregion
@@ -774,8 +837,9 @@
             var temp = 1;
             //New code map expense with ewt
             var VoucherDetail = new VoucherDetailModel();
+            VoucherDetail.VoucherDate = voucherDate?? DateTime.Now;
             VoucherDetail.RFPDetailType = Enums.RFPDetailTypeId.None;
-            VoucherDetail.selProj = (await LoadCharging("None")).FirstOrDefault()?? new();
+            VoucherDetail.selProj = GlobalClassList.projectList.Where( p=> p.ProjectName == "None").FirstOrDefault()?? new();
             VoucherDetail.selProjSubLedger = VoucherDetail.selProj;
             VoucherDetail.selSubConProject =  new SubContractorProjectModel()
             {
@@ -793,7 +857,7 @@
                 VoucherDetail.selProj = (await globalService.LoadPayees(new FilterParameter(){IsPayee=true,PayeeName="None"},GlobalClass.token)).Find(x=>x.ProjectName =="None")?? new();
                 VoucherDetail.selDiv = GlobalClassList.divisionList.Find(x=>x.divisionName == "None")?? new();
                 VoucherDetail.Amount = -Math.Abs(GlobalClass.voucher.WithholdingTax);
-                VoucherDetail.IsEWT = true;
+                VoucherDetail.IsEWT = GlobalClass.voucher.IsEWT = true;
                 GlobalClass.voucher.VoucherDetails.Insert(GlobalClass.voucher.VoucherDetails.Count,VoucherDetail);//Last row if EWT
 
                 VoucherDetail.ExpenseName = VoucherDetail.selExp.ExpenseName;
@@ -803,14 +867,15 @@
                 VoucherDetail.ProjectCategoryId = VoucherDetail.selProj.ProjectCategoryId;
                 VoucherDetail.DivisionName = VoucherDetail.selDiv.divisionName;
                 VoucherDetail.DivisionId = VoucherDetail.selDiv.Id;
+                VoucherDetail.VoucherDate = GlobalClass.voucher.VoucherDate;
             }
             else
-                if(GlobalClass.voucher.VoucherDetails.Count == 0)
+                //if(GlobalClass.voucher.VoucherDetails.Count == 0)
                     GlobalClass.voucher.VoucherDetails.Add(VoucherDetail);//Add if no details {0} row
-                else if(GlobalClass.voucher.VoucherDetails.Any(x=>x.isLabor))
-                    GlobalClass.voucher.VoucherDetails.Insert(GlobalClass.voucher.VoucherDetails.Where(x=>x.isLabor).ToList().Count,VoucherDetail);//Insert before after labor
-                else
-                    GlobalClass.voucher.VoucherDetails.Insert(GlobalClass.voucher.VoucherDetails.Count,VoucherDetail);//Insert before EWT row
+                //else if(GlobalClass.voucher.VoucherDetails.Any(x=>x.isLabor))
+                //    GlobalClass.voucher.VoucherDetails.Insert(GlobalClass.voucher.VoucherDetails.Where(x=>x.isLabor).ToList().Count,VoucherDetail);//Insert before after labor
+                //else
+                //    GlobalClass.voucher.VoucherDetails.Insert(GlobalClass.voucher.VoucherDetails.Count,VoucherDetail);//Insert before EWT row
             
             foreach (var item in GlobalClass.voucher.VoucherDetails)
             {
@@ -821,7 +886,7 @@
             StateHasChanged();
         } else
         {
-            Extensions.ShowAlert("No RFP selected", Variant.Filled, snackbarService, Severity.Error);
+            Extensions.ShowAlert("No RFP selected", Variant.Filled, SnackbarService, Severity.Error);
         }
     }
 
@@ -830,7 +895,6 @@
     #region DisplayOtherProperties
     private async Task DisplayOtherProperties()
     {
-        List<Project> listOfProjects = (await LoadCharging("")).ToList();
         _processing = true;
         currActionMode = Enums.ActionMode.Update;
         voucherDate = GlobalClass.voucher.VoucherDate;
@@ -851,9 +915,10 @@
         //Avoid binding to get orignal list of tags
         GlobalClass.voucher.VoucherRouteTags.ForEach ( tags => 
         {
+            if(GlobalClass.voucher.VoucherRouteTags.Count <= 0)
+                originalTagList.Add(DefaultTag(Enums.RouteTag.None));
             originalTagList.Add(tags);
         });
-
         preparedBy = await GetEmployeeDetails(GlobalClass.voucher.PreparedById);
         verifiedBy = await GetEmployeeDetails(GlobalClass.voucher.VerifiedById);
         approvedBy = await GetEmployeeDetails(GlobalClass.voucher.ApprovedById);
@@ -862,12 +927,23 @@
             await GetVATandEWT(payee);
         GlobalClass.voucher.RFPTotalAmount = GlobalClass.voucher.VoucherRFP.Sum(x=>x.TotalAmount);
         GlobalClass.voucher.RFPTotalAmountString = GlobalClass.voucher.VoucherRFP.Sum(x=>x.TotalAmount).ToString("N2");
-        var RFP = await requrestForPaymentService.LoadRequestPayment(new FilterParameter(), GlobalClass.token);
+        //var RFP = await requrestForPaymentService.LoadRequestPayment(new FilterParameter(), GlobalClass.token);
 
         List<Project> projects = await globalService.LoadPayees(new FilterParameter(){IsPayee=true,PayeeName="",isActive=false},GlobalClass.token);
-        List<RequestForPaymentModel> currentRFPList = new List<RequestForPaymentModel>();
-        GlobalClass.voucher.VoucherRFP.ForEach(rf=> {
-            currentRFPList.Add(RFP.Where(x=>x.Id == rf.RequestForPaymentId).FirstOrDefault()?? new());
+        @* List<RequestForPaymentModel> currentRFPList = new List<RequestForPaymentModel>();
+        GlobalClass.voucher.VoucherRFP.ForEach( async (rf)=> {
+            
+            RequestForPaymentModel currenRFP = (await requrestForPaymentService.
+                            LoadRequestPayment(new FilterParameter()
+                            { 
+                                isActive = true,
+                                IsControlNumber = true,
+                                PageNo = 0,
+                                PageSize = 5,//Initial
+                                ControlNumber = rf.RFPControlNumber
+                            },GlobalClass.token)).FirstOrDefault()?? new();
+            Console.WriteLine(rf.RFPDetailTypeId);
+            currentRFPList.Add(currenRFP);
         });
         currentRFPList.ForEach(x=>{
             GlobalClass.voucher.VoucherRFP.ForEach(vDetails=>
@@ -877,31 +953,50 @@
                     vDetails.rfpType = x.RFPDetailTypeId;
                 }
             });
-        });
-        if(GlobalClass.voucher.VoucherRFP.Any(x=>x.rfpType==Enums.RFPDetailTypeId.Labor))
+        }); *@
+        if(GlobalClass.voucher.VoucherRFP.Any(x=>x.RFPDetailTypeId==Enums.RFPDetailTypeId.Labor))
         {
             GlobalClass.voucher.VoucherDetails.ForEach(async(vDetails)=>{
+                if(vDetails.ProjectCategoryId == Enums.ProjectCategory.Project)
+                    vDetails.isLabor = true;
                 if(vDetails.isLabor)
                 {
-                    vDetails.selSubConProject = (await globalService.VoucherDetailsSubCon(vDetails.ProjectId,GlobalClass.token)).FirstOrDefault()?? new();
+                    
+                    vDetails.selProj = GlobalClassList.projectList.Where( p => p.ProjectId == vDetails.ProjectId && p.ProjectCategoryId == vDetails.ProjectCategoryId).FirstOrDefault()?? new();
+
+                    vDetails.selSubConProject = (await globalService.VoucherDetailsSubCon(vDetails.ProjectId,GlobalClass.token))
+                    .Where( p => p.SubContractorId == vDetails.SubLedgerId && p.SubContactorCategoryId == vDetails.SubLedgerCategoryId)
+                    .FirstOrDefault()?? new();
+
+                    vDetails.selSubConProjectSOWList = (await globalService.VoucherDetailsSubCon(vDetails.ProjectId,GlobalClass.token))
+                    .Where( p => p.SubContractorId == vDetails.SubLedgerId && p.SubContactorCategoryId == vDetails.SubLedgerCategoryId).ToList();
+
                     vDetails.selSOW =  (await globalService.VoucherDetailsSubCon(vDetails.selSubConProject.ProjectId,GlobalClass.token))
                                     .Where(x=>x.ScopeOfWorkId == vDetails.ScopeOfWorkId).FirstOrDefault()?? new();
-                    vDetails.selSubConProjectSOWList = await globalService.VoucherDetailsSubCon(vDetails.ProjectId,GlobalClass.token);
-                    vDetails.selProj = listOfProjects.Where( p => p.ProjectId == vDetails.ProjectId && p.ProjectCategoryId == vDetails.ProjectCategoryId).FirstOrDefault()?? new();
+                    
                 } else {
                     //if subledgerName is not null  (await LoadCharging(vDetails.SubLedgerName)).FirstOrDefault()?? new();
-                    vDetails.selProjSubLedger = listOfProjects.Where( p => p.ProjectId == vDetails.SubLedgerId && p.ProjectCategoryId == vDetails.SubLedgerCategoryId).FirstOrDefault()?? new();
-                    vDetails.selSubConProjectSOWList = await globalService.VoucherDetailsSubCon(vDetails.SubLedgerId,GlobalClass.token);
-                    vDetails.selSOW = vDetails.selSubConProjectSOWList.FirstOrDefault()?? (GlobalClassList.scopeOfWork
-                                        .Where(x=>x.ScopeName
-                                        .Contains("None",StringComparison.InvariantCultureIgnoreCase))
+                    
+                    vDetails.selSubConProjectSOWList = (await globalService.VoucherDetailsSubCon(vDetails.SubLedgerId,GlobalClass.token))
+                                                        .GroupBy( subCon => subCon.ScopeOfWork)
+                                                        .Select( subCon => subCon.FirstOrDefault()?? new()).ToList();
+
+                    vDetails.selSOW =  (GlobalClassList.scopeOfWork
+                                        .Where(x=>x.Id == vDetails.ScopeOfWorkId)
                                         .Select(x=>new SubContractorProjectModel()
                                         {
                                             ScopeOfWork = x.ScopeName,
                                             ScopeOfWorkId = x.Id,
                                         }))
                                         .FirstOrDefault()?? new();
-                    vDetails.selProj = listOfProjects.Where( p => p.ProjectId == vDetails.SubLedgerId && p.ProjectCategoryId == vDetails.SubLedgerCategoryId).FirstOrDefault()?? new();
+                    vDetails.selProj = GlobalClassList.projectList.Where( p => p.ProjectId == vDetails.ProjectId && p.ProjectCategoryId == vDetails.ProjectCategoryId).FirstOrDefault()?? new();
+                    vDetails.selProjSubLedger = (await LoadCharging(vDetails.SubLedgerName)).ToList()
+                                                .Where( p => p.ProjectCategoryId == vDetails.SubLedgerCategoryId).FirstOrDefault()?? new();
+                    //Filter scope of work base on project and sub ledger
+                    @* vDetails.selSubConProjectSOWList = vDetails.selSubConProjectSOWList.Where( sub => 
+                        sub.ProjectId == vDetails.SubLedgerId && sub.SubContractorId == vDetails.ProjectId
+                    ).ToList(); *@
+               
                 }
                 vDetails.selExp = GlobalClassList.expenseLineList.Where( exp => exp.Id == vDetails.ExpenseId).FirstOrDefault()?? new();
                 vDetails.selDiv = GlobalClassList.divisionList.Where( div => div.Id == vDetails.DivisionId).FirstOrDefault()?? new();
@@ -915,12 +1010,17 @@
 
                 StateHasChanged();
             });
+            ComputeGrossIncome();
+            _processing = false;
+            return;
         }
         else 
         {
             GlobalClass.voucher.VoucherDetails.ForEach(async(x)=>{
-                x.selProjSubLedger = (await LoadCharging("None")).FirstOrDefault()?? new();
-                x.selSubConProject = (projects.Where(x=>x.ProjectName.Contains("None",StringComparison.InvariantCultureIgnoreCase)).Select(p=>new SubContractorProjectModel()
+                x.selProjSubLedger = GlobalClassList.projectList.Where( p => p.ProjectId == x.SubLedgerId && 
+                                    p.ProjectCategoryId == x.SubLedgerCategoryId).FirstOrDefault()?? 
+                                    GlobalClassList.projectList.Where( p => p.ProjectName == "None").FirstOrDefault()?? new();
+                x.selSubConProject = (projects.Where(x=>x.ProjectName == "None").Select(p=>new SubContractorProjectModel()
                 {
                 SubContractorName = p.SubLedgerName,
                 SubContractorId = p.SubLedgerId,
@@ -945,11 +1045,14 @@
                                     .FirstOrDefault());
                 //Mapping of autocomplete components
                 x.selExp = GlobalClassList.expenseLineList.Where( exp => exp.Id == x.ExpenseId).FirstOrDefault()?? new();
-                x.selProj = (await LoadCharging(x.ProjectName)).FirstOrDefault()?? new();
+                x.selProj = GlobalClassList.projectList.Where( p => p.ProjectName == x.ProjectName && p.ProjectCategoryId == x.ProjectCategoryId).FirstOrDefault()?? new();
                 x.selDiv = GlobalClassList.divisionList.Where( div => div.Id == x.DivisionId).FirstOrDefault()?? new();
                 
                 StateHasChanged();
             });
+            ComputeGrossIncome();
+            _processing = false;
+            return;
         }
         ComputeGrossIncome();
         _processing = false;
@@ -975,6 +1078,10 @@
         .Where(x => x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.VG)
         .Select(x => x.Id)
         .FirstOrDefault();
+        GlobalClass.voucher.StatusName = GlobalClassList.accountingStatusList
+        .Where(x => x.StatusEnumCategoryId == Enums.AccountingStatusEnumCategory.VG)
+        .Select(x => x.StatusName)
+        .FirstOrDefault()?? string.Empty;
 
         if(GlobalClass.voucher.Id == 0)
           GlobalClass.voucher.Activity = "Add Voucher";
@@ -983,10 +1090,11 @@
 
         if(GlobalClass.voucher.RemovedVoucherDetails.Count() != 0)
         {
-          GlobalClass.voucher.RemovedVoucherDetails.ForEach(x=>
-          {
-            GlobalClass.voucher.Activity += " and removed voucher details";
-          });
+            foreach(VoucherDetailModel detail in GlobalClass.voucher.RemovedVoucherDetails)
+            {
+                GlobalClass.voucher.Activity += " and change voucher details";
+                break;
+            }
         }
 
         GlobalClass.voucher.PayeeId = payee.ProjectId;
@@ -999,6 +1107,12 @@
         GlobalClass.voucher.VerifiedByName = verifiedBy.EmployeeName;
         GlobalClass.voucher.ApprovedById = approvedBy.EmployeeId;
         GlobalClass.voucher.ApprovedByName = approvedBy.EmployeeName;
+
+        //For voucher report
+        int tempId = 0;
+        GlobalClass.voucher.VoucherDetails.ForEach( vDetails => {
+            vDetails.TemporaryId = tempId++;
+        });
         return GlobalClass.voucher;
     }
 
@@ -1139,19 +1253,7 @@
         var resultDialog = await dialogService.Show<Shared.Dialogs.GlobalRFPLiquidationLookUp.GlobalRFPLiquidationLookUp>(dialogTitle, parameters, options).Result;
         if (!resultDialog.Canceled && GlobalClass.voucher.VoucherDetails.Count() > 0)
         {
-            await Task.Delay(250);
-            isDisablePayee = false;
-            ComputeGrossIncome();
-            GetRFPPayeeAndRemarks();
-
-            //Min-max date of RFP
-            DateTime? from = GlobalClass.voucher.VoucherDetails.OrderBy( v => v.RFPPeriodDateFrom).Select( v => v.RFPPeriodDateFrom).FirstOrDefault();
-            DateTime? to = GlobalClass.voucher.VoucherDetails.OrderBy( v => v.RFPPeriodDateTo).Select( v => v.RFPPeriodDateTo).LastOrDefault();
-            if(from.Equals(to))
-                to = (GlobalClass.voucher.VoucherDetails.OrderBy( v => v.RFPPeriodDateFrom).Select( v => v.RFPPeriodDateFrom ).FirstOrDefault()?? DateTime.Now).AddDays(1);
-            voucherPeriod = new DateRange(from,to);
-            isVDetailLoading = false;
-            StateHasChanged();
+            await AfterDialogClose();
         }
         else
         {
@@ -1163,6 +1265,24 @@
     #endregion
     
     #region Add Division
+    private async Task AfterDialogClose()
+    {
+        await Task.Delay(250);
+        isDisablePayee = false;
+        if(GlobalClass.voucher.VoucherDetails.Any( v => v.EWTValue > 0))
+            GlobalClass.voucher.IsEWT = true;
+        ComputeGrossIncome();
+        await GetRFPPayeeAndRemarks();
+
+        //Min-max date of RFP
+        DateTime? from = GlobalClass.voucher.VoucherDetails.Where( v => !v.IsEWT).OrderBy( v => v.RFPPeriodDateFrom).Select( v => v.RFPPeriodDateFrom).FirstOrDefault();
+        DateTime? to = GlobalClass.voucher.VoucherDetails.Where( v => !v.IsEWT).OrderBy( v => v.RFPPeriodDateTo).Select( v => v.RFPPeriodDateTo).LastOrDefault();
+        if(from.Equals(to))
+            to = (GlobalClass.voucher.VoucherDetails.OrderBy( v => v.RFPPeriodDateFrom).Select( v => v.RFPPeriodDateFrom ).FirstOrDefault()?? DateTime.Now).AddDays(1);
+        voucherPeriod = new DateRange(from,to);
+        isVDetailLoading = false;
+        StateHasChanged();
+    }
 
     private void AddDivision(VoucherDetailModel voucherDetail)
     {
@@ -1346,7 +1466,8 @@
     var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
     if(!resultDialog.Canceled)
     {
-        if(action != Enums.ActionMode.Invalid && GlobalClass.voucher.Id != 0 && voucherDetail.Id != 0)
+        //if(action != Enums.ActionMode.Invalid && GlobalClass.voucher.Id != 0 && voucherDetail.Id != 0)
+        if(GlobalClass.voucher.Id != 0 && voucherDetail.Id != 0)
         {
             voucherDetail.IsActive = false;
             GlobalClass.voucher.RemovedVoucherDetails.Add(voucherDetail);
@@ -1460,7 +1581,7 @@
     #region ValidateAmount
     private bool ValidateAmount()
     {
-      if(GlobalClass.voucher.VoucherDetails.Sum(x=>x.Amount) > GlobalClass.voucher.VoucherRFP.Sum(y=>y.TotalAmount))
+      if(Math.Round(GlobalClass.voucher.VoucherDetails.Sum(x=>x.Amount),2,MidpointRounding.AwayFromZero) > Math.Round(GlobalClass.voucher.VoucherRFP.Sum(y=>y.TotalAmount),2,MidpointRounding.AwayFromZero))
       {
         return false;
       }
@@ -1475,11 +1596,11 @@
         bool valid = true;
         if (payee.ProjectId == 0)
             reqPayee = true;
-        if (GlobalClass.voucher.PreparedById == 0)
+        if (preparedBy.EmployeeId == 0)
             reqPrep = true;
-        if(GlobalClass.voucher.VerifiedById == 0)
+        if(verifiedBy.EmployeeId == 0)
             reqVer = true;
-        if(GlobalClass.voucher.ApprovedById == 0)
+        if(approvedBy.EmployeeId == 0)
             reqApp = true;
         @* if(GlobalClass.voucher.VoucherDetails.Count() == 0)
             detailCountStatus = "No details Added"; *@
@@ -1501,6 +1622,8 @@
         {
             valid = false;
         }
+        if(reqPrep || reqVer || reqApp || reqPayee || reqRFP)
+            valid = false;
         return valid;
     }
 
@@ -1584,8 +1707,8 @@
                     voucherDetail.Amount = -Math.Abs(voucherDetail.Amount);
                     GlobalClass.voucher.RemovedVoucherDetails.Add(voucherDetail);
                 }
-                if(GlobalClass.voucher.EWTValue <= 0)
-                    GlobalClass.voucher.VoucherDetails.RemoveAll(x=> x.ProjectName == "None" || x.DivisionName == "None");
+                //if(GlobalClass.voucher.EWTValue <= 0)
+                    //GlobalClass.voucher.VoucherDetails.RemoveAll(x=> x.ProjectName == "None" || x.DivisionName == "None");
         }
         ComputeGrossIncome();
         StateHasChanged();
@@ -1603,8 +1726,9 @@
             }
             else
                 if(!amount.IsExcluded)
-                    GlobalClass.voucher.GrossIncome += amount.Amount;
+                    GlobalClass.voucher.GrossIncome += Math.Round(amount.Amount,2,MidpointRounding.AwayFromZero);
         });
+        
         StateHasChanged();
     }
     private async Task SelectedPayee(Project p)
@@ -1615,7 +1739,7 @@
     private async Task ShowPreviousDialog()
     {
         if(payee.ProjectId == 0)
-            Extensions.ShowAlert("Please select a payee.",Variant.Filled, snackbarService,Severity.Warning);
+            Extensions.ShowAlert("Please select a payee.",Variant.Filled, SnackbarService,Severity.Warning);
         else {
             GlobalClass.voucher.PayeeId = payee.ProjectId;
             GlobalClass.voucher.PayeeCategoryId = payee.ProjectCategoryId;
@@ -1642,30 +1766,44 @@
         else 
             GlobalClass.voucher.GrossIncome += detail.Amount;
     }
-    private void GetRFPPayeeAndRemarks()
+    private async Task GetRFPPayeeAndRemarks()
     {
         if(GlobalClass.voucher.VoucherRFP.Count == 1)
         {
-            var _payee = new Project();
-            _payee.ProjectName = (GlobalClass.voucher.VoucherRFP.GetRange(0,1).FirstOrDefault()?? new()).PayeeName;
-            _payee.ProjectId = (GlobalClass.voucher.VoucherRFP.GetRange(0,1).FirstOrDefault()?? new()).payeeId;
-            _payee.ProjectCategoryId = (GlobalClass.voucher.VoucherRFP.GetRange(0,1).FirstOrDefault()?? new()).payeeCategory;
-            payee = _payee;
+            if(payee.ProjectId == 0)
+            {
+                var _payee = new Project();
+                _payee.ProjectName = (GlobalClass.voucher.VoucherRFP.GetRange(0,1).FirstOrDefault()?? new()).PayeeName;
+                _payee.ProjectId = (GlobalClass.voucher.VoucherRFP.GetRange(0,1).FirstOrDefault()?? new()).payeeId;
+                _payee.ProjectCategoryId = (GlobalClass.voucher.VoucherRFP.GetRange(0,1).FirstOrDefault()?? new()).payeeCategory;
+                payee = _payee;
+                await GetVATandEWT(_payee);
+            }
         }
         if(GlobalClass.voucher.VoucherRFP.Count > 1)
         {
-            GlobalClass.voucher.Remarks =  GlobalClass.voucher.VoucherRFP
+            int countRemarks =  GlobalClass.voucher.VoucherRFP
                                             .Where(v => v.Remarks != "")
-                                            .Select( vRFP => vRFP.Remarks)
-                                            .Aggregate( (a,b) => a+", "+b);
+                                            .Count();
+            if(countRemarks >= 2)
+                GlobalClass.voucher.Remarks =  GlobalClass.voucher.VoucherRFP
+                                                .Where(v => v.Remarks != "")
+                                                .Select( vRFP => vRFP.Remarks)
+                                                .Aggregate( (a,b) => a+", "+b);
+            else
+                GlobalClass.voucher.Remarks = GlobalClass.voucher.VoucherRFP
+                                                .Where(v => v.Remarks != "")
+                                                .Select( vRFP => vRFP.Remarks)
+                                                .FirstOrDefault()?? "";
         } else 
         {
             GlobalClass.voucher.Remarks = (GlobalClass.voucher.VoucherRFP.GetRange(0,1).FirstOrDefault()?? new()).Remarks;
         }
         StateHasChanged();
     }
-    private void SelectedSubLedger(SubContractorProjectModel p,VoucherDetailModel detail)
+    private async Task SelectedSubLedger(SubContractorProjectModel p,VoucherDetailModel detail)
     {
+        await DetailSelectedProject(detail.selProj,detail);
         detail.selSOW.ScopeOfWork = p.ScopeOfWork;
         detail.selSOW.ScopeOfWorkId = p.ScopeOfWorkId;
         detail.ScopeOfWorkId = p.ScopeOfWorkId;
@@ -1691,13 +1829,29 @@
     }
     private async Task DetailSelectedProject(Project p,VoucherDetailModel vDetail)
     {
-        vDetail.selSubConProjectSOWList =  await globalService.VoucherDetailsSubCon(p.ProjectId,GlobalClass.token);
-        if(vDetail.RFPDetailType != Enums.RFPDetailTypeId.Labor)
+        if(vDetail.isLabor)
+        {
+            vDetail.selSubConProjectSOWList =  (await globalService.VoucherDetailsSubCon(p.ProjectId,GlobalClass.token));
+        }
+        else
+        {
+             vDetail.selSubConProjectSOWList = (await globalService.VoucherDetailsSubCon(p.ProjectId,GlobalClass.token))
+                                                .GroupBy( subCon => subCon.ScopeOfWork)
+                                                .Select( subCon => subCon.FirstOrDefault()?? new()).ToList();
+            //Filter scope of work base on project and sub ledger
+            @* vDetail.selSubConProjectSOWList = vDetail.selSubConProjectSOWList.Where( sub => 
+                sub.SubContractorId == payee.ProjectId && sub.SubContactorCategoryId == payee.ProjectCategoryId
+            ).ToList(); *@
+        }
+
+
+        if(vDetail.RFPDetailType != Enums.RFPDetailTypeId.Labor || !vDetail.isLabor)
         {
             vDetail.SubLedgerId = p.ProjectId;
             vDetail.SubLedgerCategoryId = p.ProjectCategoryId;
             vDetail.SubLedgerName = p.ProjectName;
         }
+        StateHasChanged();
     }
     #endregion
     private void DateRangeToday(MudDatePicker datePickerName, MudDateRangePicker dateRangePickerName)
@@ -1709,7 +1863,7 @@
         }
         if(dateRangePickerName == dateRangePeriod)
         {
-            voucherPeriod = new DateRange(DateTime.Now.AddDays(-1), DateTime.Now.Date);
+            voucherPeriod = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
             SubmitDateRangePicker(new(), dateRangePickerName);
         }
     }
@@ -1747,7 +1901,10 @@
                     GlobalClass.voucher.VoucherRouteTags.Add(tag);
             }
             else
-                GlobalClass.voucher.VoucherRouteTags.Remove(GlobalClass.voucher.VoucherRouteTags.Single( tag => tag.RouteTagId == t ) );
+            {
+                if(GlobalClass.voucher.VoucherRouteTags.Any( tag => tag.RouteTagId == t))
+                    GlobalClass.voucher.VoucherRouteTags.RemoveAll(tag => tag.RouteTagId == t );
+            }
         }
         else
         {
@@ -1775,8 +1932,11 @@
                  else
                 {
                     tag.IsActive = false;
-                    GlobalClass.voucher.RemovedVoucherRouteTags.Remove(GlobalClass.voucher.RemovedVoucherRouteTags.Single( tags => tags.RouteTagId == tag.RouteTagId ));
-                    GlobalClass.voucher.VoucherRouteTags.Add(tag);
+                    if(GlobalClass.voucher.RemovedVoucherRouteTags.Any( tags => tags.RouteTagId == tag.RouteTagId))
+                    {
+                        GlobalClass.voucher.RemovedVoucherRouteTags.RemoveAll(tags => tags.RouteTagId == tag.RouteTagId );
+                        GlobalClass.voucher.VoucherRouteTags.Add(tag);
+                    }
                 }
                 
             }
@@ -1810,5 +1970,28 @@
         model.RouteTagId = t;
 
         return model;
+    }
+    private async Task EWTCheckChanged(bool b)
+    {
+        isVDetailLoading = true;
+        if(b) {
+            await GetVATandEWT(payee)
+            .ContinueWith( t => 
+            { 
+                if(t.Status == TaskStatus.RanToCompletion) 
+                {
+                    isVDetailLoading = false; 
+                    if(GlobalClass.voucher.EWTValue <= 0) Extensions.ShowAlert("Selected payee has no EWT value, please see configuration.", Variant.Filled, SnackbarService, Severity.Error);
+                    else GlobalClass.voucher.IsEWT = b;
+                }
+            });
+        } else {
+            GlobalClass.voucher.EWTValue = 0;
+            GlobalClass.voucher.VATValue = 0;
+            GlobalClass.voucher.VoucherDetails.ForEach( vDetails => { if(vDetails.IsEWT) RemoveRFP(vDetails); } );
+            isVDetailLoading = false;
+            GlobalClass.voucher.IsEWT = b;
+        }
+        StateHasChanged();
     }
 }

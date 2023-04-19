@@ -1,7 +1,7 @@
 @inject ICollectionService collectionService
 @inject IDialogService dialogService
 @inject IGlobalService globalService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 
 <EditForm Model="@GlobalClass.collection" OnValidSubmit="OnValidSubmit" OnInvalidSubmit='OnInvalidInput'>
 <DataAnnotationsValidator/>
@@ -25,8 +25,8 @@
             <MudItem xs='xsLeft'>
                 <MudGrid Spacing='1'>
                     <MudItem xs='4'>
-                         <MudDatePicker @bind-Date='GlobalClass.collection.TransactionDate' Label='Transaction Date' IconSize='Size.Small' Variant='Variant.Outlined' DisableToolbar
-                            HelperText='Required*' Margin='Margin.Dense' For='@(()=>GlobalClass.collection.TransactionDate)'/>
+                         <MudTextField Mask='@(new PatternMask("00/00/0000"))' @bind-Value='GlobalClass.collection.TransactionDateString' Label='Transaction Date' IconSize='Size.Small' Variant='Variant.Outlined' DisableToolbar
+                            HelperText='Required*' Margin='Margin.Dense' For='@(()=>GlobalClass.collection.TransactionDateString)'/>
                     </MudItem>
                     <MudItem xs='4'>
                         <MudSelect @bind-Value="GlobalClass.collection.CollectionCategoryId"  Label='Collection Category' Variant='Variant.Outlined'
@@ -48,7 +48,7 @@
                             ValueChanged='((Project p) => OnCustomerValueChanged(p))'
                             ValueExpression='(()=> currentCustomer)'
                             Value='currentCustomer'
-                            Debounce='500' MaximumSuggestions='10' Placeholder='Customer' DisableClear>
+                            Debounce="300" MaximumSuggestions='10' MinimumLength='3' Placeholder='Customer' DisableClear>
                             <SelectedTemplate>
                                 <div class='overflow-hidden'>
                                 @if (customer.ProjectId != 0) {
@@ -77,7 +77,7 @@
                                     ValueChanged="((Project p)=>OnRowProjectValueChanged(p))" 
                                     Value="charging" 
                                     ValueExpression="(()=>charging)"
-                                    Debounce='500' MaximumSuggestions='5' Placeholder='Project/Charging' DisableClear>
+                                    Debounce="300" MaximumSuggestions='5' MinimumLength='3' Placeholder='Project/Charging' DisableClear>
                                     <SelectedTemplate>
                                         <div class='overflow-hidden'>
                                         @if (proj.ProjectId != 0) {
@@ -107,7 +107,7 @@
                                     ValueChanged='((ExpenseLineModel exp) => OnRowSelectedExpenseLine(exp))'
                                     ValueExpression='(()=>expenseLine)'
                                     Value='expenseLine'
-                                    Debounce='500' MaximumSuggestions='10' Placeholder='Expense line' DisableClear>
+                                    Debounce="300" MaximumSuggestions='10' MinimumLength='3' Placeholder='Expense line' DisableClear>
                                     <SelectedTemplate>
                                         <div class='overflow-hidden wspace-nowrap'>
                                             @if (!String.IsNullOrEmpty(rowExpenseLine.ExpenseName)) {
@@ -245,7 +245,10 @@
             expenseLine = (await LoadExpenseLine(GlobalClass.collection.ExpenseName)).FirstOrDefault()?? new();
             GlobalClass.collection.CollectionExpenses = (await collectionService.GetCollection(GlobalClass.collection.Id,GlobalClass.token)).CollectionExpenses;
             checkNumber = GlobalClass.collection.CheckNumber;
+            GlobalClass.collection.TransactionDateString = GlobalClass.collection.TransactionDate?.ToString("MM/dd/yyyy");
             CollectionPaymentTypeState(GlobalClass.collection.PaymentTypeId);
+        } else {
+            GlobalClass.collection.TransactionDateString = DateTime.Now.ToString("MM/dd/yyyy");
         }
         CheckActionMode();
     }
@@ -267,7 +270,7 @@
             GlobalClass.collection.GrossAmount = GlobalClass.collection.TotalGrossAmount;
             GlobalClass.collection.CheckDate = GlobalClass.collection.PaymentTypeId == Enums.CollectionPaymentType.Check? GlobalClass.collection.CheckDate : DateTime.Now;
             GlobalClass.collection.CheckNumber = GlobalClass.collection.PaymentTypeId == Enums.CollectionPaymentType.Check? GlobalClass.collection.CheckNumber : "0";
-            GlobalClass.collection.TransactionDate = Convert.ToDateTime(GlobalClass.collection.TransactionDate?.ToString("yyyy-MM-dd HH:mm:ss tt"));
+            GlobalClass.collection.TransactionDate = Convert.ToDateTime(Convert.ToDateTime(GlobalClass.collection.TransactionDateString).ToString("yyyy-MM-dd HH:mm:ss tt"));
             if(GlobalClass.collection.Id == 0)
             {
                 GlobalClass.collection.Activity = "Add Collection";
@@ -278,11 +281,11 @@
                 xsRight= 5;
                 contentWidth = "auto";
                 currentAction = Enums.ActionMode.Update;
-                Extensions.ShowAlert("Collection successfully saved.",Variant.Filled,snackbarService,Severity.Success);
+                Extensions.ShowAlert("Collection successfully saved.",Variant.Filled,SnackbarService,Severity.Success);
             } else {
                 GlobalClass.collection.Activity = "Update Collection";
                 GlobalClass.collection = await collectionService.UpdateCollection(GlobalClass.collection,GlobalClass.token);
-                Extensions.ShowAlert("Collection successfully updated.",Variant.Filled,snackbarService,Severity.Success);
+                Extensions.ShowAlert("Collection successfully updated.",Variant.Filled,SnackbarService,Severity.Success);
             }
             GlobalClass.collection.CollectionExpenses = (await collectionService.GetCollection(GlobalClass.collection.Id,GlobalClass.token)).CollectionExpenses;
             GlobalClass.collection.TotalGrossAmount = GlobalClass.collection.NetAmount + GlobalClass.collection.CollectionExpenses.Sum( coll => coll.Amount);
@@ -325,7 +328,7 @@
     {
       return await Task.Run(() => 
       GlobalClassList.expenseLineList
-        .Where(exp => exp.WithLedger && exp.ExpenseName.ToLower().Contains(expenseName.ToLower()))
+        .Where(exp => exp.ExpenseName.ToLower().Contains(expenseName.ToLower()))
         .ToList());
     }
     private void OnRowSelectedExpenseLine(ExpenseLineModel exp)
@@ -338,14 +341,14 @@
     {
         if(GlobalClass.collection.CollectionExpenses.Any(exp => exp.isAmountNotValid || exp.isExpenseNameEmpty) && GlobalClass.collection.CollectionExpenses.Count > 0)
         {
-            Extensions.ShowAlert("Please fill the requried field in collection expense.", Variant.Filled, snackbarService,Severity.Error);
+            Extensions.ShowAlert("Please fill the requried field in collection expense.", Variant.Filled, SnackbarService,Severity.Error);
         } else {
             await Submit();
         }
     }
     private void OnInvalidInput()
     {
-        Extensions.ShowAlert("Please complete the required fields.", Variant.Filled, snackbarService,Severity.Error);
+        Extensions.ShowAlert("Please complete the required fields.", Variant.Filled, SnackbarService,Severity.Error);
     }
     private void BankPaymentTypeOnClick(Enums.CollectionPaymentType type)
     {
@@ -381,6 +384,7 @@
         GlobalClass.collection.IsCollection = true;
         GlobalClass.collection.CollectionType = Enums.CollectionType.Collection;
         GlobalClass.collection.CollectionTypeId = Enums.CollectionType.Collection;
-        GlobalClass.collection.CheckNumber = "0";
+        if(String.IsNullOrEmpty(GlobalClass.collection.CheckNumber))
+            GlobalClass.collection.CheckNumber = "0";
     }
 }

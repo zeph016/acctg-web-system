@@ -2,7 +2,7 @@
 
 @inject NavigationManager navigationManager
 @inject IGlobalService globalService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject IVoucherRouteService voucherRouteService
 @inject IDialogService dialogService
 
@@ -37,7 +37,7 @@
                                     <MudText Class='font10 font-bold' Color='Color.Error'>*</MudText>
                                 </MudText>
                                 <BlazoredTypeahead SearchMethod='LoadRoutes' DisableClear placeholder='Route to Location'
-                                    @bind-Value='locationRoute' Debounce='500' MaximumSuggestions='5'>
+                                    @bind-Value='locationRoute' MinimumLength='3' Debounce="300" MaximumSuggestions='5'>
                                     <SelectedTemplate>
                                         @if (locationRoute.ProjectCategoryId != 0) {
                                             <MudText Class='font12'>@context.ProjectName</MudText>
@@ -125,7 +125,7 @@
                                             </MudText>
                                         </MudTd>
                                         <MudTd Class='text-center pa-2' DataLabel='Actions'>
-                                            <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' ActivationEvent='MouseEvent.MouseOver'
+                                            <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomLeft' 
                                             TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
                                                 <MudMenuItem OnClick='(()=>EditRoute(context))'>
                                                     <div class='d-flex align-center gap-2'>
@@ -322,13 +322,13 @@
             {
                 MapProperties(Enums.ActionMode.Create);
                 returnedModel = await voucherRouteService.AddVoucherRoute(GlobalClass.voucherRoute,GlobalClass.token);
-                Extensions.ShowAlert("New route location added!",Variant.Filled,snackbarService,Severity.Success);
+                Extensions.ShowAlert("Route location successfully saved.",Variant.Filled,SnackbarService,Severity.Success);
             }
             else
             {
                 MapProperties(Enums.ActionMode.Update);
                 returnedModel = await voucherRouteService.UpdateVoucherRoute(GlobalClass.voucherRoute,GlobalClass.token);
-                Extensions.ShowAlert("Route has been changed!",Variant.Filled,snackbarService,Severity.Success);
+                Extensions.ShowAlert("Route locaton successfully updated.",Variant.Filled,SnackbarService,Severity.Success);
             }
             buttonText ="Route";
             if(GlobalVariable.AMSHubConnection != null)
@@ -337,7 +337,7 @@
         }
         else
         {
-            Extensions.ShowAlert("Cannot route voucher"+GlobalVariable.errorPromptText,Variant.Filled,snackbarService,Severity.Error);
+            Extensions.ShowAlert("Cannot route voucher"+GlobalVariable.errorPromptText,Variant.Filled,SnackbarService,Severity.Error);
         }
     }
     private bool isValidated()
@@ -395,7 +395,7 @@
             await voucherRouteService.UpdateVoucherRoute(voucherRoute,GlobalClass.token);
             if(GlobalVariable.AMSHubConnection != null)
                 await GlobalVariable.AMSHubConnection.InvokeAsync("SaveVoucherRoute",voucherRoute);
-            Extensions.ShowAlert("Route has been removed.",Variant.Filled,snackbarService,Severity.Success);
+            Extensions.ShowAlert("Route location removed.",Variant.Filled,SnackbarService,Severity.Normal);
             New();
 
         }

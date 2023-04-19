@@ -1,11 +1,10 @@
 @page "/petty-cash/print"
 
-@inject IPettyCashService pettyCashService
-@inject IDialogService dialogService
-@inject ISnackbar snackBarService
-@inject NavigationManager navigationManager
+@inherits PettyCashPrintBase
 
 <div class='page-cont d-flex'>
+    <ActionsOverlayComponent IsOverlayVisible='_processing' ActionMode='@actionMode' ModuleName="Petty Cash"
+        ProgressValue='@progressValue' />
     <div class='rpt-container'>
         <MudCard Class='rpt-container__document-cont' Elevation='1'>
             <div class='rpt-container__iframe-cont'>
@@ -19,86 +18,7 @@
                 }
             </div>
         </MudCard>
-        <ReportControls 
-            ControlPosition='rptctrls-side-bottom'
-            ConfirmStr='SAVE PETTY CASH'
-            IsSaved='isSaved' 
-            Processing='_processing'
-            BackEventClick='Back'
-            PromptEventClick='Prompt' />
+        <ReportControls ControlPosition='rptctrls-side-bottom' ConfirmStr='SAVE PETTY CASH' IsSaved='isSaved'
+            Processing='_processing' BackEventClick='Back' PromptEventClick='Prompt' />
     </div>
 </div>
-
-@code
-{
-    private string pdfReport = string.Empty;
-    private PettyCashModel returnedModel {get;set;} = new();
-    private bool isSaved, _processing;
-    protected override async Task OnInitializedAsync()
-    {
-        GlobalClass.pageTitle = "Petty Cash Report";
-        if(GlobalClass.pettyCash == null)
-            ToList();
-        else
-            pdfReport = await pettyCashService.GetPettyCashReport(GlobalClass.pettyCash);
-        StateHasChanged();
-    }
-    protected override async Task OnParametersSetAsync()
-    {
-        await Task.Delay(1);
-    }
-
-    private async Task Prompt()
-    {
-        var parameters = new DialogParameters();
-        string contentText = " petty cash";
-        string dialogTitle = PettyCashEntry.currActionMode + contentText;
-        parameters.Add("contentText", contentText);
-        parameters.Add("dialogTitle", dialogTitle);
-        parameters.Add("actionMode", PettyCashEntry.currActionMode);
-        parameters.Add("controlNumber", GlobalClass.pettyCash.ControlNumber);
-        var options = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, NoHeader = false, DisableBackdropClick = true };
-        var resultDialog = await dialogService.Show<Shared.Dialogs.GenericPromptDialogs.GenericPrompt>(dialogTitle, parameters, options).Result;
-        if (!resultDialog.Canceled)
-        {   
-            //lazy loader
-            _processing = true;
-            StateHasChanged();
-            await Task.Delay(500);
-            if (PettyCashEntry.currActionMode == Enums.ActionMode.Create)
-                if(await Save())
-                    Extensions.ShowAlert("Created Petty Cash Voucher", Variant.Filled, snackBarService, Severity.Success);
-                else
-                    Extensions.ShowAlert("Error", Variant.Filled, snackBarService, Severity.Error); 
-            else if (PettyCashEntry.currActionMode == Enums.ActionMode.Update)
-                if (await Update())
-                    Extensions.ShowAlert("Updated Petty Cash Voucher", Variant.Filled, snackBarService, Severity.Info);
-                else
-                    Extensions.ShowAlert("Error", Variant.Filled, snackBarService, Severity.Error);
-            if(GlobalVariable.AMSHubConnection != null)
-                await GlobalVariable.AMSHubConnection.InvokeAsync("SavePettyCash",returnedModel);
-        }
-        _processing = false;
-    }
-    private async Task<bool> Save()
-    {
-        returnedModel = await pettyCashService.AddPettyCash(GlobalClass.pettyCash, GlobalClass.token);
-        navigationManager.NavigateTo($"/petty-cash/list");
-         _processing = false;
-         isSaved = true;
-        return true;
-    }
-    private async Task<bool> Update()
-    {
-        returnedModel = await pettyCashService.UpdatePettyCash(GlobalClass.pettyCash, GlobalClass.token);
-        navigationManager.NavigateTo($"/petty-cash/list");
-        _processing = false;
-        isSaved = true;
-        return true;
-    }
-    private void Back()
-    {
-        navigationManager.NavigateTo($"/petty-cash");
-    }
-     private void ToList() => navigationManager.NavigateTo($"/petty-cash/list");
-}

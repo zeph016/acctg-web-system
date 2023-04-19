@@ -1,5 +1,7 @@
 @use "../components/flexgridmods/flexgridmods.styles.css";
 @use "../components/animations/animation.styles.css";
+@use "../components/textfieldmods/textfieldmods.styles.css";
+@use "../components/font/fontmods.styles.css";
 
 .liquidationpage {
   &__grid {
@@ -94,50 +96,146 @@
   }
   .liq-details {
     &__grid {
-      @extend .transition-05s-ease, .fade-in;
       display: grid; 
       grid-template-columns: 1fr 1fr 1fr auto; 
-      grid-template-rows: 30px 1fr 1fr 1fr; 
+      grid-template-rows: 30px 1fr 30px 1fr 1fr 35px; 
       gap: 0px 0px; 
       grid-template-areas: 
-        "liqdet-tbar liqdet-tbar liqdet-tbar liqdet-sidebar"
-        "liqdet-body liqdet-body liqdet-body liqdet-sidebar"
-        "liqdet-body liqdet-body liqdet-body liqdet-sidebar"
-        "liqdet-body liqdet-body liqdet-body liqdet-sidebar"; 
-      .liqdet-tbar { grid-area: liqdet-tbar; }
-      .liqdet-body { grid-area: liqdet-body; }
-      .liqdet-sidebar { grid-area: liqdet-sidebar; }
-
+        "liqdet-toolbar liqdet-toolbar liqdet-toolbar liqdet-sigheader"
+        "liqdet-table liqdet-table liqdet-table liqdet-signatories"
+        "liqdet-table liqdet-table liqdet-table liqdet-statheader"
+        "liqdet-table liqdet-table liqdet-table liqdet-status"
+        "liqdet-table liqdet-table liqdet-table liqdet-status"
+        "liqdet-footer liqdet-footer liqdet-footer liqdet-controls";
       width: 100%;
+      height: 100%;
 
-      .liqdet-tbar {
-        @extend .dflex-row;
-        align-items: center;
-        background-color: #F4F5FB;
+      .liqdet-toolbar { grid-area: liqdet-toolbar; }
+      .liqdet-sigheader { grid-area: liqdet-sigheader; }
+      .liqdet-table { grid-area: liqdet-table; }
+      .liqdet-signatories { grid-area: liqdet-signatories; }
+      .liqdet-statheader { grid-area: liqdet-statheader; }
+      .liqdet-status { grid-area: liqdet-status; }
+      .liqdet-controls { grid-area: liqdet-controls; }
+      .liqdet-footer { grid-area: liqdet-footer; }
+
+      .liqdet-status, .liqdet-controls { 
+        justify-content: center; 
+      }
+      .liqdet-controls { 
+        align-items: flex-end;
+        border-top: solid thin lightgray;
+      }
+      .liqdet-toolbar, .liqdet-sigheader, .liqdet-statheader { background-color: #F4F5FB; }
+      .liqdet-sigheader, .liqdet-signatories, .liqdet-statheader, .liqdet-status {
+        @extend .transition-05s-ease;
+        p { @extend  .transition-05s-ease; }
         border-bottom: solid thin lightgray;
-        padding: 0px 4px;
-        &__control-cont {
+      }
+      .liqdet-status {
+        border-bottom-style: none;
+      }
+      .liqdet-toolbar {
+        @extend .dflex-row;
+        border-right: solid thin lightgray;
+        border-bottom: solid thin lightgray;
+        &__controls {
           @extend .dflex-row;
-          align-items: center;
           gap: 4px;
           width: 100%;
+          padding: 0px 8px;
         }
       }
-      .liqdet-body { overflow: auto; }
-      .liqdet-sidebar {
-        @extend .transition-05s-ease;
-        border-left: solid thin lightgray;
+      .liqdet-table {
+        overflow: auto;
+      }
+      .liqdet-table, .liqdet-footer {
+        border-right: solid thin lightgray;
+      }
+      .liqdet-footer {
+        @extend .dflex-row;
+        border-top: solid thin lightgray;
+        padding: 4px 30px;
+        gap: 4px;
+        &__txt-amount,  &__lbl-title {
+          font-family: "R-Flex Bold";
+          font-size: 14px;
+          text-transform: uppercase;
+        }
+      }
+    }
+    .liqdet-sigheader, .liqdet-statheader, .liqdet-status, .liqdet-controls {
+      @extend .dflex-row;
+      padding: 0px 8px;
+    }
+    .liqdet-sigheader, .liqdet-statheader {
+      .mud-icon-root {
+        margin: 4px 8px;
+      }
+    }
+    .entry-module-action {
+      @extend .transition-1s-ease;
+    }
+    .collapsed-liqdetside {
+      .liqdet-sigheader, .liqdet-signatories, .liqdet-statheader, .liqdet-status,
+      .liqdet-controls, .entry-module-action {
+        max-width: 56px;
+        overflow-x: hidden;
+        p {  @extend .fade-out; }
+        .mud-button-root { margin-left: 6px; }
+        .mud-chip { transform: rotate(-90deg); }
+        .entry-module-action {
+          @extend .dflex-col;
+          align-items: center;
+          gap: 4px;
+          width: 56px;
+        }
+        .blzrth-cont {
+          @extend .fade-out;
+        }
+      }
+    }
+    .expanded-liqdetside {
+      .liqdet-sigheader, .liqdet-signatories, .liqdet-statheader, .liqdet-status,
+      .liqdet-controls, .entry-module-action {
+        max-width: 300px;
+        p {  @extend .fade-in; }
+        .entry-module-action {
+          @extend .dflex-row;
+          align-items: center;
+          justify-content: center;
+          width: 300px;
+          white-space: nowrap;
+        }
+        .blzrth-cont {
+          @extend .fade-in;
+        }
+      }
+    }
+    .collapsed-subrow {
+      td {
+        padding: 0px !important;
+        border: none !important;
+      }
+      .liq-details__pcdet-grid {
+        max-height: 0px !important;
+        padding: 0px !important;
       }
     }
     &__table {
       width: 100%;
       border-collapse: collapse;
+      tr:hover { 
+        background-color: rgba(89,74,226,0.058823529411764705);
+        cursor: pointer;
+      }
       th {
         border-bottom: solid thin lightgray;
       }
       td {
         border-bottom: solid thin lightgray;
         border-right: solid thin lightgray;
+        padding: 4px;
       }
       table {
         border: solid thin lightgray;
@@ -148,14 +246,51 @@
         font-weight: unset;
         text-transform: uppercase;
       }
-      th:nth-child(1) {width: 25% ;}
-      th:nth-child(2) {width: 40% ;}
-      th:nth-child(3) {width: 25% ;}
-      th:nth-child(4) {width: 10% ;}
-      th:nth-child(5) {width: 18px ;}
+      th:nth-child(1) {width: 18px ;}
+      th:nth-child(2) {width: 25% ;}
+      th:nth-child(3) {width: 40% ;}
+      th:nth-child(4) {width: 25% ;}
+      th:nth-child(5) {width: 10% ;}
+      th:nth-child(6) {width: 18px ;}
 
-      td:nth-child(5) {
+      td:nth-child(6) {
         border-right-style: none;
+      }
+    }
+    &__pcdet-grid {
+      @extend .transition-05s-ease;
+      border-radius: 5px;
+      padding: 4px;
+      display: grid; 
+      grid-template-columns: 75px 1fr 1fr 1fr; 
+      grid-template-rows: auto; 
+      gap: 0px 0px; 
+      grid-template-areas: 
+        "pcdet-header pcdet-header pcdet-header pcdet-header"
+        "pcdet-lblpayee pcdet-payee pcdet-payee pcdet-signatories"
+        "pcdet-lblpart pcdet-part pcdet-part pcdet-signatories"
+        "pcdet-lblrem pcdet-rem pcdet-rem pcdet-signatories";
+      overflow: auto;
+      max-height: 4000px;
+      .pcdet-header { grid-area: pcdet-header; }
+      .pcdet-lblpayee { grid-area: pcdet-lblpayee; }
+      .pcdet-lblpart { grid-area: pcdet-lblpart; }
+      .pcdet-lblrem { grid-area: pcdet-lblrem; }
+      .pcdet-payee { grid-area: pcdet-payee; }
+      .pcdet-part { grid-area: pcdet-part; }
+      .pcdet-rem { grid-area: pcdet-rem; }
+      .pcdet-signatories { grid-area: pcdet-signatories; }
+
+      .pcdet-header, .pcdet-payee, .pcdet-part, .pcdet-rem {
+        border-bottom: dotted thin black;
+      }
+      .pcdet-header, .pcdet-lblpayee, .pcdet-lblpart, .pcdet-lblrem,
+      .pcdet-payee, .pcdet-part, .pcdet-rem {
+        @extend .dflex-row;
+      }
+      .pcdet-lblpayee, .pcdet-lblpart, .pcdet-lblrem,
+      .pcdet-payee, .pcdet-part, .pcdet-rem  {
+        align-items: flex-start;
       }
     }
     &__td-stock {
@@ -170,6 +305,7 @@
     }
     &__td-edit {
       td:nth-child(1) { 
+        background-color: lightgray;
         max-width: unset; 
         p {
           white-space: nowrap;
@@ -177,6 +313,31 @@
           overflow: hidden;
         }
       }
+    }
+    &__td-edit-all {
+      @extend .liq-details__td-edit;
+      td:last-child {
+        // background-color: lightgray;
+        max-width: unset; 
+      }
+    }
+    &__td-txt {
+      font-size: 12px;
+    }
+    &__td-txtfield {
+      @extend .txt-top-0, .font12-txtfield;
+    }
+    &__td-txtfield--numeric {
+      @extend .txt-top-0, .txtfield-right, .font12-txtfield, .txtbold;
+    }
+    &__label {
+      @extend .label-gray;
+    }
+    &__txt {
+      @extend .font12;
+    }
+    &__tr-footer {
+      td { border-right-style: none; }
     }
   }
 }

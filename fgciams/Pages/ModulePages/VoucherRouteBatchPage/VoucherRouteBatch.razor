@@ -1,7 +1,7 @@
 @page "/voucher/batch"
 @inject IVoucherService voucherService
 @inject IVoucherRouteBatchService voucherBatchRouteService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject IJSRuntime JSRuntime
 @inject IGlobalService globalService
 @inject NavigationManager navigationManager
@@ -61,7 +61,7 @@
                   </MudTooltip>
                 </MudTd>
                 <MudTd Class='@(RowState(context,false))' DataLabel="Date">
-                  <MudChip Class='chip-radius-5 font-bold font10' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, snackbarService, JSRuntime))'
+                  <MudChip Class='chip-radius-5 font-bold font10' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, SnackbarService, JSRuntime))'
                       Color='Color.Default' Variant='Variant.Outlined' Size='Size.Small'>
                       @context.VoucherDate.ToShortDateString()
                   </MudChip>
@@ -76,7 +76,7 @@
                     </MudTooltip>
                 </MudTd>
                 <MudTd Class='@(RowState(context,true))' DataLabel="Status">
-                   <MudChip Class='chip-radius-5 font-bold font10' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, snackbarService, JSRuntime))'
+                   <MudChip Class='chip-radius-5 font-bold font10' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, SnackbarService, JSRuntime))'
                       Color='Color.Info' Variant='Variant.Outlined' Size='Size.Small'>
                       @context.StatusName
                     </MudChip>
@@ -167,13 +167,13 @@
                   </MudChip>
                 </MudTd>
                 <MudTd Class='text-center' DataLabel="Control Number">
-                    <MudChip Class='chip-radius-5 font-bold font10' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, snackbarService, JSRuntime))'
+                    <MudChip Class='chip-radius-5 font-bold font10' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, SnackbarService, JSRuntime))'
                       Color='Color.Error' Variant='Variant.Outlined' Size='Size.Small'>
                       @context.ControlNumber
                     </MudChip>
                 </MudTd>
                 <MudTd Class='text-center' DataLabel="Status">
-                  <MudChip Class='chip-radius-5 font-bold font10' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, snackbarService, JSRuntime))'
+                  <MudChip Class='chip-radius-5 font-bold font10' OnClick='(() => Extensions.CopyTextToClipboard(context.ControlNumber, SnackbarService, JSRuntime))'
                     Variant='Variant.Outlined' Size='Size.Small' Style="@Extensions.BorderColor(context.AccountingStatusId)">
                     @context.StatusName
                   </MudChip>
@@ -223,7 +223,7 @@
               }
               <div class='d-flex flex-grow-1 flex-column blzrthead-disabled-minheight15'>
                 <BlazoredTypeahead SearchMethod='LoadEmployee' DisableClear placeholder='Prepared By'
-                  @bind-Value='preparedBy' Debounce='500' MaximumSuggestions='5' Disabled>
+                  @bind-Value='preparedBy' MinimumLength='3' Debounce="300" MaximumSuggestions='5' Disabled>
                     <SelectedTemplate>
                         <div class='overflow-hidden wspace-nowrap'>
                           @if (context.EmployeeId != 0) {
@@ -280,6 +280,14 @@
     await t;
     if(t.Status == TaskStatus.RanToCompletion)
       CompletedFetch();
+  }
+  protected override void OnAfterRender(bool firstRender)
+  {
+    if(firstRender)
+    {
+      filterParameter.PageSize = 15;
+      filterParameter.PageNo = 0;
+    }
   }
   private async Task InitializeComponent()
   {
@@ -380,11 +388,11 @@
       VoucherRouteBatchModel voucherBatch = new VoucherRouteBatchModel();
       if(GlobalClass.voucherRouteBatch != null) {
         voucherBatch = await voucherBatchRouteService.UpdateVoucherRouteBatch(MapProperties(), GlobalClass.token);
-        Extensions.ShowAlert("Successfully updated", Variant.Filled, snackbarService,Severity.Success);
+        Extensions.ShowAlert("Voucher batch Successfully updated.", Variant.Filled, SnackbarService,Severity.Success);
         navigationManager.NavigateTo($"/voucher/batch/list");
       } else {
         voucherBatch = await voucherBatchRouteService.AddVoucherRouteBatch(MapProperties(), GlobalClass.token);
-        Extensions.ShowAlert("Successfully added", Variant.Filled, snackbarService,Severity.Success);
+        Extensions.ShowAlert("Voucher batch Successfully saved.", Variant.Filled, SnackbarService,Severity.Success);
         navigationManager.NavigateTo($"/voucher/batch/list");
       }
       if(GlobalVariable.AMSHubConnection != null)
@@ -420,8 +428,7 @@
   private async Task<TableData<VoucherModel>> LoadVoucherServer(TableState state)
   {
     if(GlobalClass.currentUserAccount == null)
-    await Task.Delay(1);
-
+      await Task.Delay(1);
     IEnumerable<VoucherModel> data = await voucherBatchRouteService.VoucherList(filterParameter, GlobalClass.token);
     data = data.Where(VoucherModel =>
     {
@@ -475,7 +482,7 @@
     {
       voucher.IsSelected = !voucher.IsSelected;
     } else
-      Extensions.ShowAlert("Voucher tags was not yet approve, please go to voucher route to see which tags are not approve.", Variant.Filled, snackbarService, Severity.Error);
+      Extensions.ShowAlert("Voucher tags was not yet approve, please go to voucher route to see which tags are not approve.", Variant.Filled, SnackbarService, Severity.Error);
   }
   private string RowState(VoucherModel voucher, bool isCenter)
   {

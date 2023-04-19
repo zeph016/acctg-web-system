@@ -31,6 +31,9 @@ namespace fgciams.service.GlobalServices
         Task<List<Project>> SubConProjects(FilterParameter filterParameter, string token);
         Task<List<ScopeOfWorkModel>> SubConScopeOfWorks(FilterParameter filterParameter, string token);
         Task<List<SubContractorProjectModel>> VoucherDetailsSubCon(long projectID, string token);
+        Task<CollectionModel> GetProjectContract(long projectID, string token);
+        Task<decimal> GetProjectPreviousPercentage(long projectID, string token);
+        Task<PayeeModel> GetPayee(long Id, string token);
         Task<DateTime?> GetServerTime();
     }
 }

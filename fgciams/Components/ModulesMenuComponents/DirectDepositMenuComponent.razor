@@ -1,0 +1,43 @@
+@inject ISnackbar SnackbarService
+
+<MudMenuItem OnClick="EditDirectDeposit">
+    <div class='d-flex align-center gap-2 '>
+        <MudIcon Icon='@Icons.Material.Filled.Edit' Size='Size.Small' Color='Color.Dark' />
+        <MudText Typo='Typo.body2' Color='Color.Dark'>Edit</MudText>
+    </div>
+</MudMenuItem>
+ <MudMenuItem OnClick="ViewAuditTrail">
+    <div class='d-flex align-center gap-2 '>
+        <MudIcon Icon='@Icons.Material.Filled.ListAlt' Size='Size.Small' Color='Color.Dark'/>
+        <MudText Typo='Typo.body2' Color='Color.Dark'>Audit Trail</MudText>
+    </div>
+</MudMenuItem>
+<MudMenuItem OnClick='ShowReport'>
+        <div class='d-flex align-center gap-2 '>
+            <MudIcon Icon='@Icons.Material.Filled.PictureAsPdf' Size='Size.Small' Color='Color.Dark'/>
+            <MudText Typo='Typo.body2' Color='Color.Dark'>Show Report</MudText>
+        </div>
+</MudMenuItem>
+
+@code
+{
+    [Parameter] public CheckModel CheckModel {get;set;} = new();
+    [Parameter] public string ModuleName { get; set; } = string.Empty;
+    [Parameter] public EventCallback EditDirectDepositClick {get;set;}
+    [Parameter] public EventCallback CancelDirectDepositClick {get;set;}
+    [Parameter] public EventCallback AuditTrailClick {get; set;}
+    [Parameter] public EventCallback ShowReportClick {get; set;}
+
+    private async Task isAllowed(EventCallback callback, Enums.AISModuleFunctions function)
+    {
+        if(Common.Privileges.isPrivilegeFunction(function))
+            await callback.InvokeAsync();
+        else
+            Extensions.ShowAlert(String.Format("Account has been restricted to {0} {1}.",function.ToString().ToLower(), ModuleName), Variant.Filled, SnackbarService, Severity.Error);
+    }
+
+    private async Task EditDirectDeposit() => await isAllowed(EditDirectDepositClick, Enums.AISModuleFunctions.Edit);
+    private async Task Prompt() => await isAllowed(CancelDirectDepositClick, Enums.AISModuleFunctions.Cancel);
+    private async Task ViewAuditTrail() =>  await isAllowed(AuditTrailClick,Enums.AISModuleFunctions.View); 
+    private async Task ShowReport() => await isAllowed(ShowReportClick, Enums.AISModuleFunctions.View);
+}

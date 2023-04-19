@@ -6,4 +6,13 @@
 .mudsort-icon-15px .mud-icon-root {
   height: 15px !important;
   width: 15px !important;
+}
+
+.ico-18x18 .mud-icon-root {
+  height: 18px !important;
+  width: 18px !important;
+}
+
+.circular-ico-24 {
+  border-radius: 24px !important;
 }/*# sourceMappingURL=icons.styles.css.map */

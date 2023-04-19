@@ -1,5 +1,5 @@
 @inject IAccountTypeService accountTypeService
-@inject ISnackbar snackBar
+@inject ISnackbar SnackbarService
 @inject IDialogService dialogService
 
 <MudDialog Class='customdialog2'>
@@ -70,13 +70,18 @@
     {
         if(!GlobalClass.accountTypeModel.IsActive)
         {
+            if(!Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Delete))
+            {
+                Extensions.ShowAlert("Account has been restricted to deactivate account type.", Variant.Filled, SnackbarService, Severity.Error);
+                return;
+            }
             currentAction = Enums.ActionMode.Deactivate;
             await Prompt();
         }
         else if (IsValidated())
             await Prompt();
         else
-            Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" account type"+GlobalVariable.errorPromptText,Variant.Filled,snackBar,Severity.Error);
+            Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" account type"+GlobalVariable.errorPromptText,Variant.Filled,SnackbarService,Severity.Error);
 
     }
     private async Task Prompt()
@@ -102,7 +107,7 @@
                     await GlobalVariable.AMSHubConnection.InvokeAsync("SaveAccountType",GlobalClass.accountTypeModel);
                 MudDialog.Close(DialogResult.Ok(currentAction));
             } catch (Exception ex) {
-                Extensions.ShowAlert(ex.Message,Variant.Filled,snackBar,Severity.Info);
+                Extensions.ShowAlert(ex.Message,Variant.Filled,SnackbarService,Severity.Info);
             }
         }
         else if (currentAction == Enums.ActionMode.Deactivate)
@@ -122,8 +127,5 @@
             GlobalVariable.errorPromptText = " duplicate entry found for type name."; return false; }
         return true;
     }
-    private void ResetValidation()
-    {
-        notValidAccountType = false;
-    }
+    private void ResetValidation() => notValidAccountType = false;
 }

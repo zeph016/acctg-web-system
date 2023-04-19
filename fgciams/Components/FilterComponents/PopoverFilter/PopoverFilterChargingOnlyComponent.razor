@@ -1,0 +1,70 @@
+
+@inject IGlobalService GlobalService
+
+<div class="popfilter-content blzrthead-disabled-minheight15">
+    <div class='popfilter-content__ctrlno-container'>
+        <MudGrid Spacing='0'>
+            <MudItem xs=12>
+                <MudField Label='Project/Charging' Margin='Margin.Dense' Disabled='!filterParameter.IsCharged' DisableUnderLine>
+                    <BlazoredTypeahead SearchMethod='LoadCharging' Context='proj' DisableClear EnableDropDown Disabled='!filterParameter.IsCharged'
+                        Debounce="300" placeholder='Project / Charging' Value='project' ValueExpression='(() => project)' MinimumLength='3'
+                        ValueChanged='((Project selProject) => 
+                        {
+                            project = selProject;
+                            filterParameter.ProjectId = project.ProjectId;
+                            filterParameter.ProjectCategoryId = project.ProjectCategoryId;
+                        })'>
+                        <SelectedTemplate>
+                            <ProjectCardComponent IsSelected='true' Project='proj' />
+                        </SelectedTemplate>
+                        <ResultTemplate>
+                            <ProjectCardComponent IsResults='true' Project='proj' />
+                        </ResultTemplate>
+                    </BlazoredTypeahead>
+                </MudField>
+            </MudItem>
+        </MudGrid>
+    </div>
+</div>
+
+@code  {
+    [Parameter] public EventCallback CloseFilterComponent { get; set; }
+    [Parameter] public EventCallback FilterClick { get; set; }
+    [Parameter] public EventCallback ResetTableList { get; set; }
+    [Parameter] public bool contentVisible { get; set; }
+    [Parameter] public FilterParameter filterParameter { get; set; } = new FilterParameter();
+    [Parameter] public string ModuleName { get; set; } = string.Empty;
+    private Project project = new Project();
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        filterParameter.IsCharged = true;
+        await base.SetParametersAsync(parameters);
+    }
+    protected async Task OpenFilter()
+    {
+        contentVisible = !contentVisible;
+        await CloseFilterComponent.InvokeAsync();
+    }
+    protected async Task MapToGlobalFilter()
+    {
+        GlobalVariable.filterParameter = filterParameter;
+        await FilterClick.InvokeAsync();
+    }
+     protected async Task ResetTable()
+    {
+        project = new Project();
+        filterParameter = new FilterParameter();
+        await ResetTableList.InvokeAsync();
+    }
+    private async Task<IEnumerable<Project>> LoadCharging(string chargingName)
+    {
+      var filterParameter = new FilterParameter()
+      {
+        IsProject = true,
+        ProjectName = chargingName,
+        IsId = false
+      };
+      var charging = await GlobalService.LoadChargeProjectLine(filterParameter, GlobalClass.token);
+      return charging;
+    }
+}

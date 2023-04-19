@@ -8,10 +8,10 @@
 
 <div class='page-cont'>
     <div class='drawer-right-min'>
-        <MudDrawer Class='pa-1' @bind-Open='openSideFilter' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
-            @* <FilterComponent OpenSideFilterClick='(() => openSideFilter = !openSideFilter)' 
-                FilterClick='FilterTable' ResetTableClick='ReloadTable'
-                contentVisible='openSideFilter' moduleName="pettycash-list"/> *@
+        <MudDrawer Class='pa-1' Open='false' Fixed='false' Anchor='Anchor.Right' Elevation='0' Variant='DrawerVariant.Mini' OpenMiniOnHover='false'>
+            <MudTooltip Text='Filter' Arrow Placement='Placement.Left'>
+                <MudIconButton OnClick='(() => openFilter = !openFilter)' Icon='@Icons.Material.Filled.FilterList' arial-label='Close Filter' Size='Size.Small' />
+            </MudTooltip>
         </MudDrawer>
     </div>
 
@@ -31,8 +31,8 @@
                     <MudTooltip Text="Refresh Table">
                         <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick='( async () => { await tableState.ReloadServerData(); })'/>
                     </MudTooltip>
-                    <MudMenu StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
-                        TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small' Label='More'>
+                    <MudMenu Class='overflow-hidden mudbtnico-rotate-90' StartIcon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.BottomCenter' 
+                        TransformOrigin='Origin.TopRight' Dense Size='Size.Small' Label='More'>
                         <MudMenuItem OnClick='Export'>
                             <div class='d-flex align-center gap-2 '>
                                 <MudIcon Icon='@Icons.Material.Filled.FileDownload' Size='Size.Small' />
@@ -40,6 +40,11 @@
                             </div>
                         </MudMenuItem>
                     </MudMenu>
+                    @if(openFilter)
+                    {
+                        <PopoverFilterMainComponent IsOpen='openFilter' CloseFilter='(() => openFilter = !openFilter)' IsMainFilter='true' IsModuleList='true'
+                            ModuleName='pettycash-list' />
+                    }
                 </ToolBarContent>
                 <ColGroup>
                     <col style='width: 1%' />
@@ -187,24 +192,19 @@
                 </RowTemplate>
                 
                 <PagerContent>
-                    <!--No pager for exporting all data in excel-->
-                    @* <MudTablePager PageSizeOptions='@GlobalVariable.pageSize' /> *@
                 </PagerContent>
             </MudTable>
         }
         else
         {
-            <MudPaper Class='ma-1 pa-1' style="height: calc(100vh - 125px);">
-                <MudSkeleton SkeletonType='SkeletonType.Text' Height='100px' Animation='Animation.Wave' />
-                <MudSkeleton SkeletonType='SkeletonType.Rectangle' Height='71vh' Animation='Animation.Wave' />
-            </MudPaper>
+           <SkeletonPageList />
         }
     </MudContainer>
 </div>
 @code
 {
     private FilterParameter filterParameter = new();
-    private bool isLoading = true, isDataFetch, openSideFilter;
+    private bool isLoading = true, isDataFetch, openFilter;
     private MudTable<VoucherDetailModel> tableState = new();
     private IEnumerable<VoucherDetailModel>? pageData;
     private List<VoucherModel> vouchers = new();
@@ -256,6 +256,8 @@
     private async Task VoucherDetails()
     {
         FilterParameter parameter = new();
+        parameter.PageNo = 0;
+        parameter.PageSize = 2000000;
         vouchers =  await voucherService.LoadVouchers(parameter, GlobalClass.token);
     }
     private bool haveExpense(string controlNumber, string expName)
@@ -362,12 +364,6 @@
     {
         return String.Format("{0}voucher/list/{1}", navigationManager.BaseUri, voucherControlNumber);
     }
-    private async Task CopyTextToClipboard(string ctrlNo)
-    {
-        await Extensions.CopyTextToClipboard(ctrlNo, SnackbarService, JSRuntime);
-    }
-    protected async Task Export()
-    {
-        await JSRuntime.InvokeVoidAsync("exportTableToExcel", "journalTable","");
-    }
+    private async Task CopyTextToClipboard(string ctrlNo) => await Extensions.CopyTextToClipboard(ctrlNo, SnackbarService, JSRuntime);
+    protected async Task Export() =>  await JSRuntime.InvokeVoidAsync("exportTableToExcel", "journalTable","");
 }  

@@ -1,0 +1,22 @@
+@if(IsSelected)
+{
+    <div class='project-card'>
+        <small>@Project.ProjectName</small>
+    </div>
+}
+else if(IsResults)
+{
+    <div class='project-card-result'>
+        <small>
+            <strong>@Project.ProjectName</strong>
+        </small>
+        <small>@Project.Location</small>
+        <small>@Extensions.ProjectReference(Project)</small>
+    </div>
+}
+
+@code {
+    [Parameter] public Project Project { get; set; } = new();
+    [Parameter] public bool IsSelected { get; set; }
+    [Parameter] public bool IsResults { get; set; }
+}

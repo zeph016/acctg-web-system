@@ -1,0 +1,39 @@
+
+.tr-hover-cursor {
+    tr:hover {
+        background-color: rgba(89,74,226,0.058823529411764705);
+        cursor: pointer;
+    }
+}
+.th-bottom-border {
+    border-bottom: solid thin lightgray !important;
+}
+
+.th-rflex-12px {
+    th {
+        font-family: "R-Flex Regular";
+        font-size: 12px;
+        font-weight: unset;
+        text-transform: uppercase;
+    }
+}
+.td-border {
+    td {
+        border-bottom: solid thin lightgray;
+        border-right: solid thin lightgray;
+        // border: solid thin lightgray;
+        padding: 4px;
+    }
+}
+.th-m-side-4px {
+    th {
+        margin: 0px 4px;
+        white-space: nowrap;
+    }
+}
+.th-m-side-4px {
+    th {
+        padding: 0px 4px;
+        white-space: nowrap;
+    }
+}

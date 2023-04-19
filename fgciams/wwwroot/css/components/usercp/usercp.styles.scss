@@ -1,6 +1,5 @@
 .usercp {
     max-height: 50px;
-    background-color:#f7f7f8;
     position: relative;
     .mud-expand-panel-header {
         max-width: 320px;
@@ -21,12 +20,11 @@
         font-size: 12px !important;
     }
     &__btncontainer {
+        display: flex !important;
         padding: 0px 16px !important;
-        .mud-svg-icon {
-            color: black !important;
-        }
     }
     &__btnsettings, &__btntohub {
+        font-size: 14px !important;
         text-transform: none !important;
     }
     &__btnlogout {

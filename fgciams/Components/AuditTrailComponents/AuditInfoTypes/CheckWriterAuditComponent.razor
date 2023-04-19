@@ -1,0 +1,69 @@
+@inject IJSRuntime JSRuntime
+@inject ISnackbar SnackbarService
+
+<div class='atrail-info fade-in'>
+    <div class='atrail-info__grid'>
+        <div class='atinfo-lbl-ctrlno'>
+            <p class='atrail-info__label'>Control No.:</p>
+        </div>
+        <div class="atinfo-txt-ctrlno">
+            <MudChip OnClick='(() => CopyTextToClipboard(Check.ControlNumber))' Class='font-bold' Label Size='Size.Small' Color='Color.Error' Variant='Variant.Outlined'>
+                @Check.ControlNumber
+            </MudChip>
+        </div>
+        <div class='atinfo-lbl-date'>
+            <p class='atrail-info__label'>Check Date:</p>
+        </div>
+        <div class='atinfo-txt-date'>
+            <MudChip Class='font-bold' Label Size='Size.Small' Variant='Variant.Filled' Icon='@Icons.Material.Filled.CalendarMonth'>
+                @Convert.ToDateTime(Check.CheckDate).ToShortDateString()
+            </MudChip>
+        </div>
+        <div class="atinfo-lbl-payee">
+            <p class='atrail-info__label'>Payee:</p>
+        </div>
+        <div class="atinfo-lbl-amt">
+            <p class='atrail-info__label'>Amount:</p>
+        </div>
+        <div class="atinfo-txt-payee">
+            <p class='atrail-info__txt'>@Check.PayeeName</p>
+        </div>
+        <div class="atinfo-txt-amt">
+            <MudChip OnClick='(() => CopyTextToClipboard(Check.Amount.ToString("N2")))' Variant='Variant.Text'
+                Label Size='Size.Small' Color='@(Check.Amount > 0 ? Color.Success:Color.Error)'>
+                <p class='font-bold @(Check.Amount > 0 ? "color-green":"color-red")'>
+                    @(Extensions.GetEnumDescription(Enums.BankCurrency.PhilippinePeso) + " " + @Check.Amount.ToString("N2"))
+                </p>
+            </MudChip>
+        </div>
+        <div class="atinfo-part-cont"></div>
+          <div class="atinfo-rem-cont">
+            <p class='atrail-info__label'>Remarks:</p>
+            <div class='atrail-info__text-area'>
+                <p class='atrail-info__txt'>@Check.Remarks</p>
+            </div>
+        </div>
+        <div class="atinfo-signatories">
+            <MudPaper Class='signatory-card-1'>
+                <MudText Class='font10 font-bold'>Prepared By:</MudText>
+                <SignatoriesComponent employeeId='@Check.PreparedById' avatarSize='Size.Medium' />
+            </MudPaper>
+        </div>
+        <div class="atinfo-footer">
+            <MudSpacer />
+            <MudTooltip Text='Return to List' Arrow Placement='Placement.Bottom'>
+                <MudButton Class='atrail-info__btn btn-ios-d font12' OnClick='Return' aria-label="Return" Size='Size.Small' 
+                    Variant='Variant.Filled' Color='Color.Error' DisableElevation>
+                    Return    
+                </MudButton>
+            </MudTooltip>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public CheckModel Check { get; set; } = new();
+    [Parameter] public EventCallback ReturnEventClick { get; set; }
+    private async Task CopyTextToClipboard(string stringToCopy) => await Extensions.CopyTextToClipboard(stringToCopy, SnackbarService, JSRuntime);
+    protected async Task Return() => await ReturnEventClick.InvokeAsync();
+}

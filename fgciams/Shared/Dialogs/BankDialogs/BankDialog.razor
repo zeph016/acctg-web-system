@@ -1,5 +1,5 @@
 @inject IBankService bankService
-@inject ISnackbar snackbarService
+@inject ISnackbar SnackbarService
 @inject IDialogService dialogService
 
 <MudDialog Class="customdialog2">
@@ -59,11 +59,11 @@
                   }
                 </MudSelect>
               </MudItem>
-              <MudItem xs="8">
+              @* <MudItem xs="8">
                 <MudNumericField Class='txtfield-right txtfield-padlr-4px' @bind-Value='@GlobalClass.bank.BeginningBalance' Label="Beginning Balance" Format='N2' HideSpinButtons
                   HelperText='Required*' Margin='Margin.Dense' />
-              </MudItem>
-              <MudItem xs='12'>
+              </MudItem> *@
+              <MudItem xs='8'>
                 @if(GlobalClass.bank.Id != 0 && isDataFetch)
                 {
                   @if(GlobalClassList.bankCheckNumberList.Count > 0 )
@@ -129,7 +129,7 @@
                   <MudTd Class='text-right pa-2' DataLabel="Short Name">@context.CheckNoRangeTo</MudTd>
                   <MudTd Class='text-center' DataLabel='Date Log'>@context.LogDateTime.ToShortDateString()</MudTd>
                   <MudTd Class='text-center pa-2'>
-                      <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' ActivationEvent="MouseEvent.MouseOver"
+                      <MudMenu Icon='@Icons.Material.Filled.MoreVert' AnchorOrigin='Origin.TopLeft' 
                       TransformOrigin='Origin.TopRight' Dense='true' Size='Size.Small'>
                           <MudMenuItem OnClick="(()=>EditRange(context, Enums.ActionMode.Update))">
                               <div class='d-flex align-center gap-2'>
@@ -218,25 +218,30 @@
       else if (isValidated())
         await PromptMessage();
       else
-        Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbarService, Severity.Error);
+        Extensions.ShowAlert("Please complete all required fields", Variant.Filled, SnackbarService, Severity.Error);
     } else 
     {
       if(GlobalClassList.bankCheckNumberList.Count == 0)
       {
-        Extensions.ShowAlert("Please add check number ranges", Variant.Filled, snackbarService, Severity.Error);
+        Extensions.ShowAlert("Please add check number ranges", Variant.Filled, SnackbarService, Severity.Error);
       } else if (GlobalClass.bank.BankCheckNumberId == 0)
       {
-        Extensions.ShowAlert("Please select a default check range", Variant.Filled, snackbarService, Severity.Error);
+        Extensions.ShowAlert("Please select a default check range", Variant.Filled, SnackbarService, Severity.Error);
       } else {
         if (!GlobalClass.bank.IsActive)
         {
+          if(!Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Delete))
+           {
+              Extensions.ShowAlert("Account has been restricted to deactivate bank.", Variant.Filled, SnackbarService, Severity.Error);
+              return;
+           }
           currentAction = Enums.ActionMode.Deactivate;
           await PromptMessage();
         }
         else if (isValidated())
           await PromptMessage();
         else
-          Extensions.ShowAlert("Please complete all required fields", Variant.Filled, snackbarService, Severity.Error);
+          Extensions.ShowAlert("Please complete all required fields", Variant.Filled, SnackbarService, Severity.Error);
       }
     }
   }
@@ -305,7 +310,7 @@
         }
         catch (System.Exception ex)
         {
-          Extensions.ShowAlert(ex.Message, Variant.Filled, snackbarService, Severity.Error);
+          Extensions.ShowAlert(ex.Message, Variant.Filled, SnackbarService, Severity.Error);
         }
       }
       else if (currentAction == Enums.ActionMode.Deactivate)
@@ -327,7 +332,7 @@
             GlobalClass.bankCheckNumberModel.BankId = GlobalClass.bank.Id;
             await Prompt(GlobalClass.bankCheckNumberModel);
           } else {
-            Extensions.ShowAlert("No bank selected.", Variant.Filled, snackbarService, Severity.Success);
+            Extensions.ShowAlert("No bank selected.", Variant.Filled, SnackbarService, Severity.Success);
           }
         } else {
             GlobalClass.bankCheckNumberModel.BankId = GlobalClass.bank.Id;
@@ -365,17 +370,17 @@
     
     if(GlobalClass.bankCheckNumberModel.CheckNoRangeFrom > GlobalClass.bankCheckNumberModel.CheckNoRangeTo)
     {
-      Extensions.ShowAlert("Range from should not be greater than range to.", Variant.Filled, snackbarService, Severity.Error);
+      Extensions.ShowAlert("Range from should not be greater than range to.", Variant.Filled, SnackbarService, Severity.Error);
       return false;
     }
     if(RangeFromIsBetween())
     {
-      Extensions.ShowAlert("Range from should not  beetween the ranges.", Variant.Filled, snackbarService, Severity.Error);
+      Extensions.ShowAlert("Range from should not beetween the ranges.", Variant.Filled, SnackbarService, Severity.Error);
       return false; 
     }
     if(RangeToIsBetween())
     {
-      Extensions.ShowAlert("Range to should not be beetween the ranges.", Variant.Filled, snackbarService, Severity.Error);
+      Extensions.ShowAlert("Range to should not be beetween the ranges.", Variant.Filled, SnackbarService, Severity.Error);
       return false; 
     }
     return true;
@@ -424,14 +429,14 @@
       {   
         if (subAction == Enums.ActionMode.Create) {
           await bankService.AddBankCheckNumber(GlobalClass.bankCheckNumberModel,GlobalClass.token);
-          Extensions.ShowAlert("Bank checks successfuly added.", Variant.Filled, snackbarService, Severity.Success);
+          Extensions.ShowAlert("Bank checks successfuly saved.", Variant.Filled, SnackbarService, Severity.Success);
         }
         else {
           await bankService.UpdateBankCheckNumber(checkNumberModel,GlobalClass.token);
           if (subAction == Enums.ActionMode.Update) 
-            Extensions.ShowAlert("Bank checks successfuly updated.", Variant.Filled, snackbarService, Severity.Info);
+            Extensions.ShowAlert("Bank checks successfuly updated.", Variant.Filled, SnackbarService, Severity.Info);
           else if (subAction == Enums.ActionMode.Deactivate)
-            Extensions.ShowAlert("Bank check number range removed.", Variant.Filled, snackbarService, Severity.Warning);
+            Extensions.ShowAlert("Bank check number range removed.", Variant.Filled, SnackbarService, Severity.Warning);
         }
       }
       await Refresh();

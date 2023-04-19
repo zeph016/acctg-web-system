@@ -20,5 +20,7 @@ namespace fgciams.service.RequestForPaymentService
       Task<RequestForPaymentModel> UpdateRFPStatus(RequestForPaymentModel requestForPayment, string token);
       Task<List<RequestForPaymentAuditTrailModel>> RFPAuditTrails(long reqId, string token);
       Task<string> GenerateRFPReport(RequestForPaymentModel requestForPayment);
+      Task<int> RFPListRowCount(FilterParameter param, string token);
+      Task<RequestForPaymentModel> GetSignatories(long preparedById, string token);
     }
 }

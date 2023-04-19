@@ -14,7 +14,7 @@
         ValueChanged="((Project p)=>OnRowProjectValueChanged(CollectionModel,p))" 
         Value="CollectionModel.rowCharging" 
         ValueExpression="(()=>CollectionModel.rowCharging)"
-        Debounce='500' MaximumSuggestions='5' Placeholder='Project/Charging' DisableClear>
+        Debounce='300' MaximumSuggestions='5' Placeholder='Project/Charging' DisableClear>
         <SelectedTemplate>
             <div class='overflow-hidden'>
             @if (rowProject.ProjectId != 0) {
@@ -36,7 +36,7 @@
         ValueChanged='((ExpenseLineModel exp) => OnRowSelectedExpenseLine(CollectionModel,exp))'
         ValueExpression='(()=>CollectionModel.rowExpenseLine)'
         Value='CollectionModel.rowExpenseLine'
-        Debounce='500' MaximumSuggestions='5' DisableClear>
+        Debounce='300' MaximumSuggestions='5' DisableClear>
         <SelectedTemplate>
             <div class='overflow-hidden wspace-nowrap'>
                 @if (!String.IsNullOrEmpty(rowExpenseLine.ExpenseName)) {

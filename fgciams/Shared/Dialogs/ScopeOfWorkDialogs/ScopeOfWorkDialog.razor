@@ -1,5 +1,5 @@
 @inject IScopeOfWorkService scopeOfWorkService
-@inject ISnackbar snackbar
+@inject ISnackbar SnackbarService
 @inject IDialogService dialogService
 
 <MudDialog Class='customdialog2'>
@@ -67,6 +67,11 @@
     {
         if(!GlobalClass.scopeOfWork.IsActive)
         {
+            if (!Common.Privileges.isPrivilegeFunction(Enums.AISModuleFunctions.Delete))
+            {
+                Extensions.ShowAlert("Account has been restricted to deactivate scope of work.", Variant.Filled, SnackbarService,Severity.Error);
+                return;
+            }
             currentAction = Enums.ActionMode.Deactivate;
             await Prompt();
         }
@@ -81,7 +86,7 @@
                 await Prompt();
             }
             else 
-                Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" scope of work"+GlobalVariable.errorPromptText,Variant.Filled,snackbar,Severity.Error);
+                Extensions.ShowAlert("Cannot "+currentAction.ToString().ToLower()+" scope of work"+GlobalVariable.errorPromptText,Variant.Filled,SnackbarService,Severity.Error);
         }
     }
     private async Task Prompt()
@@ -108,7 +113,7 @@
                 @* if(GlobalVariable.AMSHubConnection != null)
                     await GlobalVariable.AMSHubConnection.InvokeAsync("SaveDivision",GlobalClass.division); *@
             } catch (Exception ex) {
-                Extensions.ShowAlert(ex.Message,Variant.Filled,snackbar,Severity.Info);
+                Extensions.ShowAlert(ex.Message,Variant.Filled,SnackbarService,Severity.Info);
             }
         }
         else if (currentAction == Enums.ActionMode.Deactivate)
@@ -128,8 +133,5 @@
             GlobalVariable.errorPromptText = " duplicate entry found."; return false; }
         return true;
     }
-    private void ResetValidation()
-    {
-        notScope = false;
-    }
+    private void ResetValidation() => notScope = false;
 }

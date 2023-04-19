@@ -13,7 +13,6 @@
                 <div class='atrail-timeline__container'>
                     @foreach (var item in CurrentAuditTrail)
                     {
-                    
                         <div class='atrail-timeline__dot' style="@ActionColor(true, item.Activity)"></div>
                         <div class='atrail-timeline__subline' style='@ActionColor(false, item.Activity)'></div>
                         <div class='atrail-timeline__body' style='@ActionColor(false, item.Activity)'>
@@ -26,90 +25,20 @@
                                 <p class='atrail-timeline__lbl-logtime'>@item.LogDateTime.ToString("h:mm tt")</p>
                             </div>
                             <div class='atrail-timeline__content-container'>
-                                <p class='atrail-timeline__lbl-activity'>@item.Activity</p>
+                                <p class='atrail-timeline__lbl-activity'>@Extensions.AuditTrailActivity(item.Activity)</p>
                             </div>
+                            @if(!String.IsNullOrEmpty(Extensions.AuditTrailRemarks(item.Activity)))
+                            {
+                                <div class='atrail-timeline__content-container'>
+                                    <p class='atrail-timeline__lbl-activity'>@Extensions.AuditTrailRemarks(item.Activity)</p>
+                                </div>
+                            }
                             <div class='atrail-timeline__footer-container'>
                                 <p class='atrail-timeline__lbl-logtime'>By:</p>
                                 <SignatoriesComponent employeeId='@item.UserId' avatarSize='Size.Small' />
                             </div>
                         </div>    
                     }
-                    @* @if(IsPettyCash)
-                    {
-                        @foreach (var item in PettyCashAuditTrail)
-                        {
-                        
-                            <div class='atrail-timeline__dot' style="@ActionColor(true, item.Activity)"></div>
-                            <div class='atrail-timeline__subline' style='@ActionColor(false, item.Activity)'></div>
-                            <div class='atrail-timeline__body' style='@ActionColor(false, item.Activity)'>
-                                <div class='atrail-timeline__header-container'>
-                                    <MudChip Label Size='Size.Small' Style='@ActionColor(false, item.Activity)' Variant='Variant.Outlined'>
-                                        <p>@ActionTaken(item.Activity)</p>
-                                    </MudChip>
-                                    <MudSpacer />
-                                    <p class='atrail-timeline__lbl-logdate'>@item.LogDateTime.ToString("dddd, dd MMMM yyyy")</p>
-                                    <p class='atrail-timeline__lbl-logtime'>@item.LogDateTime.ToString("h:mm tt")</p>
-                                </div>
-                                <div class='atrail-timeline__content-container'>
-                                    <p class='atrail-timeline__lbl-activity'>@item.Activity</p>
-                                </div>
-                                <div class='atrail-timeline__footer-container'>
-                                    <p class='atrail-timeline__lbl-logtime'>By:</p>
-                                    <SignatoriesComponent employeeId='@item.UserId' avatarSize='Size.Small' />
-                                </div>
-                            </div>    
-                        }
-                    }
-                    else if(IsLiquidation)
-                    {
-                        @foreach (var item in LiquidationAuditTrail)
-                        {
-                            <div class='atrail-timeline__dot' style="@ActionColor(true, item.Activity)"></div>
-                            <div class='atrail-timeline__subline' style='@ActionColor(false, item.Activity)'></div>
-                            <div class='atrail-timeline__body' style='@ActionColor(false, item.Activity)'>
-                                <div class='atrail-timeline__header-container'>
-                                    <MudChip Label Size='Size.Small' Style='@ActionColor(false, item.Activity)' Variant='Variant.Outlined'>
-                                        <p>@ActionTaken(item.Activity)</p>
-                                    </MudChip>
-                                    <MudSpacer />
-                                    <p class='atrail-timeline__lbl-logdate'>@item.LogDateTime.ToString("dddd, dd MMMM yyyy")</p>
-                                    <p class='atrail-timeline__lbl-logtime'>@item.LogDateTime.ToString("h:mm tt")</p>
-                                </div>
-                                <div class='atrail-timeline__content-container'>
-                                    <p class='atrail-timeline__lbl-activity'>@item.Activity</p>
-                                </div>
-                                <div class='atrail-timeline__footer-container'>
-                                    <p class='atrail-timeline__lbl-logtime'>By:</p>
-                                    <SignatoriesComponent employeeId='@item.UserId' avatarSize='Size.Small' />
-                                </div>
-                            </div>
-                        }
-                    }
-                    else if (IsRFP)
-                    {
-                        @foreach (var item in RequestForPaymentAuditTrail)
-                        {
-                            <div class='atrail-timeline__dot' style="@ActionColor(true, item.Activity)"></div>
-                            <div class='atrail-timeline__subline' style='@ActionColor(false, item.Activity)'></div>
-                            <div class='atrail-timeline__body' style='@ActionColor(false, item.Activity)'>
-                                <div class='atrail-timeline__header-container'>
-                                    <MudChip Label Size='Size.Small' Style='@ActionColor(false, item.Activity)' Variant='Variant.Outlined'>
-                                        <p>@ActionTaken(item.Activity)</p>
-                                    </MudChip>
-                                    <MudSpacer />
-                                    <p class='atrail-timeline__lbl-logdate'>@item.LogDateTime.ToString("dddd, dd MMMM yyyy")</p>
-                                    <p class='atrail-timeline__lbl-logtime'>@item.LogDateTime.ToString("h:mm tt")</p>
-                                </div>
-                                <div class='atrail-timeline__content-container'>
-                                    <p class='atrail-timeline__lbl-activity'>@item.Activity</p>
-                                </div>
-                                <div class='atrail-timeline__footer-container'>
-                                    <p class='atrail-timeline__lbl-logtime'>By:</p>
-                                    <SignatoriesComponent employeeId='@item.UserId' avatarSize='Size.Small' />
-                                </div>
-                            </div>
-                        }
-                    } *@
                 </div>    
             </div>
         </MudContainer>
@@ -120,9 +49,13 @@
     [Parameter] public bool IsPettyCash { get; set; }
     [Parameter] public bool IsLiquidation { get; set; }
     [Parameter] public bool IsRFP { get; set; }
+    [Parameter] public bool IsVoucher { get; set; }
+    [Parameter] public bool IsCheckWriter { get; set; }
     [Parameter] public List<PettyCashAuditTrail> PettyCashAuditTrail { get; set; } = new List<PettyCashAuditTrail>();
     [Parameter] public List<LiquidationAuditTrailModel> LiquidationAuditTrail { get; set; } = new List<LiquidationAuditTrailModel>();
     [Parameter] public List<RequestForPaymentAuditTrailModel> RequestForPaymentAuditTrail { get; set; } = new List<RequestForPaymentAuditTrailModel>();
+    [Parameter] public List<VoucherAuditTrailModel> VoucherAuditTrail { get; set; } = new();
+    [Parameter] public List<CheckAuditTrailModel> CheckWriterTrail { get; set; } = new();
     [Parameter] public string  ModuleName { get; set; } = string.Empty;
     private List<GeneralAuditTrailModel> CurrentAuditTrail = new List<GeneralAuditTrailModel>();
     private bool dataFetched;
@@ -140,24 +73,28 @@
         dataFetched = true;
         StateHasChanged();
     }
-    private string ActionTaken(string activity)
+    private string ActionTaken(string activity) 
     {
         return Extensions.DetermineActionTaken(activity);
     }
 
-    private string ActionColor(bool isBGColor, string activity)
+    private string ActionColor(bool isBGColor, string activity) 
     {
         return Extensions.DetermineActionColor(isBGColor, activity, ModuleName);
-    }
+    } 
 
     private async Task MapAuditTrail()
     {
         if(IsPettyCash)
             CurrentAuditTrail = await MapPCToCurrent();
-        if(IsLiquidation)
+        else if(IsLiquidation)
             CurrentAuditTrail = await MapLiqToCurrent();
-        if(IsRFP)
+        else if(IsRFP)
             CurrentAuditTrail = await MapRFPToCurrent();
+        else if(IsVoucher)
+            CurrentAuditTrail = await MapVoucherToCurrent();
+        else if(IsCheckWriter)
+            CurrentAuditTrail = await MapCheckTrailToCurrent();
     }
 
     private async Task<List<GeneralAuditTrailModel>> MapPCToCurrent()
@@ -177,7 +114,6 @@
         });
         return trailList ?? new List<GeneralAuditTrailModel>();
     }
-
     private async Task<List<GeneralAuditTrailModel>> MapLiqToCurrent()
     {
         List<GeneralAuditTrailModel> trailList = new List<GeneralAuditTrailModel>();
@@ -195,7 +131,6 @@
         });
         return trailList ?? new List<GeneralAuditTrailModel>();
     }
-
     private async Task<List<GeneralAuditTrailModel>> MapRFPToCurrent()
     {
         List<GeneralAuditTrailModel> trailList = new List<GeneralAuditTrailModel>();
@@ -212,5 +147,39 @@
             }
         });
          return trailList ?? new List<GeneralAuditTrailModel>();
+    }
+    private async Task<List<GeneralAuditTrailModel>> MapVoucherToCurrent()
+    {
+        List<GeneralAuditTrailModel> trailList = new List<GeneralAuditTrailModel>();
+            await Task.Run(() => {
+            foreach(var item in VoucherAuditTrail)
+            {
+                var itemTrail = new GeneralAuditTrailModel();
+                itemTrail.Id = item.Id;
+                itemTrail.AuditTrailId = item.VoucherId;
+                itemTrail.Activity = item.Activity;
+                itemTrail.LogDateTime = item.LogDateTime;
+                itemTrail.UserId = item.UserId;
+                trailList.Add(itemTrail);
+            }
+        });
+        return trailList ?? new List<GeneralAuditTrailModel>();
+    }
+    private async Task<List<GeneralAuditTrailModel>> MapCheckTrailToCurrent()
+    {
+        List<GeneralAuditTrailModel> trailList = new List<GeneralAuditTrailModel>();
+            await Task.Run(() => {
+            foreach(var item in CheckWriterTrail)
+            {
+                var itemTrail = new GeneralAuditTrailModel();
+                itemTrail.Id = Convert.ToInt64(item.Id);
+                itemTrail.AuditTrailId = Convert.ToInt64(item.Id);
+                itemTrail.Activity = item.Activity;
+                itemTrail.LogDateTime = item.LogDateTime;
+                itemTrail.UserId = item.UserId;
+                trailList.Add(itemTrail);
+            }
+        });
+        return trailList ?? new List<GeneralAuditTrailModel>();
     }
 }
